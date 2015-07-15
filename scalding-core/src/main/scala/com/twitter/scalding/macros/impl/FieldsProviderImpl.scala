@@ -80,11 +80,11 @@ object FieldsProviderImpl {
   def toFieldsCommonImpl[T](c: Context, namingScheme: NamingScheme, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
-    def maybeHandlePrimitive(outerTpe: Type): Option[List[(Tree, String)]] = {
+    def maybeHandlePrimitive(outerTpe: Type): Option[Tree] = {
 
-      def innerLoop(tpe: Type, inOption: Boolean): Option[List[(Tree, String)]] = {
+      def innerLoop(tpe: Type, inOption: Boolean): Option[Tree] = {
         val returningType = if (inOption) q"""classOf[java.lang.Object]""" else q"""classOf[$outerTpe]"""
-        val simpleRet = Some(List((returningType, s"element")))
+        val simpleRet = Some(returningType)
 
         tpe match {
           case tpe if tpe =:= typeOf[String] => simpleRet
@@ -94,7 +94,8 @@ object FieldsProviderImpl {
           case tpe if tpe =:= typeOf[Long] => simpleRet
           case tpe if tpe =:= typeOf[Float] => simpleRet
           case tpe if tpe =:= typeOf[Double] => simpleRet
-          case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption == true => c.abort(c.enclosingPosition, s"Case class ${T} has nested options, not supported currently.")
+          case tpe if tpe.erasure =:= typeOf[Option[Any]] && inOption == true =>
+            c.abort(c.enclosingPosition, s"Case class ${T} has nested options, not supported currently.")
           case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
             val innerType = tpe.asInstanceOf[TypeRefApi].args.head
             innerLoop(innerType, true)
@@ -104,7 +105,7 @@ object FieldsProviderImpl {
       }
       innerLoop(outerTpe, false)
     }
-    val expanded: List[(Tree, String)] = maybeHandlePrimitive(T.tpe).getOrElse {
+    val expanded: Either[List[(Tree, String)], List[(Tree, Int)]] = maybeHandlePrimitive(T.tpe).map { t => Right(List((t, 0))) }.getOrElse {
       if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
         c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.Issue when building Fields Provider.""")
@@ -123,7 +124,8 @@ object FieldsProviderImpl {
           case tpe if tpe =:= typeOf[Long] => simpleRet
           case tpe if tpe =:= typeOf[Float] => simpleRet
           case tpe if tpe =:= typeOf[Double] => simpleRet
-          case tpe if tpe.erasure =:= typeOf[Option[Any]] && isOption == true => c.abort(c.enclosingPosition, s"Case class ${T} has nested options, not supported currently.")
+          case tpe if tpe.erasure =:= typeOf[Option[Any]] && isOption == true =>
+            c.abort(c.enclosingPosition, s"Case class ${T} has nested options, not supported currently.")
           case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
             val innerType = tpe.asInstanceOf[TypeRefApi].args.head
             matchField(innerType, outerName, fieldName, true)
@@ -131,7 +133,8 @@ object FieldsProviderImpl {
             val prefix = outerName.map(pre => s"$pre$fieldName.")
             expandMethod(tpe, prefix, isOption)
           case tpe if allowUnknownTypes => simpleRet
-          case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
+          case _ =>
+            c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives or nested case classes")
         }
       }
 
@@ -151,16 +154,30 @@ object FieldsProviderImpl {
       val expanded = expandMethod(T.tpe, prefix, false)
       if (expanded.isEmpty) c.abort(c.enclosingPosition, s"Case class ${T} has no primitive types we were able to extract")
 
-      expanded
+      Left(expanded)
     }
 
-    val typeTrees = expanded.map(_._1)
+    val typeTrees = expanded.fold({ list => list.map(_._1) }, { list => list.map(_._1) })
     val res = if (namingScheme == NamedWithPrefix || namingScheme == NamedNoPrefix) {
-      val fieldNames = expanded.map(_._2)
-      q"""
-      new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[java.lang.Comparable[_]](..$fieldNames),
-        _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
-      """
+      val leftFn = { fieldNames: List[String] =>
+        q"""
+        new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..$fieldNames),
+          _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
+        """
+      }
+      val rightFn = { fieldNames: List[Int] =>
+        q"""
+        val ints: _root_.scala.Array[Comparable[_]] = $fieldNames.map(_root_.java.lang.Integer.valueOf(_)).toArray
+        new _root_.cascading.tuple.Fields(ints,
+          _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
+        """
+      }
+      val names: Either[List[String], List[Int]] = expanded.left.map(_.map(_._2))
+        .right.map(_.map(_._2))
+
+      // comparables is a c.Tree that contains type Array[Comparable[_]]
+      val comparables = names.fold(leftFn, rightFn)
+      comparables
     } else {
       val indices = typeTrees.zipWithIndex.map(_._2)
       q"""
