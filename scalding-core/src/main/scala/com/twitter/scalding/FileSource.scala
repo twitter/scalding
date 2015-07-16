@@ -119,12 +119,14 @@ object AcceptAllPathFilter extends PathFilter {
 
 object FileSource {
 
-  def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] =
+  def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
+    val path = new Path(glob)
     Option(path.getFileSystem(conf).globStatus(path, filter)).map {
       _.toIterable // convert java Array to scala Iterable
     }.getOrElse {
       Iterable.empty
     }
+  }
 
   /**
    * @return whether globPath contains non hidden files
