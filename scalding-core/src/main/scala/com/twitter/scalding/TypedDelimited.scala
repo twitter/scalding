@@ -106,7 +106,7 @@ object FixedPathTypedDelimited {
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
-@deprecated("Use TypedText instead")
+@deprecated("Use TypedTextDelimited instead", "16 July 2015")
 trait TypedDelimited[T] extends DelimitedScheme
   with Mappable[T] with TypedSink[T] {
 
@@ -138,7 +138,7 @@ trait TypedDelimited[T] extends DelimitedScheme
   final override def sinkFields = fields
 }
 
-@deprecated("Use TypedText instead")
+@deprecated("Use FixedTypedText instead", "16 July 2015")
 class FixedPathTypedDelimited[T](p: Seq[String],
   override val fields: Fields = Fields.ALL,
   override val skipHeader: Boolean = false,
