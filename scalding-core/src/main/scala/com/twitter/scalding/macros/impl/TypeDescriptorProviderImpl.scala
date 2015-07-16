@@ -37,12 +37,34 @@ object TypeDescriptorProviderImpl {
   def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
     import c.universe._
 
-    if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
-      c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
-        This will mean the macro is operating on a non-resolved type.""")
     val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)
     val setter = TupleSetterImpl.caseClassTupleSetterCommonImpl[T](c, allowUnknownTypes)
-    val fields = FieldsProviderImpl.toFieldsCommonImpl[T](c, NamedWithPrefix, allowUnknownTypes)
+
+    val tupleTypes = List(typeOf[Tuple1[Any]],
+      typeOf[Tuple2[Any, Any]],
+      typeOf[Tuple3[Any, Any, Any]],
+      typeOf[Tuple4[Any, Any, Any, Any]],
+      typeOf[Tuple5[Any, Any, Any, Any, Any]],
+      typeOf[Tuple6[Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple7[Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple8[Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple9[Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple10[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple11[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple12[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
+    val namingScheme = if (tupleTypes.exists { _ =:= T.tpe.erasure }) Indexed else NamedWithPrefix
+
+    val fields = FieldsProviderImpl.toFieldsCommonImpl[T](c, namingScheme, allowUnknownTypes)
 
     val res = q"""
     new _root_.com.twitter.scalding.TypeDescriptor[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
