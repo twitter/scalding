@@ -300,10 +300,10 @@ class Matrix2Test extends WordSpec with Matchers {
           "correctly compute sums" in {
             // Treat (Double, Double, Double) as string because that is what is actually returned
             // when using runHadoop
-            val result = Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0)).mapValues(_.toString)
+            val result = Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0))
             toSparseMat(ob) shouldBe result
           }
-        }
+        }(implicitly[TypeDescriptor[(Int, Int, (Double, Double, Double))]].converter)
         .runHadoop
         .finish
     }
