@@ -158,34 +158,20 @@ object FieldsProviderImpl {
     }
 
     val typeTrees = expanded.fold({ list => list.map(_._1) }, { list => list.map(_._1) })
-    val res = if (namingScheme == NamedWithPrefix || namingScheme == NamedNoPrefix) {
-      val leftFn = { fieldNames: List[String] =>
-        q"""
-        new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..$fieldNames),
-          _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
-        """
+    val namesOrIds = if (namingScheme == NamedWithPrefix || namingScheme == NamedNoPrefix) {
+      expanded match {
+        case Left(fieldNames) =>
+          q"""_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..${fieldNames.map(_._2)})"""
+        case Right(fieldIds) =>
+          q"""_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..${fieldIds.map(_._2)})"""
       }
-      val rightFn = { fieldNames: List[Int] =>
-        q"""
-        val ints: _root_.scala.Array[Comparable[_]] = $fieldNames.map(_root_.java.lang.Integer.valueOf(_)).toArray
-        new _root_.cascading.tuple.Fields(ints,
-          _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
-        """
-      }
-      val names: Either[List[String], List[Int]] = expanded.left.map(_.map(_._2))
-        .right.map(_.map(_._2))
-
-      // comparables is a c.Tree that contains type Array[Comparable[_]]
-      val comparables = names.fold(leftFn, rightFn)
-      comparables
     } else {
       val indices = typeTrees.zipWithIndex.map(_._2)
-      q"""
-      new _root_.cascading.tuple.Fields(_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..$indices),
-        _root_.scala.Array.apply[java.lang.reflect.Type](..$typeTrees)) with _root_.com.twitter.bijection.macros.MacroGenerated
-      """
+      q"""_root_.scala.Array.apply[_root_.java.lang.Comparable[_]](..$indices)"""
     }
-    c.Expr[cascading.tuple.Fields](res)
+    c.Expr[cascading.tuple.Fields](q"""
+      new _root_.cascading.tuple.Fields($namesOrIds,
+        _root_.scala.Array.apply[_root_.java.lang.reflect.Type](..$typeTrees))
+      """)
   }
-
 }
