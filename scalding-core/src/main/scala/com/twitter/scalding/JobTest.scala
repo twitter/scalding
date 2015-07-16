@@ -116,8 +116,8 @@ class JobTest(cons: (Args) => Job) {
     this
   }
 
-  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(implicit typeDescriptor: TypeDescriptor[A]) =
-    sink[A](s)(op)(typeDescriptor.converter)
+  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
+    sink[A](s)(op)
 
   // Used to pass an assertion about a counter defined by the given group and name.
   // If this test is checking for multiple jobs chained by next, this only checks

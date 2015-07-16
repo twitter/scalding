@@ -133,7 +133,7 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
     JobTest(new com.twitter.scalding.TypedPipeJoinJob(_))
       .source(Tsv("inputFile0"), List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
       .source(Tsv("inputFile1"), List((0, 1), (1, 2), (2, 3), (3, 4)))
-      .sink[(Int, (Int, Option[Int]))](TypedTsv[(Int, (Int, Option[Int]))]("outputFile")){ outputBuffer =>
+      .typedSink[(Int, (Int, Option[Int]))](TypedTsv[(Int, (Int, Option[Int]))]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "correctly join" in {
           outMap should have size 5
@@ -143,7 +143,7 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
           outMap(3) shouldBe (3, Some(4))
           outMap(4) shouldBe (5, None)
         }
-      }
+      }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
       .finish
   }
@@ -252,7 +252,7 @@ class TypedPipeHashJoinTest extends WordSpec with Matchers {
           outMap(3) shouldBe (3, Some(4))
           outMap(4) shouldBe (5, None)
         }
-      }
+      }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
       .finish
   }
@@ -889,7 +889,7 @@ class TypedLookupJobTest extends WordSpec with Matchers {
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
-      }
+      }(implicitly[TypeDescriptor[(Int, Option[String])]].converter)
       .run
       .finish
   }
@@ -924,7 +924,7 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
-      }
+      }(implicitly[TypeDescriptor[(Int, Option[String])]].converter)
       .run
       .finish
   }
@@ -1208,7 +1208,7 @@ class TypedSelfLeftCrossTest extends WordSpec with Matchers {
           outBuf.toList.sortBy(_._1).toString shouldBe (input.sorted.map((_, sum)).toString)
         }
         idx += 1
-      }
+      }(implicitly[TypeDescriptor[(Int, Option[Int])]].converter)
       .run
       .runHadoop
       .finish
