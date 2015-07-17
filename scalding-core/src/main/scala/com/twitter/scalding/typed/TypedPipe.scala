@@ -283,15 +283,10 @@ trait TypedPipe[+T] extends Serializable {
   def fork: TypedPipe[T] = onRawSingle(identity)
 
   /**
-   * WARNING This is dangerous, and may not be what you think.
-   *
-   * limit the output to AT MOST count items.
-   * useful for debugging, but probably that's about it.
-   * The number may be less than count, and not sampled by any particular method
-   *
-   * This may change in the future to be exact, but that will add 1 MR step
+   * limit the output to at most count items, if at least count items exist.
    */
-  def limit(count: Int): TypedPipe[T] = onRawSingle(_.limit(count))
+  def limit(count: Int): TypedPipe[T] =
+    groupAll.bufferedTake(count).values
 
   /** Transform each element via the function f */
   def map[U](f: T => U): TypedPipe[U] = flatMap { t => Iterator(f(t)) }
