@@ -19,9 +19,6 @@ import java.io.Serializable
 import java.lang.reflect.Type
 
 import cascading.tuple.Fields
-import com.twitter.scalding.source.TypedText
-import com.twitter.scalding.source.FixedTypedText
-import com.twitter.scalding.source.TypedTextDelimited
 
 /**
  * Trait to assist with creating objects such as [[TypedTsv]] to read from separated files.
@@ -32,17 +29,19 @@ trait TypedSeperatedFile extends Serializable {
   def skipHeader: Boolean = false
   def writeHeader: Boolean = false
 
-  def apply[T: TypeDescriptor](path: String): TypedTextDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String): FixedPathTypedDelimited[T] =
     apply(Seq(path))
 
-  def apply[T: TypeDescriptor](paths: Seq[String]): TypedTextDelimited[T] =
-    FixedPathTypedDelimited(paths, separator)
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String]): FixedPathTypedDelimited[T] = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    apply(paths, f)
+  }
 
-  def apply[T: TypeDescriptor](path: String, f: Fields): TypedTextDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields): FixedPathTypedDelimited[T] =
     apply(Seq(path), f)
 
-  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields): TypedTextDelimited[T] =
-    FixedPathTypedDelimited(paths, f, separator)
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields): FixedPathTypedDelimited[T] =
+    new FixedPathTypedDelimited[T](paths, f, skipHeader, writeHeader, separator)
 }
 
 /**
@@ -73,32 +72,20 @@ object TypedOsv extends TypedSeperatedFile {
   val separator = "\u0001"
 }
 
-@deprecated("Use `new FixedTypedText` instead")
 object FixedPathTypedDelimited {
-  def apply[T: TypeDescriptor](path: String, separator: String): TypedTextDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, separator: String): FixedPathTypedDelimited[T] =
     apply(Seq(path), separator)
 
-  def apply[T: TypeDescriptor](paths: Seq[String], separator: String): TypedTextDelimited[T] = {
-    new FixedTypedText(source.TypedSep(separator), paths: _*)
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], separator: String): FixedPathTypedDelimited[T] = {
+    val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
+    apply(paths, f, separator)
   }
 
-  def apply[T: TypeDescriptor](path: String, f: Fields, separator: String): TypedTextDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields, separator: String): FixedPathTypedDelimited[T] =
     apply(Seq(path), f, separator)
 
-  def apply[T: TypeDescriptor](paths: Seq[String], f: Fields, separator: String): TypedTextDelimited[T] = {
-    val td = implicitly[TypeDescriptor[T]]
-    require(f.size == td.fields.size)
-
-    val newTd = new TypeDescriptor[T] {
-      def setter = td.setter
-      def converter = td.converter
-
-      // get a new Fields instance with the field names from f,
-      // but the macro-generated types from td.fields
-      def fields = f.applyTypes(td.fields)
-    }
-    new FixedTypedText(source.TypedSep(separator), paths: _*)(newTd)
-  }
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields, separator: String): FixedPathTypedDelimited[T] =
+    new FixedPathTypedDelimited[T](paths, f, false, false, separator)
 }
 
 /**
@@ -106,7 +93,7 @@ object FixedPathTypedDelimited {
  * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
  * e.g. TypedTsv[Tuple1[List[Int]]]
  */
-@deprecated("Use TypedTextDelimited instead", "16 July 2015")
+@deprecated("Use TypedTextDelimited instead", "2015-07")
 trait TypedDelimited[T] extends DelimitedScheme
   with Mappable[T] with TypedSink[T] {
 
@@ -138,7 +125,7 @@ trait TypedDelimited[T] extends DelimitedScheme
   final override def sinkFields = fields
 }
 
-@deprecated("Use FixedTypedText instead", "16 July 2015")
+@deprecated("Use FixedTypedText instead", "2015-07")
 class FixedPathTypedDelimited[T](p: Seq[String],
   override val fields: Fields = Fields.ALL,
   override val skipHeader: Boolean = false,
