@@ -16,7 +16,9 @@ object RatioBasedEstimator {
   def getInputRatioThreshold(conf: JobConf) = conf.getFloat(inputRatioThresholdKey, 0.10f)
 }
 
-abstract class RatioBasedEstimator extends InputSizeReducerEstimator with HistoryService {
+abstract class RatioBasedEstimator extends ReducerEstimator {
+
+  def historyService: HistoryService
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
@@ -45,7 +47,7 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
 
-    fetchHistory(info, maxHistory) match {
+    historyService.fetchHistory(info, maxHistory) match {
       case Success(history) =>
         val inputBytes = Common.totalInputSize(info.step)
 
@@ -59,7 +61,8 @@ abstract class RatioBasedEstimator extends InputSizeReducerEstimator with Histor
           } yield h.reduceFileBytesRead / h.hdfsBytesRead.toDouble
 
           val reducerRatio = ratios.sum / ratios.length
-          super.estimateReducers(info).map { baseEstimate =>
+          val inputSizeBasedEstimate = new InputSizeReducerEstimator().estimateReducers(info)
+          inputSizeBasedEstimate.map { baseEstimate =>
             // scale reducer estimate based on the historical input ratio
             val e = (baseEstimate * reducerRatio).ceil.toInt max 1
 

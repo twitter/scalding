@@ -13,7 +13,29 @@ import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY 
 
 import scala.util.{ Failure, Success, Try }
 
-object HRavenHistoryService {
+object HRavenClient {
+  import HRavenHistoryService.jobConfToRichConfig
+
+  val apiHostnameKey = "hraven.api.hostname"
+  val clientConnectTimeoutKey = "hraven.client.connect.timeout"
+  val clientReadTimeoutKey = "hraven.client.read.timeout"
+
+  private final val clientConnectTimeoutDefault = 30000
+  private final val clientReadTimeoutDefault = 30000
+
+  def apply(conf: JobConf): Try[HRavenRestClient] =
+    conf.getFirstKey(apiHostnameKey)
+      .map(new HRavenRestClient(_,
+        conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
+        conf.getInt(clientReadTimeoutKey, clientReadTimeoutDefault)))
+}
+
+/**
+ * Mixin for ReducerEstimators to give them the ability to query hRaven for
+ * info about past runs.
+ */
+object HRavenHistoryService extends HistoryService {
+
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   val RequiredJobConfigs = Seq("cascading.flow.step.num")
@@ -43,34 +65,7 @@ object HRavenHistoryService {
       }
 
   }
-  implicit def jobConfToRichConfig(conf: JobConf) = RichConfig(conf)
-}
-
-object HRavenClient {
-  import HRavenHistoryService.jobConfToRichConfig
-
-  val apiHostnameKey = "hraven.api.hostname"
-  val clientConnectTimeoutKey = "hraven.client.connect.timeout"
-  val clientReadTimeoutKey = "hraven.client.read.timeout"
-
-  private final val clientConnectTimeoutDefault = 30000
-  private final val clientReadTimeoutDefault = 30000
-
-  def apply(conf: JobConf): Try[HRavenRestClient] =
-    conf.getFirstKey(apiHostnameKey)
-      .map(new HRavenRestClient(_,
-        conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
-        conf.getInt(clientReadTimeoutKey, clientReadTimeoutDefault)))
-}
-
-/**
- * Mixin for ReducerEstimators to give them the ability to query hRaven for
- * info about past runs.
- */
-trait HRavenHistoryService extends HistoryService {
-
-  // enrichments on JobConf, LOG
-  import HRavenHistoryService._
+  implicit def jobConfToRichConfig(conf: JobConf): RichConfig = RichConfig(conf)
 
   /**
    * Fetch flows until it finds one that was successful
