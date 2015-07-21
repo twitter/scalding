@@ -1253,13 +1253,32 @@ class MapValueStreamNonEmptyIteratorJob(args: Args) extends Job(args) {
 }
 
 class MapValueStreamNonEmptyIteratorTest extends WordSpec with Matchers {
-  import Dsl._
 
   "A MapValueStreamNonEmptyIteratorJob" should {
     JobTest(new MapValueStreamNonEmptyIteratorJob(_))
       .sink[(Int, Int)](TypedText.tsv[(Int, Int)]("output")) { outBuf =>
         "not have iterators of size 0" in {
           assert(outBuf.toList.filter(_._2 == 0) === Nil)
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class NullSinkJob(args: Args, m: scala.collection.mutable.Buffer[Int]) extends Job(args) {
+  TypedPipe.from(0 to 100)
+    .map { i => m += i; i } // side effect
+    .write(source.NullSink)
+}
+
+class NullSinkJobTest extends WordSpec with Matchers {
+  "A NullSinkJob" should {
+    val buf = scala.collection.mutable.Buffer[Int]()
+    JobTest(new NullSinkJob(_, buf))
+      .typedSink[Any](source.NullSink) { _ =>
+        "have a side effect" in {
+          assert(buf.toSet === (0 to 100).toSet)
         }
       }
       .run
