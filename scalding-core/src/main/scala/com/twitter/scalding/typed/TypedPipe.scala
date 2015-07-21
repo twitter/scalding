@@ -149,7 +149,7 @@ trait TypedPipe[+T] extends Serializable {
   /**
    * Provide the internal implementation to get from a typed pipe to a cascading Pipe
    */
-  protected def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe
+  private[typed] def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe
 
   /////////////////////////////////////////////
   //
@@ -866,7 +866,7 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
 
   override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
     // unwrap in a loop, without recursing
-    unwrap(this).toPipe[U](fieldNames)(flowDef, mode, setter)
+    unwrap(this).asPipe[U](fieldNames)(flowDef, mode, setter)
 
   override def toIterableExecution: Execution[Iterable[T]] = Execution.getConfigMode.flatMap {
     case (conf, mode) =>
