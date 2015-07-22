@@ -17,6 +17,7 @@ package com.twitter.scalding.platform
 
 import cascading.flow.Flow
 import com.twitter.scalding._
+import com.twitter.scalding.source.TypedText
 
 import java.io.{ BufferedWriter, File, FileWriter }
 
@@ -43,7 +44,7 @@ case class HadoopPlatformJobTest(
 
   def arg(inArg: String, value: String): HadoopPlatformJobTest = arg(inArg, List(value))
 
-  def source[T: Manifest](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedTsv[T](location), data)
+  def source[T: TypeDescriptor](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedText.tsv[T](location), data)
 
   def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
@@ -52,8 +53,8 @@ case class HadoopPlatformJobTest(
       }
     })
 
-  def sink[T: Manifest](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
-    sink(TypedTsv[T](location))(toExpect)
+  def sink[T: TypeDescriptor](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+    sink(TypedText.tsv[T](location))(toExpect)
 
   def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
     copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq) })

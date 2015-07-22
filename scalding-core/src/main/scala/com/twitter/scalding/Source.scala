@@ -222,10 +222,7 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def getModifiedTime(conf: Config) = 0
 }
 
-/**
- * A source outputs nothing. It is used to drive execution of a task for side effect only.
- */
-object NullSource extends Source {
+trait BaseNullSource extends Source {
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")
@@ -237,3 +234,7 @@ object NullSource extends Source {
     }
   }
 }
+/**
+ * A source outputs nothing. It is used to drive execution of a task for side effect only.
+ */
+object NullSource extends BaseNullSource

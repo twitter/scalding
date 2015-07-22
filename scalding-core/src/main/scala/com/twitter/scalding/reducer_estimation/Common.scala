@@ -3,12 +3,15 @@ package com.twitter.scalding.reducer_estimation
 import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
 import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ StringUtility, Config }
+import cascading.tap.{ Tap, CompositeTap }
+import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.util.Failure
 
 object EstimatorConfig {
 
@@ -25,12 +28,46 @@ object EstimatorConfig {
 
 }
 
+object Common {
+  private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
+    taps.flatMap {
+      case multi: CompositeTap[_] =>
+        unrollTaps(multi.getChildTaps.asScala.toSeq)
+      case t => Seq(t)
+    }
+
+  def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
+    unrollTaps(step.getSources.asScala.toSeq)
+
+  /**
+   * Get the total size of the file(s) specified by the Hfs, which may contain a glob
+   * pattern in its path, so we must be ready to handle that case.
+   */
+  def size(f: Hfs, conf: JobConf): Long = {
+    val fs = f.getPath.getFileSystem(conf)
+    fs.globStatus(f.getPath)
+      .map{ s => fs.getContentSummary(s.getPath).getLength }
+      .sum
+  }
+
+  def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
+    val conf = step.getConfig
+    unrollTaps(step).flatMap {
+      case tap: Hfs => Some(tap.toString -> size(tap, conf))
+      case _ => None
+    }
+  }
+
+  def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
+
+}
+
 case class FlowStrategyInfo(
   flow: Flow[JobConf],
   predecessorSteps: Seq[FlowStep[JobConf]],
   step: FlowStep[JobConf])
 
-class ReducerEstimator {
+trait ReducerEstimator {
   /**
    * Estimate how many reducers should be used. Called for each FlowStep before
    * it is scheduled. Custom reducer estimators should override this rather than
@@ -41,8 +78,27 @@ class ReducerEstimator {
    *              and the current step (.step).
    * @return Number of reducers recommended by the estimator, or None to keep the default.
    */
-  def estimateReducers(info: FlowStrategyInfo): Option[Int] = None
+  def estimateReducers(info: FlowStrategyInfo): Option[Int]
 
+}
+
+trait HistoryReducerEstimator extends ReducerEstimator {
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
+  def historyService: HistoryService
+
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
+    val conf = info.step.getConfig
+    val maxHistory = EstimatorConfig.getMaxHistory(conf)
+
+    historyService.fetchHistory(info, maxHistory).recoverWith {
+      case e =>
+        LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
+        Failure(e)
+    }.map(estimateReducers(info, _)).toOption.flatten
+  }
+
+  protected def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
 }
 
 case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
@@ -55,7 +111,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   implicit val estimatorMonoid: Monoid[ReducerEstimator] = new Monoid[ReducerEstimator] {
-    override def zero: ReducerEstimator = new ReducerEstimator
+    override def zero: ReducerEstimator = new ReducerEstimator {
+      override def estimateReducers(info: FlowStrategyInfo) = None
+    }
+
     override def plus(l: ReducerEstimator, r: ReducerEstimator): ReducerEstimator =
       FallbackEstimator(l, r)
   }
@@ -123,26 +182,52 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 /**
  * Info about a prior FlowStep, provided by implementers of HistoryService
  */
-sealed trait FlowStepHistory {
-  /** Size of input to mappers (in bytes) */
-  def mapperBytes: Long
-  /** Size of input to reducers (in bytes) */
-  def reducerBytes: Long
-}
+final case class FlowStepHistory(keys: FlowStepKeys,
+  submitTime: Long,
+  launchTime: Long,
+  finishTime: Long,
+  totalMaps: Long,
+  totalReduces: Long,
+  finishedMaps: Long,
+  finishedReduces: Long,
+  failedMaps: Long,
+  failedReduces: Long,
+  mapFileBytesRead: Long,
+  mapFileBytesWritten: Long,
+  reduceFileBytesRead: Long,
+  hdfsBytesRead: Long,
+  hdfsBytesWritten: Long,
+  mapperTimeMillis: Long,
+  reducerTimeMillis: Long,
+  reduceShuffleBytes: Long,
+  cost: Double,
+  tasks: Seq[Task])
+final case class FlowStepKeys(jobName: String,
+  user: String,
+  priority: String,
+  status: String,
+  version: String,
+  hadoopVersion: Int,
+  queue: String)
 
-object FlowStepHistory {
-  def apply(m: Long, r: Long) = new FlowStepHistory {
-    override def mapperBytes: Long = m
-    override def reducerBytes: Long = r
-  }
-}
+final case class Task(taskId: String,
+  taskType: String,
+  status: String,
+  splits: Seq[String],
+  startTime: Long,
+  finishTime: Long,
+  taskAttemptId: String,
+  trackerName: String,
+  httpPort: Int,
+  hostname: String,
+  state: String,
+  error: String,
+  shuffleFinished: Long,
+  sortFinished: Long)
 
 /**
  * Provider of information about prior runs.
  */
 trait HistoryService {
-  /**
-   * Retrieve history for matching FlowSteps, up to `max`
-   */
-  def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]]
+  def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]]
 }
