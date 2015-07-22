@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
-import com.twitter.algebird.{ Monoid, Monad }
+import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
@@ -198,6 +198,22 @@ object Execution {
     override def map[T, U](e: Execution[T])(fn: T => U): Execution[U] = e.map(fn)
     override def flatMap[T, U](e: Execution[T])(fn: T => Execution[U]): Execution[U] = e.flatMap(fn)
     override def join[T, U](t: Execution[T], u: Execution[U]): Execution[(T, U)] = t.zip(u)
+  }
+
+  /**
+   * This is the standard semigroup on an Applicative (zip, then inside the Execution do plus)
+   */
+  implicit def semigroup[T: Semigroup]: Semigroup[Execution[T]] = Semigroup.from[Execution[T]] { (a, b) =>
+    a.zip(b).map { case (ta, tb) => Semigroup.plus(ta, tb) }
+  }
+  /**
+   * This is the standard monoid on an Applicative (zip, then inside the Execution do plus)
+   * useful to combine unit Executions:
+   * Monoid.sum(ex1, ex2, ex3, ex4): Execution[Unit]
+   * where each are exi are Execution[Unit]
+   */
+  implicit def monoid[T: Monoid]: Monoid[Execution[T]] = Monoid.from(Execution.from(Monoid.zero[T])) { (a, b) =>
+    a.zip(b).map { case (ta, tb) => Monoid.plus(ta, tb) }
   }
 
   /**

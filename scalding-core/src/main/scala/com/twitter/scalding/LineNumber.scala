@@ -26,12 +26,17 @@ object LineNumber {
   private[this] def getCurrent(depth: Int, stack: Seq[StackTraceElement]): StackTraceElement =
     stack(depth + 2)
 
-  def ignorePath(classPrefix: String): Option[StackTraceElement] =
-    ignorePath(classPrefix, Thread.currentThread().getStackTrace)
+  def ignorePath(classPrefix: String): Option[StackTraceElement] = ignorePath(Set(classPrefix))
+  def ignorePath(classPrefixes: Set[String]): Option[StackTraceElement] =
+    ignorePaths(classPrefixes, Thread.currentThread().getStackTrace)
 
-  private[this] def ignorePath(classPrefix: String, stack: Seq[StackTraceElement]): Option[StackTraceElement] =
+  private[this] def ignorePaths(classPrefixes: Set[String], stack: Seq[StackTraceElement]): Option[StackTraceElement] =
     stack.drop(2)
-      .dropWhile(_.getClassName.startsWith(classPrefix))
+      .dropWhile { ste =>
+        classPrefixes.exists { prefix =>
+          ste.getClassName.startsWith(prefix)
+        }
+      }
       .headOption
 
   /*
@@ -47,8 +52,12 @@ object LineNumber {
      * depth 1 => caller of this method
      */
     val stack = Thread.currentThread().getStackTrace
+    // user code is never in our package, or in scala, but
+    // since internal methods often recurse we ignore these
+    // in our attempt to get a good line number for the user.
     val scaldingPrefix = "com.twitter.scalding."
-    val nonScalding = ignorePath(scaldingPrefix, stack)
+    val ignoredPrefixes = Set(scaldingPrefix, "scala.")
+    val nonScalding = ignorePaths(ignoredPrefixes, stack)
     val jobClass = classOf[com.twitter.scalding.Job]
 
     // there is no .headOption on Iterator. WTF?

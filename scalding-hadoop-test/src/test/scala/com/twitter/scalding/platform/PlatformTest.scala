@@ -200,6 +200,21 @@ class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
     .write(TypedTsv[String](args("output2")))
 }
 
+class ComplexJob2(input: List[NestedCaseClass], args: Args) extends Job(args) {
+  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+
+  val ds1 = TypedPipe.from(input).map(_ -> (1L, "asfg"))
+
+  val ds2 = TypedPipe.from(input).map(_ -> (1L, "sdf"))
+
+  val execution = ds1.join(ds2).groupAll.size.values.toIterableExecution
+  val r = Config.tryFrom(config).get
+  execution.waitFor(r, mode).get
+
+  ds1.map(_.toString).write(TypedTsv[String](args("output1")))
+  ds2.map(_.toString).write(TypedTsv[String](args("output2")))
+}
+
 class CheckFlowProcessJoiner(uniqueID: UniqueID) extends InnerJoin {
   override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
     println("CheckFlowProcessJoiner.getItertor")
@@ -391,6 +406,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "An Ordered Serialization" should {
     "A test job with a fork and join, had previously not had boxed serializations on all branches" in {
       val fn = (arg: Args) => new ComplexJob(data, arg)
+      HadoopPlatformJobTest(fn, cluster)
+        .arg("output1", "output1")
+        .arg("output2", "output2")
+        // Here we are just testing that we hit no exceptions in the course of this run
+        // the previous issue would have caused OOM or other exceptions. If we get to the end
+        // then we are good.
+        .sink[String](TypedTsv[String]("output2")) { x => () }
+        .sink[String](TypedTsv[String]("output1")) { x => () }
+        .run
+    }
+
+    "A test job with that joins then groupAll's should have its boxes setup correctly." in {
+      val fn = (arg: Args) => new ComplexJob2(data, arg)
       HadoopPlatformJobTest(fn, cluster)
         .arg("output1", "output1")
         .arg("output2", "output2")
