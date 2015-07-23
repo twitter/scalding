@@ -3,9 +3,9 @@ package com.twitter.scalding.hraven.reducer_estimation
 import java.io.IOException
 
 import cascading.flow.FlowStep
-import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
+import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails, HadoopVersion }
 import com.twitter.hraven.rest.client.HRavenRestClient
-import com.twitter.scalding.reducer_estimation.{ RatioBasedEstimator, FlowStepHistory, HistoryService }
+import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
@@ -13,7 +13,29 @@ import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY 
 
 import scala.util.{ Failure, Success, Try }
 
-object HRavenHistoryService {
+object HRavenClient {
+  import HRavenHistoryService.jobConfToRichConfig
+
+  val apiHostnameKey = "hraven.api.hostname"
+  val clientConnectTimeoutKey = "hraven.client.connect.timeout"
+  val clientReadTimeoutKey = "hraven.client.read.timeout"
+
+  private final val clientConnectTimeoutDefault = 30000
+  private final val clientReadTimeoutDefault = 30000
+
+  def apply(conf: JobConf): Try[HRavenRestClient] =
+    conf.getFirstKey(apiHostnameKey)
+      .map(new HRavenRestClient(_,
+        conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
+        conf.getInt(clientReadTimeoutKey, clientReadTimeoutDefault)))
+}
+
+/**
+ * Mixin for ReducerEstimators to give them the ability to query hRaven for
+ * info about past runs.
+ */
+object HRavenHistoryService extends HistoryService {
+
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   val RequiredJobConfigs = Seq("cascading.flow.step.num")
@@ -43,34 +65,7 @@ object HRavenHistoryService {
       }
 
   }
-  implicit def jobConfToRichConfig(conf: JobConf) = RichConfig(conf)
-}
-
-object HRavenClient {
-  import HRavenHistoryService.jobConfToRichConfig
-
-  val apiHostnameKey = "hraven.api.hostname"
-  val clientConnectTimeoutKey = "hraven.client.connect.timeout"
-  val clientReadTimeoutKey = "hraven.client.read.timeout"
-
-  private final val clientConnectTimeoutDefault = 30000
-  private final val clientReadTimeoutDefault = 30000
-
-  def apply(conf: JobConf): Try[HRavenRestClient] =
-    conf.getFirstKey(apiHostnameKey)
-      .map(new HRavenRestClient(_,
-        conf.getInt(clientConnectTimeoutKey, clientConnectTimeoutDefault),
-        conf.getInt(clientReadTimeoutKey, clientReadTimeoutDefault)))
-}
-
-/**
- * Mixin for ReducerEstimators to give them the ability to query hRaven for
- * info about past runs.
- */
-trait HRavenHistoryService extends HistoryService {
-
-  // enrichments on JobConf, LOG
-  import HRavenHistoryService._
+  implicit def jobConfToRichConfig(conf: JobConf): RichConfig = RichConfig(conf)
 
   /**
    * Fetch flows until it finds one that was successful
@@ -153,35 +148,38 @@ trait HRavenHistoryService extends HistoryService {
     flowsTry.map(flows => flows.flatMap(findMatchingJobStep))
   }
 
-  protected def mapperBytes(pastStep: JobDetails): Option[Long] = {
-    val pastInputBytes = pastStep.getHdfsBytesRead
-    if (pastInputBytes <= 0) {
-      LOG.warn("Invalid value in JobDetails: HdfsBytesRead = " + pastInputBytes)
-      None
-    } else {
-      Some(pastInputBytes)
-    }
-  }
-
-  protected def reducerBytes(pastStep: JobDetails): Option[Long] = {
-    val reducerBytes = pastStep.getReduceFileBytesRead
-    if (reducerBytes <= 0) {
-      LOG.warn("Invalid value in JobDetails: ReduceBytesRead = " + reducerBytes)
-      None
-    } else {
-      Some(reducerBytes)
-    }
-  }
-
-  override def fetchHistory(f: FlowStep[JobConf], max: Int): Try[Seq[FlowStepHistory]] =
-    fetchPastJobDetails(f, max).map { history =>
+  override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
+    fetchPastJobDetails(info.step, maxHistory).map { history =>
       for {
         step <- history
-        mapperBytes <- mapperBytes(step)
-        reducerBytes <- reducerBytes(step)
-      } yield FlowStepHistory(mapperBytes, reducerBytes)
+        hadoopVersion = step.getHadoopVersion match {
+          case HadoopVersion.ONE => 1
+          case HadoopVersion.TWO => 2
+        }
+        keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, hadoopVersion, "")
+        tasks = step.getTasks.asScala.map{ t => Task(t.getTaskId, t.getType, t.getStatus, t.getSplits.toSeq, t.getStartTime, t.getFinishTime, t.getTaskAttemptId, t.getTrackerName, t.getHttpPort, t.getHostname, t.getState, t.getError, t.getShuffleFinished, t.getSortFinished) }
+      } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0, tasks)
     }
 
 }
 
-class HRavenRatioBasedEstimator extends RatioBasedEstimator with HRavenHistoryService
+class HRavenRatioBasedEstimator extends RatioBasedEstimator {
+  override val historyService = HRavenHistoryService
+}
+
+class HRavenBasicMedianRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MedianEstimationScheme
+}
+class HRavenBasicMeanRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MeanEstimationScheme
+}
+class HRavenInputScaledMedianRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MedianEstimationScheme
+}
+class HRavenInputScaledMeanRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
+  override val historyService = HRavenHistoryService
+  override val runtimeEstimationScheme = MeanEstimationScheme
+}
