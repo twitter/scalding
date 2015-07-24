@@ -59,9 +59,9 @@ trait HasColumnProjection {
   }
 }
 
-private[parquet] sealed trait ColumnProjectionString {
+sealed trait ColumnProjectionString {
   def globStrings: Set[String]
   def asSemicolonString: String = globStrings.mkString(";")
 }
-private[parquet] case class DeprecatedColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
-private[parquet] case class StrictColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
+case class DeprecatedColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
+case class StrictColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
