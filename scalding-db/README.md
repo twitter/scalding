@@ -58,6 +58,15 @@ is flattened to a table schema with columns `id`, `name`, `lat`, `lng`, `doorNum
 #### Working with NULLABLE column types
 `Option`s can be used to denote columns that are marked as NULLABLE in the DB. Those will automatically be converted to None for null values.
 
+#### Running arbitrary queries during writes
+
+There are options for users to run arbitrary SQL queries before and/or after the load completes.
+
+```scala
+override def preloadQuery = Some(SqlQuery("<your_query>"))
+override def postloadQuery = Some(SqlQuery("<your_query>"))
+```
+
 Currently, the following databases are supported:
 * MySQL, both reads and writes
 * Vertica, writes only
@@ -108,7 +117,7 @@ override val batchSize = 200 // default is 1000
 
 #### Duplicate key updates
 
-Turning on replaceOnInsert option uses MySQL's `ON DUPLICATE KEY UPDATE` to update existing records. Note that this requires that:
+Turning on `replaceOnInsert` option uses MySQL's `ON DUPLICATE KEY UPDATE` to update existing records if any for a given key. Note that this requires that:
 
 1. `UNIQUE KEY` constraints are already set correctly in your table schema
 
@@ -140,6 +149,10 @@ For more, see: http://www.vertica.com/2012/07/05/teaching-the-elephant-new-trick
 We use Vertica's native file format to stage the LOAD output on HDFS: http://my.vertica.com/docs/5.0/HTML/Master/13562.htm
 
 NOTE: Reading from Vertica is not supported.
+
+## Passing database credentials
+
+TODO(rubanm): Add JDBCConfiguration like helper class for loading credentials.
 
 ## Scalding DB macros in detail
 
