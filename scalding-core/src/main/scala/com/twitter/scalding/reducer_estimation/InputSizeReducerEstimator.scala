@@ -24,48 +24,18 @@ class InputSizeReducerEstimator extends ReducerEstimator {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
-    taps.flatMap {
-      case multi: CompositeTap[_] =>
-        unrollTaps(multi.getChildTaps.asScala.toSeq)
-      case t => Seq(t)
-    }
-
-  private def unrolledSources(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
-    unrollTaps(step.getSources.asScala.toSeq)
-
-  /**
-   * Get the total size of the file(s) specified by the Hfs, which may contain a glob
-   * pattern in its path, so we must be ready to handle that case.
-   */
-  protected def size(f: Hfs, conf: JobConf): Long = {
-    val fs = f.getPath.getFileSystem(conf)
-    fs.globStatus(f.getPath)
-      .map{ s => fs.getContentSummary(s.getPath).getLength }
-      .sum
-  }
-
-  private def inputSizes(taps: Seq[Tap[_, _, _]], conf: JobConf): Option[Seq[(String, Long)]] = {
-    val sizes = taps.map {
-      case tap: Hfs => Some(tap.toString -> size(tap, conf))
-      case tap => {
-        LOG.warn("Cannot compute size in bytes of tap: {}", tap)
-        None
-      }
-    }.flatten
-    if (sizes.nonEmpty) Some(sizes) else None
-  }
-
-  protected def inputSizes(step: FlowStep[JobConf]): Option[Seq[(String, Long)]] =
-    inputSizes(unrolledSources(step), step.getConfig)
-
   /**
    * Figure out the total size of the input to the current step and set the number
    * of reducers using the "bytesPerReducer" configuration parameter.
    */
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
-    inputSizes(info.step) match {
-      case Some(inputSizes) =>
+    Common.inputSizes(info.step) match {
+      case Nil =>
+        LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
+          "cannot compute size of:\n - " +
+          Common.unrollTaps(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
+        None
+      case inputSizes =>
         val bytesPerReducer =
           InputSizeReducerEstimator.getBytesPerReducer(info.step.getConfig)
 
@@ -73,8 +43,8 @@ class InputSizeReducerEstimator extends ReducerEstimator {
         val nReducers = (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
 
         lazy val logStr = inputSizes.map {
-          case (name, bytes) => "   - %s\t%d\n".format(name, bytes)
-        }.mkString("")
+          case (name, bytes) => s"   - ${name}\t${bytes}"
+        }.mkString("\n")
 
         LOG.info("\nInputSizeReducerEstimator" +
           "\n - input size (bytes): " + totalBytes +
@@ -83,11 +53,5 @@ class InputSizeReducerEstimator extends ReducerEstimator {
           logStr)
 
         Some(nReducers)
-
-      case None =>
-        LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
-          "cannot compute size of:\n - " +
-          unrolledSources(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
-        None
     }
 }
