@@ -32,24 +32,22 @@ object CaseClassBasedSetterImpl {
     fsetter: CaseClassFieldSetter)(implicit T: c.WeakTypeTag[T]): (Int, c.Tree) = {
     import c.universe._
 
-    def maybeHandlePrimitive(outerOuterTpe: Type): Option[(Int, Tree)] = {
+    val maybeHandlePrimitive: Option[(Int, Tree)] = {
       def innerLoop(outerTpe: Type, pTree: Tree): Option[Tree] = {
         val typedSetter: scala.util.Try[c.Tree] = fsetter.from(c)(outerTpe, 0, container, pTree)
 
         (outerTpe, typedSetter) match {
           case (_, Success(setter)) => Some(setter)
-
           case (tpe, _) if tpe.erasure =:= typeOf[Option[Any]] =>
             val cacheName = newTermName(c.fresh(s"optiIndx"))
-            val optSubTree = innerLoop(tpe.asInstanceOf[TypeRefApi].args.head, q"$cacheName")
-            val nullSetter = fsetter.absent(c)(0, container)
-            optSubTree.map { subTree =>
+            innerLoop(tpe.asInstanceOf[TypeRefApi].args.head, q"$cacheName").map { subTree =>
+              //pTree is a tree of an Option, so we get and recurse, or write absent
               q"""
             if($pTree.isDefined) {
               val $cacheName = $pTree.get
               $subTree
             } else {
-              $nullSetter
+              ${fsetter.absent(c)(0, container)}
             }
             """
             }
@@ -57,14 +55,19 @@ object CaseClassBasedSetterImpl {
         }
       }
 
-      innerLoop(outerOuterTpe, q"t").map { resTree =>
+      // in TupleSetterImpl, the outer-most input val is called t, so we pass that in here:
+      innerLoop(T.tpe, q"t").map { resTree =>
         (1, resTree)
       }
     }
-    maybeHandlePrimitive(T.tpe).getOrElse {
+
+    maybeHandlePrimitive.getOrElse {
       if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
-        c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
-        This will mean the macro is operating on a non-resolved type. Issue when building Setter.""")
+        c.abort(c.enclosingPosition,
+          s"""|We cannot enforce ${T.tpe} is a case class, either it is not a
+              |case class or this macro call is possibly enclosed in a class.
+              |This will mean the macro is operating on a non-resolved type.
+              |Issue when building Setter.""".stripMargin)
 
       @annotation.tailrec
       def normalized(tpe: Type): Type = {
@@ -75,6 +78,10 @@ object CaseClassBasedSetterImpl {
           tpe
       }
 
+      /*
+       * For a given outerType to be written at position idx, that has been stored in val named
+       * pTree, return the next position to write into, and the Tree to do the writing of the Type
+       */
       def matchField(outerTpe: Type, idx: Int, pTree: Tree): (Int, Tree) = {
         val typedSetter: scala.util.Try[c.Tree] = fsetter.from(c)(outerTpe, idx, container, pTree)
         (outerTpe, typedSetter) match {
@@ -83,8 +90,9 @@ object CaseClassBasedSetterImpl {
             (idx + 1, setter)
           case (tpe, _) if tpe.erasure =:= typeOf[Option[Any]] =>
             val cacheName = newTermName(c.fresh(s"optiIndx"))
-            val (newIdx, subTree) =
-              matchField(tpe.asInstanceOf[TypeRefApi].args.head, idx, q"$cacheName")
+            // Recurse on the inner type
+            val (newIdx, subTree) = matchField(tpe.asInstanceOf[TypeRefApi].args.head, idx, q"$cacheName")
+            // If we are absent, we use these setters to mark all fields null
             val nullSetters = (idx until newIdx).map { curIdx =>
               fsetter.absent(c)(idx, container)
             }
@@ -98,12 +106,21 @@ object CaseClassBasedSetterImpl {
             }
             """)
 
-          case (tpe, _) if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) => expandMethod(normalized(tpe), idx, pTree)
-          case (tpe, _) if allowUnknownTypes => (idx + 1, fsetter.default(c)(idx, container, pTree))
-          case _ => c.abort(c.enclosingPosition, s"Case class ${T} is not pure primitives, Option of a primitive nested case classes, when building Setter")
+          case (tpe, _) if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) =>
+            expandMethod(normalized(tpe), idx, pTree)
+          case (tpe, _) if allowUnknownTypes =>
+            // This just puts the value in directly
+            (idx + 1, fsetter.default(c)(idx, container, pTree))
+          case _ =>
+            c.abort(c.enclosingPosition,
+              s"Case class ${T} is not pure primitives, Option of a primitive nested case classes, when building Setter")
         }
       }
 
+      /*
+       * For a given outerType to be written at position parentIdx, that has been stored in val named
+       * pTree, return the next position to write into, and the Tree to do the writing of the Type
+       */
       def expandMethod(outerTpe: Type, parentIdx: Int, pTree: Tree): (Int, Tree) =
         outerTpe
           .declarations
@@ -118,6 +135,7 @@ object CaseClassBasedSetterImpl {
               $subTree""")
           }
 
+      // in TupleSetterImpl, the outer-most input val is called t, so we pass that in here:
       val (finalIdx, set) = expandMethod(normalized(T.tpe), 0, q"t")
       if (finalIdx == 0) c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
       (finalIdx, set)
