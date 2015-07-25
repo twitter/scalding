@@ -23,31 +23,10 @@ import cascading.tuple.Fields
 import com.twitter.scalding.db.driver.JDBCDriver
 
 /**
- * Extend this source to let scalding read from or write to a database.
- * In order for this to work you need to specify the table name, column definitions and DB credentials.
- * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
- * Example usage:
- * case object YourTableSource extends JDBCSource {
- *   override val tableName = TableName("tableName")
- *   override val columns = List(
- *      varchar("col1", 64),
- *      date("col2"),
- *      tinyint("col3"),
- *      double("col4")
- *   )
- *   override def currentConfig = ConnectionConfig(
- *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"),
- *     UserName("username"), Password("password"),
- *     MysqlDriver
- *   )
- * }
- *
- * @author Argyris Zymnis
- * @author Oscar Boykin
- * @author Kevin Lin
+ * Builds a cascading-jdbc tap from the supplied column definitions and config options.
  */
 object JDBCTapBuilder {
-  def build(cols: Iterable[ColumnDefinition], jdbcOptions: JDBCOptions) =
+  def build(cols: Iterable[ColumnDefinition], jdbcOptions: JDBCOptions): JDBCTap =
     try {
       val ConnectionConfig(url, uName, passwd, jdbcDriverName, _) = jdbcOptions.connectionConfig
       val jdbcDriver = JDBCDriver(jdbcDriverName)
