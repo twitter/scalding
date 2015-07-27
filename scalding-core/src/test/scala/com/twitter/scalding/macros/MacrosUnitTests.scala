@@ -16,15 +16,19 @@
 package com.twitter.scalding.macros
 
 import cascading.tuple.{ Tuple => CTuple, TupleEntry }
-
-import org.scalatest.{ Matchers, WordSpec }
-import scala.language.experimental.{ macros => smacros }
+import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding._
 import com.twitter.scalding.macros._
 import com.twitter.scalding.macros.impl._
 import com.twitter.scalding.serialization.Externalizer
-
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen.choose
+import org.scalacheck.Prop
+import org.scalacheck.Prop.forAll
+import org.scalacheck.Properties
+import org.scalatest.{ Matchers, WordSpec }
+import scala.language.experimental.{ macros => smacros }
+import scala.reflect.runtime.universe._
 
 // We avoid nesting these just to avoid any complications in the serialization test
 case class SampleClassA(x: Int, y: String)
@@ -36,6 +40,25 @@ case class SampleClassF(a: Option[Int])
 case class SampleClassG(a: java.util.Date)
 
 case class SampleClassFail(a: Option[Option[Int]])
+
+object MacroProperties extends Properties("TypeDescriptor.roundTrip") {
+  def roundTrip[T: Arbitrary: TypeDescriptor]: Prop = forAll { t: T =>
+    val setter = implicitly[TypeDescriptor[T]].setter
+    val converter = implicitly[TypeDescriptor[T]].converter
+    val fields = implicitly[TypeDescriptor[T]].fields
+    converter(new TupleEntry(fields, setter(t))) == t
+  }
+
+  def propertyFor[T: TypeTag: Arbitrary: TypeDescriptor]: Unit = {
+    property(typeTag[T].tpe.toString) = roundTrip[T]
+  }
+
+  propertyFor[Int]
+  propertyFor[Option[Int]]
+  propertyFor[Option[(Int, String, Option[Long])]]
+  propertyFor[Option[(Option[Boolean], Int, String, Option[Long])]]
+  propertyFor[(Int, Double, String, Option[(String, Int, Option[Long])])]
+}
 
 class MacrosUnitTests extends WordSpec with Matchers {
   import MacroImplicits._
@@ -76,6 +99,16 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   def canExternalize(t: AnyRef) { Externalizer(t).javaWorks shouldBe true }
 
+  "MacroGenerated TupleConverter" should {
+    "Not compile for Option[Option[Int]]" in {
+      //TODO figure out a way to test this does not compile. See:
+      //https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/test/typechecking.scala
+      //uncommenting fails to compile, but we want to be more sure
+      //Macros.caseClassTupleConverter[Option[Option[Int]]]
+      //Macros.caseClassTupleConverter[Option[String]]
+    }
+  }
+
   "MacroGenerated TupleSetter" should {
 
     "Generate the setter SampleClassA" in { Macros.caseClassTupleSetter[SampleClassA] }
@@ -103,6 +136,10 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Generate the converter SampleClassE" in { Macros.caseClassTupleConverter[SampleClassE] }
     "Generate the converter SampleClassF" in { Macros.caseClassTupleConverter[SampleClassF] }
     "Generate the converter SampleClassG" in { Macros.caseClassTupleConverterWithUnknown[SampleClassG] }
+    "Generate the converter Option[(Int, String)]" in { Macros.caseClassTupleConverter[Option[(Int, String)]] }
+    "Generate the converter Option[(Int, Option[(Long, String)])]" in {
+      Macros.caseClassTupleConverter[Option[(Int, Option[(Long, String)])]]
+    }
 
     "Not generate a convertor for SampleClassFail" in { isMacroTupleConverterAvailable[SampleClassFail] shouldBe false }
 
