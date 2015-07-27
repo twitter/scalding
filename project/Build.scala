@@ -520,7 +520,11 @@ object ScaldingBuild extends Build {
       "com.twitter" %% "bijection-macros" % bijectionVersion,
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
       "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion,
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      // scalding-json pulls in guava 0.15 via jackson-module-scala.
+      // Guava 15.0 removes the LimitInputStream class that hdfs uses internally.
+      // So we force an older version for the platform tests here.
+      "com.google.guava" % "guava" % "14.0.1" % "test" force()
     ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
