@@ -488,6 +488,10 @@ object ScaldingBuild extends Build {
     previousArtifact := None,
     crossPaths := false,
     autoScalaLibrary := false,
+    // Disable cross publishing for this artifact
+    publishArtifact <<= (scalaVersion) { scalaVersion =>
+        if(scalaVersion.startsWith("2.11")) false else true
+        },
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
