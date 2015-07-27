@@ -83,8 +83,11 @@ object TupleConverterImpl {
         /*
          * First we handle primitives, which never recurse
          */
-        case tpe if tpe =:= typeOf[String] =>
+        case tpe if tpe =:= typeOf[String] && allowUnknownTypes =>
           PrimitiveBuilder(idx => q"""t.getString($idx)""")
+        case tpe if tpe =:= typeOf[String] =>
+          // In this case, null is identical to empty, and we always return non-null
+          PrimitiveBuilder(idx => q"""{val s = t.getString($idx); if (s == null) "" else s}""")
         case tpe if tpe =:= typeOf[Boolean] =>
           PrimitiveBuilder(idx => q"""t.getBoolean($idx)""")
         case tpe if tpe =:= typeOf[Short] =>
