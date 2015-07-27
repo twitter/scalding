@@ -76,7 +76,14 @@ Currently, the following databases are supported:
 
 ### Reads
 
-For reads, a streaming copy from MySQL to HDFS is performed via the submitter prior to kicking off the mapreduce tasks. This HDFS snapshot is used for reads during the lifetime of the Scalding job.
+The`queryPolicy` field defines how read queries are executed. It has two possible values:
+
+1. `QueryOnSubmitter` (default)
+2. `QueryOnMappers`
+
+##### QueryOnSubmitter
+
+A streaming copy from MySQL to HDFS is performed via the submitter prior to kicking off the mapreduce tasks. This HDFS snapshot is used for reads during the lifetime of the Scalding job.
 
 There is only one JDBC connection that is opened on the submitter for this snapshotting. No JDBC connections are opened from mapreduce tasks where it can be hard to control connections from a variable number of mappers or reducers.
 
@@ -93,15 +100,16 @@ If you want to disable this:
 ```scala
 override def dbSchemaValidation = false
 ```
+##### QueryOnMappers
 
-For very large datasets, there is an option to read splits directly on mappers. It can be used in conjunction with maxConcurrentReads to tune the number of mappers. This option should be used only if snapshot via submitter is too slow for your use case.
+For very large datasets, this option to read splits directly on mappers. It can be used in conjunction with `maxConcurrentReads` to tune the total number of mappers. This option should be used only if snapshot via submitter is too slow for your use case.
 
 ```scala
 override def queryPolicy = QueryOnMappers
 override def maxConcurrentReads = 10 // tune the number of mappers
 ```
 
-NOTE: When using `QueryOnMappers`, it is recommended that `.forceToDisk` be called in the related `TypedPipe` as early as possible. This ensure MySQL data is checkpointed in HDFS for reuse in downstream steps, thereby, avoided excessive number of JDBC queries.
+NOTE: When using `QueryOnMappers`, it is recommended that `.forceToDisk` be called in the related `TypedPipe` as early as possible. This ensures MySQL data is checkpointed in HDFS for reuse in downstream steps, thereby avoided excessive number of JDBC queries.
 
 ### Writes
 
@@ -119,9 +127,9 @@ override val batchSize = 200 // default is 1000
 
 Turning on `replaceOnInsert` option uses MySQL's `ON DUPLICATE KEY UPDATE` to update existing records if any for a given key. Note that this requires that:
 
-1. `UNIQUE KEY` constraints are already set correctly in your table schema
+1. `UNIQUE KEY` constraints are already set correctly in your table schema.
 
-2. The columns in the constraints are part of your case class definition
+2. The columns in the constraints are part of your case class definition.
 
 ```scala
 override val replaceOnInsert = true
@@ -152,7 +160,8 @@ NOTE: Reading from Vertica is not supported.
 
 ## Passing database credentials
 
-TODO(rubanm): Add JDBCConfiguration like helper class for loading credentials.
+TODO: Add JDBCConfiguration like helper class for loading credentials.
+* https://github.com/twitter/scalding/issues/1384
 
 ## Scalding DB macros in detail
 
@@ -160,9 +169,9 @@ Macros are used for interop between Scala case classes and relational database /
 
 For a case class T, the macro-generated `ColumnDefinitionProvider[T]` provides:
 
-1. `ColumnDefinition`s for the corresponding DB table columns
+1. `ColumnDefinition`s for the corresponding DB table columns.
 
-2. `ResultSetExtractor[T]` for extracting records from `java.sql.ResultSet` into objects of type `T`
+2. `ResultSetExtractor[T]` for extracting records from `java.sql.ResultSet` into objects of type `T`.
 
 Also provided are `TupleConverter`, `TupleSetter` and `cascading.tuple.Fields` for use with Cascading.
 `DBTypeDescriptor[T]` is the top-level class that contains all of the above.
