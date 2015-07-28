@@ -30,6 +30,12 @@ import scala.annotation.tailrec
 import scala.io.{ Codec, Source }
 import scala.util.Try
 
+/**
+ * JdbcWriter class for MySQL. Intermediate data is staged on HDFS and then loaded
+ * into MySQL table on a jdbc connection.
+ *
+ * Prior to the load, JSON is used for storing case class records as intermediate data on HDFS.
+ */
 class MySqlJdbcWriter[T](
   tableName: TableName,
   connectionConfig: ConnectionConfig,

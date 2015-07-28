@@ -30,6 +30,6 @@ object TryHelper {
 
     // attempt a side-effect before returning the orignal Try if the original Try fails
     // ignore any failures while doing so
-    def onFailure[U >: T](action: => Unit): Try[U] = t.recoverWith { case e => Try(action); Failure(e) }
+    def onFailure(action: => Unit): Try[T] = t.recoverWith { case e => Try(action); Failure(e) }
   }
 }
