@@ -91,8 +91,10 @@ matrix:
       - "scripts/test_execution_tutorial.sh"
 
     - scala: 2.11.7
-      env: BUILD="test typed and execution tutorials"
+      env: BUILD="test repl and typed tutorials"
       script:
+      - "scripts/build_assembly_no_test.sh scalding-repl"
+      - "scripts/test_repl_tutorial.sh"
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
       - "scripts/build_assembly_no_test.sh execution-tutorial"
