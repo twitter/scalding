@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import com.twitter.scalding._
-import com.twitter.scalding.ReplImplicits._
-import com.twitter.scalding.ReplImplicitContext._
 
 /**
 Scalding Tutorial1 in REPL form.
