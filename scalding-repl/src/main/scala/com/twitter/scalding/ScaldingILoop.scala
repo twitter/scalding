@@ -85,13 +85,14 @@ class ScaldingILoop
 
   override def createInterpreter() {
     super.createInterpreter()
-    intp.beQuietDuring {
+    // intp.beQuietDuring {
       addImports(imports: _*)
 
       // interpret all files named ".scalding_repl" from the current directory up to the root
+      println(findAllUpPath(".scalding_repl"))
       findAllUpPath(".scalding_repl")
         .reverse // work down from top level file to more specific ones
         .foreach(f => loadCommand(f.toString))
-    }
+    // }
   }
 }
