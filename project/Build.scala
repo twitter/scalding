@@ -31,6 +31,7 @@ object ScaldingBuild extends Build {
   val hadoopVersion = "2.5.0"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.13"
+  val h2databaseVersion = "1.4.184"
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"
@@ -521,6 +522,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
       "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "com.h2database" % "h2" % h2databaseVersion % "test",
       // scalding-json pulls in guava 0.15 via jackson-module-scala.
       // Guava 15.0 removes the LimitInputStream class that hdfs uses internally.
       // So we force an older version for the platform tests here.

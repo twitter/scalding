@@ -30,7 +30,7 @@ class SimpleJob(in: Iterable[MyVal], args: Args) extends Job(args) with java.io.
     TableName("asdf"), SchemaName("schema"), None, None, true, Some(args("output_path"))))
 }
 
-class PlatformTest extends WordSpec with Matchers with BeforeAndAfterAll {
+class VerticaPlatformTest extends WordSpec with Matchers with BeforeAndAfterAll {
 
   private[this] val cluster = LocalCluster()
 

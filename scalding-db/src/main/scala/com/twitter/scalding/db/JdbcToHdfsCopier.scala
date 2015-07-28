@@ -46,11 +46,15 @@ object JdbcToHdfsCopier {
       val stmt = conn.createStatement(
         ResultSet.TYPE_FORWARD_ONLY,
         ResultSet.CONCUR_READ_ONLY)
+      val fetchSize = connectionConfig.adapter match {
+        case Adapter("h2") => 1 // used in platform tests
+        case _ => Integer.MIN_VALUE
+      }
       // integer min_value is a magic number needed by
       // mysql jdbc driver to do streaming reads
       // instead of pulling entire table at one go.
       // see: http://stackoverflow.com/a/20496877/2336541
-      stmt.setFetchSize(Integer.MIN_VALUE)
+      stmt.setFetchSize(fetchSize)
 
       log.info(s"Executing query $selectQuery")
       val rs: ResultSet = stmt.executeQuery(selectQuery)

@@ -27,6 +27,7 @@ object JDBCDriver {
     driverName.toStr.toLowerCase match {
       case "mysql" => MysqlDriver()
       case "hsqldb" => HsqlDbDriver()
+      case "h2" => H2DbDriver()
       case "vertica" => VerticaDriver()
       case "old_vertica" => OldVerticaDriver()
       case _ => sys.error("Bad driver argument given: " + driverName)
