@@ -54,7 +54,8 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
 
   override def hdfsScheme = {
-    val scheme = new ParquetTBaseScheme[T](this.config)
+    // See docs in Parquet346TBaseScheme
+    val scheme = new Parquet346TBaseScheme[T](this.config)
     HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
   }
 
