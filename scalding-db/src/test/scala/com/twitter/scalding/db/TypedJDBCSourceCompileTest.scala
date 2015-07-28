@@ -20,7 +20,7 @@ import com.twitter.scalding.db.macros._
 
 import org.scalatest.WordSpec
 
-case class ExampleTypedJDBCSource() extends TypedJDBCSource[User](AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), Adapter("mysql"), StringEncoding("UTF8"))))) {
+case class ExampleTypedJDBCSource() extends TypedJDBCSource[User](AvailableDatabases(Map(Database("asdf") -> ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"), Adapter("mysql"), StringEncoding("UTF8"))))) {
   override val database = Database("asdf")
   override val tableName = TableName("test")
 }

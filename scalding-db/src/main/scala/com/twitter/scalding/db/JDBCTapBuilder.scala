@@ -28,7 +28,7 @@ import com.twitter.scalding.db.driver.JDBCDriver
 object JDBCTapBuilder {
   def build(cols: Iterable[ColumnDefinition], jdbcOptions: JDBCOptions): JDBCTap =
     try {
-      val ConnectionConfig(url, uName, passwd, jdbcDriverName, _) = jdbcOptions.connectionConfig
+      val ConnectionSpec(url, uName, passwd, jdbcDriverName, _) = jdbcOptions.currentConfig
       val jdbcDriver = JDBCDriver(jdbcDriverName)
 
       val tableDesc = jdbcDriver.getTableDesc(jdbcOptions.tableName, cols)

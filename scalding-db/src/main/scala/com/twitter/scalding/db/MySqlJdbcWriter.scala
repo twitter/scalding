@@ -38,7 +38,7 @@ import scala.util.Try
  */
 class MySqlJdbcWriter[T](
   tableName: TableName,
-  connectionConfig: ConnectionConfig,
+  connectionConfig: ConnectionSpec,
   columns: Iterable[ColumnDefinition],
   batchSize: Int,
   replaceOnInsert: Boolean,

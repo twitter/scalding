@@ -48,7 +48,7 @@ object VerticaSink {
 }
 
 case class VerticaSink[T: DBTypeDescriptor: VerticaRowSerializer](
-  connectionConfig: ConnectionConfig,
+  currentConfig: ConnectionSpec,
   tableName: TableName,
   schema: SchemaName,
   override val preloadQuery: Option[SqlQuery] = None,
@@ -65,7 +65,7 @@ case class VerticaSink[T: DBTypeDescriptor: VerticaRowSerializer](
   @transient lazy val verticaWriter = new VerticaJdbcWriter(
     tableName,
     schema,
-    connectionConfig,
+    currentConfig,
     columns,
     AdditionalQueries(preloadQuery, postloadQuery))
 

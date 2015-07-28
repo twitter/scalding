@@ -20,13 +20,9 @@ package com.twitter.scalding.db
 trait JDBCOptions {
   // Name of the table in the database
   val tableName: TableName
-  // Current database
-  val database: Database
-
-  def availableDatabases: AvailableDatabases
 
   // Connection options
-  def connectionConfig: ConnectionConfig = availableDatabases(database)
+  def currentConfig: ConnectionSpec
 
   // Must be a subset of column names.
   // If updateBy column names are given, a SQL UPDATE statement will be generated

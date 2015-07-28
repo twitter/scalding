@@ -26,7 +26,7 @@ import org.scalacheck.Arbitrary
 class SimpleJob(in: Iterable[MyVal], args: Args) extends Job(args) with java.io.Serializable {
   @transient implicit val dbs = AvailableDatabases()
 
-  TypedPipe.from(in).write(VerticaSink[MyVal](null.asInstanceOf[ConnectionConfig],
+  TypedPipe.from(in).write(VerticaSink[MyVal](null.asInstanceOf[ConnectionSpec],
     TableName("asdf"), SchemaName("schema"), None, None, true, Some(args("output_path"))))
 }
 

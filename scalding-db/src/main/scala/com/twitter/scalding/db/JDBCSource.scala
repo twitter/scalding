@@ -38,10 +38,10 @@ import com.twitter.scalding.db.driver.JDBCDriver
  *      tinyint("col3"),
  *      double("col4")
  *   )
- *   override def currentConfig = ConnectionConfig(
+ *   override def currentConfig = ConnectionSpec(
  *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"),
  *     UserName("username"), Password("password"),
- *     MysqlDriver
+ * Adapter("mysql")
  *   )
  * }
  *
@@ -50,9 +50,7 @@ import com.twitter.scalding.db.driver.JDBCDriver
  * @author Kevin Lin
  */
 
-abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBCOptions with ColumnDefiner {
-
-  override val availableDatabases: AvailableDatabases = dbsInEnv
+abstract class JDBCSource extends Source with JDBCOptions with ColumnDefiner {
 
   val columns: Iterable[ColumnDefinition]
 
@@ -67,7 +65,7 @@ abstract class JDBCSource(dbsInEnv: AvailableDatabases) extends Source with JDBC
 
   // SQL statement for debugging what this source would produce to create the table
   // Can also be used for a user to create the table themselves. Setting up indices in the process.
-  def toSqlCreateString: String = JDBCDriver(connectionConfig.adapter).toSqlCreateString(tableName, columns)
+  def toSqlCreateString: String = JDBCDriver(currentConfig.adapter).toSqlCreateString(tableName, columns)
 
   protected def toSqlSelectString: String = {
     val columnsStr = columns.map(_.name.toStr).mkString(", ")

@@ -29,7 +29,7 @@ import scala.util.{ Try, Success, Failure }
 
 class VerticaJdbcWriter(tableName: TableName,
   schema: SchemaName,
-  connectionConfig: ConnectionConfig,
+  connectionConfig: ConnectionSpec,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries)
   extends JdbcWriter(tableName, connectionConfig, columns, addlQueries) {

@@ -39,39 +39,23 @@ import com.twitter.bijection.Injection
 import com.twitter.scalding._
 
 /**
- * Extend this source to let scalding read from or write to a database.
- * In order for this to work you need to specify the table name, column definitions and DB credentials.
- * If you write to a DB, the fields in the final pipe have to correspond to the column names in the DB table.
- *
- * NOTE: Currently, only MySQL is supported.
- *
- * Example usage:
- * case object YourTableSource extends JDBCSource {
- *   override val tableName = TableName("tableName")
- *   override val columns = List(
- *      varchar("col1", 64),
- *      date("col2"),
- *      tinyint("col3"),
- *      double("col4")
- *   )
- *   override def currentConfig = ConnectionConfig(
- *     ConnectUrl("jdbc:mysql://mysql01.company.com:3306/production"),
- *     MysqlDriver
- *   )
- * }
  *
  * @author Ian O Connell
  * @author Ruban Monu
  */
 
 abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv: AvailableDatabases)
-  extends JDBCSource(dbsInEnv)
+  extends JDBCSource
   with TypedSource[T]
   with TypedSink[T]
   with Mappable[T]
   with JDBCLoadOptions {
   import Dsl._
   import JsonUtils._
+
+  def database: Database
+
+  override def currentConfig: ConnectionSpec = dbsInEnv(database)
 
   private val jdbcTypeInfo = implicitly[DBTypeDescriptor[T]]
   val columns = jdbcTypeInfo.columnDefn.columns
@@ -92,11 +76,11 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
   // for most cases, QueryOnSubmitter works better and is safer
   def queryPolicy: QueryPolicy = QueryOnSubmitter
 
-  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, connectionConfig.encoding.toStr)
+  private def hdfsScheme = HadoopSchemeInstance(new CHTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS, currentConfig.encoding.toStr)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
   // there's a val initialization order bug that breaks JobTests
-  // so we use a separate one with no call to connectionConfig for now
+  // so we use a separate one with no call to currentConfig for now
   private def localScheme = HadoopSchemeInstance(new CLTextLine(CHTextLine.DEFAULT_SOURCE_FIELDS)
     .asInstanceOf[Scheme[_, _, _, _, _]])
 
@@ -113,7 +97,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
             Some(resultSetExtractor.validate(_))
           else
             None
-        JdbcToHdfsCopier(connectionConfig, toSqlSelectString, jobConf, hfsTap.getPath,
+        JdbcToHdfsCopier(currentConfig, toSqlSelectString, jobConf, hfsTap.getPath,
           maxRecordsPerFile)(validator, rs2CaseClass)
         CastHfsTap(hfsTap)
       }
@@ -128,7 +112,7 @@ abstract class TypedJDBCSource[T <: AnyRef: DBTypeDescriptor: Manifest](dbsInEnv
 
   @transient lazy val mysqlWriter = new MySqlJdbcWriter[T](
     tableName,
-    connectionConfig,
+    currentConfig,
     columns,
     batchSize,
     replaceOnInsert,

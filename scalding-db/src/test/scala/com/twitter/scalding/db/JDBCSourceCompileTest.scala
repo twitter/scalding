@@ -18,8 +18,13 @@ package com.twitter.scalding.db
 
 import org.scalatest.WordSpec
 
-class ExampleJdbcSource(adapter: Adapter) extends JDBCSource(AvailableDatabases(Map(Database("asdf") -> ConnectionConfig(ConnectUrl("how"), UserName("are"), Password("you"), adapter, StringEncoding("UTF8"))))) {
-  override val database = Database("asdf")
+class ExampleJdbcSource(adapter: Adapter) extends JDBCSource {
+  override val currentConfig = ConnectionSpec(
+    ConnectUrl("how"),
+    UserName("are"),
+    Password("you"),
+    adapter,
+    StringEncoding("UTF8"))
   override val tableName = TableName("test")
   override val columns: Iterable[ColumnDefinition] = Iterable(
     int("hey"),

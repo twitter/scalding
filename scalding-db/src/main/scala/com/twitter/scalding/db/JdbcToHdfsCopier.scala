@@ -29,7 +29,7 @@ object JdbcToHdfsCopier {
 
   protected val log = LoggerFactory.getLogger(this.getClass)
 
-  def apply[T <: AnyRef: Manifest](connectionConfig: ConnectionConfig,
+  def apply[T <: AnyRef: Manifest](connectionConfig: ConnectionSpec,
     selectQuery: String, conf: Configuration, hdfsPath: Path,
     recordsPerFile: Option[Int])(validator: Option[ResultSetMetaData => Try[Unit]], rs2CaseClass: ResultSet => T): Unit = {
 

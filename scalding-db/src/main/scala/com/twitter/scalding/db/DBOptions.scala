@@ -38,16 +38,16 @@ case class StringEncoding(toStr: String) extends AnyVal
 /**
  * Pass your DB credentials to this class in a preferred secure way
  */
-case class ConnectionConfig(
+case class ConnectionSpec(
   connectUrl: ConnectUrl,
   userName: UserName,
   password: Password,
   adapter: Adapter,
-  encoding: StringEncoding)
+  encoding: StringEncoding = StringEncoding("UTF8"))
 
 case class Database(toStr: String) extends AnyVal
 
-case class AvailableDatabases(m: Map[Database, ConnectionConfig] = Map()) {
+case class AvailableDatabases(m: Map[Database, ConnectionSpec] = Map()) {
   def get(d: Database) = m.get(d)
   def apply(d: Database) = m.apply(d)
 }

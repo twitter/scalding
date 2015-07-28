@@ -36,7 +36,7 @@ case class AdditionalQueries(
  */
 abstract class JdbcWriter(
   tableName: TableName,
-  connectionConfig: ConnectionConfig,
+  connectionConfig: ConnectionSpec,
   columns: Iterable[ColumnDefinition],
   addlQueries: AdditionalQueries) extends java.io.Serializable {
 
