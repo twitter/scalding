@@ -403,8 +403,6 @@ object ScaldingBuild extends Build {
   lazy val scaldingRepl = module("repl")
     .configs(Unprovided) // include 'unprovided' as config option
     .settings(
-      // skip in compile := !isScala210x(scalaVersion.value),
-      // skip in test := !isScala210x(scalaVersion.value),
       publishArtifact := true,
       initialCommands in console := """
         import com.twitter.scalding._
