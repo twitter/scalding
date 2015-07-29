@@ -21,11 +21,11 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val algebirdVersion = "0.10.1"
+  val algebirdVersion = "0.11.0"
   val avroVersion = "1.7.4"
-  val bijectionVersion = "0.8.0"
+  val bijectionVersion = "0.8.1"
   val cascadingAvroVersion = "2.1.2"
-  val chillVersion = "0.6.0"
+  val chillVersion = "0.7.0"
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.8"
   val hadoopLzoVersion = "0.4.19"
@@ -41,7 +41,7 @@ object ScaldingBuild extends Build {
   val scalaCheckVersion = "1.12.2"
   val scalaTestVersion = "2.2.4"
   val scalameterVersion = "0.6"
-  val scroogeVersion = "3.17.0"
+  val scroogeVersion = "3.20.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
 
