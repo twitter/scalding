@@ -18,12 +18,16 @@ package com.twitter.scalding
 import java.io.File
 
 import scala.tools.nsc.interpreter.IR
+import scala.tools.nsc.GenericRunnerSettings
 
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
 class ScaldingILoop
   extends ILoopCompat {
+
+  settings = new GenericRunnerSettings({ s => echo(s) })
+
   override def printWelcome() {
     val fc = Console.YELLOW
     val wc = Console.RED
@@ -85,14 +89,18 @@ class ScaldingILoop
 
   override def createInterpreter() {
     super.createInterpreter()
+    echo(settings.toString)
     // intp.beQuietDuring {
       addImports(imports: _*)
 
-      // interpret all files named ".scalding_repl" from the current directory up to the root
-      println(findAllUpPath(".scalding_repl"))
-      findAllUpPath(".scalding_repl")
-        .reverse // work down from top level file to more specific ones
-        .foreach(f => loadCommand(f.toString))
+      settings match {
+        case s: GenericRunnerSettings =>
+          findAllUpPath(".scalding_repl").foreach {
+            f => s.loadfiles.appendToValue(f.toString)
+          }
+        case _ => ()
+      }
+
     // }
   }
 }
