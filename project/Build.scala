@@ -403,7 +403,6 @@ object ScaldingBuild extends Build {
   lazy val scaldingRepl = module("repl")
     .configs(Unprovided) // include 'unprovided' as config option
     .settings(
-      publishArtifact := true,
       initialCommands in console := """
         import com.twitter.scalding._
         import com.twitter.scalding.ReplImplicits._

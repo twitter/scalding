@@ -94,7 +94,7 @@ class ScaldingILoop
 
       settings match {
         case s: GenericRunnerSettings =>
-          findAllUpPath(".scalding_repl").foreach {
+          findAllUpPath(".scalding_repl").reverse.foreach {
             f => s.loadfiles.appendToValue(f.toString)
           }
         case _ => ()
