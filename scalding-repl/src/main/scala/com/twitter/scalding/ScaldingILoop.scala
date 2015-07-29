@@ -89,17 +89,15 @@ class ScaldingILoop
 
   override def createInterpreter() {
     super.createInterpreter()
-    addThunk {
-      intp.beQuietDuring {
-        addImports(imports: _*)
+    intp.beQuietDuring {
+      addImports(imports: _*)
 
-        settings match {
-          case s: GenericRunnerSettings =>
-            findAllUpPath(".scalding_repl").foreach {
-              f => s.loadfiles.appendToValue(f.toString)
-            }
-          case _ => ()
-        }
+      settings match {
+        case s: GenericRunnerSettings =>
+          findAllUpPath(".scalding_repl").foreach {
+            f => s.loadfiles.appendToValue(f.toString)
+          }
+        case _ => ()
       }
     }
   }
