@@ -3,7 +3,7 @@ package com.twitter.scalding.hraven.reducer_estimation
 import java.io.IOException
 
 import cascading.flow.FlowStep
-import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails, HadoopVersion }
+import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
@@ -152,10 +152,7 @@ object HRavenHistoryService extends HistoryService {
     fetchPastJobDetails(info.step, maxHistory).map { history =>
       for {
         step <- history
-        hadoopVersion = step.getHadoopVersion match {
-          case HadoopVersion.ONE => 1
-          case HadoopVersion.TWO => 2
-        }
+        hadoopVersion = 0
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, hadoopVersion, "")
         tasks = step.getTasks.asScala.map{ t => Task(t.getTaskId, t.getType, t.getStatus, t.getSplits.toSeq, t.getStartTime, t.getFinishTime, t.getTaskAttemptId, t.getTrackerName, t.getHttpPort, t.getHostname, t.getState, t.getError, t.getShuffleFinished, t.getSortFinished) }
       } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0, tasks)
