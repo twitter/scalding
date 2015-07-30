@@ -7,18 +7,24 @@ import org.apache.parquet.cascading.{ ParquetTBaseScheme, ParquetValueScheme }
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport
 import org.apache.parquet.io.ParquetDecodingException
 import org.apache.parquet.schema.MessageType
-import org.apache.parquet.thrift.struct.ThriftType
-import org.apache.parquet.thrift.{ ThriftReader, ThriftRecordConverter, ThriftSchemaConverter }
+import org.apache.parquet.thrift.struct.ThriftType.StructType.StructOrUnionType
+import org.apache.parquet.thrift.struct.ThriftType._
+import org.apache.parquet.thrift.struct.{ ThriftField, ThriftType }
+import org.apache.parquet.thrift.{ ThriftReader, ThriftRecordConverter }
 import org.apache.thrift.TBase
 import org.apache.thrift.protocol.TProtocol
+
+import scala.collection.JavaConverters._
 
 /**
  * This file contains workarounds for PARQUET-346, everything in it should
  * be removed once that bug is fixed in upstream parquet.
  *
  * The root issue is that TBaseRecordConverter passes a schema
- * based on the file metadata to ThriftRecordConverter, but it should
- * pass a schema based on the thrift class used to *read* the file.
+ * based on the file metadata to ThriftRecordConverter that may be missing
+ * structOrUnionType metadata. This metadata is not actually needed, but parquet
+ * currently throws if it's missing. The (temporary) "fix" is to populate this metadata
+ * by setting all structOrUnionType fields to UNION.
  */
 
 /**
@@ -40,11 +46,10 @@ class Parquet346TBaseScheme[T <: TBase[_, _]](config: ParquetValueScheme.Config[
 
 /**
  * Same as TBaseRecordConverter with one important (subtle) difference.
- * It passes a schema (StructType) based on the thrift class to ThriftRecordConverter's
- * constructor instead of a schema based on what's in the parquet file's metadata.
- * This is important because older files don't contain all the metadata needed for
- * ThriftSchemaConverter to not throw, but we can get that information by converting the thrift
- * class to a schema instead.
+ * It passes a repaired schema (StructType) to ThriftRecordConverter's
+ * constructor. This is important because older files don't contain all the metadata needed for
+ * ThriftSchemaConverter to not throw, but we can put dummy data in there because it's not actually
+ * used.
  */
 class Parquet346TBaseRecordConverter[T <: TBase[_, _]](thriftClass: Class[T],
   requestedParquetSchema: MessageType, thriftType: ThriftType.StructType) extends ThriftRecordConverter[T](
@@ -68,7 +73,56 @@ class Parquet346TBaseRecordConverter[T <: TBase[_, _]](thriftClass: Class[T],
   thriftClass.getSimpleName,
   requestedParquetSchema,
 
-  // this is the fix -- we convert thriftClass to a StructType
-  // instead of using the thriftType argument passed to us
-  // as it comes from the parquet file and may be missing information
-  ThriftSchemaConverter.toStructType(thriftClass))
+  // this is the fix -- we add in the missing structOrUnionType metadata
+  // before passing it along
+  Parquet346StructTypeRepairer.repair(thriftType))
+
+/**
+ * Takes a ThriftType with potentially missing structOrUnionType metadata,
+ * and makes a copy that sets all StructOrUnionType metadata to UNION
+ */
+object Parquet346StructTypeRepairer extends StateVisitor[ThriftType, Unit] {
+
+  def repair(fromMetadata: StructType): StructType = {
+    visit(fromMetadata, ())
+  }
+
+  def copyRecurse(field: ThriftField): ThriftField = {
+    new ThriftField(field.getName, field.getFieldId, field.getRequirement, field.getType.accept(this, ()))
+  }
+
+  override def visit(structType: StructType, state: Unit): StructType = {
+    val repairedChildren = structType
+      .getChildren
+      .asScala
+      .iterator
+      .map(copyRecurse)
+
+    new StructType(repairedChildren.toBuffer.asJava, StructOrUnionType.UNION)
+  }
+
+  override def visit(mapType: MapType, state: Unit): MapType =
+    new MapType(copyRecurse(mapType.getKey), copyRecurse(mapType.getValue))
+
+  override def visit(setType: SetType, state: Unit): SetType =
+    new SetType(copyRecurse(setType.getValues))
+
+  override def visit(listType: ListType, state: Unit): ListType =
+    new ListType(copyRecurse(listType.getValues))
+
+  override def visit(enumType: EnumType, state: Unit): EnumType = enumType
+
+  override def visit(boolType: BoolType, state: Unit): BoolType = boolType
+
+  override def visit(byteType: ByteType, state: Unit): ByteType = byteType
+
+  override def visit(doubleType: DoubleType, state: Unit): DoubleType = doubleType
+
+  override def visit(i16Type: I16Type, state: Unit): I16Type = i16Type
+
+  override def visit(i32Type: I32Type, state: Unit): I32Type = i32Type
+
+  override def visit(i64Type: I64Type, state: Unit): I64Type = i64Type
+
+  override def visit(stringType: StringType, state: Unit): StringType = stringType
+}
