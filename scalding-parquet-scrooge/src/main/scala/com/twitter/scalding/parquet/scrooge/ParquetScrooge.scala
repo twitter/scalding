@@ -1,6 +1,5 @@
 package com.twitter.scalding.parquet.scrooge
 
-import _root_.parquet.scrooge.ParquetScroogeScheme
 import cascading.scheme.Scheme
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.thrift.ParquetThriftBase
@@ -10,7 +9,8 @@ import com.twitter.scrooge.ThriftStruct
 trait ParquetScrooge[T <: ThriftStruct] extends ParquetThriftBase[T] {
 
   override def hdfsScheme = {
-    val scheme = new ParquetScroogeScheme[T](this.config)
+    // See docs in Parquet346ScroogeScheme
+    val scheme = new Parquet346ScroogeScheme[T](this.config)
     HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
   }
 

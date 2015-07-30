@@ -7,57 +7,51 @@ import com.twitter.scalding.{ DateRange, RichDate, Source }
 import java.lang.{ Integer => JInt }
 import org.apache.thrift.protocol.TProtocol
 import org.apache.thrift.{ TBase, TFieldIdEnum }
-import org.scalatest.{ Matchers, WordSpec }
-import parquet.filter2.predicate.FilterApi._
-import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
+import org.scalatest.WordSpec
+import org.apache.parquet.filter2.predicate.FilterApi._
+import org.apache.parquet.filter2.predicate.{ FilterApi, FilterPredicate }
 
-abstract class ParquetSourcesTestsBase extends WordSpec with Matchers {
+abstract class ParquetSourcesTestsBase extends WordSpec {
 
   val dateRange = DateRange(RichDate(0L), RichDate(0L))
   val path = "/a/path"
   val filter1: FilterPredicate = FilterApi.eq(intColumn("foo"), new JInt(7))
   val fields = new Fields("foo", "bar")
-  val columns = Set(
-    ColumnProjectionGlob("a"),
-    ColumnProjectionGlob("b"),
-    ColumnProjectionGlob("c"))
-
   val columnStrings = Set("a", "b", "c")
 
   def testDefaultFilter[S <: Source with HasFilterPredicate](src: S) = {
     "default to no filter predicate" in {
-      src.withFilter shouldEqual None
+      assert(src.withFilter === None)
     }
   }
 
   def testReturnProvidedFilter[S <: Source with HasFilterPredicate](src: S) = {
     "return the provided filter" in {
-      src.withFilter shouldEqual Some(filter1)
+      assert(src.withFilter === Some(filter1))
     }
   }
 
   def testDefaultColumns[S <: Source with HasColumnProjection](src: S) = {
-
     "default to no column projection" in {
-      src.columnGlobs shouldBe empty
-      assert(src.globsInParquetStringFormat === None)
+      assert(src.columnProjectionString === None)
+      assert(src.withColumns === Set())
+      assert(src.withColumnProjections === Set())
     }
   }
 
-  def testReturnProvidedColumns[S <: Source with HasColumnProjection](src: S) = {
-    "return the provided columns" in {
-      assert(src.columnGlobs === columns)
+  def testReturnProvidedColumns[S <: Source with HasColumnProjection](src: S, expected: ColumnProjectionString) = {
+    "return the provided columns " + expected in {
+      assert(src.columnProjectionString.get === expected)
     }
 
-    "correctly format globs into parquet's expected format" in {
-      verifyParquetStringFormat(src.globsInParquetStringFormat.get, Set("a", "b", "c"))
+    "correctly format globs into parquet's expected format " + expected in {
+      verifyParquetStringFormat(src.columnProjectionString.get.asSemicolonString, expected.globStrings)
     }
   }
 
   private def verifyParquetStringFormat(s: String, expected: Set[String]) = {
     assert(s.split(";").toSet === expected)
   }
-
 }
 
 class ParquetSourcesTests extends ParquetSourcesTestsBase {
@@ -77,7 +71,13 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedColumns(
       new DailySuffixParquetThrift[MockTBase](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }, DeprecatedColumnProjectionString(columnStrings))
+
+    testReturnProvidedColumns(
+      new DailySuffixParquetThrift[MockTBase](path, dateRange) {
+        override def withColumnProjections: Set[String] = columnStrings
+      }, StrictColumnProjectionString(columnStrings))
+
   }
 
   "HourlySuffixParquetThrift" should {
@@ -95,7 +95,13 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedColumns(
       new HourlySuffixParquetThrift[MockTBase](path, dateRange) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }, DeprecatedColumnProjectionString(columnStrings))
+
+    testReturnProvidedColumns(
+      new HourlySuffixParquetThrift[MockTBase](path, dateRange) {
+        override def withColumnProjections: Set[String] = columnStrings
+      }, StrictColumnProjectionString(columnStrings))
+
   }
 
   "FixedPathParquetThrift" should {
@@ -113,7 +119,13 @@ class ParquetSourcesTests extends ParquetSourcesTestsBase {
     testReturnProvidedColumns(
       new FixedPathParquetThrift[MockTBase](path, path, path) {
         override def withColumns: Set[String] = columnStrings
-      })
+      }, DeprecatedColumnProjectionString(columnStrings))
+
+    testReturnProvidedColumns(
+      new FixedPathParquetThrift[MockTBase](path, path, path) {
+        override def withColumnProjections: Set[String] = columnStrings
+      }, StrictColumnProjectionString(columnStrings))
+
   }
 
   "DailySuffixParquetTuple" should {
