@@ -16,10 +16,10 @@ limitations under the License.
 
 package com.twitter.scalding.parquet.thrift
 
-import _root_.parquet.cascading.{ ParquetTBaseScheme, ParquetValueScheme }
+import org.apache.parquet.cascading.{ ParquetTBaseScheme, ParquetValueScheme }
 import cascading.scheme.Scheme
 import com.twitter.scalding._
-import com.twitter.scalding.parquet.{ HasColumnProjection, HasFilterPredicate }
+import com.twitter.scalding.parquet.{ StrictColumnProjectionString, DeprecatedColumnProjectionString, HasColumnProjection, HasFilterPredicate }
 import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 import java.io.Serializable
 import org.apache.thrift.{ TBase, TFieldIdEnum }
@@ -39,13 +39,13 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
       case None => config
     }
 
-    val configWithProjection = globsInParquetStringFormat match {
-      case Some(s) => configWithFp.withProjectionString(s)
+    val configWithProjection = columnProjectionString match {
+      case Some(s @ DeprecatedColumnProjectionString(_)) => configWithFp.withProjectionString(s.asSemicolonString)
+      case Some(s @ StrictColumnProjectionString(_)) => configWithFp.withStrictProjectionString(s.asSemicolonString)
       case None => configWithFp
     }
 
-    // TODO: remove asInstanceOf after the fix ships in parqet-mr
-    configWithProjection.asInstanceOf[ParquetValueScheme.Config[T]]
+    configWithProjection
   }
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
@@ -54,7 +54,8 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
 
   override def hdfsScheme = {
-    val scheme = new ParquetTBaseScheme[T](this.config)
+    // See docs in Parquet346TBaseScheme
+    val scheme = new Parquet346TBaseScheme[T](this.config)
     HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
   }
 
@@ -72,7 +73,7 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] 
  * you intend to use can also make your job significantly more efficient (parquet column projection
  * push-down will skip reading unused columns from disk).
  * The columns are specified in the format described here:
- * https://github.com/apache/incubator-parquet-mr/blob/master/parquet_cascading.md#21-projection-pushdown-with-thriftscrooge-records
+ * https://github.com/apache/parquet-mr/blob/master/parquet_cascading.md#21-projection-pushdown-with-thriftscrooge-records
  *
  * These settings are defined in the traits [[com.twitter.scalding.parquet.HasFilterPredicate]]
  * and [[com.twitter.scalding.parquet.HasColumnProjection]]
@@ -84,7 +85,7 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] 
  *
  * val mySourceFilteredAndProjected = new MyParquetSource(dr) {
  *   override val withFilter: Option[FilterPredicate] = Some(myFp)
- *   override val withColumns: Set[String] = Set("a/b/c", "x/y")
+ *   override val withColumnProjections: Set[String] = Set("a.b.c", "x.y")
  * }
  * }}}
  *
@@ -94,10 +95,10 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] 
  * class MyParquetSource(
  *   dr: DateRange,
  *   override val withFilter: Option[FilterPredicate] = None
- *   override val withColumns: Set[String] = Set()
+ *   override val withColumnProjections: Set[String] = Set()
  * ) extends DailySuffixParquetThrift("/a/path", dr)
  *
- * val mySourceFilteredAndProjected = new MyParquetSource(dr, Some(myFp), Set("a/b/c", "x/y"))
+ * val mySourceFilteredAndProjected = new MyParquetSource(dr, Some(myFp), Set("a.b.c", "x.y"))
  * }}}
  */
 class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](

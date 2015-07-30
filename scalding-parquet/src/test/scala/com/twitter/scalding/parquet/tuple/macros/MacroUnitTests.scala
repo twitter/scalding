@@ -2,8 +2,8 @@ package com.twitter.scalding.parquet.tuple.macros
 
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ Matchers, WordSpec }
-import parquet.io.api.{ Binary, RecordConsumer }
-import parquet.schema.MessageTypeParser
+import org.apache.parquet.io.api.{ Binary, RecordConsumer }
+import org.apache.parquet.schema.MessageTypeParser
 
 case class SampleClassA(x: Int, y: String)
 
