@@ -48,6 +48,9 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
 
     historyService.fetchHistory(info, maxHistory) match {
+      case Success(Nil) =>
+        LOG.warn("No matching history found.")
+        None
       case Success(history) =>
         val inputBytes = Common.totalInputSize(info.step)
 
