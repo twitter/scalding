@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.tuple
 
-import _root_.parquet.filter2.predicate.FilterPredicate
+import org.apache.parquet.filter2.predicate.FilterPredicate
 import cascading.scheme.Scheme
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.HasFilterPredicate

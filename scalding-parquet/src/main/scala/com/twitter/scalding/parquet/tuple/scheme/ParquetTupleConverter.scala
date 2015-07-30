@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.tuple.scheme
 
-import parquet.io.api.{ Binary, Converter, GroupConverter, PrimitiveConverter }
+import org.apache.parquet.io.api.{ Binary, Converter, GroupConverter, PrimitiveConverter }
 import scala.util.Try
 
 trait TupleFieldConverter[+T] extends Converter with Serializable {

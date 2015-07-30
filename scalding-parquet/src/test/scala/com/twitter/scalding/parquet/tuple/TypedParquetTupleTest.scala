@@ -5,9 +5,9 @@ import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopPlatformTest
 import com.twitter.scalding.typed.TypedPipe
 import com.twitter.scalding.{ Args, Job, TypedTsv }
 import org.scalatest.{ Matchers, WordSpec }
-import parquet.filter2.predicate.FilterApi.binaryColumn
-import parquet.filter2.predicate.{ FilterApi, FilterPredicate }
-import parquet.io.api.Binary
+import org.apache.parquet.filter2.predicate.FilterApi.binaryColumn
+import org.apache.parquet.filter2.predicate.{ FilterApi, FilterPredicate }
+import org.apache.parquet.io.api.Binary
 
 class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTest {
   "TypedParquetTuple" should {

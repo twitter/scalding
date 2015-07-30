@@ -38,7 +38,7 @@ object WriteSupportProvider {
 
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
-          writePrimitiveField(q"rc.addBinary(_root_.parquet.io.api.Binary.fromString($fValue))")
+          writePrimitiveField(q"rc.addBinary(_root_.org.apache.parquet.io.api.Binary.fromString($fValue))")
         case tpe if tpe =:= typeOf[Boolean] =>
           writePrimitiveField(q"rc.addBoolean($fValue)")
         case tpe if tpe =:= typeOf[Short] =>
@@ -126,8 +126,8 @@ object WriteSupportProvider {
     val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
     val writeSupport: Tree = q"""
       new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetWriteSupport[$T]($schema) {
-        override def writeRecord(t: $T, rc: _root_.parquet.io.api.RecordConsumer, schema: _root_.parquet.schema.MessageType): Unit = {
-          var $rootGroupName: _root_.parquet.schema.GroupType = schema
+        override def writeRecord(t: $T, rc: _root_.org.apache.parquet.io.api.RecordConsumer, schema: _root_.org.apache.parquet.schema.MessageType): Unit = {
+          var $rootGroupName: _root_.org.apache.parquet.schema.GroupType = schema
           rc.startMessage
           $funcBody
           rc.endMessage
