@@ -8,6 +8,7 @@ import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform._
+import com.twitter.scrooge.ScroogeSBT
 
 import scala.collection.JavaConverters._
 
@@ -20,11 +21,11 @@ object ScaldingBuild extends Build {
   }
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-  val algebirdVersion = "0.10.1"
+  val algebirdVersion = "0.11.0"
   val avroVersion = "1.7.4"
-  val bijectionVersion = "0.8.0"
+  val bijectionVersion = "0.8.1"
   val cascadingAvroVersion = "2.1.2"
-  val chillVersion = "0.6.0"
+  val chillVersion = "0.7.0"
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.8"
   val hadoopLzoVersion = "0.4.19"
@@ -34,13 +35,13 @@ object ScaldingBuild extends Build {
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"
-  val parquetVersion = "1.6.0rc4"
+  val parquetVersion = "1.8.1"
   val protobufVersion = "2.4.1"
   val quasiquotesVersion = "2.0.1"
   val scalaCheckVersion = "1.12.2"
   val scalaTestVersion = "2.2.4"
   val scalameterVersion = "0.6"
-  val scroogeVersion = "3.17.0"
+  val scroogeVersion = "3.20.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
 
@@ -217,7 +218,8 @@ object ScaldingBuild extends Build {
     scaldingDb,
     maple,
     executionTutorial,
-    scaldingSerialization
+    scaldingSerialization,
+    scaldingThriftMacros
   )
 
   lazy val scaldingAssembly = Project(
@@ -346,8 +348,8 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "com.twitter" % "parquet-cascading" % parquetVersion
-        exclude("com.twitter", "parquet-pig")
+      "org.apache.parquet" % "parquet-cascading" % parquetVersion
+        exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
@@ -364,11 +366,11 @@ object ScaldingBuild extends Build {
     if (isScala210x(version))
       Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-        "com.twitter" % "parquet-cascading" % parquetVersion
-          exclude("com.twitter", "parquet-pig")
+        "org.apache.parquet" % "parquet-cascading" % parquetVersion
+          exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
-        "com.twitter" %% "parquet-scrooge" % parquetVersion,
+        "org.apache.parquet" %% "parquet-scrooge" % parquetVersion,
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
       )
@@ -401,9 +403,6 @@ object ScaldingBuild extends Build {
   lazy val scaldingRepl = module("repl")
     .configs(Unprovided) // include 'unprovided' as config option
     .settings(
-      skip in compile := !isScala210x(scalaVersion.value),
-      skip in test := !isScala210x(scalaVersion.value),
-      publishArtifact := isScala210x(scalaVersion.value),
       initialCommands in console := """
         import com.twitter.scalding._
         import com.twitter.scalding.ReplImplicits._
@@ -488,6 +487,10 @@ object ScaldingBuild extends Build {
     previousArtifact := None,
     crossPaths := false,
     autoScalaLibrary := false,
+    // Disable cross publishing for this artifact
+    publishArtifact <<= (scalaVersion) { scalaVersion =>
+        if(scalaVersion.startsWith("2.11")) false else true
+        },
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
@@ -523,4 +526,34 @@ object ScaldingBuild extends Build {
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
 
+lazy val scaldingThriftMacros = module("thrift-macros")
+    .settings(ScroogeSBT.newSettings:_*)
+    .settings(
+      ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      base => base / "src/test/resources"
+    },
+    compile in Compile <<= (compile in Compile) dependsOn (ScroogeSBT.scroogeGen in Compile),
+    libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion,
+      "org.scala-lang" % "scala-reflect" % scalaVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion  % "test",
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
+    ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
+    },
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  ).dependsOn(
+      scaldingCore,
+      scaldingHadoopTest % "test",
+      scaldingSerialization)
 }
