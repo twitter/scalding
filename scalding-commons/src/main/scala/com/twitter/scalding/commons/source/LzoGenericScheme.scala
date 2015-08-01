@@ -91,14 +91,16 @@ object LzoGenericScheme {
   /**
    * From a Binary Converter passed in configure in the JobConf using of that by ElephantBird
    */
-  def setConverter[M](conf: JobConf, conv: BinaryConverter[M]): Unit = {
-    val extern = Externalizer(conv)
-    try {
-      ExternalizerSerializer.inj.invert(ExternalizerSerializer.inj(extern)).get
-    } catch {
-      case e: Exception => throw new RuntimeException("Unable to roundtrip the BinaryConverter in the Externalizer.", e)
+  def setConverter[M](conv: BinaryConverter[M], conf: JobConf, overrideConf: Boolean = false): Unit = {
+    if ((conf.get(ConfigBinaryConverterProvider.ProviderConfKey) == null) || overrideConf) {
+      val extern = Externalizer(conv)
+      try {
+        ExternalizerSerializer.inj.invert(ExternalizerSerializer.inj(extern)).get
+      } catch {
+        case e: Exception => throw new RuntimeException("Unable to roundtrip the BinaryConverter in the Externalizer.", e)
+      }
+      conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
     }
-    conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
   }
 
 }
@@ -116,7 +118,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
 
-    LzoGenericScheme.setConverter(conf, conv)
+    LzoGenericScheme.setConverter(conv, conf)
     MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
 
@@ -126,7 +128,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
   override def sinkConfInit(fp: FlowProcess[JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
-    LzoGenericScheme.setConverter(conf, conv)
+    LzoGenericScheme.setConverter(conv, conf)
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
     DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)
