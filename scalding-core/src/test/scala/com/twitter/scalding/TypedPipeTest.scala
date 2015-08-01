@@ -867,7 +867,8 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
 class TypedLookupJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedText.tsv[Int]("input0"))
     .hashLookup(TypedPipe.from(TypedText.tsv[(Int, String)]("input1")).group)
-    .write(TypedText.tsv[(Int, Option[String])]("output"))
+    .mapValues { o: Option[String] => o.getOrElse("") }
+    .write(TypedText.tsv[(Int, String)]("output"))
 }
 
 class TypedLookupJobTest extends WordSpec with Matchers {
@@ -880,17 +881,16 @@ class TypedLookupJobTest extends WordSpec with Matchers {
     JobTest(new TypedLookupJob(_))
       .source(TypedText.tsv[Int]("input0"), (-1 to 100))
       .source(TypedText.tsv[(Int, String)]("input1"), mk)
-      .typedSink(TypedText.tsv[(Int, Option[String])]("output")) { outBuf =>
+      .typedSink(TypedText.tsv[(Int, String)]("output")) { outBuf =>
         "correctly TypedPipe.hashLookup" in {
           val data = mk.groupBy(_._1)
-            .mapValues(kvs => kvs.map { case (k, v) => (k, Some(v)) })
           val correct = (-1 to 100).flatMap { k =>
-            data.get(k).getOrElse(List((k, None)))
+            data.get(k).getOrElse(List((k, "")))
           }.toList.sorted
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
-      }(implicitly[TypeDescriptor[(Int, Option[String])]].converter)
+      }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
       .finish
   }
@@ -899,7 +899,8 @@ class TypedLookupJobTest extends WordSpec with Matchers {
 class TypedLookupReduceJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedText.tsv[Int]("input0"))
     .hashLookup(TypedPipe.from(TypedText.tsv[(Int, String)]("input1")).group.max)
-    .write(TypedText.tsv[(Int, Option[String])]("output"))
+    .mapValues { o: Option[String] => o.getOrElse("") }
+    .write(TypedText.tsv[(Int, String)]("output"))
 }
 
 class TypedLookupReduceJobTest extends WordSpec with Matchers {
@@ -912,20 +913,20 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
     JobTest(new TypedLookupReduceJob(_))
       .source(TypedText.tsv[Int]("input0"), (-1 to 100))
       .source(TypedText.tsv[(Int, String)]("input1"), mk)
-      .typedSink(TypedText.tsv[(Int, Option[String])]("output")) { outBuf =>
+      .typedSink(TypedText.tsv[(Int, String)]("output")) { outBuf =>
         "correctly TypedPipe.hashLookup" in {
           val data = mk.groupBy(_._1)
             .mapValues { kvs =>
               val (k, v) = kvs.maxBy(_._2)
-              (k, Some(v))
+              (k, v)
             }
           val correct = (-1 to 100).map { k =>
-            data.get(k).getOrElse((k, None))
+            data.get(k).getOrElse((k, ""))
           }.toList.sorted
           outBuf should have size (correct.size)
           outBuf.toList.sorted shouldBe correct
         }
-      }(implicitly[TypeDescriptor[(Int, Option[String])]].converter)
+      }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
       .finish
   }

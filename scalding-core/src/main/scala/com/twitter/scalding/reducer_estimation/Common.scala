@@ -207,7 +207,6 @@ final case class FlowStepKeys(jobName: String,
   priority: String,
   status: String,
   version: String,
-  hadoopVersion: Int,
   queue: String)
 
 final case class Task(taskId: String,
