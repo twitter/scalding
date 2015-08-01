@@ -526,13 +526,13 @@ object ScaldingBuild extends Build {
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
 
-lazy val scaldingThriftMacros = module("thrift-macros")
+  lazy val scaldingThriftMacros = module("thrift-macros")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      ScroogeSBT.scroogeThriftSourceFolder in Test <<= baseDirectory {
       base => base / "src/test/resources"
     },
-    compile in Compile <<= (compile in Compile) dependsOn (ScroogeSBT.scroogeGen in Compile),
+    compile in Test <<= (compile in Test) dependsOn (ScroogeSBT.scroogeGen in Test),
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
