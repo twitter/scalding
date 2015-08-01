@@ -116,7 +116,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
 
-    LzoGenericScheme.setConverter(conv)
+    LzoGenericScheme.setConverter(conf, conv)
     MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
 
@@ -126,7 +126,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
   override def sinkConfInit(fp: FlowProcess[JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
-    LzoGenericScheme.setConverter(conv)
+    LzoGenericScheme.setConverter(conf, conv)
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
     DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)
