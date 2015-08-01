@@ -6,8 +6,10 @@ import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 
 object HipJob {
-  val inSrc = TextLine(getClass.getResource("/hipster.txt").toString)
-  val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString)
+  val InSrcFileSize = 2496L
+  val inSrc = TextLine(getClass.getResource("/hipster.txt").toString) // file size is 2496 bytes
+  val InScoresFileSize = 174L
+  val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString) // file size is 174 bytes
   val out = TypedTsv[Double]("output")
   val counts = TypedTsv[(String, Int)]("counts.tsv")
   val size = TypedTsv[Long]("size.tsv")
