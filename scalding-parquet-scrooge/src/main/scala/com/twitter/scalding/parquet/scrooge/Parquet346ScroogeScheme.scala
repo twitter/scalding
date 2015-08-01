@@ -8,7 +8,6 @@ import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 import org.apache.parquet.cascading.ParquetValueScheme
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport
 import org.apache.parquet.schema.MessageType
-import org.apache.parquet.scrooge.{ ParquetScroogeScheme }
 import org.apache.parquet.thrift.struct.ThriftType.StructType
 import org.apache.parquet.thrift.{ ThriftReader, ThriftRecordConverter }
 import org.apache.thrift.protocol.TProtocol

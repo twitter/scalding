@@ -44,6 +44,7 @@ object ScaldingBuild extends Build {
   val scroogeVersion = "3.20.0"
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
+  val junitVersion = "4.10"
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -362,27 +363,40 @@ object ScaldingBuild extends Build {
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
     .dependsOn(scaldingCore, scaldingHadoopTest % "test")
 
-  def scaldingParquetScroogeDeps(version: String) = {
-    if (isScala210x(version))
-      Seq(
+  import ScroogeSBT.autoImport._
+  lazy val scaldingParquetScrooge = module("parquet-scrooge")
+    .settings(ScroogeSBT.newSettings:_*)
+    .settings(
+      scroogeThriftSourceFolder in Compile <<= baseDirectory {
+        base => base / "src/test/resources"
+        },
+        sourceGenerators in Compile <+= (
+          streams,
+          scroogeThriftSources in Compile,
+          scroogeIsDirty in Compile,
+          sourceManaged
+        ) map { (out, sources, isDirty, outputDir) =>
+        // for some reason, sbt sometimes calls us multiple times, often with no source files.
+        if (isDirty && sources.nonEmpty) {
+          out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
+          ScroogeSBT.compile(out.log, outputDir, sources.toSet, Set(), Map(), "java", Set())
+        }
+        (outputDir ** "*.java").get.toSeq
+        },
+      libraryDependencies ++= Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
         "org.apache.parquet" % "parquet-cascading" % parquetVersion
           exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
-        "org.apache.parquet" %% "parquet-scrooge" % parquetVersion,
-        "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
-      )
-    else
-      Seq()
-  }
+         "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests",
+         "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+        "com.novocode" % "junit-interface" % "0.11" % "test",
+        "junit" % "junit" % junitVersion % "test"
 
-  lazy val scaldingParquetScrooge = module("parquet-scrooge").settings(
-    skip in compile := !(isScala210x(scalaVersion.value)),
-    skip in test := !(isScala210x(scalaVersion.value)),
-    publishArtifact := isScala210x(scalaVersion.value),
-    libraryDependencies ++= scaldingParquetScroogeDeps(scalaVersion.value)
+      )
   ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
 
   lazy val scaldingHRaven = module("hraven").settings(
@@ -529,10 +543,9 @@ object ScaldingBuild extends Build {
 lazy val scaldingThriftMacros = module("thrift-macros")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      ScroogeSBT.scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      scroogeThriftSourceFolder in Compile <<= baseDirectory {
       base => base / "src/test/resources"
     },
-    compile in Compile <<= (compile in Compile) dependsOn (ScroogeSBT.scroogeGen in Compile),
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
