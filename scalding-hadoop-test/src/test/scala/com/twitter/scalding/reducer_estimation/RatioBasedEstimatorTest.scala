@@ -108,8 +108,8 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
 
-          val conf = Config.fromHadoop(steps.head.getConfig)
-          assert(!conf.getNumReducers.isDefined)
+          val conf = steps.head.getConfig
+          conf.getNumReduceTasks should equal (1) // default
         }
         .run
     }
@@ -124,8 +124,8 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
 
-          val conf = Config.fromHadoop(steps.head.getConfig)
-          assert(!conf.getNumReducers.isDefined)
+          val conf = steps.head.getConfig
+          conf.getNumReduceTasks should equal (1) // default
         }
         .run
     }
@@ -140,11 +140,11 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
 
-          val conf = Config.fromHadoop(steps.head.getConfig)
-          // base estimate = 3
+          // base estimate from input size reducer = 3
           // reducer ratio from history = 0.5
           // final estimate = ceil(3 * 0.5) = 2
-          conf.getNumReducers should contain (2)
+          val conf = steps.head.getConfig
+          conf.getNumReduceTasks should equal (2)
         }
         .run
     }
@@ -159,8 +159,8 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
 
-          val conf = Config.fromHadoop(steps.head.getConfig)
-          assert(!conf.getNumReducers.isDefined)
+          val conf = steps.head.getConfig
+          conf.getNumReduceTasks should equal (1) // default
         }
         .run
     }
