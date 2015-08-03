@@ -63,17 +63,23 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
             if acceptableInputRatio(inputBytes, h.hdfsBytesRead, threshold)
           } yield h.reduceFileBytesRead / h.hdfsBytesRead.toDouble
 
-          val reducerRatio = ratios.sum / ratios.length
-          val inputSizeBasedEstimate = new InputSizeReducerEstimator().estimateReducers(info)
-          inputSizeBasedEstimate.map { baseEstimate =>
-            // scale reducer estimate based on the historical input ratio
-            val e = (baseEstimate * reducerRatio).ceil.toInt max 1
+          if (ratios.isEmpty) {
+            LOG.warn(s"No matching history found within input ratio threshold: $threshold")
+            None
+          } else {
+            val reducerRatio = ratios.sum / ratios.length
+            LOG.info("Getting base estimate from InputSizeReducerEstimator")
+            val inputSizeBasedEstimate = new InputSizeReducerEstimator().estimateReducers(info)
+            inputSizeBasedEstimate.map { baseEstimate =>
+              // scale reducer estimate based on the historical input ratio
+              val e = (baseEstimate * reducerRatio).ceil.toInt max 1
 
-            LOG.info("\nRatioBasedEstimator"
-              + "\n - past reducer ratio: " + reducerRatio
-              + "\n - reducer estimate:   " + e)
+              LOG.info("\nRatioBasedEstimator"
+                + "\n - past reducer ratio: " + reducerRatio
+                + "\n - reducer estimate:   " + e)
 
-            e
+              e
+            }
           }
         }
       case Failure(e) =>
