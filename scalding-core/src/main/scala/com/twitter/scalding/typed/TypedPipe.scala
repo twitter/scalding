@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
+import java.io.{OutputStream, InputStream, Serializable}
 import java.util.Random
 
 import cascading.flow.FlowDef
@@ -26,7 +26,11 @@ import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+
+import scala.util.Try
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -382,7 +386,17 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }(ordSer[Int])
+    val ord = ordSer[Int]
+    val identityOrdering = new OrderedSerialization[Int]{
+      override def compareBinary(a: InputStream, b: InputStream): Result = ord.compareBinary(a,b)
+      override def compare(x: Int, y: Int): Int = ord.compare(x,y)
+      override def dynamicSize(t: Int): Option[Int] = ord.dynamicSize(t)
+      override def write(out: OutputStream, t: Int): Try[Unit] = ord.write(out,t)
+      override def read(in: InputStream): Try[Int] = ord.read(in)
+      override def staticSize: Option[Int] = ord.staticSize
+      override def hash(x: Int): Int = x
+    }
+    groupBy { _ => rng.nextInt(partitions) }(identityOrdering)
       .withReducers(partitions)
   }
 
