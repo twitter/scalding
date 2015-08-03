@@ -367,13 +367,13 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquetScrooge = module("parquet-scrooge")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      scroogeThriftSourceFolder in Test <<= baseDirectory {
         base => base / "src/test/resources"
         },
-        sourceGenerators in Compile <+= (
+        sourceGenerators in Test <+= (
           streams,
-          scroogeThriftSources in Compile,
-          scroogeIsDirty in Compile,
+          scroogeThriftSources in Test,
+          scroogeIsDirty in Test,
           sourceManaged
         ) map { (out, sources, isDirty, outputDir) =>
         // for some reason, sbt sometimes calls us multiple times, often with no source files.
@@ -543,7 +543,7 @@ object ScaldingBuild extends Build {
 lazy val scaldingThriftMacros = module("thrift-macros")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      scroogeThriftSourceFolder in Test <<= baseDirectory {
       base => base / "src/test/resources"
     },
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
