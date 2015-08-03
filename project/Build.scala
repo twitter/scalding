@@ -364,25 +364,34 @@ object ScaldingBuild extends Build {
     .dependsOn(scaldingCore, scaldingHadoopTest % "test")
 
   import ScroogeSBT.autoImport._
-  lazy val scaldingParquetScrooge = module("parquet-scrooge")
+
+  lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      scroogeThriftSourceFolder in Compile <<= baseDirectory {
-        base => base / "src/test/resources"
-        },
-        sourceGenerators in Compile <+= (
+      scroogeThriftSourceFolder in Test <<= baseDirectory {
+      base => base / "src/test/resources"
+      },
+      sourceGenerators in Test <+= (
           streams,
-          scroogeThriftSources in Compile,
-          scroogeIsDirty in Compile,
+          scroogeThriftSources in Test,
+          scroogeIsDirty in Test,
           sourceManaged
-        ) map { (out, sources, isDirty, outputDir) =>
+      ).map { (out, sources, isDirty, outputDir) =>
         // for some reason, sbt sometimes calls us multiple times, often with no source files.
         if (isDirty && sources.nonEmpty) {
           out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
           ScroogeSBT.compile(out.log, outputDir, sources.toSet, Set(), Map(), "java", Set())
         }
         (outputDir ** "*.java").get.toSeq
-        },
+      },
+      libraryDependencies ++= Seq(
+        "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+        "org.apache.thrift" % "libthrift" % thriftVersion
+    )
+  )
+
+  lazy val scaldingParquetScrooge = module("parquet-scrooge")
+    .settings(
       libraryDependencies ++= Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
         "org.apache.parquet" % "parquet-cascading" % parquetVersion
@@ -397,7 +406,7 @@ object ScaldingBuild extends Build {
         "junit" % "junit" % junitVersion % "test"
 
       )
-  ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test")
+  ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
@@ -540,14 +549,21 @@ object ScaldingBuild extends Build {
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
 
-  lazy val scaldingThriftMacros = module("thrift-macros")
+lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
-      scroogeThriftSourceFolder in Compile <<= baseDirectory {
+      scroogeThriftSourceFolder in Test <<= baseDirectory {
       base => base / "src/test/resources"
-    },
+      },
+      libraryDependencies ++= Seq(
+        "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+        "org.apache.thrift" % "libthrift" % thriftVersion
+      )
+  )
+
+lazy val scaldingThriftMacros = module("thrift-macros")
+    .settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-      "org.scala-lang" % "scala-library" % scalaVersion,
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "com.twitter" %% "bijection-macros" % bijectionVersion,
       "com.twitter" % "chill-thrift" % chillVersion % "test",
@@ -568,5 +584,6 @@ object ScaldingBuild extends Build {
   ).dependsOn(
       scaldingCore,
       scaldingHadoopTest % "test",
-      scaldingSerialization)
+      scaldingSerialization,
+      scaldingThriftMacrosFixtures % "test->test")
 }
