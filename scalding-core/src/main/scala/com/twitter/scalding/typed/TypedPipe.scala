@@ -687,11 +687,11 @@ trait TypedPipe[+T] extends Serializable {
    * this you have 1 or 2 reducers taking hours longer than the rest.
    */
   def sketch[K, V](reducers: Int,
-                   eps: Double = 1.0E-5, //272k width = 1MB per row
-                   delta: Double = 0.01, //5 rows (= 5 hashes)
-                   seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
-                                      serialization: K => Array[Byte],
-                                      ordering: Ordering[K]): Sketched[K, V] =
+    eps: Double = 1.0E-5, //272k width = 1MB per row
+    delta: Double = 0.01, //5 rows (= 5 hashes)
+    seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
+      serialization: K => Array[Byte],
+      ordering: Ordering[K]): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
 
   /**
