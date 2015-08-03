@@ -28,6 +28,7 @@ import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization.Result
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
 import scala.util.Try
@@ -104,6 +105,19 @@ object TypedPipe extends Serializable {
     def zero = empty
     def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
       left ++ right
+  }
+
+  private val identityOrdering: OrderedSerialization[Int] = {
+    val delegate = BinaryOrdering.ordSer[Int]
+    new OrderedSerialization[Int] {
+      override def compareBinary(a: InputStream, b: InputStream): Result = delegate.compareBinary(a, b)
+      override def compare(x: Int, y: Int): Int = delegate.compare(x, y)
+      override def dynamicSize(t: Int): Option[Int] = delegate.dynamicSize(t)
+      override def write(out: OutputStream, t: Int): Try[Unit] = delegate.write(out, t)
+      override def read(in: InputStream): Try[Int] = delegate.read(in)
+      override def staticSize: Option[Int] = delegate.staticSize
+      override def hash(x: Int): Int = x
+    }
   }
 }
 
@@ -255,7 +269,7 @@ trait TypedPipe[+T] extends Serializable {
       def plus(a: T, b: T) = b
     }
 
-    val op = map{ tup => (fn(tup), tup) }.sumByKey
+    val op = map { tup => (fn(tup), tup) }.sumByKey
     val reduced = numReducers match {
       case Some(red) => op.withReducers(red)
       case None => op
@@ -386,17 +400,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    val ord = ordSer[Int]
-    val identityOrdering = new OrderedSerialization[Int] {
-      override def compareBinary(a: InputStream, b: InputStream): Result = ord.compareBinary(a, b)
-      override def compare(x: Int, y: Int): Int = ord.compare(x, y)
-      override def dynamicSize(t: Int): Option[Int] = ord.dynamicSize(t)
-      override def write(out: OutputStream, t: Int): Try[Unit] = ord.write(out, t)
-      override def read(in: InputStream): Try[Int] = ord.read(in)
-      override def staticSize: Option[Int] = ord.staticSize
-      override def hash(x: Int): Int = x
-    }
-    groupBy { _ => rng.nextInt(partitions) }(identityOrdering)
+    groupBy { _ => rng.nextInt(partitions) }(TypedPipe.identityOrdering)
       .withReducers(partitions)
   }
 
@@ -456,12 +460,7 @@ trait TypedPipe[+T] extends Serializable {
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
    */
-  def shard(partitions: Int): TypedPipe[T] = {
-    // Make it lazy so all mappers get their own:
-    lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt }(ordSer[Int])
-      .withReducers(partitions).forceToReducers.values
-  }
+  def shard(partitions: Int): TypedPipe[T] = groupRandomly(partitions).forceToReducers.values
 
   /**
    * Reasonably common shortcut for cases of total associative/commutative reduction
@@ -688,11 +687,11 @@ trait TypedPipe[+T] extends Serializable {
    * this you have 1 or 2 reducers taking hours longer than the rest.
    */
   def sketch[K, V](reducers: Int,
-    eps: Double = 1.0E-5, //272k width = 1MB per row
-    delta: Double = 0.01, //5 rows (= 5 hashes)
-    seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
-      serialization: K => Array[Byte],
-      ordering: Ordering[K]): Sketched[K, V] =
+                   eps: Double = 1.0E-5, //272k width = 1MB per row
+                   delta: Double = 0.01, //5 rows (= 5 hashes)
+                   seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
+                                      serialization: K => Array[Byte],
+                                      ordering: Ordering[K]): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
 
   /**
