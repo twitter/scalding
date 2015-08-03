@@ -540,7 +540,7 @@ object ScaldingBuild extends Build {
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
 
-lazy val scaldingThriftMacros = module("thrift-macros")
+  lazy val scaldingThriftMacros = module("thrift-macros")
     .settings(ScroogeSBT.newSettings:_*)
     .settings(
       scroogeThriftSourceFolder in Compile <<= baseDirectory {
