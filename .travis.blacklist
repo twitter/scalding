@@ -2,3 +2,8 @@
 # Remember we run most builds twice, so if you want it disabled for both 2.10 and 2.11 it needs to be here twice
 scalding-benchmarks
 scalding-benchmarks
+# These are just for fixtures, so blacklist for 2.10 and 2.11
+scalding-thrift-macros-fixtures
+scalding-thrift-macros-fixtures
+scalding-parquet-scrooge-fixtures
+scalding-parquet-scrooge-fixtures

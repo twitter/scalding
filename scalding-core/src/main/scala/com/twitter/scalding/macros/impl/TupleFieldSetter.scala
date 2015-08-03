@@ -26,7 +26,12 @@ object TupleFieldSetter extends CaseClassFieldSetter {
 
   override def absent(c: Context)(idx: Int, container: c.TermName): c.Tree = {
     import c.universe._
-    q"""$container.set($idx, null)"""
+    /* A more defensive approach is to set to null, but since
+     * we always allocate an empty TupleEntry, which is initially null,
+     * this is unneeded.
+     * q"""$container.set($idx, null)"""
+     */
+    q"""()"""
   }
 
   override def default(c: Context)(idx: Int, container: c.TermName, fieldValue: c.Tree): c.Tree = {

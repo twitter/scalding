@@ -34,12 +34,68 @@ object TypeDescriptorProviderImpl {
   def caseClassTypeDescriptorWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
     caseClassTypeDescriptorCommonImpl(c, true)(T)
 
-  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
+  /**
+   * When flattening a nested structure with Options, the evidentColumn is a column, relative to the
+   * the first 0-offset column, that represents evidence of this T, and hence set of columns, are
+   * present or absent. This is to handle Option types in text files such as CSV and TSV.
+   * a type T is evident if it the evidentColumn.exists
+   *
+   * primitive numbers are evident
+   * case classes are evident if they have at least one evident member.
+   *
+   * Strings are not evident (we can't distinguish Empty from "")
+   * Option[T] is not evident (we can't tell Some(None) from None).
+   */
+  def evidentColumn(c: Context, allowUnknown: Boolean = false)(tpe: c.universe.Type): Option[Int] = {
     import c.universe._
 
-    val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)
-    val setter = TupleSetterImpl.caseClassTupleSetterCommonImpl[T](c, allowUnknownTypes)
+    def flattenOnce(t: Type): List[Type] =
+      t.declarations
+        .collect { case m: MethodSymbol if m.isCaseAccessor => m }
+        .map(_.returnType.asSeenFrom(t, t.typeSymbol.asClass))
+        .toList
 
+    def go(t: Type, offset: Int): (Int, Option[Int]) = {
+      val thisColumn = (offset + 1, Some(offset))
+      t match {
+        case tpe if tpe =:= typeOf[String] =>
+          // if we don't allowUnknown here, we treat null and "" is indistinguishable
+          // for text formats
+          if (allowUnknown) thisColumn
+          else (offset + 1, None)
+        case tpe if tpe =:= typeOf[Boolean] => thisColumn
+        case tpe if tpe =:= typeOf[Short] => thisColumn
+        case tpe if tpe =:= typeOf[Int] => thisColumn
+        case tpe if tpe =:= typeOf[Long] => thisColumn
+        case tpe if tpe =:= typeOf[Float] => thisColumn
+        case tpe if tpe =:= typeOf[Double] => thisColumn
+        // We recurse on Option and case classes
+        case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
+          val innerTpe = optionInner(c)(tpe).get
+          // we have no evidentColumn, but we need to compute the next index
+          (go(innerTpe, offset)._1, None)
+        case tpe if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) =>
+          val flattened = flattenOnce(tpe)
+            .scanLeft((offset, Option.empty[Int])) { case ((off, _), t) => go(t, off) }
+
+          val nextPos = flattened.last._1
+          val ev = flattened.collectFirst { case (_, Some(col)) => col }
+          (nextPos, ev)
+        case _ if allowUnknown => thisColumn
+        case t =>
+          c.abort(c.enclosingPosition, s"Case class ${tpe} at $t is not pure primitives or nested case classes")
+      }
+    }
+    go(tpe, 0)._2
+  }
+
+  def optionInner(c: Context)(opt: c.universe.Type): Option[c.universe.Type] =
+    if (opt.erasure =:= c.universe.typeOf[Option[Any]]) {
+      Some(opt.asInstanceOf[c.universe.TypeRefApi].args.head)
+    } else None
+
+  def isTuple[T](c: Context)(implicit T: c.WeakTypeTag[T]): Boolean = {
+    import c.universe._
     val tupleTypes = List(typeOf[Tuple1[Any]],
       typeOf[Tuple2[Any, Any]],
       typeOf[Tuple3[Any, Any, Any]],
@@ -62,7 +118,16 @@ object TypeDescriptorProviderImpl {
       typeOf[Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
-    val namingScheme = if (tupleTypes.exists { _ =:= T.tpe.erasure }) Indexed else NamedWithPrefix
+    (tupleTypes.exists { _ =:= T.tpe.erasure })
+  }
+
+  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
+    import c.universe._
+
+    val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)
+    val setter = TupleSetterImpl.caseClassTupleSetterCommonImpl[T](c, allowUnknownTypes)
+
+    val namingScheme = if (isTuple[T](c)) Indexed else NamedWithPrefix
 
     val fields = FieldsProviderImpl.toFieldsCommonImpl[T](c, namingScheme, allowUnknownTypes)
 
