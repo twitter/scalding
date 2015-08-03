@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
 import scala.collection.JavaConverters._
-import scala.util.Try
-import scala.util.Failure
+import scala.util.{ Try, Success, Failure }
 
 object EstimatorConfig {
 
@@ -83,6 +82,7 @@ trait ReducerEstimator {
 }
 
 trait HistoryReducerEstimator extends ReducerEstimator {
+
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def historyService: HistoryService
@@ -91,11 +91,19 @@ trait HistoryReducerEstimator extends ReducerEstimator {
     val conf = info.step.getConfig
     val maxHistory = EstimatorConfig.getMaxHistory(conf)
 
-    historyService.fetchHistory(info, maxHistory).recoverWith {
-      case e =>
-        LOG.warn(s"Unable to fetch history in $getClass. Error: $e")
-        Failure(e)
-    }.map(estimateReducers(info, _)).toOption.flatten
+    historyService.fetchHistory(info, maxHistory) match {
+      case Success(h) if h.isEmpty =>
+        LOG.warn("No matching history found.")
+        None
+      case Success(h) =>
+        LOG.info(s"${h.length} history entries found.")
+        val estimate = estimateReducers(info, h)
+        LOG.info(s"Reducer estimate: ${estimate}")
+        estimate
+      case Failure(f) =>
+        LOG.warn(s"Unable to fetch history in $getClass. Error: $f")
+        None
+    }
   }
 
   protected def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
