@@ -124,6 +124,25 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
       }
     }
 
+  def sinkExists(mode: Mode) =
+    sinkVersion match {
+      case Some(version) =>
+        mode match {
+          case Test(buffers) =>
+            buffers(this) map { !_.isEmpty } getOrElse false
+
+          case HadoopTest(conf, buffers) =>
+            buffers(this) map { !_.isEmpty } getOrElse false
+
+          case m: HadoopMode =>
+            val conf = new JobConf(m.jobConf)
+            val store = sink.getStore(conf)
+            store.hasVersion(version)
+          case _ => sys.error(s"Unknown mode $mode")
+        }
+      case None => false
+    }
+
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     import com.twitter.scalding.CastHfsTap
     mode match {
