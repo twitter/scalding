@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
+import java.io.{ OutputStream, InputStream, Serializable }
 import java.util.Random
 
 import cascading.flow.FlowDef
@@ -26,7 +26,12 @@ import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.OrderedSerialization.Result
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+
+import scala.util.Try
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -100,6 +105,19 @@ object TypedPipe extends Serializable {
     def zero = empty
     def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
       left ++ right
+  }
+
+  private val identityOrdering: OrderedSerialization[Int] = {
+    val delegate = BinaryOrdering.ordSer[Int]
+    new OrderedSerialization[Int] {
+      override def compareBinary(a: InputStream, b: InputStream): Result = delegate.compareBinary(a, b)
+      override def compare(x: Int, y: Int): Int = delegate.compare(x, y)
+      override def dynamicSize(t: Int): Option[Int] = delegate.dynamicSize(t)
+      override def write(out: OutputStream, t: Int): Try[Unit] = delegate.write(out, t)
+      override def read(in: InputStream): Try[Int] = delegate.read(in)
+      override def staticSize: Option[Int] = delegate.staticSize
+      override def hash(x: Int): Int = x
+    }
   }
 }
 
@@ -251,7 +269,7 @@ trait TypedPipe[+T] extends Serializable {
       def plus(a: T, b: T) = b
     }
 
-    val op = map{ tup => (fn(tup), tup) }.sumByKey
+    val op = map { tup => (fn(tup), tup) }.sumByKey
     val reduced = numReducers match {
       case Some(red) => op.withReducers(red)
       case None => op
@@ -382,7 +400,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }(ordSer[Int])
+    groupBy { _ => rng.nextInt(partitions) }(TypedPipe.identityOrdering)
       .withReducers(partitions)
   }
 
@@ -442,12 +460,7 @@ trait TypedPipe[+T] extends Serializable {
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
    */
-  def shard(partitions: Int): TypedPipe[T] = {
-    // Make it lazy so all mappers get their own:
-    lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt }(ordSer[Int])
-      .withReducers(partitions).forceToReducers.values
-  }
+  def shard(partitions: Int): TypedPipe[T] = groupRandomly(partitions).forceToReducers.values
 
   /**
    * Reasonably common shortcut for cases of total associative/commutative reduction
