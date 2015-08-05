@@ -388,6 +388,9 @@ trait TypedPipe[+T] extends Serializable {
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
     map { t => (g(t), t) }.group
 
+  /** Group using an explicit Ordering on the key. */
+  def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
+
   /**
    * Forces a shuffle by randomly assigning each item into one
    * of the partitions.
