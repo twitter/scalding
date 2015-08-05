@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Scalding's documentation!
+Tutorials
 ====================================
 
 Contents:
@@ -11,12 +11,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   01-Beginner/index
+   02-Intermediate/index
+   03-Advanced/index

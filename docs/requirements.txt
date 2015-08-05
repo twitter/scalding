@@ -1,0 +1,5 @@
+-e git://github.com/sid-kap/recommonmark.git@code_syntax_highlighting#egg=recommonmark
+CommonMark
+sphinx
+sphinx-better-theme
+pygments

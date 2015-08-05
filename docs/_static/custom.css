@@ -1,0 +1,61 @@
+@import url(http://fonts.googleapis.com/css?family=Fira+Mono:400,700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
+@import url(http://fonts.googleapis.com/css?family=Merriweather:400,700,400italic,700italic);
+@import url(http://fonts.googleapis.com/css?family=Roboto+Mono:400,400italic,700,700italic);
+
+pre {
+    word-wrap: break-word;
+    font-family: "Roboto Mono" !important;
+    font-size: 14px;
+    max-width: 800px;
+    line-height: 1.4;
+
+    background-color: #f9f2f4;
+}
+
+code, kbd, samp {
+    /* copied from Bootstrap */
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+
+    font-family: "Roboto Mono" !important;
+}
+
+body {
+    background-color: #FAFAFA;
+    font-family:"Open Sans","Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+div.section {
+    margin: 40px auto;
+    line-height: 1.6;
+    font-size: 16px;
+    color: #444;
+    padding: 0 10px;
+    word-wrap: normal;
+}
+
+div.section p,ul,ol {
+    max-width: 650px;
+    font-family:"Merriweather";
+}
+
+h1,h2,h3 {
+    line-height:1.2;
+}
+
+/*
+ul.nav {
+    font-family:"Open Sans", "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+
+
+img#logo {
+    height: 100px;
+    text-align: center;
+}
+*/

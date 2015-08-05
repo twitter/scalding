@@ -11,6 +11,8 @@ import com.typesafe.sbt.SbtScalariform._
 
 import scala.collection.JavaConverters._
 
+import tut.Plugin.{tutSettings, tutNameFilter, tutSourceDirectory, tutTargetDirectory}
+
 object ScaldingBuild extends Build {
 
   def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
@@ -522,5 +524,14 @@ object ScaldingBuild extends Build {
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
   ).dependsOn(scaldingCore)
+
+  lazy val docs = project.in(file("docs"))
+    .settings(
+      tutSettings ++ Seq(
+        tutNameFilter := ".*.(md|txt|htm|html|rst)".r,
+        tutSourceDirectory := new File("docs/src"),
+        tutTargetDirectory := new File("docs/gen")
+      )
+    ).dependsOn(scaldingCore, scaldingCommons, scaldingRepl)
 
 }
