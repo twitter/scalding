@@ -35,3 +35,4 @@ tutorial/data/avrooutput0.avro
 scalding-hadoop-test/NOTICE
 NOTICE
 docs/gen
+docs-gen

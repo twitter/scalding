@@ -528,9 +528,13 @@ object ScaldingBuild extends Build {
   lazy val docs = project.in(file("docs"))
     .settings(
       tutSettings ++ Seq(
-        tutNameFilter := ".*.(md|txt|htm|html|rst)".r,
-        tutSourceDirectory := new File("docs/src"),
-        tutTargetDirectory := new File("docs/gen")
+        // Compile all markup files plus files we need for building
+        // (conf.py, Makefile, requirements.txt, github.css, custom.css)
+        // should pass through unchanged as long as
+        // they don't contain "```tut"
+        tutNameFilter := "(.*\\.(md|rst))|conf.py|Makefile|requirements.txt|github.css|custom.css".r,
+        tutSourceDirectory := new File("docs"),
+        tutTargetDirectory := new File("docs-gen")
       )
     ).dependsOn(scaldingCore, scaldingCommons, scaldingRepl)
 

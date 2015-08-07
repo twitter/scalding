@@ -54,7 +54,7 @@ source_suffix = ['.rst', '.md']
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'gen/index'
+master_doc = 'index'
 
 # General information about the project.
 project = 'Scalding'
@@ -85,7 +85,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'src']
+exclude_patterns = ['_build', 'src', 'README.md']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
