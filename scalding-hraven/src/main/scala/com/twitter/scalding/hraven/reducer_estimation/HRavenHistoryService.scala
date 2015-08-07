@@ -3,7 +3,7 @@ package com.twitter.scalding.hraven.reducer_estimation
 import java.io.IOException
 
 import cascading.flow.FlowStep
-import com.twitter.hraven.{ Flow => HRavenFlow, JobDetails }
+import com.twitter.hraven.{ Flow, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
@@ -75,18 +75,29 @@ object HRavenHistoryService extends HistoryService {
    * TODO: query hRaven for successful jobs (first need to add ability to filter
    *       results in hRaven REST API)
    */
-  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[HRavenFlow]] = {
-    Try(client.fetchFlowsWithConfig(cluster, user, batch, signature, nFetch, RequiredJobConfigs: _*)).map { flows =>
-      val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
-      if (successfulFlows.isEmpty) {
-        LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[Flow]] = {
+    Try(client.fetchFlowsWithConfig(cluster, user, batch, signature, nFetch, RequiredJobConfigs: _*))
+      .flatMap { flows =>
+        Try {
+          // Ugly mutable code to add task info to flows
+          flows.asScala.foreach { flow =>
+            flow.getJobs.asScala.foreach { job =>
+              val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
+              job.addTasks(tasks)
+            }
+          }
+
+          val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
+          if (successfulFlows.isEmpty) {
+            LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+          }
+          successfulFlows
+        }
+      } recoverWith {
+        case e: IOException =>
+          LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
+          Failure(e)
       }
-      successfulFlows
-    } recoverWith {
-      case e: IOException =>
-        LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
-        Failure(e)
-    }
   }
 
   /**
@@ -101,7 +112,7 @@ object HRavenHistoryService extends HistoryService {
     val conf = step.getConfig
     val stepNum = step.getStepNum
 
-    def findMatchingJobStep(pastFlow: HRavenFlow) =
+    def findMatchingJobStep(pastFlow: Flow) =
       pastFlow.getJobs.asScala.find { step =>
         try {
           step.getConfiguration.get("cascading.flow.step.num").toInt == stepNum
@@ -163,19 +174,6 @@ class HRavenRatioBasedEstimator extends RatioBasedEstimator {
   override val historyService = HRavenHistoryService
 }
 
-class HRavenBasicMedianRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
+class HRavenRuntimeBasedEstimator extends RuntimeReducerEstimator {
   override val historyService = HRavenHistoryService
-  override val runtimeEstimationScheme = MedianEstimationScheme
-}
-class HRavenBasicMeanRuntimeBasedEstimator extends BasicRuntimeReducerEstimator {
-  override val historyService = HRavenHistoryService
-  override val runtimeEstimationScheme = MeanEstimationScheme
-}
-class HRavenInputScaledMedianRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
-  override val historyService = HRavenHistoryService
-  override val runtimeEstimationScheme = MedianEstimationScheme
-}
-class HRavenInputScaledMeanRuntimeBasedEstimator extends InputScaledRuntimeReducerEstimator {
-  override val historyService = HRavenHistoryService
-  override val runtimeEstimationScheme = MeanEstimationScheme
 }
