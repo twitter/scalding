@@ -23,7 +23,7 @@ import com.twitter.algebird.monad.Reader
 // Need this to flatMap Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Promise }
 import scala.util.Try
 
 import com.twitter.scalding.examples.KMeans
@@ -92,6 +92,20 @@ class ExecutionTest extends WordSpec with Matchers {
       val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
       val cres = correct(input)
       unorderedEq(cres, result.toList) shouldBe true
+    }
+    "If either fails, zip fails, else we get success" in {
+      val neverHappens = Promise[Int]().future
+      Execution.fromFuture { _ => neverHappens }
+        .zip(Execution.failed(new Exception("oh no")))
+        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+
+      Execution.failed(new Exception("oh no"))
+        .zip(Execution.fromFuture { _ => neverHappens })
+        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+      // If both are good, we succeed:
+      Execution.from(1)
+        .zip(Execution.from("1"))
+        .waitFor(Config.default, Local(true)).get shouldBe (1, "1")
     }
   }
   "Execution K-means" should {
