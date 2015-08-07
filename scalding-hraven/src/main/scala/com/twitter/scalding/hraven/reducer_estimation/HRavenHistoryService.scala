@@ -78,28 +78,28 @@ object HRavenHistoryService extends HistoryService {
   private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[Flow]] =
     Try(client.fetchFlowsWithConfig(cluster, user, batch, signature, nFetch, RequiredJobConfigs: _*))
       .flatMap { flows =>
-      Try {
-        // Ugly mutable code to add task info to flows
-        flows.asScala.foreach { flow =>
-          flow.getJobs.asScala.foreach { job =>
+        Try {
+          // Ugly mutable code to add task info to flows
+          flows.asScala.foreach { flow =>
+            flow.getJobs.asScala.foreach { job =>
 
-            // client.fetchTaskDetails might throw IOException
-            val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
-            job.addTasks(tasks)
+              // client.fetchTaskDetails might throw IOException
+              val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
+              job.addTasks(tasks)
+            }
           }
-        }
 
-        val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
-        if (successfulFlows.isEmpty) {
-          LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+          val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
+          if (successfulFlows.isEmpty) {
+            LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+          }
+          successfulFlows
         }
-        successfulFlows
+      }.recoverWith {
+        case e: IOException =>
+          LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
+          Failure(e)
       }
-    }.recoverWith {
-      case e: IOException =>
-        LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
-        Failure(e)
-    }
 
   /**
    * Fetch info from hRaven for the last time the given JobStep ran.

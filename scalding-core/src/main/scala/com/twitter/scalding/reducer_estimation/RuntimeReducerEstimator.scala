@@ -26,7 +26,7 @@ object RuntimeReducerEstimator {
     conf.get(key, default) match {
       case "mean" => MeanEstimationScheme
       case "median" => MedianEstimationScheme
-      case _ => MedianEstimationScheme
+      case _ => throw new Exception(s"""Value of $key must be "mean", "median", or not specified.""")
     }
   }
 
@@ -43,11 +43,11 @@ object RuntimeReducerEstimator {
     conf.getBoolean(key, default)
   }
 
-  def getReduceTimes(history: Seq[FlowStepHistory]): Seq[Seq[Long]] =
+  def getReduceTimes(history: Seq[FlowStepHistory]): Seq[Seq[Double]] =
     history.map { h =>
       h.tasks
         .filter { t => t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime }
-        .map { t => t.finishTime - t.startTime }
+        .map { t => (t.finishTime - t.startTime).toDouble }
     }
 }
 
@@ -83,7 +83,7 @@ trait BasicRuntimeReducerEstimator extends HistoryReducerEstimator {
   def runtimeEstimationScheme: RuntimeEstimationScheme
 
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
-    val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history).map(xs => xs.map(_.toDouble))
+    val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
     LOG.info(
       s"""|
@@ -121,7 +121,7 @@ trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
   def runtimeEstimationScheme: RuntimeEstimationScheme
 
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
-    val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history).map(xs => xs.map(_.toDouble))
+    val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
     LOG.info(
       s"""|

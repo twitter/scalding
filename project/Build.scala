@@ -410,7 +410,10 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
-      "com.twitter.hraven" % "hraven-core" % hravenVersion exclude("javax.jms", "jms") exclude("com.sun.jdmk", "jmxtools") exclude("com.sun.jmx", "jmxri"),
+      "com.twitter.hraven" % "hraven-core" % hravenVersion
+        exclude("javax.jms", "jms")
+        exclude("com.sun.jdmk", "jmxtools")
+        exclude("com.sun.jmx", "jmxri"),
       "org.apache.hbase" % "hbase" % hbaseVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
