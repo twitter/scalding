@@ -75,30 +75,31 @@ object HRavenHistoryService extends HistoryService {
    * TODO: query hRaven for successful jobs (first need to add ability to filter
    *       results in hRaven REST API)
    */
-  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[Flow]] = {
+  private def fetchSuccessfulFlows(client: HRavenRestClient, cluster: String, user: String, batch: String, signature: String, max: Int, nFetch: Int): Try[Seq[Flow]] =
     Try(client.fetchFlowsWithConfig(cluster, user, batch, signature, nFetch, RequiredJobConfigs: _*))
       .flatMap { flows =>
-        Try {
-          // Ugly mutable code to add task info to flows
-          flows.asScala.foreach { flow =>
-            flow.getJobs.asScala.foreach { job =>
-              val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
-              job.addTasks(tasks)
-            }
-          }
+      Try {
+        // Ugly mutable code to add task info to flows
+        flows.asScala.foreach { flow =>
+          flow.getJobs.asScala.foreach { job =>
 
-          val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
-          if (successfulFlows.isEmpty) {
-            LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+            // client.fetchTaskDetails might throw IOException
+            val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
+            job.addTasks(tasks)
           }
-          successfulFlows
         }
-      } recoverWith {
-        case e: IOException =>
-          LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
-          Failure(e)
+
+        val successfulFlows = flows.asScala.filter(_.getHdfsBytesRead > 0).take(max)
+        if (successfulFlows.isEmpty) {
+          LOG.warn("Unable to find any successful flows in the last " + nFetch + " jobs.")
+        }
+        successfulFlows
       }
-  }
+    }.recoverWith {
+      case e: IOException =>
+        LOG.error("Error making API request to hRaven. HRavenHistoryService will be disabled.")
+        Failure(e)
+    }
 
   /**
    * Fetch info from hRaven for the last time the given JobStep ran.
