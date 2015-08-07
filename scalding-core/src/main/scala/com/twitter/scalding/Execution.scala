@@ -374,12 +374,71 @@ object Execution {
         prev.runStats(conf, mode, cache)
           .recoverWith(fn.andThen(_.runStats(conf, mode, cache))))
   }
+
+  /**
+   * Standard scala zip waits forever on the left side, even if the right side fails
+   */
+  def failFastZip[T, U](ft: Future[T], fu: Future[U])(implicit cec: ConcurrentExecutionContext): Future[(T, U)] = {
+    type State = Either[(T, Promise[U]), (U, Promise[T])]
+    val middleState = Promise[State]()
+
+    ft.onComplete {
+      case f @ Failure(err) =>
+        if (!middleState.tryFailure(err)) {
+          // the right has already succeeded
+          middleState.future.foreach {
+            case Right((_, pt)) => pt.complete(f)
+            case Left((t1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Failure($err) but Left($t1) already set")
+          }
+        }
+      case Success(t) =>
+        // Create the next promise:
+        val pu = Promise[U]()
+        if (!middleState.trySuccess(Left((t, pu)))) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Right((_, pt)) => pt.success(t)
+            case Left((t1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Left($t) but Left($t1) already set")
+          }
+        }
+    }
+    fu.onComplete {
+      case f @ Failure(err) =>
+        if (!middleState.tryFailure(err)) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Left((_, pu)) => pu.complete(f)
+            case Right((u1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Failure($err) but Right($u1) already set")
+          }
+        }
+      case Success(u) =>
+        // Create the next promise:
+        val pt = Promise[T]()
+        if (!middleState.trySuccess(Right((u, pt)))) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Left((_, pu)) => pu.success(u)
+            case Right((u1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Right($u) but Right($u1) already set")
+          }
+        }
+    }
+
+    middleState.future.flatMap {
+      case Left((t, pu)) => pu.future.map((t, _))
+      case Right((u, pt)) => pt.future.map((_, u))
+    }
+  }
+
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
         val f1 = one.runStats(conf, mode, cache)
         val f2 = two.runStats(conf, mode, cache)
-        f1.zip(f2)
+        failFastZip(f1, f2)
           .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) }
       })
   }
