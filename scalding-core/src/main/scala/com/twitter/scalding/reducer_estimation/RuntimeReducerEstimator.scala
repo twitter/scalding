@@ -9,11 +9,14 @@ import org.slf4j.LoggerFactory
 
 object RuntimeReducerEstimator {
 
+  val RuntimePerReducer = "scalding.reducer.estimator.runtime.per.reducer"
+  val EstimationScheme = "scalding.reducer.estimator.runtime.estimation.scheme"
+  val IgnoreInputSize = "scalding.reducer.estimator.runtime.ignore.input.size"
+
   /** Get the target bytes/reducer from the JobConf */
   def getRuntimePerReducer(conf: JobConf): Long = {
-    val key = "scalding.reducer.estimator.runtime.per.reducer"
     val default = 10 * 60 * 1000 // 10 mins
-    conf.getLong(key, default)
+    conf.getLong(RuntimePerReducer, default)
   }
 
   /**
@@ -21,12 +24,12 @@ object RuntimeReducerEstimator {
    * Default is median.
    */
   def getRuntimeEstimationScheme(conf: JobConf): RuntimeEstimationScheme = {
-    val key = "scalding.reducer.estimator.runtime.estimation.scheme"
     val default = "median"
-    conf.get(key, default) match {
+    conf.get(EstimationScheme, default) match {
       case "mean" => MeanEstimationScheme
       case "median" => MedianEstimationScheme
-      case _ => throw new Exception(s"""Value of $key must be "mean", "median", or not specified.""")
+      case _ =>
+        throw new Exception(s"""Value of $key must be "mean", "median", or not specified.""")
     }
   }
 
@@ -38,9 +41,8 @@ object RuntimeReducerEstimator {
    * Default is false.
    */
   def getRuntimeIgnoreInputSize(conf: JobConf): Boolean = {
-    val key = "scalding.reducer.estimator.runtime.ignore.input.size"
     val default = false
-    conf.getBoolean(key, default)
+    conf.getBoolean(IgnoreInputSize, default)
   }
 
   def getReduceTimes(history: Seq[FlowStepHistory]): Seq[Seq[Double]] =
