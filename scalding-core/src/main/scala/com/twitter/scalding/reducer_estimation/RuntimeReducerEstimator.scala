@@ -105,7 +105,6 @@ trait BasicRuntimeReducerEstimator extends HistoryReducerEstimator {
     val estimate = typicalJobTime.map { t: Double => (t / desiredRuntime).ceil.toInt }
 
     LOG.info(s"""
-      | - Job times: $jobTimes
       | - Typical job time: $typicalJobTime
       | - Desired runtime: $desiredRuntime
       | - Estimate: $estimate
@@ -157,7 +156,6 @@ trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
 
       LOG.info(s"""
         | - HDFS bytes read: ${history.map(_.hdfsBytesRead)}
-        | - Job times: $jobTimes
         | - Time-to-byte-ratios: $timeToByteRatios
         | - Typical type-to-byte-ratio: $typicalTimeToByteRatio
         | - Desired runtime: $desiredRuntime

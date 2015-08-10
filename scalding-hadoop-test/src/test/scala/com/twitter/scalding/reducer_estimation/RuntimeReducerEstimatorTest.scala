@@ -22,6 +22,18 @@ class Estimator1 extends RuntimeReducerEstimator {
   override val historyService = HistoryService1
 }
 
+class EmptyRuntimeEstimator extends RatioBasedEstimator {
+  override val historyService = EmptyHistoryService
+}
+
+class ErrorRuntimeEstimator extends RatioBasedEstimator {
+  override val historyService = ErrorHistoryService
+}
+
+class DummyEstimator extends ReducerEstimator {
+  def estimateReducers(info: FlowStrategyInfo) = Some(42)
+}
+
 class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   import HipJob._
 
@@ -153,6 +165,44 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           assert(conf.getNumReduceTasks == 144)
         }
         .run
+    }
+
+    "not set reducers when history service is empty" in {
+      val config = Config.empty
+        .addReducerEstimator(classOf[EmptyRuntimeEstimator])
+        .addReducerEstimator(classOf[DummyEstimator])
+
+      HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, config), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          assert(steps.length == 1)
+
+          val conf = steps.head.getConfig
+
+          // EmptyRuntimeEstimator should have returned None,
+          // so it should have fallen back to DummyEstimator,
+          // which returns 42.
+          assert(conf.getNumReduceTasks == 42)
+        }
+    }
+
+    "not set reducers when history service fails" in {
+      val config = Config.empty
+        .addReducerEstimator(classOf[ErrorRuntimeEstimator])
+        .addReducerEstimator(classOf[DummyEstimator])
+
+      HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, config), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          assert(steps.length == 1)
+
+          val conf = steps.head.getConfig
+
+          // ErrorRuntimeEstimator should have returned None,
+          // so it should have fallen back to DummyEstimator,
+          // which returns 42.
+          assert(conf.getNumReduceTasks == 42)
+        }
     }
   }
 }
