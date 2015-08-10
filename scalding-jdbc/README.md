@@ -1,11 +1,11 @@
 ### Deprecated
 
-`scalding-jdbc` has been deprecated in favor of 'scalding-db`.
+`scalding-jdbc` has been deprecated in favor of `scalding-db`.
 
 In order to upgrade to the new module:
 
+##### A. Update dependencies and imports
 1. Change your dependency from `scalding-jdbc` to `scalding-db`
-
 2. Change the imports
 
 ```scala
@@ -16,7 +16,7 @@ should now be:
 import com.twitter.scalding.db.JDBCSource
 ```
 
-3. Source modifications
+##### B. Source modifications
 
 If you have a source defined like:
 ```scala
@@ -43,4 +43,4 @@ class ExampleMysqlJdbcSource extends JDBCSource /* no more driver trait import*/
 }
 ```
 
-For new sources, it is recommended to use the new `TypedJDBCSource` from `scalding-db`. It is fully Typed API compatible.
+NOTE: For new sources, it is recommended to use the new `TypedJDBCSource` from `scalding-db`. It is fully Typed API compatible.
