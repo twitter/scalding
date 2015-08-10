@@ -29,7 +29,7 @@ object RuntimeReducerEstimator {
       case "mean" => MeanEstimationScheme
       case "median" => MedianEstimationScheme
       case _ =>
-        throw new Exception(s"""Value of $key must be "mean", "median", or not specified.""")
+        throw new Exception(s"""Value of $EstimationScheme must be "mean", "median", or not specified.""")
     }
   }
 
@@ -138,7 +138,7 @@ trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
     // time-to-byte ratio for a step = time per reducer * number of reducers / number of bytes
     val timeToByteRatios: Seq[Double] =
       jobTimes.zip { history.map(_.hdfsBytesRead) }
-        .collect { case (Some(time), bytes) => time.toDouble / bytes }
+        .collect { case (Some(time), bytes) => time / bytes }
 
     // time-to-byte ratio, averaged over all the steps
     val typicalTimeToByteRatio: Option[Double] = runtimeEstimationScheme.estimateJobTime(timeToByteRatios)
@@ -151,7 +151,9 @@ trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
       None
     } else {
       // numReducers = time-per-byte * numBytes / desiredRuntime
-      val estimate = typicalTimeToByteRatio.map { t => (t.toDouble * inputBytes / desiredRuntime).ceil.toInt }
+      val estimate = typicalTimeToByteRatio.map { t: Double =>
+        (t * inputBytes / desiredRuntime).ceil.toInt
+      }
 
       LOG.info(s"""
         | - HDFS bytes read: ${history.map(_.hdfsBytesRead)}
