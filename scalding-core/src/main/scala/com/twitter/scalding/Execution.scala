@@ -397,6 +397,16 @@ object Execution {
   }
 
   /**
+   * Use our internal faster failing zip function rather than the standard one due to waiting
+   */
+  def failFastSequence[T](t: Iterable[Future[T]])(implicit cec: ConcurrentExecutionContext): Future[List[T]] = {
+    t.foldLeft(Future.successful(Nil: List[T])) { (f, i) =>
+      failFastZip(f, i).map { case (tail, h) => h :: tail }
+    }
+      .map(_.reverse)
+  }
+
+  /**
    * Standard scala zip waits forever on the left side, even if the right side fails
    */
   def failFastZip[T, U](ft: Future[T], fu: Future[U])(implicit cec: ConcurrentExecutionContext): Future[(T, U)] = {
@@ -554,7 +564,7 @@ object Execution {
           case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
         }
 
-      Future.sequence(someoneElseDoesOperation.map(_._2.right.get)).zip(localFlowDefCountersFuture).map {
+      failFastZip(failFastSequence(someoneElseDoesOperation.map(_._2.right.get)), localFlowDefCountersFuture).map {
         case (lCounters, fdCounters) =>
           val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
           (fn(conf, mode), summedCounters)
