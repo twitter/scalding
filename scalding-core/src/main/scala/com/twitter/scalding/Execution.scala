@@ -543,12 +543,22 @@ object Execution {
       } yield (ExecutionCounters.fromJobStats(jobStats))
     }
 
+    def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
+      case (a, Left(b)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        ((a, b) :: l, r)
+      case (a, Right(c)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        (l, (a, c) :: r)
+      case Nil => (Nil, Nil)
+    }
+
     // We look up to see if any of our ToWrite elements have already been ran
     // if so we remove them from the cache.
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
       val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
-      val (weDoOperation, someoneElseDoesOperation) = cacheLookup.partition(_._2.isLeft)
+      val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
       val localFlowDefCountersFuture: Future[ExecutionCounters] =
         weDoOperation match {
@@ -557,14 +567,14 @@ object Execution {
             // Complete all of the promises we put into the cache
             // with this future counters set
             weDoOperation.foreach {
-              case (toWrite, eitherP) =>
-                eitherP.left.get.completeWith(futCounters)
+              case (toWrite, promise) =>
+                promise.completeWith(futCounters)
             }
             futCounters
           case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
         }
 
-      failFastZip(failFastSequence(someoneElseDoesOperation.map(_._2.right.get)), localFlowDefCountersFuture).map {
+      failFastZip(failFastSequence(someoneElseDoesOperation.map(_._2)), localFlowDefCountersFuture).map {
         case (lCounters, fdCounters) =>
           val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
           (fn(conf, mode), summedCounters)
