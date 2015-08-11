@@ -490,20 +490,23 @@ trait TypedPipe[+T] extends Serializable {
     val cachedRandomUUID = java.util.UUID.randomUUID
     lazy val inMemoryDest = new MemorySink[T]
 
+    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
+      // come up with unique temporary filename, use the config here
+      // TODO: refactor into TemporarySequenceFile class
+      val tmpDir = conf.get("hadoop.tmp.dir")
+        .orElse(conf.get("cascading.tmp.dir"))
+        .getOrElse("/tmp")
+
+      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
+      source.TypedSequenceFile[T](tmpSeq)
+
+    }
     val writeFn = { (conf: Config, mode: Mode) =>
       mode match {
         case _: CascadingLocal => // Local or Test mode
           (this, inMemoryDest)
         case _: HadoopMode =>
-          // come up with unique temporary filename, use the config here
-          // TODO: refactor into TemporarySequenceFile class
-          val tmpDir = conf.get("hadoop.tmp.dir")
-            .orElse(conf.get("cascading.tmp.dir"))
-            .getOrElse("/tmp")
-
-          val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
-          val dest = source.TypedSequenceFile[T](tmpSeq)
-          (this, dest)
+          (this, hadoopTypedSource(conf))
       }
     }
 
@@ -512,15 +515,7 @@ trait TypedPipe[+T] extends Serializable {
         case _: CascadingLocal => // Local or Test mode
           TypedPipe.from(inMemoryDest.readResults)
         case _: HadoopMode =>
-          // come up with unique temporary filename, use the config here
-          // TODO: refactor into TemporarySequenceFile class
-          val tmpDir = conf.get("hadoop.tmp.dir")
-            .orElse(conf.get("cascading.tmp.dir"))
-            .getOrElse("/tmp")
-
-          val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
-          val dest = source.TypedSequenceFile[T](tmpSeq)
-          TypedPipe.from(dest)
+          TypedPipe.from(hadoopTypedSource(conf))
       }
     }
 
@@ -578,8 +573,7 @@ trait TypedPipe[+T] extends Serializable {
    * that location going forward, use this.
    */
   def writeThrough[U >: T](dest: TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
-    writeExecution(dest)
-      .map(_ => TypedPipe.from(dest))
+    Execution.write(this, dest, TypedPipe.from(dest))
 
   /**
    * If you want to writeThrough to a specific file if it doesn't already exist,

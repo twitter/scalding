@@ -559,35 +559,36 @@ object Execution {
     // We look up to see if any of our ToWrite elements have already been ran
     // if so we remove them from the cache.
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
-    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
-      val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
-      val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this, {
+        val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
+        val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
-      val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
-      otherResult.value match {
-        case Some(Failure(e)) => Future.failed(e)
-        case _ => // Either successful or not completed yet
-          val localFlowDefCountersFuture: Future[ExecutionCounters] =
-            weDoOperation match {
-              case all @ (h :: tail) =>
-                val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
-                // Complete all of the promises we put into the cache
-                // with this future counters set
-                weDoOperation.foreach {
-                  case (toWrite, promise) =>
-                    promise.completeWith(futCounters)
-                }
-                futCounters
-              case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
+        val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+        otherResult.value match {
+          case Some(Failure(e)) => Future.failed(e)
+          case _ => // Either successful or not completed yet
+            val localFlowDefCountersFuture: Future[ExecutionCounters] =
+              weDoOperation match {
+                case all @ (h :: tail) =>
+                  val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+                  // Complete all of the promises we put into the cache
+                  // with this future counters set
+                  weDoOperation.foreach {
+                    case (toWrite, promise) =>
+                      promise.completeWith(futCounters)
+                  }
+                  futCounters
+                case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
+              }
+
+            failFastZip(otherResult, localFlowDefCountersFuture).map {
+              case (lCounters, fdCounters) =>
+                val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+                (fn(conf, mode), summedCounters)
             }
-
-          failFastZip(otherResult, localFlowDefCountersFuture).map {
-            case (lCounters, fdCounters) =>
-              val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
-              (fn(conf, mode), summedCounters)
-          }
-      }
-    }
+        }
+      })
 
     /*
      * run this and that in parallel, without any dependency. This will
@@ -666,7 +667,10 @@ object Execution {
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
    */
   private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
-    WriteExecution(SimpleWrite(pipe, sink), Nil, (Config, Mode) => ())
+    write(pipe, sink, ())
+
+  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], presentType: => U): Execution[U] =
+    WriteExecution(SimpleWrite(pipe, sink), Nil, { (_: Config, _: Mode) => presentType })
 
   /**
    * Here we allow both the targets to write and the sources to be generated from the config and mode.
