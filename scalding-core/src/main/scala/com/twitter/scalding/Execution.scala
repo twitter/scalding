@@ -224,6 +224,9 @@ object Execution {
     private[this] val cache =
       new ConcurrentHashMap[Execution[Any], Future[(Any, ExecutionCounters)]]()
 
+    private[this] val toWriteCache =
+      new ConcurrentHashMap[ToWrite, Future[ExecutionCounters]]()
+
     /**
      * We send messages from other threads into the submit thread here
      */
@@ -290,6 +293,21 @@ object Execution {
      * This is called after we are done submitting all jobs
      */
     def finished(): Unit = messageQueue.put(Stop)
+
+    def getOrLock(write: ToWrite)(implicit ec: ConcurrentExecutionContext): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] = {
+      /*
+       * Since we don't want to evaluate res twice, we make a promise
+       * which we will use if it has not already been evaluated
+       */
+      val promise = Promise[ExecutionCounters]()
+      val fut = promise.future
+      toWriteCache.putIfAbsent(write, fut) match {
+        case null =>
+          Left(promise)
+        case exists =>
+          Right(exists)
+      }
+    }
 
     def getOrElseInsertWithFeedback[T](ex: Execution[T],
       res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): (Boolean, Future[(T, ExecutionCounters)]) = {
@@ -494,93 +512,50 @@ object Execution {
 
   }
 
-  private case class WorkUnit[T](
-    toWrite: List[ToWrite],
-    fut: Future[(T, ExecutionCounters)])
-
-  private sealed trait ZippedWriteCombined[T] {
-    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[T]
-  }
-
-  private case class ZippedWriteCombinedSingle[T](b: WriteExecution[T]) extends ZippedWriteCombined[T] {
-    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[T] = {
-      /**
-       * We want to include all the counters from write executions which are in this zip and have already been executed.
-       * As a result we zero out the counters we get from the promise to not double count the counters from this current job.
-       */
-      cache.getOrElseInsertWithFeedback(b, {
-        flowComplete.future.map { cntrs =>
-          (b.fn(cfg, mode), cntrs)
-        }
-      }) match {
-        // If we've inserted
-        case (true, fut) => WorkUnit(b.head :: b.tail, fut.map{ case (fn, cntrs) => (fn, ExecutionCounters.empty) })
-        // Include the previous counters from the last time
-        case (false, fut) => WorkUnit(Nil, fut)
-      }
-    }
-  }
-
-  private case class ZippedWriteCombinedMultiple[T, U](a: ZippedWriteCombined[T], b: ZippedWriteCombined[U]) extends ZippedWriteCombined[(T, U)] with Execution[(T, U)] {
-
-    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
-        val flowCompletePromise = Promise[ExecutionCounters]
-        val wu = buildWorkUnit(flowCompletePromise, cache, conf, mode)
-
-        for {
-          flowDef <- toFuture(Try { val fd = new FlowDef; (wu.toWrite).foreach(_.write(conf, fd, mode)); fd })
-          _ = FlowStateMap.validateSources(flowDef, mode)
-          jobStatsFut = cache.runFlowDef(conf, mode, flowDef)
-          _ = flowCompletePromise.completeWith(jobStatsFut.map(ExecutionCounters.fromJobStats(_)))
-          jobStats <- jobStatsFut
-          _ = FlowStateMap.clear(flowDef)
-          (r, olderCntrs) <- wu.fut
-        } yield (r, Monoid.plus(olderCntrs, ExecutionCounters.fromJobStats(jobStats)))
-      })
-
-    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[(T, U)] = {
-      val aWork: WorkUnit[T] = a.buildWorkUnit(flowComplete, cache, cfg, mode)
-      val bWork: WorkUnit[U] = b.buildWorkUnit(flowComplete, cache, cfg, mode)
-      val combinedToWrite = aWork.toWrite ++ bWork.toWrite
-      val combinedFn =
-        aWork.fut.zip(bWork.fut).map {
-          case ((a, cntrsA), (b, cntrsB)) =>
-            ((a, b), Monoid.plus(cntrsA, cntrsB))
-        }
-      WorkUnit(combinedToWrite, combinedFn)
-    }
-
-    /*
-     * run this and that in parallel, without any dependency. This will
-     * be done in a single cascading flow if possible.
-     *
-     * If the other side is a write execution or zipped operation we can merge into one flowdef
-     */
-    override def zip[V](that: Execution[V]): Execution[((T, U), V)] =
-      that match {
-        case we: WriteExecution[V] =>
-          ZippedWriteCombinedMultiple(this, ZippedWriteCombinedSingle(we))
-        case zwcm: ZippedWriteCombined[V] =>
-          ZippedWriteCombinedMultiple(this, zwcm)
-        case o => Zipped(this, that)
-      }
-  }
-
   /**
    * This is the fundamental execution that actually happens in TypedPipes, all the rest
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
    * DAG and optimize it later (a goal, but not done yet).
    */
   private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
-    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
-        for {
-          flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
-          _ = FlowStateMap.validateSources(flowDef, mode)
-          jobStats <- cache.runFlowDef(conf, mode, flowDef)
-          _ = FlowStateMap.clear(flowDef)
-        } yield (fn(conf, mode), ExecutionCounters.fromJobStats(jobStats)))
+
+    /* Run a list of ToWrite elements */
+    private[this] def scheduleToWrites(conf: Config,
+      mode: Mode,
+      cache: EvalCache,
+      head: ToWrite,
+      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[ExecutionCounters] = {
+      for {
+        flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
+        _ = FlowStateMap.validateSources(flowDef, mode)
+        jobStats <- cache.runFlowDef(conf, mode, flowDef)
+        _ = FlowStateMap.clear(flowDef)
+      } yield (ExecutionCounters.fromJobStats(jobStats))
+    }
+
+    // We look up to see if any of our ToWrite elements have already been ran
+    // if so we remove them from the cache.
+    // Anything not already ran we run as part of a single flow def, using their combined counters for the others
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
+      val (weDoOperation, someoneElseDoesOperation) = cacheLookup.partition(_._2.isLeft)
+
+      val localFlowDefCountersFuture: Future[ExecutionCounters] = if (!weDoOperation.isEmpty) {
+        val trimmed = weDoOperation.map { case (toWrite, eitherP) => toWrite }
+        val futCounters = scheduleToWrites(conf, mode, cache, trimmed.head, trimmed.tail)
+        weDoOperation.foreach {
+          case (toWrite, eitherP) =>
+            eitherP.left.get.completeWith(futCounters)
+        }
+        futCounters
+      } else Future.successful(ExecutionCounters.empty)
+
+      Future.sequence(someoneElseDoesOperation.map(_._2.right.get)).zip(localFlowDefCountersFuture).map {
+        case (lCounters, fdCounters) =>
+          val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+          (fn(conf, mode), summedCounters)
+      }
+    }
 
     /*
      * run this and that in parallel, without any dependency. This will
@@ -590,10 +565,11 @@ object Execution {
      */
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
-        case we: WriteExecution[U] =>
-          ZippedWriteCombinedMultiple(ZippedWriteCombinedSingle(this), ZippedWriteCombinedSingle(we))
-        case zwcm: ZippedWriteCombined[U] =>
-          ZippedWriteCombinedMultiple(ZippedWriteCombinedSingle(this), zwcm)
+        case WriteExecution(h, t, otherFn) =>
+          val newFn = { (conf: Config, mode: Mode) =>
+            (fn(conf, mode), otherFn(conf, mode))
+          }
+          WriteExecution(head, h :: t ::: tail, newFn)
         case o => Zipped(this, that)
       }
 
