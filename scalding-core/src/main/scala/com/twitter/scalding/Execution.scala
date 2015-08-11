@@ -553,24 +553,29 @@ object Execution {
       val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
       val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
-      val localFlowDefCountersFuture: Future[ExecutionCounters] =
-        weDoOperation match {
-          case all @ (h :: tail) =>
-            val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
-            // Complete all of the promises we put into the cache
-            // with this future counters set
-            weDoOperation.foreach {
-              case (toWrite, promise) =>
-                promise.completeWith(futCounters)
+      val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+      otherResult.value match {
+        case Some(Failure(e)) => Future.failed(e)
+        case _ => // Either successful or not completed yet
+          val localFlowDefCountersFuture: Future[ExecutionCounters] =
+            weDoOperation match {
+              case all @ (h :: tail) =>
+                val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+                // Complete all of the promises we put into the cache
+                // with this future counters set
+                weDoOperation.foreach {
+                  case (toWrite, promise) =>
+                    promise.completeWith(futCounters)
+                }
+                futCounters
+              case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
             }
-            futCounters
-          case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
-        }
 
-      failFastZip(failFastSequence(someoneElseDoesOperation.map(_._2)), localFlowDefCountersFuture).map {
-        case (lCounters, fdCounters) =>
-          val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
-          (fn(conf, mode), summedCounters)
+          failFastZip(otherResult, localFlowDefCountersFuture).map {
+            case (lCounters, fdCounters) =>
+              val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+              (fn(conf, mode), summedCounters)
+          }
       }
     }
 
