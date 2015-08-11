@@ -31,7 +31,7 @@ object ScaldingBuild extends Build {
   val hadoopLzoVersion = "0.4.19"
   val hadoopVersion = "2.5.0"
   val hbaseVersion = "0.94.10"
-  val hravenVersion = "0.9.13"
+  val hravenVersion = "0.9.16"
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"
@@ -410,7 +410,21 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingHRaven = module("hraven").settings(
     libraryDependencies ++= Seq(
-      "com.twitter.hraven" % "hraven-core" % hravenVersion,
+      "com.twitter.hraven" % "hraven-core" % hravenVersion
+        // These transitive dependencies cause sbt to give a ResolveException
+        // because they're not available on Maven. We don't need them anyway.
+        // See https://github.com/twitter/cassie/issues/13
+        exclude("javax.jms", "jms")
+        exclude("com.sun.jdmk", "jmxtools")
+        exclude("com.sun.jmx", "jmxri")
+
+        // These transitive dependencies of hRaven cause conflicts when
+        // running scalding-hraven/*assembly and aren't needed
+        // for the part of the hRaven API that we use anyway
+        exclude("com.twitter.common", "application-module-log")
+        exclude("com.twitter.common", "application-module-stats")
+        exclude("com.twitter.common", "args")
+        exclude("com.twitter.common", "application"),
       "org.apache.hbase" % "hbase" % hbaseVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
