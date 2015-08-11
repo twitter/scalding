@@ -291,8 +291,8 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrElseInsert[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = {
+    def getOrElseInsertWithFeedback[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): (Boolean, Future[(T, ExecutionCounters)]) = {
       /*
        * Since we don't want to evaluate res twice, we make a promise
        * which we will use if it has not already been evaluated
@@ -303,12 +303,15 @@ object Execution {
         case null =>
           // note res is by-name, so we just evaluate it now:
           promise.completeWith(res)
-          fut
-        case exists => exists.asInstanceOf[Future[(T, ExecutionCounters)]]
+          (true, fut)
+        case exists => (false, exists.asInstanceOf[Future[(T, ExecutionCounters)]])
       }
     }
-  }
 
+    def getOrElseInsert[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] =
+      getOrElseInsertWithFeedback(ex, res)._2
+  }
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
@@ -490,6 +493,61 @@ object Execution {
     }
 
   }
+
+  private case class WorkUnit[T](
+    toWrite: List[ToWrite],
+    fut: Future[(T, ExecutionCounters)])
+
+  private sealed trait ZippedWriteCombined[T] {
+    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[T]
+  }
+
+  private case class ZippedWriteCombinedSingle[T](b: WriteExecution[T]) extends ZippedWriteCombined[T] {
+    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[T] = {
+      val (inserted, fut) = cache.getOrElseInsertWithFeedback(b, {
+        flowComplete.future.map { cntrs =>
+          (b.fn(cfg, mode), cntrs)
+        }
+      })
+
+      inserted match {
+        case true => WorkUnit(b.head :: b.tail, fut)
+        case false => WorkUnit(Nil, fut)
+      }
+    }
+  }
+
+  private case class ZippedWriteCombinedMultiple[T, U](a: ZippedWriteCombined[T], b: ZippedWriteCombined[U]) extends ZippedWriteCombined[(T, U)] with Execution[(T, U)] {
+
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
+      cache.getOrElseInsert(this, {
+        val flowCompletePromise = Promise[ExecutionCounters]
+        val wu = buildWorkUnit(flowCompletePromise, cache, conf, mode)
+
+        for {
+          flowDef <- toFuture(Try { val fd = new FlowDef; (wu.toWrite).foreach(_.write(conf, fd, mode)); fd })
+          _ = FlowStateMap.validateSources(flowDef, mode)
+          jobStatsFut = cache.runFlowDef(conf, mode, flowDef)
+          _ = flowCompletePromise.completeWith(jobStatsFut.map(ExecutionCounters.fromJobStats(_)))
+          jobStats <- jobStatsFut
+          _ = FlowStateMap.clear(flowDef)
+          (r, olderCntrs) <- wu.fut
+        } yield (r, Monoid.plus(olderCntrs, ExecutionCounters.fromJobStats(jobStats)))
+      })
+
+    def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[(T, U)] = {
+      val aWork: WorkUnit[T] = a.buildWorkUnit(flowComplete, cache, cfg, mode)
+      val bWork: WorkUnit[U] = b.buildWorkUnit(flowComplete, cache, cfg, mode)
+      val combinedToWrite = aWork.toWrite ++ bWork.toWrite
+      val combinedFn =
+        aWork.fut.zip(bWork.fut).map {
+          case ((a, cntrsA), (b, cntrsB)) =>
+            ((a, b), Monoid.plus(cntrsA, cntrsB))
+        }
+      WorkUnit(combinedToWrite, combinedFn)
+    }
+  }
+
   /**
    * This is the fundamental execution that actually happens in TypedPipes, all the rest
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
@@ -513,11 +571,8 @@ object Execution {
      */
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
-        case WriteExecution(h, t, otherFn) =>
-          val newFn = { (conf: Config, mode: Mode) =>
-            (fn(conf, mode), otherFn(conf, mode))
-          }
-          WriteExecution(head, h :: t ::: tail, newFn)
+        case we: WriteExecution[U] =>
+          ZippedWriteCombinedMultiple(ZippedWriteCombinedSingle(this), ZippedWriteCombinedSingle(we))
         case o => Zipped(this, that)
       }
 

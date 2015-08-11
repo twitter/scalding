@@ -220,5 +220,22 @@ class ExecutionTest extends WordSpec with Matchers {
       res.waitFor(Config.default, Local(true))
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
     }
+
+    "evaluate shared portions just once, forceToDiskExecution with execution cache" in {
+
+      var timesEvaluated = 0
+      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
+        timesEvaluated += 1
+        List(i, i)
+      }.fork
+
+      val fde1 = baseTp.map{ _ * 3 }.forceToDiskExecution
+      val fde2 = baseTp.map{ _ * 5 }.forceToDiskExecution
+
+      val res = fde1.zip(fde2).flatMap{ _ => fde1 }.flatMap(_.toIterableExecution)
+
+      res.waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
+    }
   }
 }
