@@ -103,7 +103,7 @@ class DateTest extends WordSpec {
     "roundtrip successfully" in {
       val start_str = "2011-10-24 20:03:00"
       //string -> date -> string
-      assert(RichDate(start_str).toString(DateOps.DATETIME_HMS_WITH_DASH) === start_str)
+      assert(RichDate(start_str).toString(DateOps.DATETIME_HMS_WITH_DASH.pattern) === start_str)
       //long -> date == date -> long -> date
       val long_val = 1319511818135L
       val date = RichDate(long_val)
