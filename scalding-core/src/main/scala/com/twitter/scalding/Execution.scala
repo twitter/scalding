@@ -504,15 +504,19 @@ object Execution {
 
   private case class ZippedWriteCombinedSingle[T](b: WriteExecution[T]) extends ZippedWriteCombined[T] {
     def buildWorkUnit(flowComplete: Promise[ExecutionCounters], cache: EvalCache, cfg: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): WorkUnit[T] = {
-      val (inserted, fut) = cache.getOrElseInsertWithFeedback(b, {
+      /**
+       * We want to include all the counters from write executions which are in this zip and have already been executed.
+       * As a result we zero out the counters we get from the promise to not double count the counters from this current job.
+       */
+      cache.getOrElseInsertWithFeedback(b, {
         flowComplete.future.map { cntrs =>
           (b.fn(cfg, mode), cntrs)
         }
-      })
-
-      inserted match {
-        case true => WorkUnit(b.head :: b.tail, fut.map{ case (fn, cntrs) => (fn, ExecutionCounters.empty) })
-        case false => WorkUnit(Nil, fut)
+      }) match {
+        // If we've inserted
+        case (true, fut) => WorkUnit(b.head :: b.tail, fut.map{ case (fn, cntrs) => (fn, ExecutionCounters.empty) })
+        // Include the previous counters from the last time
+        case (false, fut) => WorkUnit(Nil, fut)
       }
     }
   }
@@ -546,6 +550,21 @@ object Execution {
         }
       WorkUnit(combinedToWrite, combinedFn)
     }
+
+    /*
+     * run this and that in parallel, without any dependency. This will
+     * be done in a single cascading flow if possible.
+     *
+     * If the other side is a write execution or zipped operation we can merge into one flowdef
+     */
+    override def zip[V](that: Execution[V]): Execution[((T, U), V)] =
+      that match {
+        case we: WriteExecution[V] =>
+          ZippedWriteCombinedMultiple(this, ZippedWriteCombinedSingle(we))
+        case zwcm: ZippedWriteCombined[V] =>
+          ZippedWriteCombinedMultiple(this, zwcm)
+        case o => Zipped(this, that)
+      }
   }
 
   /**
@@ -573,6 +592,8 @@ object Execution {
       that match {
         case we: WriteExecution[U] =>
           ZippedWriteCombinedMultiple(ZippedWriteCombinedSingle(this), ZippedWriteCombinedSingle(we))
+        case zwcm: ZippedWriteCombined[U] =>
+          ZippedWriteCombinedMultiple(ZippedWriteCombinedSingle(this), zwcm)
         case o => Zipped(this, that)
       }
 
