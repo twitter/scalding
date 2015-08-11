@@ -522,6 +522,16 @@ object Execution {
    */
   private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
 
+    /**
+     * Apply a pure function to the result. This may not
+     * be called if subsequently the result is discarded with .unit
+     * For side effects see onComplete.
+     *
+     * Here we inline the map operation into the presentation function so we can zip after map.
+     */
+    override def map[U](mapFn: T => U): Execution[U] =
+      WriteExecution(head, tail, { (conf: Config, mode: Mode) => mapFn(fn(conf, mode)) })
+
     /* Run a list of ToWrite elements */
     private[this] def scheduleToWrites(conf: Config,
       mode: Mode,
