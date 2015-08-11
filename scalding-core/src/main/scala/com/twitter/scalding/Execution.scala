@@ -294,7 +294,7 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrLock(write: ToWrite)(implicit ec: ConcurrentExecutionContext): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] = {
+    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] = {
       /*
        * Since we don't want to evaluate res twice, we make a promise
        * which we will use if it has not already been evaluated
@@ -541,7 +541,7 @@ object Execution {
       val (weDoOperation, someoneElseDoesOperation) = cacheLookup.partition(_._2.isLeft)
 
       val localFlowDefCountersFuture: Future[ExecutionCounters] = if (!weDoOperation.isEmpty) {
-        val trimmed: Seq[ToWrite] = weDoOperation.map { case (toWrite, eitherP) => toWrite }
+        val trimmed: List[ToWrite] = weDoOperation.map { case (toWrite, eitherP) => toWrite }
         val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, trimmed.head, trimmed.tail)
         // Complete all of the promises we put into the cache
         // with this future counters set
