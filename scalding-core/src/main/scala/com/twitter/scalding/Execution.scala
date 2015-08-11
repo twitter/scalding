@@ -224,6 +224,9 @@ object Execution {
     private[this] val cache =
       new ConcurrentHashMap[Execution[Any], Future[(Any, ExecutionCounters)]]()
 
+    private[this] val toWriteCache =
+      new ConcurrentHashMap[ToWrite, Future[ExecutionCounters]]()
+
     /**
      * We send messages from other threads into the submit thread here
      */
@@ -291,8 +294,23 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrElseInsert[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = {
+    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] = {
+      /*
+       * Since we don't want to evaluate res twice, we make a promise
+       * which we will use if it has not already been evaluated
+       */
+      val promise = Promise[ExecutionCounters]()
+      val fut = promise.future
+      toWriteCache.putIfAbsent(write, fut) match {
+        case null =>
+          Left(promise)
+        case exists =>
+          Right(exists)
+      }
+    }
+
+    def getOrElseInsertWithFeedback[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): (Boolean, Future[(T, ExecutionCounters)]) = {
       /*
        * Since we don't want to evaluate res twice, we make a promise
        * which we will use if it has not already been evaluated
@@ -303,12 +321,15 @@ object Execution {
         case null =>
           // note res is by-name, so we just evaluate it now:
           promise.completeWith(res)
-          fut
-        case exists => exists.asInstanceOf[Future[(T, ExecutionCounters)]]
+          (true, fut)
+        case exists => (false, exists.asInstanceOf[Future[(T, ExecutionCounters)]])
       }
     }
-  }
 
+    def getOrElseInsert[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] =
+      getOrElseInsertWithFeedback(ex, res)._2
+  }
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
@@ -373,6 +394,16 @@ object Execution {
       cache.getOrElseInsert(this,
         prev.runStats(conf, mode, cache)
           .recoverWith(fn.andThen(_.runStats(conf, mode, cache))))
+  }
+
+  /**
+   * Use our internal faster failing zip function rather than the standard one due to waiting
+   */
+  def failFastSequence[T](t: Iterable[Future[T]])(implicit cec: ConcurrentExecutionContext): Future[List[T]] = {
+    t.foldLeft(Future.successful(Nil: List[T])) { (f, i) =>
+      failFastZip(f, i).map { case (tail, h) => h :: tail }
+    }
+      .map(_.reverse)
   }
 
   /**
@@ -471,39 +502,92 @@ object Execution {
   private trait ToWrite {
     def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
   }
-  private object ToWrite {
-    def apply[T](pipe: TypedPipe[T], sink: TypedSink[T]): ToWrite = new ToWrite {
-      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
-        // This has the side effect of mutating flowDef
-        pipe.write(sink)(flowDef, mode)
-        ()
-      }
+  private case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
+      // This has the side effect of mutating flowDef
+      pipe.write(sink)(flowDef, mode)
+      ()
     }
-
-    def apply[T](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T])): ToWrite = new ToWrite {
-      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
-        val (tp, ts) = fn(config, mode)
-        // This has the side effect of mutating flowDef
-        tp.write(ts)(flowDef, mode)
-        ()
-      }
-    }
-
   }
+
+  private case class PreparedWrite[T](fn: (Config, Mode) => SimpleWrite[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit =
+      fn(config, mode).write(config, flowDef, mode)
+  }
+
   /**
    * This is the fundamental execution that actually happens in TypedPipes, all the rest
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
    * DAG and optimize it later (a goal, but not done yet).
    */
   private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
-    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
-        for {
-          flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
-          _ = FlowStateMap.validateSources(flowDef, mode)
-          jobStats <- cache.runFlowDef(conf, mode, flowDef)
-          _ = FlowStateMap.clear(flowDef)
-        } yield (fn(conf, mode), ExecutionCounters.fromJobStats(jobStats)))
+
+    /**
+     * Apply a pure function to the result. This may not
+     * be called if subsequently the result is discarded with .unit
+     * For side effects see onComplete.
+     *
+     * Here we inline the map operation into the presentation function so we can zip after map.
+     */
+    override def map[U](mapFn: T => U): Execution[U] =
+      WriteExecution(head, tail, { (conf: Config, mode: Mode) => mapFn(fn(conf, mode)) })
+
+    /* Run a list of ToWrite elements */
+    private[this] def scheduleToWrites(conf: Config,
+      mode: Mode,
+      cache: EvalCache,
+      head: ToWrite,
+      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[ExecutionCounters] = {
+      for {
+        flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
+        _ = FlowStateMap.validateSources(flowDef, mode)
+        jobStats <- cache.runFlowDef(conf, mode, flowDef)
+        _ = FlowStateMap.clear(flowDef)
+      } yield (ExecutionCounters.fromJobStats(jobStats))
+    }
+
+    def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
+      case (a, Left(b)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        ((a, b) :: l, r)
+      case (a, Right(c)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        (l, (a, c) :: r)
+      case Nil => (Nil, Nil)
+    }
+
+    // We look up to see if any of our ToWrite elements have already been ran
+    // if so we remove them from the cache.
+    // Anything not already ran we run as part of a single flow def, using their combined counters for the others
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
+      val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
+
+      val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+      otherResult.value match {
+        case Some(Failure(e)) => Future.failed(e)
+        case _ => // Either successful or not completed yet
+          val localFlowDefCountersFuture: Future[ExecutionCounters] =
+            weDoOperation match {
+              case all @ (h :: tail) =>
+                val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+                // Complete all of the promises we put into the cache
+                // with this future counters set
+                weDoOperation.foreach {
+                  case (toWrite, promise) =>
+                    promise.completeWith(futCounters)
+                }
+                futCounters
+              case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
+            }
+
+          failFastZip(otherResult, localFlowDefCountersFuture).map {
+            case (lCounters, fdCounters) =>
+              val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+              (fn(conf, mode), summedCounters)
+          }
+      }
+    }
 
     /*
      * run this and that in parallel, without any dependency. This will
@@ -576,20 +660,23 @@ object Execution {
    * type U for the resultant execution.
    */
   private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
-    WriteExecution(ToWrite(pipe, sink), Nil, generatorFn)
+    WriteExecution(SimpleWrite(pipe, sink), Nil, generatorFn)
 
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
    */
   private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
-    WriteExecution(ToWrite(pipe, sink), Nil, (Config, Mode) => ())
+    WriteExecution(SimpleWrite(pipe, sink), Nil, (Config, Mode) => ())
 
   /**
    * Here we allow both the targets to write and the sources to be generated from the config and mode.
    * This allows us to merge things looking for the config and mode without using flatmap.
    */
   private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U): Execution[U] =
-    WriteExecution(ToWrite(fn), Nil, generatorFn)
+    WriteExecution(PreparedWrite({ (cfg: Config, m: Mode) =>
+      val r = fn(cfg, m)
+      SimpleWrite(r._1, r._2)
+    }), Nil, generatorFn)
 
   /**
    * Convenience method to get the Args
