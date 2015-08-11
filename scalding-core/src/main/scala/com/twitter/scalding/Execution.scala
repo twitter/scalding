@@ -468,11 +468,11 @@ object Execution {
    * but with proof that pipe matches sink
    */
 
-  private trait ToWrite[T] {
+  private trait ToWrite {
     def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
   }
   private object ToWrite {
-    def apply[T](pipe: TypedPipe[T], sink: TypedSink[T]): ToWrite[T] = new ToWrite[T] {
+    def apply[T](pipe: TypedPipe[T], sink: TypedSink[T]): ToWrite = new ToWrite {
       def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
         // This has the side effect of mutating flowDef
         pipe.write(sink)(flowDef, mode)
@@ -480,7 +480,7 @@ object Execution {
       }
     }
 
-    def apply[T](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T])): ToWrite[T] = new ToWrite[T] {
+    def apply[T](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T])): ToWrite = new ToWrite {
       def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
         val (tp, ts) = fn(config, mode)
         // This has the side effect of mutating flowDef
@@ -495,7 +495,7 @@ object Execution {
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
    * DAG and optimize it later (a goal, but not done yet).
    */
-  private case class WriteExecution[T](head: ToWrite[_], tail: List[ToWrite[_]], fn: (Config, Mode) => T) extends Execution[T] {
+  private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
         for {
