@@ -502,24 +502,17 @@ object Execution {
   private trait ToWrite {
     def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
   }
-  private object ToWrite {
-    def apply[T](pipe: TypedPipe[T], sink: TypedSink[T]): ToWrite = new ToWrite {
-      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
-        // This has the side effect of mutating flowDef
-        pipe.write(sink)(flowDef, mode)
-        ()
-      }
+  private case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
+      // This has the side effect of mutating flowDef
+      pipe.write(sink)(flowDef, mode)
+      ()
     }
+  }
 
-    def apply[T](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T])): ToWrite = new ToWrite {
-      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
-        val (tp, ts) = fn(config, mode)
-        // This has the side effect of mutating flowDef
-        tp.write(ts)(flowDef, mode)
-        ()
-      }
-    }
-
+  private case class PreparedWrite[T](fn: (Config, Mode) => SimpleWrite[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit =
+      fn(config, mode).write(config, flowDef, mode)
   }
 
   /**
@@ -652,20 +645,23 @@ object Execution {
    * type U for the resultant execution.
    */
   private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
-    WriteExecution(ToWrite(pipe, sink), Nil, generatorFn)
+    WriteExecution(SimpleWrite(pipe, sink), Nil, generatorFn)
 
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
    */
   private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
-    WriteExecution(ToWrite(pipe, sink), Nil, (Config, Mode) => ())
+    WriteExecution(SimpleWrite(pipe, sink), Nil, (Config, Mode) => ())
 
   /**
    * Here we allow both the targets to write and the sources to be generated from the config and mode.
    * This allows us to merge things looking for the config and mode without using flatmap.
    */
   private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U): Execution[U] =
-    WriteExecution(ToWrite(fn), Nil, generatorFn)
+    WriteExecution(PreparedWrite({ (cfg: Config, m: Mode) =>
+      val r = fn(cfg, m)
+      SimpleWrite(r._1, r._2)
+    }), Nil, generatorFn)
 
   /**
    * Convenience method to get the Args
