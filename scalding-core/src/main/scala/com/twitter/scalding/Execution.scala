@@ -571,10 +571,23 @@ object Execution {
 
   /**
    * Creates an Execution to do a write
+   *
+   * This variant allows the user to supply a method using the config and mode to build a new
+   * type U for the resultant execution.
    */
   private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
     WriteExecution(ToWrite(pipe, sink), Nil, generatorFn)
 
+  /**
+   * The simplest form, just sink the typed pipe into the sink and get a unit execution back
+   */
+  private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
+    WriteExecution(ToWrite(pipe, sink), Nil, (Config, Mode) => ())
+
+  /**
+   * Here we allow both the targets to write and the sources to be generated from the config and mode.
+   * This allows us to merge things looking for the config and mode without using flatmap.
+   */
   private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U): Execution[U] =
     WriteExecution(ToWrite(fn), Nil, generatorFn)
 

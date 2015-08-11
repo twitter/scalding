@@ -571,7 +571,7 @@ trait TypedPipe[+T] extends Serializable {
    * into an Execution that is run for anything to happen here.
    */
   def writeExecution(dest: TypedSink[T]): Execution[Unit] =
-    Execution.write(this, dest, (Config, Mode) => ())
+    Execution.write(this, dest)
 
   /**
    * If you want to write to a specific location, and then read from
