@@ -511,7 +511,7 @@ object Execution {
       })
 
       inserted match {
-        case true => WorkUnit(b.head :: b.tail, fut)
+        case true => WorkUnit(b.head :: b.tail, fut.map{ case (fn, cntrs) => (fn, ExecutionCounters.empty) })
         case false => WorkUnit(Nil, fut)
       }
     }
