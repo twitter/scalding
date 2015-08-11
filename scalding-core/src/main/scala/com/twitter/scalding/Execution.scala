@@ -540,17 +540,19 @@ object Execution {
       val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
       val (weDoOperation, someoneElseDoesOperation) = cacheLookup.partition(_._2.isLeft)
 
-      val localFlowDefCountersFuture: Future[ExecutionCounters] = if (!weDoOperation.isEmpty) {
-        val trimmed: List[ToWrite] = weDoOperation.map { case (toWrite, eitherP) => toWrite }
-        val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, trimmed.head, trimmed.tail)
-        // Complete all of the promises we put into the cache
-        // with this future counters set
-        weDoOperation.foreach {
-          case (toWrite, eitherP) =>
-            eitherP.left.get.completeWith(futCounters)
+      val localFlowDefCountersFuture: Future[ExecutionCounters] =
+        weDoOperation match {
+          case all @ (h :: tail) =>
+            val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+            // Complete all of the promises we put into the cache
+            // with this future counters set
+            weDoOperation.foreach {
+              case (toWrite, eitherP) =>
+                eitherP.left.get.completeWith(futCounters)
+            }
+            futCounters
+          case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
         }
-        futCounters
-      } else Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
 
       Future.sequence(someoneElseDoesOperation.map(_._2.right.get)).zip(localFlowDefCountersFuture).map {
         case (lCounters, fdCounters) =>
