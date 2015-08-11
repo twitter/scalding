@@ -467,27 +467,60 @@ object Execution {
    * This is here so we can call without knowing the type T
    * but with proof that pipe matches sink
    */
-  private case class ToWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) {
-    def write(flowDef: FlowDef, mode: Mode): Unit = {
-      // This has the side effect of mutating flowDef
-      pipe.write(sink)(flowDef, mode)
-      ()
+
+  private trait ToWrite[T] {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
+  }
+  private object ToWrite {
+    def apply[T](pipe: TypedPipe[T], sink: TypedSink[T]): ToWrite[T] = new ToWrite[T] {
+      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
+        // This has the side effect of mutating flowDef
+        pipe.write(sink)(flowDef, mode)
+        ()
+      }
     }
+
+    def apply[T](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T])): ToWrite[T] = new ToWrite[T] {
+      def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
+        val (tp, ts) = fn(config, mode)
+        // This has the side effect of mutating flowDef
+        tp.write(ts)(flowDef, mode)
+        ()
+      }
+    }
+
   }
   /**
    * This is the fundamental execution that actually happens in TypedPipes, all the rest
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
    * DAG and optimize it later (a goal, but not done yet).
    */
-  private case class WriteExecution(head: ToWrite[_], tail: List[ToWrite[_]]) extends Execution[Unit] {
+  private case class WriteExecution[T](head: ToWrite[_], tail: List[ToWrite[_]], fn: (Config, Mode) => T) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
         for {
-          flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(fd, mode)); fd })
+          flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
           _ = FlowStateMap.validateSources(flowDef, mode)
           jobStats <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), ExecutionCounters.fromJobStats(jobStats)))
+        } yield (fn(conf, mode), ExecutionCounters.fromJobStats(jobStats)))
+
+    /*
+     * run this and that in parallel, without any dependency. This will
+     * be done in a single cascading flow if possible.
+     *
+     * If both sides are write executions then merge them
+     */
+    override def zip[U](that: Execution[U]): Execution[(T, U)] =
+      that match {
+        case WriteExecution(h, t, otherFn) =>
+          val newFn = { (conf: Config, mode: Mode) =>
+            (fn(conf, mode), otherFn(conf, mode))
+          }
+          WriteExecution(head, h :: t ::: tail, newFn)
+        case o => Zipped(this, that)
+      }
+
   }
 
   /**
@@ -539,8 +572,11 @@ object Execution {
   /**
    * Creates an Execution to do a write
    */
-  private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
-    WriteExecution(ToWrite(pipe, sink), Nil)
+  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
+    WriteExecution(ToWrite(pipe, sink), Nil, generatorFn)
+
+  private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U): Execution[U] =
+    WriteExecution(ToWrite(fn), Nil, generatorFn)
 
   /**
    * Convenience method to get the Args
