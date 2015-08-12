@@ -55,10 +55,10 @@ class PipeTExtensions(pipe: Pipe, flowDef: FlowDef, mode: Mode) extends Serializ
    *  The above sums all the tuples and returns a TypedPipe[Int] which has the total sum.
    */
   def typed[T, U](fielddef: (Fields, Fields))(fn: TypedPipe[T] => TypedPipe[U])(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe =
-    fn(TypedPipe.from(pipe, fielddef._1)(flowDef, mode, conv)).toPipe(fielddef._2)(flowDef, mode, setter)
+    fn(TypedPipe.from(pipe, fielddef._1)(flowDef, conv)).toPipe(fielddef._2)(flowDef, mode, setter)
 
   def toTypedPipe[T](fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
-    TypedPipe.from[T](pipe, fields)(flowDef, mode, conv)
+    TypedPipe.from[T](pipe, fields)(flowDef, conv)
 
   def packToTypedPipe[T](fields: Fields)(implicit tp: TuplePacker[T]): TypedPipe[T] = {
     val conv = tp.newConverter(fields)

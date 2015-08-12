@@ -45,9 +45,9 @@ object TypedPipe extends Serializable {
    * Create a TypedPipe from a cascading Pipe, some Fields and the type T
    * Avoid this if you can. Prefer from(TypedSource).
    */
-  def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[T]): TypedPipe[T] = {
+  def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, conv: TupleConverter[T]): TypedPipe[T] = {
     val localFlow = flowDef.onlyUpstreamFrom(pipe)
-    new TypedPipeInst[T](pipe, fields, localFlow, mode, Converter(conv))
+    new TypedPipeInst[T](pipe, fields, localFlow, Converter(conv))
   }
 
   /**
@@ -56,7 +56,7 @@ object TypedPipe extends Serializable {
   def from[T](source: TypedSource[T]): TypedPipe[T] =
     TypedPipeFactory({ (fd, mode) =>
       val pipe = source.read(fd, mode)
-      from(pipe, source.sourceFields)(fd, mode, source.converter)
+      from(pipe, source.sourceFields)(fd, source.converter)
     })
 
   /**
@@ -69,8 +69,8 @@ object TypedPipe extends Serializable {
    * Input must be a Pipe with exactly one Field
    * Avoid this method and prefer from(TypedSource) if possible
    */
-  def fromSingleField[T](pipe: Pipe)(implicit fd: FlowDef, mode: Mode): TypedPipe[T] =
-    from(pipe, new Fields(0))(fd, mode, singleConverter[T])
+  def fromSingleField[T](pipe: Pipe)(implicit fd: FlowDef): TypedPipe[T] =
+    from(pipe, new Fields(0))(fd, singleConverter[T])
 
   /**
    * Create an empty TypedPipe. This is sometimes useful when a method must return
@@ -357,7 +357,7 @@ trait TypedPipe[+T] extends Serializable {
     val self = this
     TypedPipeFactory({ (fd, m) =>
       val pipe = self.toPipe[T](new Fields(java.lang.Integer.valueOf(0)))(fd, m, singleSetter)
-      TypedPipe.fromSingleField[T](onPipe(pipe))(fd, m)
+      TypedPipe.fromSingleField[T](onPipe(pipe))(fd)
     })
   }
 
@@ -454,7 +454,7 @@ trait TypedPipe[+T] extends Serializable {
     TypedPipeFactory({ (fd, mode) =>
       val pipe = selfKV.toPipe(fields)(fd, mode, tup2Setter)
       val msr = new MapsideReduce(sg, 'key, 'value, None)(singleConverter[V], singleSetter[V])
-      TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, mode, tuple2Converter)
+      TypedPipe.from[(K, V)](pipe.eachTo(fields -> fields) { _ => msr }, fields)(fd, tuple2Converter)
     })
   }
 
@@ -720,7 +720,7 @@ trait TypedPipe[+T] extends Serializable {
       // TODO: with diamonds in the graph, this might not be correct
       val pipe = RichPipe.assignName(fork.toPipe[T](fields)(flowDef, mode, trapSink.setter))
       flowDef.addTrap(pipe, trapSink.createTap(Write)(mode))
-      TypedPipe.from[U](pipe, fields)(flowDef, mode, conv)
+      TypedPipe.from[U](pipe, fields)(flowDef, conv)
     })
 }
 
@@ -920,7 +920,6 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
 class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
   fields: Fields,
   @transient localFlowDef: FlowDef,
-  @transient val mode: Mode,
   flatMapFn: FlatMapFn[T]) extends TypedPipe[T] {
 
   /**
@@ -938,12 +937,6 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
       }
     } else None
 
-  def checkMode(m: Mode): Unit =
-    // This check is not likely to fail unless someone does something really strange.
-    // for historical reasons, it is not checked by the typed system
-    assert(m == mode,
-      "Cannot switch Mode between TypedSource.read and toPipe calls. Pipe: %s, call: %s".format(mode, m))
-
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] = tiny match {
     case EmptyTypedPipe => EmptyTypedPipe
     case MergedTypedPipe(l, r) => MergedTypedPipe(cross(l), cross(r))
@@ -953,13 +946,13 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
   }
 
   override def filter(f: T => Boolean): TypedPipe[T] =
-    new TypedPipeInst[T](inpipe, fields, localFlowDef, mode, flatMapFn.filter(f))
+    new TypedPipeInst[T](inpipe, fields, localFlowDef, flatMapFn.filter(f))
 
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    new TypedPipeInst[U](inpipe, fields, localFlowDef, mode, flatMapFn.flatMap(f))
+    new TypedPipeInst[U](inpipe, fields, localFlowDef, flatMapFn.flatMap(f))
 
   override def map[U](f: T => U): TypedPipe[U] =
-    new TypedPipeInst[U](inpipe, fields, localFlowDef, mode, flatMapFn.map(f))
+    new TypedPipeInst[U](inpipe, fields, localFlowDef, flatMapFn.map(f))
 
   /**
    * Avoid this method if possible. Prefer to stay in the TypedAPI until
@@ -971,7 +964,6 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
    */
   override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, m: Mode, setter: TupleSetter[U]): Pipe = {
     import Dsl.flowDefToRichFlowDef
-    checkMode(m)
     flowDef.mergeFrom(localFlowDef)
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
   }
@@ -988,8 +980,6 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
         import scala.collection.JavaConverters._
         Execution.getConfigMode.map {
           case (conf, m) =>
-            // Verify the mode has not changed due to invalid TypedPipe DAG construction
-            checkMode(m)
             new Iterable[T] {
               def iterator = m.openForRead(conf, tap).asScala.map(tup => conv(tup.selectEntry(fields)))
             }

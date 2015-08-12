@@ -232,7 +232,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
             gb(withSort)
           }
       }
-      TypedPipe.from(pipe, Grouped.kvFields)(fd, mode, Grouped.tuple2Conv[K, V2](keyOrdering))
+      TypedPipe.from(pipe, Grouped.kvFields)(fd, Grouped.tuple2Conv[K, V2](keyOrdering))
     })
 }
 

@@ -55,6 +55,6 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         WrappedJoiner(new HashJoiner(joinFunction, joiner)))
 
       //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
+      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, tuple2Converter)
     })
 }

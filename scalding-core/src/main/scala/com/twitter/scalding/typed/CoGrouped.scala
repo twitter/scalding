@@ -306,7 +306,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
         newPipe.project('key, 'value)
       }
       //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](pipeWithRedAndDescriptions, ('key, 'value))(flowDef, mode, tuple2Converter)
+      TypedPipe.from[(K, R)](pipeWithRedAndDescriptions, ('key, 'value))(flowDef, tuple2Converter)
     })
   }
 }
