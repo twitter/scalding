@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
+import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
@@ -221,11 +221,9 @@ object Execution {
    * as it is evaluating.
    */
   private[scalding] class EvalCache {
-    private[this] val cache =
-      new ConcurrentHashMap[Execution[Any], Future[(Any, ExecutionCounters)]]()
+    private[this] val cache = new FutureCache[Execution[Any], (Any, ExecutionCounters)]
 
-    private[this] val toWriteCache =
-      new ConcurrentHashMap[ToWrite, Future[ExecutionCounters]]()
+    private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
 
     /**
      * We send messages from other threads into the submit thread here
@@ -294,40 +292,17 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] = {
-      /*
-       * Since we don't want to evaluate res twice, we make a promise
-       * which we will use if it has not already been evaluated
-       */
-      val promise = Promise[ExecutionCounters]()
-      val fut = promise.future
-      toWriteCache.putIfAbsent(write, fut) match {
-        case null =>
-          Left(promise)
-        case exists =>
-          Right(exists)
-      }
-    }
+    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
+      toWriteCache.getOrPromise(write)
 
     def getOrElseInsertWithFeedback[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): (Boolean, Future[(T, ExecutionCounters)]) = {
-      /*
-       * Since we don't want to evaluate res twice, we make a promise
-       * which we will use if it has not already been evaluated
-       */
-      val promise = Promise[(T, ExecutionCounters)]()
-      val fut = promise.future
-      cache.putIfAbsent(ex, fut) match {
-        case null =>
-          // note res is by-name, so we just evaluate it now:
-          promise.completeWith(res)
-          (true, fut)
-        case exists => (false, exists.asInstanceOf[Future[(T, ExecutionCounters)]])
-      }
-    }
+      res: => Future[(T, ExecutionCounters)]): (Boolean, Future[(T, ExecutionCounters)]) =
+      // This cast is safe because we always insert with match T types
+      cache.getOrElseUpdateIsNew(ex, res)
+        .asInstanceOf[(Boolean, Future[(T, ExecutionCounters)])]
 
     def getOrElseInsert[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] =
+      res: => Future[(T, ExecutionCounters)]): Future[(T, ExecutionCounters)] =
       getOrElseInsertWithFeedback(ex, res)._2
   }
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
