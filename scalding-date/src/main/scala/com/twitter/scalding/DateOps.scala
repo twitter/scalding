@@ -27,35 +27,49 @@ object DateOps extends java.io.Serializable {
   val PACIFIC = TimeZone.getTimeZone("America/Los_Angeles")
   val UTC = TimeZone.getTimeZone("UTC")
 
+  val DATE_WITH_DASH = "yyyy-MM-dd"
+  val DATEHOUR_WITH_DASH = "yyyy-MM-dd HH"
+  val DATETIME_WITH_DASH = "yyyy-MM-dd HH:mm"
+  val DATETIME_HMS_WITH_DASH = "yyyy-MM-dd HH:mm:ss"
+  val DATETIME_HMSM_WITH_DASH = "yyyy-MM-dd HH:mm:ss.SSS"
+
   sealed abstract class Format(val pattern: String, val validator: Regex)
 
-  private val DATE_RE = """\d{4}-\d{2}-\d{2}"""
-  private val SEP_RE = """(T?|\s*)"""
+  object Format {
+    private val DATE_RE = """\d{4}-\d{2}-\d{2}"""
+    private val SEP_RE = """(T?|\s*)"""
 
-  case object DATE_WITH_DASH extends Format("yyyy-MM-dd", new Regex("""^\s*""" + DATE_RE + """\s*$"""))
-  case object DATEHOUR_WITH_DASH extends Format("yyyy-MM-dd HH", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d\s*$"""))
-  case object DATETIME_WITH_DASH extends Format("yyyy-MM-dd HH:mm", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d\s*$"""))
-  case object DATETIME_HMS_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\s*$"""))
-  case object DATETIME_HMSM_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss.SSS", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$"""))
-
-  val formats = List(DATE_WITH_DASH, DATEHOUR_WITH_DASH, DATETIME_WITH_DASH, DATETIME_HMS_WITH_DASH, DATETIME_HMSM_WITH_DASH)
+    case object DATE_WITH_DASH extends Format("yyyy-MM-dd", new Regex("""^\s*""" + DATE_RE + """\s*$"""))
+    case object DATEHOUR_WITH_DASH extends Format("yyyy-MM-dd HH", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d\s*$"""))
+    case object DATETIME_WITH_DASH extends Format("yyyy-MM-dd HH:mm", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d\s*$"""))
+    case object DATETIME_HMS_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\s*$"""))
+    case object DATETIME_HMSM_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss.SSS", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$"""))
+  }
 
   private val prepare: String => String = { (str: String) =>
     str.replace("T", " ") //We allow T to separate dates and times, just remove it and then validate
       .replaceAll("[/_]", "-") // Allow for slashes and underscores
   }
+
   /**
    * Return the guessed format for this datestring
    */
-  def getFormat(s: String): Option[Format] =
+  def getFormatObject(s: String): Option[Format] = {
+    val formats: List[Format] = List(Format.DATE_WITH_DASH, Format.DATEHOUR_WITH_DASH,
+      Format.DATETIME_WITH_DASH, Format.DATETIME_HMS_WITH_DASH, Format.DATETIME_HMSM_WITH_DASH)
+
     formats.find { _.validator.findFirstIn(prepare(s)).isDefined }
+  }
+
+  /**
+   * Return the guessed format for this datestring
+   */
+  def getFormat(s: String): Option[String] = getFormatObject(s).map(_.pattern)
 
   /**
    * The DateParser returned here is based on SimpleDateFormat, which is not thread-safe.
    * Do not share the result across threads.
    */
   def getDateParser(s: String): Option[DateParser] =
-    getFormat(s).map { fmt =>
-      DateParser.from(new SimpleDateFormat(fmt.pattern)).contramap(prepare)
-    }
+    getFormat(s).map { fmt => DateParser.from(new SimpleDateFormat(fmt)).contramap(prepare) }
 }
