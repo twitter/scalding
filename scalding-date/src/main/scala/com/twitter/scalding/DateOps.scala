@@ -33,17 +33,21 @@ object DateOps extends java.io.Serializable {
   val DATETIME_HMS_WITH_DASH = "yyyy-MM-dd HH:mm:ss"
   val DATETIME_HMSM_WITH_DASH = "yyyy-MM-dd HH:mm:ss.SSS"
 
-  sealed abstract class Format(val pattern: String, val validator: Regex)
+  private[scalding] sealed abstract class Format(val pattern: String, val validator: Regex) {
+    def matches(s: String): Boolean = validator.findFirstIn(s).isDefined
+  }
 
-  object Format {
-    private val DATE_RE = """\d{4}-\d{2}-\d{2}"""
-    private val SEP_RE = """(T?|\s*)"""
+  private[scalding] object Format {
+    private val date = """\d{4}-\d{2}-\d{2}"""
+    private val sep = """(T?|\s*)"""
+    private val emptyBegin = """^\s*"""
+    private val emptyEnd = """\s*$"""
 
-    case object DATE_WITH_DASH extends Format("yyyy-MM-dd", new Regex("""^\s*""" + DATE_RE + """\s*$"""))
-    case object DATEHOUR_WITH_DASH extends Format("yyyy-MM-dd HH", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d\s*$"""))
-    case object DATETIME_WITH_DASH extends Format("yyyy-MM-dd HH:mm", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d\s*$"""))
-    case object DATETIME_HMS_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\s*$"""))
-    case object DATETIME_HMSM_WITH_DASH extends Format("yyyy-MM-dd HH:mm:ss.SSS", new Regex("""^\s*""" + DATE_RE + SEP_RE + """\d\d:\d\d:\d\d\.\d{1,3}\s*$"""))
+    case object DATE_WITH_DASH extends Format(DateOps.DATE_WITH_DASH, new Regex(emptyBegin + date + emptyEnd))
+    case object DATEHOUR_WITH_DASH extends Format(DateOps.DATEHOUR_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d""" + emptyEnd))
+    case object DATETIME_WITH_DASH extends Format(DateOps.DATETIME_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d""" + emptyEnd))
+    case object DATETIME_HMS_WITH_DASH extends Format(DateOps.DATETIME_HMS_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d:\d\d""" + emptyEnd))
+    case object DATETIME_HMSM_WITH_DASH extends Format(DateOps.DATETIME_HMSM_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d:\d\d\.\d{1,3}""" + emptyEnd))
   }
 
   private val prepare: String => String = { (str: String) =>
@@ -54,11 +58,11 @@ object DateOps extends java.io.Serializable {
   /**
    * Return the guessed format for this datestring
    */
-  def getFormatObject(s: String): Option[Format] = {
+  private[scalding] def getFormatObject(s: String): Option[Format] = {
     val formats: List[Format] = List(Format.DATE_WITH_DASH, Format.DATEHOUR_WITH_DASH,
       Format.DATETIME_WITH_DASH, Format.DATETIME_HMS_WITH_DASH, Format.DATETIME_HMSM_WITH_DASH)
 
-    formats.find { _.validator.findFirstIn(prepare(s)).isDefined }
+    formats.find { _.matches(prepare(s)) }
   }
 
   /**
