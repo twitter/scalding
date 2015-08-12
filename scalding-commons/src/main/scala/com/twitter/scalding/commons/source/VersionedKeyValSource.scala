@@ -110,7 +110,7 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
     }
   }
 
-  def resourceExists(mode: Mode) =
+  def resourceExists(mode: Mode): Boolean =
     mode match {
       case Test(buffers) => {
         buffers(this) map { !_.isEmpty } getOrElse false
@@ -122,6 +122,25 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
         val conf = new JobConf(mode.asInstanceOf[HadoopMode].jobConf)
         source.resourceExists(conf)
       }
+    }
+
+  def sinkExists(mode: Mode): Boolean =
+    sinkVersion match {
+      case Some(version) =>
+        mode match {
+          case Test(buffers) =>
+            buffers(this) map { !_.isEmpty } getOrElse false
+
+          case HadoopTest(conf, buffers) =>
+            buffers(this) map { !_.isEmpty } getOrElse false
+
+          case m: HadoopMode =>
+            val conf = new JobConf(m.jobConf)
+            val store = sink.getStore(conf)
+            store.hasVersion(version)
+          case _ => sys.error(s"Unknown mode $mode")
+        }
+      case None => false
     }
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
@@ -141,15 +160,15 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
   protected lazy val checkedInversion: CheckedInversion[(K, V), (Array[Byte], Array[Byte])] =
     new MaxFailuresCheck(maxFailures)(codecBox.get)
 
-  override def sinkFields = fields
+  override def sinkFields: Fields = fields
 
-  override def transformForRead(pipe: Pipe) = {
+  override def transformForRead(pipe: Pipe): Pipe = {
     pipe.flatMap((keyField, valField) -> (keyField, valField)) { pair: (Array[Byte], Array[Byte]) =>
       checkedInversion(pair)
     }
   }
 
-  override def transformForWrite(pipe: Pipe) = {
+  override def transformForWrite(pipe: Pipe): Pipe = {
     pipe.mapTo((0, 1) -> (keyField, valField)) { pair: (K, V) =>
       codecBox.get.apply(pair)
     }

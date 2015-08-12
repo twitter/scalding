@@ -388,6 +388,9 @@ trait TypedPipe[+T] extends Serializable {
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
     map { t => (g(t), t) }.group
 
+  /** Group using an explicit Ordering on the key. */
+  def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
+
   /**
    * Forces a shuffle by randomly assigning each item into one
    * of the partitions.
@@ -483,26 +486,41 @@ trait TypedPipe[+T] extends Serializable {
    * This writes the current TypedPipe into a temporary file
    * and then opens it after complete so that you can continue from that point
    */
-  def forceToDiskExecution: Execution[TypedPipe[T]] = Execution
-    .getConfigMode
-    .flatMap {
-      case (conf, mode) =>
-        mode match {
-          case _: CascadingLocal => // Local or Test mode
-            val dest = new MemorySink[T]
-            writeExecution(dest).map { _ => TypedPipe.from(dest.readResults) }
-          case _: HadoopMode =>
-            // come up with unique temporary filename, use the config here
-            // TODO: refactor into TemporarySequenceFile class
-            val tmpDir = conf.get("hadoop.tmp.dir")
-              .orElse(conf.get("cascading.tmp.dir"))
-              .getOrElse("/tmp")
+  def forceToDiskExecution: Execution[TypedPipe[T]] = {
+    val cachedRandomUUID = java.util.UUID.randomUUID
+    lazy val inMemoryDest = new MemorySink[T]
 
-            val tmpSeq = tmpDir + "/scalding/snapshot-" + java.util.UUID.randomUUID + ".seq"
-            val dest = source.TypedSequenceFile[T](tmpSeq)
-            writeThrough(dest)
-        }
+    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
+      // come up with unique temporary filename, use the config here
+      // TODO: refactor into TemporarySequenceFile class
+      val tmpDir = conf.get("hadoop.tmp.dir")
+        .orElse(conf.get("cascading.tmp.dir"))
+        .getOrElse("/tmp")
+
+      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
+      source.TypedSequenceFile[T](tmpSeq)
+
     }
+    val writeFn = { (conf: Config, mode: Mode) =>
+      mode match {
+        case _: CascadingLocal => // Local or Test mode
+          (this, inMemoryDest)
+        case _: HadoopMode =>
+          (this, hadoopTypedSource(conf))
+      }
+    }
+
+    val readFn = { (conf: Config, mode: Mode) =>
+      mode match {
+        case _: CascadingLocal => // Local or Test mode
+          TypedPipe.from(inMemoryDest.readResults)
+        case _: HadoopMode =>
+          TypedPipe.from(hadoopTypedSource(conf))
+      }
+    }
+
+    Execution.write(writeFn, readFn)
+  }
 
   /**
    * This gives an Execution that when run evaluates the TypedPipe,
@@ -555,8 +573,7 @@ trait TypedPipe[+T] extends Serializable {
    * that location going forward, use this.
    */
   def writeThrough[U >: T](dest: TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
-    writeExecution(dest)
-      .map(_ => TypedPipe.from(dest))
+    Execution.write(this, dest, TypedPipe.from(dest))
 
   /**
    * If you want to writeThrough to a specific file if it doesn't already exist,

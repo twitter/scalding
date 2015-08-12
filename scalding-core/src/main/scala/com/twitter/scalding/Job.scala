@@ -498,6 +498,29 @@ class ScriptJob(cmds: Iterable[String]) extends Job(Args("")) {
   }
 }
 
+/**
+ * Allows custom counter verification logic when the job completes.
+ */
+trait CounterVerification extends Job {
+  /**
+   * Verify counter values. The job will fail if this returns false or throws an exception.
+   */
+  def verifyCounters(counters: Map[StatKey, Long]): Try[Unit]
+
+  /**
+   * Override this to false to skip counter verification in tests.
+   */
+  def verifyCountersInTest: Boolean = true
+
+  override def listeners: List[FlowListener] = {
+    if (this.mode.isInstanceOf[TestMode] && !this.verifyCountersInTest) {
+      super.listeners
+    } else {
+      super.listeners :+ new StatsFlowListener(this.verifyCounters)
+    }
+  }
+}
+
 private[scalding] object FlowStepStrategies {
   /**
    * Returns a new FlowStepStrategy that runs both strategies in sequence.
