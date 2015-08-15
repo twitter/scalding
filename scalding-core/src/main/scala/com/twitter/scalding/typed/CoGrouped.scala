@@ -24,6 +24,7 @@ import com.twitter.scalding._
 
 import scala.collection.JavaConverters._
 
+import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.TupleConverter.tuple2Converter
 import com.twitter.scalding.TupleSetter.tup2Setter
 
@@ -311,7 +312,15 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
   }
 }
 
-abstract class CoGroupedJoiner[K](inputSize: Int, getter: TupleGetter[K], joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
+abstract class CoGroupedJoiner[K](inputSize: Int,
+  getter: TupleGetter[K],
+  @transient inJoinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
+
+  /**
+   * We have a test that should fail if Externalizer is not used here.
+   * you can test failure of that test by replacing Externalizer with Some
+   */
+  val joinFunction = Externalizer(inJoinFunction)
   val distinctSize: Int
   def distinctIndexOf(originalPos: Int): Int
 
@@ -335,7 +344,7 @@ abstract class CoGroupedJoiner[K](inputSize: Int, getter: TupleGetter[K], joinFu
       new Iterable[CTuple] { def iterator = jc.getIterator(didx).asScala }
 
     val rest = restIndices.map(toIterable(_))
-    joinFunction(key, leftMost, rest).map { rval =>
+    joinFunction.get(key, leftMost, rest).map { rval =>
       // There always has to be the same number of resulting fields as input
       // or otherwise the flow planner will throw
       val res = CTuple.size(distinctSize)
@@ -351,8 +360,8 @@ abstract class CoGroupedJoiner[K](inputSize: Int, getter: TupleGetter[K], joinFu
 // If all the input pipes are unique, this works:
 class DistinctCoGroupJoiner[K](count: Int,
   getter: TupleGetter[K],
-  joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
-  extends CoGroupedJoiner[K](count, getter, joinFunction) {
+  @transient joinF: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
+  extends CoGroupedJoiner[K](count, getter, joinF) {
   val distinctSize = count
   def distinctIndexOf(idx: Int) = idx
 }
