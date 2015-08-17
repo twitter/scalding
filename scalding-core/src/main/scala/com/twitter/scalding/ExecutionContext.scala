@@ -25,6 +25,7 @@ import org.apache.hadoop.mapred.JobConf
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
+import org.slf4j.{ Logger, LoggerFactory }
 
 /*
  * This has all the state needed to build a single flow
@@ -35,6 +36,8 @@ trait ExecutionContext {
   def config: Config
   def flowDef: FlowDef
   def mode: Mode
+
+  import ExecutionContext._
 
   private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
@@ -92,20 +95,14 @@ trait ExecutionContext {
           config.get(Config.ReducerEstimators)
             .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
 
-          config.get(Config.FlowListeners).foreach { clsNames: String =>
-            println(s"XXX adding FlowListeners $clsNames")
-            val clsLoader = Thread.currentThread.getContextClassLoader
-            StringUtility.fastSplit(clsNames, ",")
-              .map { clsLoader.loadClass(_).newInstance.asInstanceOf[FlowListener] }
-              .map { flow.addListener(_) }
+          config.getFlowListeners.foreach { tTry: Try[(Mode, Config) => FlowListener] =>
+            val t: (Mode, Config) => FlowListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow listener $tTry when submitting job"))
+            flow.addListener(t(mode, config))
           }
 
-          config.get(Config.FlowStepListeners).foreach { clsNames: String =>
-            println(s"XXX adding FlowStepListeners $clsNames")
-            val clsLoader = Thread.currentThread.getContextClassLoader
-            StringUtility.fastSplit(clsNames, ",")
-              .map { clsLoader.loadClass(_).newInstance.asInstanceOf[FlowStepListener] }
-              .map { flow.addStepListener(_) }
+          config.getFlowStepListeners.foreach { tTry: Try[(Mode, Config) => FlowStepListener] =>
+            val t: (Mode, Config) => FlowStepListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow step listener $tTry when submitting job"))
+            flow.addStepListener(t(mode, config))
           }
 
         case _ => ()
@@ -141,6 +138,8 @@ trait ExecutionContext {
  * modeFromImplicit, etc... below.
  */
 object ExecutionContext {
+  private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
+
   private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
     baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)

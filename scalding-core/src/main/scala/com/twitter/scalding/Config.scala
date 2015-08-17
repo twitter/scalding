@@ -17,11 +17,12 @@ package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
-import com.twitter.chill.KryoInstantiator
+import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
+import com.twitter.bijection.{ Base64String, Injection }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ FlowListener, FlowProps }
+import cascading.flow.{ FlowListener, FlowStepListener, FlowProps }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -301,25 +302,35 @@ trait Config extends Serializable {
   /**
    * configure flow listeneres for observability
    */
-  def addFlowListener[T](cls: Class[T]): Config =
-    addFlowListener(cls.getName)
-  def addFlowListener(clsName: String): Config =
+  def addFlowListener(flowListenerProvider: (Mode, Config) => FlowListener): Config = {
+    val serializedListener = flowListenerSerializer(flowListenerProvider)
     update(Config.FlowListeners) {
-      case None => (Some(clsName), ())
-      case Some(lst) => (Some(s"$clsName,$lst"), ())
+      case None => (Some(serializedListener), ())
+      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
     }._2
-  def setFlowListeners(clsList: String): Config =
-    this + (Config.FlowListeners -> clsList)
+  }
 
-  def addFlowStepListener[T](cls: Class[T]): Config =
-    addFlowStepListener(cls.getName)
-  def addFlowStepListener(clsName: String): Config =
+  def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
+    get(Config.FlowListeners)
+      .toIterable
+      .flatMap(s => StringUtility.fastSplit(s, ","))
+      .map(flowListenerSerializer.invert(_))
+      .toList
+
+  def addFlowStepListener(flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
+    val serializedListener = flowStepListenerSerializer(flowListenerProvider)
     update(Config.FlowStepListeners) {
-      case None => (Some(clsName), ())
-      case Some(lst) => (Some(s"$clsName,$lst"), ())
+      case None => (Some(serializedListener), ())
+      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
     }._2
-  def setFlowStepListeners(clsList: String): Config =
-    this + (Config.FlowStepListeners -> clsList)
+  }
+
+  def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
+    get(Config.FlowStepListeners)
+      .toIterable
+      .flatMap(s => StringUtility.fastSplit(s, ","))
+      .map(flowStepListenerSerializer.invert(_))
+      .toList
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
@@ -501,4 +512,10 @@ object Config {
     is.close()
     md5Hex(bytes)
   }
+
+  private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =
+    Injection.connect[T, Externalizer[T], Array[Byte], Base64String, String]
+
+  @transient private[scalding] lazy val flowStepListenerSerializer = buildInj[(Mode, Config) => FlowStepListener]
+  @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
 }
