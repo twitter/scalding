@@ -73,6 +73,7 @@ object DateRange extends java.io.Serializable {
  */
 case class DateRange(val start: RichDate, val end: RichDate) {
   import DateOps._
+  require(start <= end)
   /**
    * shift this by the given unit
    */
