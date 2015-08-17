@@ -150,6 +150,48 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
   }
 }
 
+// This is a non-serializable class
+class OpaqueJoinBox(i: Int) { def get = i }
+
+class TypedPipeJoinKryoJob(args: Args) extends Job(args) {
+  val box = new OpaqueJoinBox(2)
+  TypedPipe.from(TypedText.tsv[(Int, Int)]("inputFile0"))
+    .join(TypedPipe.from(TypedText.tsv[(Int, Int)]("inputFile1")))
+    .mapValues { case (x, y) => x * y * box.get }
+    .write(TypedText.tsv[(Int, Int)]("outputFile"))
+}
+
+class TypedPipeJoinKryoTest extends WordSpec with Matchers {
+  "OpaqueJoinBox" should {
+    "not be serializable" in {
+      serialization.Externalizer(new OpaqueJoinBox(1)).javaWorks shouldBe false
+    }
+    "closure not be serializable" in {
+      val box = new OpaqueJoinBox(2)
+
+      val fn = { v: Int => v * box.get }
+
+      serialization.Externalizer(fn).javaWorks shouldBe false
+    }
+  }
+  "A TypedPipeJoinKryo" should {
+    JobTest(new com.twitter.scalding.TypedPipeJoinKryoJob(_))
+      .source(TypedText.tsv[(Int, Int)]("inputFile0"), List((0, 0), (1, 1), (2, 2), (3, 3), (4, 5)))
+      .source(TypedText.tsv[(Int, Int)]("inputFile1"), List((0, 1), (1, 2), (2, 3), (3, 4)))
+      .typedSink[(Int, Int)](TypedText.tsv[(Int, Int)]("outputFile")){ outputBuffer =>
+        val outMap = outputBuffer.toMap
+        "correctly join" in {
+          outMap should have size 4
+          outMap(0) shouldBe 0
+          outMap(1) shouldBe 4
+          outMap(2) shouldBe 12
+          outMap(3) shouldBe 24
+        }
+      }(implicitly[TypeDescriptor[(Int, Int)]].converter)
+      .runHadoop // need hadoop to test serialization
+      .finish
+  }
+}
 class TypedPipeDistinctJob(args: Args) extends Job(args) {
   Tsv("inputFile").read.toTypedPipe[(Int, Int)](0, 1)
     .distinct

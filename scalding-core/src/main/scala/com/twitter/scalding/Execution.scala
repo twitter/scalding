@@ -19,7 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
+import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
@@ -221,8 +221,9 @@ object Execution {
    * as it is evaluating.
    */
   private[scalding] class EvalCache {
-    private[this] val cache =
-      new ConcurrentHashMap[Execution[Any], Future[(Any, ExecutionCounters)]]()
+    private[this] val cache = new FutureCache[Execution[Any], (Any, ExecutionCounters)]
+
+    private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
 
     /**
      * We send messages from other threads into the submit thread here
@@ -291,24 +292,19 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrElseInsert[T](ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)])(implicit ec: ConcurrentExecutionContext): Future[(T, ExecutionCounters)] = {
-      /*
-       * Since we don't want to evaluate res twice, we make a promise
-       * which we will use if it has not already been evaluated
-       */
-      val promise = Promise[(T, ExecutionCounters)]()
-      val fut = promise.future
-      cache.putIfAbsent(ex, fut) match {
-        case null =>
-          // note res is by-name, so we just evaluate it now:
-          promise.completeWith(res)
-          fut
-        case exists => exists.asInstanceOf[Future[(T, ExecutionCounters)]]
-      }
-    }
-  }
+    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
+      toWriteCache.getOrPromise(write)
 
+    def getOrElseInsertWithFeedback[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)]): (Boolean, Future[(T, ExecutionCounters)]) =
+      // This cast is safe because we always insert with match T types
+      cache.getOrElseUpdateIsNew(ex, res)
+        .asInstanceOf[(Boolean, Future[(T, ExecutionCounters)])]
+
+    def getOrElseInsert[T](ex: Execution[T],
+      res: => Future[(T, ExecutionCounters)]): Future[(T, ExecutionCounters)] =
+      getOrElseInsertWithFeedback(ex, res)._2
+  }
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this,
@@ -374,12 +370,81 @@ object Execution {
         prev.runStats(conf, mode, cache)
           .recoverWith(fn.andThen(_.runStats(conf, mode, cache))))
   }
+
+  /**
+   * Use our internal faster failing zip function rather than the standard one due to waiting
+   */
+  def failFastSequence[T](t: Iterable[Future[T]])(implicit cec: ConcurrentExecutionContext): Future[List[T]] = {
+    t.foldLeft(Future.successful(Nil: List[T])) { (f, i) =>
+      failFastZip(f, i).map { case (tail, h) => h :: tail }
+    }
+      .map(_.reverse)
+  }
+
+  /**
+   * Standard scala zip waits forever on the left side, even if the right side fails
+   */
+  def failFastZip[T, U](ft: Future[T], fu: Future[U])(implicit cec: ConcurrentExecutionContext): Future[(T, U)] = {
+    type State = Either[(T, Promise[U]), (U, Promise[T])]
+    val middleState = Promise[State]()
+
+    ft.onComplete {
+      case f @ Failure(err) =>
+        if (!middleState.tryFailure(err)) {
+          // the right has already succeeded
+          middleState.future.foreach {
+            case Right((_, pt)) => pt.complete(f)
+            case Left((t1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Failure($err) but Left($t1) already set")
+          }
+        }
+      case Success(t) =>
+        // Create the next promise:
+        val pu = Promise[U]()
+        if (!middleState.trySuccess(Left((t, pu)))) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Right((_, pt)) => pt.success(t)
+            case Left((t1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Left($t) but Left($t1) already set")
+          }
+        }
+    }
+    fu.onComplete {
+      case f @ Failure(err) =>
+        if (!middleState.tryFailure(err)) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Left((_, pu)) => pu.complete(f)
+            case Right((u1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Failure($err) but Right($u1) already set")
+          }
+        }
+      case Success(u) =>
+        // Create the next promise:
+        val pt = Promise[T]()
+        if (!middleState.trySuccess(Right((u, pt)))) {
+          // we can't set, so the other promise beat us here.
+          middleState.future.foreach {
+            case Left((_, pu)) => pu.success(u)
+            case Right((u1, _)) => // This should never happen
+              sys.error(s"Logic error: tried to set Right($u) but Right($u1) already set")
+          }
+        }
+    }
+
+    middleState.future.flatMap {
+      case Left((t, pu)) => pu.future.map((t, _))
+      case Right((u, pt)) => pt.future.map((_, u))
+    }
+  }
+
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(this, {
         val f1 = one.runStats(conf, mode, cache)
         val f2 = two.runStats(conf, mode, cache)
-        f1.zip(f2)
+        failFastZip(f1, f2)
           .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) }
       })
   }
@@ -408,27 +473,114 @@ object Execution {
    * This is here so we can call without knowing the type T
    * but with proof that pipe matches sink
    */
-  private case class ToWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) {
-    def write(flowDef: FlowDef, mode: Mode): Unit = {
+
+  private trait ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
+  }
+  private case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
       // This has the side effect of mutating flowDef
       pipe.write(sink)(flowDef, mode)
       ()
     }
   }
+
+  private case class PreparedWrite[T](fn: (Config, Mode) => SimpleWrite[T]) extends ToWrite {
+    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit =
+      fn(config, mode).write(config, flowDef, mode)
+  }
+
   /**
    * This is the fundamental execution that actually happens in TypedPipes, all the rest
    * are based on on this one. By keeping the Pipe and the Sink, can inspect the Execution
    * DAG and optimize it later (a goal, but not done yet).
    */
-  private case class WriteExecution(head: ToWrite[_], tail: List[ToWrite[_]]) extends Execution[Unit] {
+  private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
+
+    /**
+     * Apply a pure function to the result. This may not
+     * be called if subsequently the result is discarded with .unit
+     * For side effects see onComplete.
+     *
+     * Here we inline the map operation into the presentation function so we can zip after map.
+     */
+    override def map[U](mapFn: T => U): Execution[U] =
+      WriteExecution(head, tail, { (conf: Config, mode: Mode) => mapFn(fn(conf, mode)) })
+
+    /* Run a list of ToWrite elements */
+    private[this] def scheduleToWrites(conf: Config,
+      mode: Mode,
+      cache: EvalCache,
+      head: ToWrite,
+      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[ExecutionCounters] = {
+      for {
+        flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
+        _ = FlowStateMap.validateSources(flowDef, mode)
+        jobStats <- cache.runFlowDef(conf, mode, flowDef)
+        _ = FlowStateMap.clear(flowDef)
+      } yield (ExecutionCounters.fromJobStats(jobStats))
+    }
+
+    def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
+      case (a, Left(b)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        ((a, b) :: l, r)
+      case (a, Right(c)) :: tail =>
+        val (l, r) = unwrapListEither(tail)
+        (l, (a, c) :: r)
+      case Nil => (Nil, Nil)
+    }
+
+    // We look up to see if any of our ToWrite elements have already been ran
+    // if so we remove them from the cache.
+    // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
-        for {
-          flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(fd, mode)); fd })
-          _ = FlowStateMap.validateSources(flowDef, mode)
-          jobStats <- cache.runFlowDef(conf, mode, flowDef)
-          _ = FlowStateMap.clear(flowDef)
-        } yield ((), ExecutionCounters.fromJobStats(jobStats)))
+      cache.getOrElseInsert(this, {
+        val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
+        val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
+
+        val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+        otherResult.value match {
+          case Some(Failure(e)) => Future.failed(e)
+          case _ => // Either successful or not completed yet
+            val localFlowDefCountersFuture: Future[ExecutionCounters] =
+              weDoOperation match {
+                case all @ (h :: tail) =>
+                  val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+                  // Complete all of the promises we put into the cache
+                  // with this future counters set
+                  weDoOperation.foreach {
+                    case (toWrite, promise) =>
+                      promise.completeWith(futCounters)
+                  }
+                  futCounters
+                case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
+              }
+
+            failFastZip(otherResult, localFlowDefCountersFuture).map {
+              case (lCounters, fdCounters) =>
+                val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+                (fn(conf, mode), summedCounters)
+            }
+        }
+      })
+
+    /*
+     * run this and that in parallel, without any dependency. This will
+     * be done in a single cascading flow if possible.
+     *
+     * If both sides are write executions then merge them
+     */
+    override def zip[U](that: Execution[U]): Execution[(T, U)] =
+      that match {
+        case WriteExecution(h, t, otherFn) =>
+          val newFn = { (conf: Config, mode: Mode) =>
+            (fn(conf, mode), otherFn(conf, mode))
+          }
+          WriteExecution(head, h :: t ::: tail, newFn)
+        case o => Zipped(this, that)
+      }
+
   }
 
   /**
@@ -479,9 +631,31 @@ object Execution {
 
   /**
    * Creates an Execution to do a write
+   *
+   * This variant allows the user to supply a method using the config and mode to build a new
+   * type U for the resultant execution.
+   */
+  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
+    WriteExecution(SimpleWrite(pipe, sink), Nil, generatorFn)
+
+  /**
+   * The simplest form, just sink the typed pipe into the sink and get a unit execution back
    */
   private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
-    WriteExecution(ToWrite(pipe, sink), Nil)
+    write(pipe, sink, ())
+
+  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], presentType: => U): Execution[U] =
+    WriteExecution(SimpleWrite(pipe, sink), Nil, { (_: Config, _: Mode) => presentType })
+
+  /**
+   * Here we allow both the targets to write and the sources to be generated from the config and mode.
+   * This allows us to merge things looking for the config and mode without using flatmap.
+   */
+  private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U): Execution[U] =
+    WriteExecution(PreparedWrite({ (cfg: Config, m: Mode) =>
+      val r = fn(cfg, m)
+      SimpleWrite(r._1, r._2)
+    }), Nil, generatorFn)
 
   /**
    * Convenience method to get the Args

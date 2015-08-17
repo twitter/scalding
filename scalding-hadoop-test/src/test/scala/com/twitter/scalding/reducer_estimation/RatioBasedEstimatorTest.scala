@@ -28,10 +28,33 @@ object ErrorHistoryService extends HistoryService {
     Failure(new RuntimeException("Failed to fetch job history"))
 }
 
-abstract class HistoryServiceWithData extends HistoryService {
+object HistoryServiceWithData {
 
   // we only care about these two input size fields for RatioBasedEstimator
-  protected def makeHistory(inputHdfsBytesRead: Long, inputHdfsReduceFileBytesRead: Long) =
+  def makeHistory(inputHdfsBytesRead: Long, inputHdfsReduceFileBytesRead: Long): FlowStepHistory =
+    makeHistory(inputHdfsBytesRead, inputHdfsReduceFileBytesRead, Seq())
+
+  def makeHistory(inputHdfsBytesRead: Long, inputHdfsReduceFileBytesRead: Long, taskRuntimes: Seq[Long]): FlowStepHistory = {
+    val random = new scala.util.Random(123)
+    val tasks = taskRuntimes.map { time =>
+      val startTime = random.nextLong
+      Task(
+        taskId = "foo",
+        taskType = "REDUCE",
+        status = "SUCCEEDED",
+        splits = Seq(),
+        startTime = startTime,
+        finishTime = startTime + time,
+        taskAttemptId = "foo",
+        trackerName = "foo",
+        httpPort = random.nextInt,
+        hostname = "foo",
+        state = "foo",
+        error = "foo",
+        shuffleFinished = random.nextInt,
+        sortFinished = random.nextInt)
+    }
+
     FlowStepHistory(
       keys = null,
       submitTime = 0,
@@ -52,12 +75,17 @@ abstract class HistoryServiceWithData extends HistoryService {
       reducerTimeMillis = 0L,
       reduceShuffleBytes = 0L,
       cost = 1.1,
-      tasks = Nil)
+      tasks = tasks)
+  }
 
-  protected def inputSize = HipJob.InSrcFileSize
+  def inputSize = HipJob.InSrcFileSize
 }
 
+abstract class HistoryServiceWithData extends HistoryService
+
 object ValidHistoryService extends HistoryServiceWithData {
+  import HistoryServiceWithData._
+
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
     // past reducer ratio 0.5
     Success(
@@ -69,6 +97,8 @@ object ValidHistoryService extends HistoryServiceWithData {
 }
 
 object InvalidHistoryService extends HistoryServiceWithData {
+  import HistoryServiceWithData._
+
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
     // all entries below the 10% threshold for past input size
     Success(
@@ -131,7 +161,8 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
     }
 
     "set reducers correctly when there is valid history" in {
-      val customConfig = Config.empty.addReducerEstimator(classOf[ValidHistoryBasedEstimator]) +
+      val customConfig = Config.empty
+        .addReducerEstimator(classOf[ValidHistoryBasedEstimator]) +
         (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
         (RatioBasedEstimator.inputRatioThresholdKey -> 0.10f.toString)
 

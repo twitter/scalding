@@ -110,8 +110,13 @@ trait HistoryReducerEstimator extends ReducerEstimator {
 }
 
 case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
-    first.estimateReducers(info) orElse fallback.estimateReducers(info)
+    first.estimateReducers(info).orElse {
+      LOG.warn(s"$first estimator failed. Falling back to $fallback.")
+      fallback.estimateReducers(info)
+    }
 }
 
 object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {

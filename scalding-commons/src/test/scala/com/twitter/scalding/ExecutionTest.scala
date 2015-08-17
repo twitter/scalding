@@ -23,7 +23,7 @@ import com.twitter.algebird.monad.Reader
 // Need this to flatMap Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Promise }
 import scala.util.Try
 
 import com.twitter.scalding.examples.KMeans
@@ -92,6 +92,20 @@ class ExecutionTest extends WordSpec with Matchers {
       val result = ExecutionTestJobs.mergeFanout(input).waitFor(Config.default, Local(false)).get
       val cres = correct(input)
       unorderedEq(cres, result.toList) shouldBe true
+    }
+    "If either fails, zip fails, else we get success" in {
+      val neverHappens = Promise[Int]().future
+      Execution.fromFuture { _ => neverHappens }
+        .zip(Execution.failed(new Exception("oh no")))
+        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+
+      Execution.failed(new Exception("oh no"))
+        .zip(Execution.fromFuture { _ => neverHappens })
+        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+      // If both are good, we succeed:
+      Execution.from(1)
+        .zip(Execution.from("1"))
+        .waitFor(Config.default, Local(true)).get shouldBe (1, "1")
     }
   }
   "Execution K-means" should {
@@ -171,6 +185,57 @@ class ExecutionTest extends WordSpec with Matchers {
       val res = e3.zip(e2)
       res.waitFor(Config.default, Local(true))
       assert((first, second, third) == (1, 1, 1))
+    }
+
+    "evaluate shared portions just once, writeExecution" in {
+
+      var timesEvaluated = 0
+      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
+        timesEvaluated += 1
+        List(i, i)
+      }.fork
+
+      val fde1 = baseTp.map{ _ * 3 }.writeExecution(TypedTsv("/tmp/asdf"))
+      val fde2 = baseTp.map{ _ * 5 }.writeExecution(TypedTsv("/tmp/asdf2"))
+
+      val res = fde1.zip(fde2)
+
+      res.waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
+    }
+
+    "evaluate shared portions just once, forceToDiskExecution" in {
+
+      var timesEvaluated = 0
+      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
+        timesEvaluated += 1
+        List(i, i)
+      }.fork
+
+      val fde1 = baseTp.map{ _ * 3 }.forceToDiskExecution
+      val fde2 = baseTp.map{ _ * 5 }.forceToDiskExecution
+
+      val res = fde1.zip(fde2)
+
+      res.waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
+    }
+
+    "evaluate shared portions just once, forceToDiskExecution with execution cache" in {
+
+      var timesEvaluated = 0
+      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
+        timesEvaluated += 1
+        List(i, i)
+      }.fork
+
+      val fde1 = baseTp.map{ _ * 3 }.forceToDiskExecution
+      val fde2 = baseTp.map{ _ * 5 }.forceToDiskExecution
+
+      val res = fde1.zip(fde2).flatMap{ _ => fde1 }.flatMap(_.toIterableExecution)
+
+      res.waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
     }
   }
 }
