@@ -34,11 +34,11 @@ package com.twitter.scalding {
       super.prepare(flowProcess, operationCall)
     }
 
-    var metaData: String = _
+    val descriptions: scala.collection.mutable.Set[String] = scala.collection.mutable.Set()
 
-    @Property(name = "line.number", visibility = Visibility.PRIVATE)
+    @Property(name = "descriptions", visibility = Visibility.PRIVATE)
     @PropertyDescription("scalding")
-    def getLineNumber: String = metaData
+    def getDescriptions: String = descriptions.mkString("\n")
   }
 
   class FlatMapFunction[S, T](@transient fn: S => TraversableOnce[T], fields: Fields,
