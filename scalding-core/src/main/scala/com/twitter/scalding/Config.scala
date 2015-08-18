@@ -21,7 +21,7 @@ import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.FlowProps
+import cascading.flow.{ FlowListener, FlowProps }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -298,6 +298,29 @@ trait Config extends Serializable {
   def setReducerEstimators(clsList: String): Config =
     this + (Config.ReducerEstimators -> clsList)
 
+  /**
+   * configure flow listeneres for observability
+   */
+  def addFlowListener[T](cls: Class[T]): Config =
+    addFlowListener(cls.getName)
+  def addFlowListener(clsName: String): Config =
+    update(Config.FlowListeners) {
+      case None => (Some(clsName), ())
+      case Some(lst) => (Some(s"$clsName,$lst"), ())
+    }._2
+  def setFlowListeners(clsList: String): Config =
+    this + (Config.FlowListeners -> clsList)
+
+  def addFlowStepListener[T](cls: Class[T]): Config =
+    addFlowStepListener(cls.getName)
+  def addFlowStepListener(clsName: String): Config =
+    update(Config.FlowStepListeners) {
+      case None => (Some(clsName), ())
+      case Some(lst) => (Some(s"$clsName,$lst"), ())
+    }._2
+  def setFlowStepListeners(clsList: String): Config =
+    this + (Config.FlowStepListeners -> clsList)
+
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
@@ -326,6 +349,8 @@ object Config {
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
+  val FlowListeners: String = "scalding.observability.flowlisteners.classes"
+  val FlowStepListeners: String = "scalding.observability.flowsteplisteners.classes"
 
   /**
    * Parameter that actually controls the number of reduce tasks.

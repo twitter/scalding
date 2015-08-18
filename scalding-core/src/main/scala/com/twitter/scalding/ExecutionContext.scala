@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ FlowDef, Flow }
+import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener }
 import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
@@ -91,6 +91,23 @@ trait ExecutionContext {
         case _: HadoopMode =>
           config.get(Config.ReducerEstimators)
             .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
+
+          config.get(Config.FlowListeners).foreach { clsNames: String =>
+            println(s"XXX adding FlowListeners $clsNames")
+            val clsLoader = Thread.currentThread.getContextClassLoader
+            StringUtility.fastSplit(clsNames, ",")
+              .map { clsLoader.loadClass(_).newInstance.asInstanceOf[FlowListener] }
+              .map { flow.addListener(_) }
+          }
+
+          config.get(Config.FlowStepListeners).foreach { clsNames: String =>
+            println(s"XXX adding FlowStepListeners $clsNames")
+            val clsLoader = Thread.currentThread.getContextClassLoader
+            StringUtility.fastSplit(clsNames, ",")
+              .map { clsLoader.loadClass(_).newInstance.asInstanceOf[FlowStepListener] }
+              .map { flow.addStepListener(_) }
+          }
+
         case _ => ()
       }
 
