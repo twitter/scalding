@@ -88,7 +88,9 @@ object RichPipe extends java.io.Serializable {
       encodePipeDescriptions(combinedDescriptions))
 
     p match {
-      case pp: Operator => pp.getOperation.asInstanceOf[ScaldingPrepare[_]].metaData = combinedDescriptions.mkString("\n")
+      case pp: Operator => if (pp.getOperation.isInstanceOf[ScaldingPrepare[_]]) {
+        pp.getOperation.asInstanceOf[ScaldingPrepare[_]].metaData = combinedDescriptions.mkString("\n")
+      }
       case _ => ()
     }
     p
