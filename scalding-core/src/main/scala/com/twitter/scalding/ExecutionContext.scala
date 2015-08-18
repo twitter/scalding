@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener }
+import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
 import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
@@ -70,8 +70,8 @@ trait ExecutionContext {
       name.foreach(flowDef.setName)
 
       // identify the flowDef
-      val withId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-      val flow = mode.newFlowConnector(withId).connect(flowDef)
+      val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
+      val flow = mode.newFlowConnector(configWithId).connect(flowDef)
       if (config.getRequireOrderedSerialization) {
         // This will throw, but be caught by the outer try if
         // we have groupby/cogroupby not using OrderedSerializations
@@ -92,17 +92,28 @@ trait ExecutionContext {
       // which instantiates and runs them
       mode match {
         case _: HadoopMode =>
-          config.get(Config.ReducerEstimators)
-            .foreach(_ => flow.setFlowStepStrategy(ReducerEstimatorStepStrategy))
+          val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
+
+
+          val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map { tTry: Try[(Mode, Config) => FlowStepStrategy[JobConf]] =>
+            val t: (Mode, Config) => FlowStepStrategy[JobConf] = tTry.getOrElse(throw new Exception(s"Failed to decode flow step strategy $tTry when submitting job"))
+            t(mode, configWithId)
+          }
+
+          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
+
+          optionalFinalStrategy.foreach { strategy =>
+            flow.setFlowStepStrategy(strategy)
+          }
 
           config.getFlowListeners.foreach { tTry: Try[(Mode, Config) => FlowListener] =>
             val t: (Mode, Config) => FlowListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow listener $tTry when submitting job"))
-            flow.addListener(t(mode, config))
+            flow.addListener(t(mode, configWithId))
           }
 
           config.getFlowStepListeners.foreach { tTry: Try[(Mode, Config) => FlowStepListener] =>
             val t: (Mode, Config) => FlowStepListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow step listener $tTry when submitting job"))
-            flow.addStepListener(t(mode, config))
+            flow.addStepListener(t(mode, configWithId))
           }
 
         case _ => ()

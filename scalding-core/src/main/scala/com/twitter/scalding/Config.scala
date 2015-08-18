@@ -16,13 +16,14 @@ limitations under the License.
 package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ FlowListener, FlowStepListener, FlowProps }
+import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -332,6 +333,24 @@ trait Config extends Serializable {
       .map(flowStepListenerSerializer.invert(_))
       .toList
 
+  def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
+    val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
+    update(Config.FlowStepStrategies) {
+      case None => (Some(serializedListener), ())
+      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+    }._2
+  }
+
+  def clearFlowStepStrategies: Config =
+    this.-(Config.FlowStepStrategies)
+
+  def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
+    get(Config.FlowStepStrategies)
+      .toIterable
+      .flatMap(s => StringUtility.fastSplit(s, ","))
+      .map(flowStepStrategiesSerializer.invert(_))
+      .toList
+
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
@@ -360,8 +379,9 @@ object Config {
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
-  val FlowListeners: String = "scalding.observability.flowlisteners.classes"
-  val FlowStepListeners: String = "scalding.observability.flowsteplisteners.classes"
+  val FlowListeners: String = "scalding.observability.flowlisteners"
+  val FlowStepListeners: String = "scalding.observability.flowsteplisteners"
+  val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -518,4 +538,5 @@ object Config {
 
   @transient private[scalding] lazy val flowStepListenerSerializer = buildInj[(Mode, Config) => FlowStepListener]
   @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
+  @transient private[scalding] lazy val flowStepStrategiesSerializer = buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
 }

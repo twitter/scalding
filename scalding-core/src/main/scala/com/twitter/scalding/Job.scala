@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
-
+import com.twitter.algebird.Semigroup
 import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
@@ -233,7 +233,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
             if (existing == null)
               strategy
             else
-              FlowStepStrategies.plus(
+              FlowStepStrategies[Any].plus(
                 existing.asInstanceOf[FlowStepStrategy[Any]],
                 strategy.asInstanceOf[FlowStepStrategy[Any]])
           flow.setFlowStepStrategy(composed)
@@ -521,11 +521,11 @@ trait CounterVerification extends Job {
   }
 }
 
-private[scalding] object FlowStepStrategies {
+private[scalding] case class FlowStepStrategies[A]() extends Semigroup[FlowStepStrategy[A]] {
   /**
    * Returns a new FlowStepStrategy that runs both strategies in sequence.
    */
-  def plus[A](l: FlowStepStrategy[A], r: FlowStepStrategy[A]): FlowStepStrategy[A] =
+  def plus(l: FlowStepStrategy[A], r: FlowStepStrategy[A]): FlowStepStrategy[A] =
     new FlowStepStrategy[A] {
       override def apply(
         flow: Flow[A],
