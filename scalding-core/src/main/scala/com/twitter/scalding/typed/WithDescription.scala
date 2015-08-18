@@ -25,7 +25,13 @@ trait HasDescription {
 /**
  * Used for objects that may _set_ a description to be used in .dot and MR step names.
  */
-trait WithDescription[+This <: WithDescription[This]] extends HasDescription {
+trait WithDescription[+This <: WithDescription[This]] extends HasDescription { self: This =>
   /** never mutates this, instead returns a new item. */
   def withDescription(description: String): This
+
+  def withDescription(descriptionOpt: Option[String]): This =
+    descriptionOpt match {
+      case Some(description) => withDescription(description)
+      case None => self
+    }
 }
