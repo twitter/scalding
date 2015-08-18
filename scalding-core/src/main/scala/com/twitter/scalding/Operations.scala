@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding {
 
+  import cascading.management.annotation.{ Visibility, PropertyDescription, Property }
   import cascading.operation._
   import cascading.tuple._
   import cascading.flow._
@@ -32,6 +33,12 @@ package com.twitter.scalding {
       RuntimeStats.addFlowProcess(flowProcess)
       super.prepare(flowProcess, operationCall)
     }
+
+    var metaData: String = _
+
+    @Property(name = "line.number", visibility = Visibility.PRIVATE)
+    @PropertyDescription("scalding")
+    def getLineNumber: String = metaData
   }
 
   class FlatMapFunction[S, T](@transient fn: S => TraversableOnce[T], fields: Fields,

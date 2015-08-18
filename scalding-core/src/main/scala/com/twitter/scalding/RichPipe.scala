@@ -82,9 +82,15 @@ object RichPipe extends java.io.Serializable {
   }
 
   def setPipeDescriptions(p: Pipe, descriptions: Seq[String]): Pipe = {
+    val combinedDescriptions = getPipeDescriptions(p) ++ descriptions
     p.getStepConfigDef().setProperty(
       Config.PipeDescriptions,
-      encodePipeDescriptions(getPipeDescriptions(p) ++ descriptions))
+      encodePipeDescriptions(combinedDescriptions))
+
+    p match {
+      case pp: Operator => pp.getOperation.asInstanceOf[ScaldingPrepare[_]].metaData = combinedDescriptions.mkString("\n")
+      case _ => ()
+    }
     p
   }
 
