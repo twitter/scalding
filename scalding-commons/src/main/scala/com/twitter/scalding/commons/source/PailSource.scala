@@ -161,7 +161,7 @@ object PailSource {
   }
 }
 
-class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[List[String]] = null)(implicit conv: TupleConverter[T])
+class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[List[String]] = Array.empty)(implicit conv: TupleConverter[T])
   extends Source with Mappable[T] {
   import Dsl._
 
@@ -169,7 +169,7 @@ class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[L
   val fieldName = "pailItem"
 
   lazy val getTap = {
-    val javaSubPath = if ((subPaths == null) || (subPaths.size == 0)) null else subPaths map { _.asJava }
+    val javaSubPath = subPaths map { _.asJava }
     val opts = new PailTap.PailTapOptions(spec, fieldName, javaSubPath, null)
     new PailTap(rootPath, opts)
   }
