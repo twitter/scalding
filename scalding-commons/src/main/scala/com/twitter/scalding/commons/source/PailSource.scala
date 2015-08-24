@@ -161,11 +161,12 @@ object PailSource {
   }
 }
 
-class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[List[String]] = Array.empty)(implicit conv: TupleConverter[T])
-  extends Source with Mappable[T] {
+class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[List[String]] = Array.empty)(implicit conv: TupleConverter[T], tset: TupleSetter[T])
+  extends Source with Mappable[T] with TypedSink[T] {
   import Dsl._
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
+  override def setter[U <: T]: TupleSetter[U] = TupleSetter.asSubSetter(tset)
   val fieldName = "pailItem"
 
   lazy val getTap = {
@@ -187,7 +188,6 @@ class PailSource[T] private (rootPath: String, spec: PailSpec, subPaths: Array[L
         TestTapFactory(this, tap.getScheme).createTap(readOrWrite)(mode)
     }
   }
-
 }
 
 /**
