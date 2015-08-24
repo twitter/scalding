@@ -46,12 +46,15 @@ object LineNumber {
    * easier). Otherwise it just gets the most direct
    * caller for methods that have all the callers in the scalding package
    */
-  def tryNonScaldingCaller: StackTraceElement = {
+  def tryNonScaldingCaller: Option[StackTraceElement] =
+    tryNonScaldingCaller(Thread.currentThread().getStackTrace)
+
+  def tryNonScaldingCaller(stack: Array[StackTraceElement]): Option[StackTraceElement] = {
     /* depth = 1:
      * depth 0 => tryNonScaldingCaller
      * depth 1 => caller of this method
      */
-    val stack = Thread.currentThread().getStackTrace
+
     // user code is never in our package, or in scala, but
     // since internal methods often recurse we ignore these
     // in our attempt to get a good line number for the user.
@@ -73,10 +76,7 @@ object LineNumber {
         jobClass.isAssignableFrom(cls)
       })
 
-    val directCaller = getCurrent(1, stack)
-
     scaldingJobCaller
       .orElse(nonScalding)
-      .getOrElse(directCaller)
   }
 }

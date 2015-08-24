@@ -94,7 +94,7 @@ object TypedPipe extends Serializable {
       def mapped = pipe
       def keyOrdering = ord
       def reducers = None
-      val descriptions: Seq[String] = List(LineNumber.tryNonScaldingCaller.toString)
+      val descriptions: Seq[String] = LineNumber.tryNonScaldingCaller.map(_.toString).toList
       def joinFunction = CoGroupable.castingJoinFunction[V]
     }
 
@@ -161,7 +161,7 @@ trait TypedPipe[+T] extends Serializable {
     import Dsl._
     // Ensure we hook into all pipes coming out of the typed API to apply the FlowState's properties on their pipes
     val pipe = asPipe[U](fieldNames).applyFlowConfigProperties(flowDef)
-    RichPipe.setPipeDescriptions(pipe, List(LineNumber.tryNonScaldingCaller.toString))
+    RichPipe.setPipeDescriptionFrom(pipe, LineNumber.tryNonScaldingCaller)
   }
 
   /**
@@ -379,7 +379,7 @@ trait TypedPipe[+T] extends Serializable {
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(raiseTo[(K, V)]).withDescription(LineNumber.tryNonScaldingCaller.toString)
+    Grouped(raiseTo[(K, V)]).withDescription(LineNumber.tryNonScaldingCaller.map(_.toString))
 
   /** Send all items to a single reducer */
   def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
@@ -894,23 +894,32 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
     andThen(_.sumByLocalKeys[K, V])
 
-  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) =
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
     // unwrap in a loop, without recursing
-    unwrap(this).asPipe[U](fieldNames)(flowDef, mode, setter)
+    val (unwrapped, st) = unwrap(this, Array())
+    val pipe = unwrapped.asPipe[U](fieldNames)(flowDef, mode, setter)
+    RichPipe.setPipeDescriptionFrom(pipe, LineNumber.tryNonScaldingCaller(st))
+    pipe
+  }
 
   override def toIterableExecution: Execution[Iterable[T]] = Execution.getConfigMode.flatMap {
     case (conf, mode) =>
       // This can only terminate in TypedPipeInst, which will
       // keep the reference to this flowDef
       val flowDef = new FlowDef
-      val nextPipe = unwrap(this)(flowDef, mode)
+      val (nextPipe, stackTraces) = unwrap(this, Array())(flowDef, mode)
       nextPipe.toIterableExecution
   }
 
   @annotation.tailrec
-  private def unwrap(pipe: TypedPipe[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = pipe match {
-    case TypedPipeFactory(n) => unwrap(n(flowDef, mode))
-    case tp => tp
+  private def unwrap(pipe: TypedPipe[T], st: Array[StackTraceElement])(implicit flowDef: FlowDef, mode: Mode): (TypedPipe[T], Array[StackTraceElement]) = pipe match {
+    case TypedPipeFactory(n) =>
+      val fullTrace = n match {
+        case NoStackAndThen.WithStackTrace(_, st) => st
+        case _ => Array[StackTraceElement]()
+      }
+      unwrap(n(flowDef, mode), st ++ fullTrace)
+    case tp => (tp, st)
   }
 }
 
