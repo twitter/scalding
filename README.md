@@ -68,7 +68,7 @@ The test suite takes a while to run. When you're in sbt, here's a shortcut to ru
 Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-asked-questions#issues-with-sbt) if you encounter problems when using sbt.
 
 We use [Travis CI](http://travis-ci.org/) to verify the build:
-[![Build Status](https://secure.travis-ci.org/twitter/scalding.png)](http://travis-ci.org/twitter/scalding)
+[![Build Status](https://travis-ci.org/twitter/scalding.svg?branch=develop)](http://travis-ci.org/twitter/scalding)
 
 We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage results:
 [![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
