@@ -55,21 +55,27 @@ private[source] object ExternalizerSerializer {
   }
 }
 
-private[source] object ConfigBinaryConverterProvider {
-  val ProviderConfKey = "com.twitter.scalding.lzo.converter.provider"
+private[source] object SourceConfigBinaryConverterProvider {
+  val ProviderConfKey = "com.twitter.scalding.lzo.converter.provider.source"
 }
+private[source] class SourceConfigBinaryConverterProvider[M]
+  extends ConfigBinaryConverterProvider[M](SourceConfigBinaryConverterProvider.ProviderConfKey)
+
+private[source] object SinkConfigBinaryConverterProvider {
+  val ProviderConfKey = "com.twitter.scalding.lzo.converter.provider.sink"
+}
+private[source] class SinkConfigBinaryConverterProvider[M]
+  extends ConfigBinaryConverterProvider[M](SinkConfigBinaryConverterProvider.ProviderConfKey)
 
 /**
  * Provides BinaryConverter serialized in JobConf.
  */
-private[source] class ConfigBinaryConverterProvider[M] extends BinaryConverterProvider[M] {
-  import ConfigBinaryConverterProvider._
-
+private[source] class ConfigBinaryConverterProvider[M](private[this] val confKey: String) extends BinaryConverterProvider[M] {
   private[this] var cached: Option[(String, BinaryConverter[M])] = None
 
   override def getConverter(conf: Configuration): BinaryConverter[M] = {
-    val data = conf.get(ProviderConfKey)
-    require(data != null, s"$ProviderConfKey is not set in configuration")
+    val data = conf.get(confKey)
+    require(data != null, s"$confKey is not set in configuration")
     cached match {
       case Some((d, conv)) if d == data => conv
       case _ =>
@@ -91,15 +97,15 @@ object LzoGenericScheme {
   /**
    * From a Binary Converter passed in configure in the JobConf using of that by ElephantBird
    */
-  def setConverter[M](conv: BinaryConverter[M], conf: JobConf, overrideConf: Boolean = false): Unit = {
-    if ((conf.get(ConfigBinaryConverterProvider.ProviderConfKey) == null) || overrideConf) {
+  def setConverter[M](conv: BinaryConverter[M], conf: JobConf, confKey: String, overrideConf: Boolean = false): Unit = {
+    if ((conf.get(confKey) == null) || overrideConf) {
       val extern = Externalizer(conv)
       try {
         ExternalizerSerializer.inj.invert(ExternalizerSerializer.inj(extern)).get
       } catch {
         case e: Exception => throw new RuntimeException("Unable to roundtrip the BinaryConverter in the Externalizer.", e)
       }
-      conf.set(ConfigBinaryConverterProvider.ProviderConfKey, ExternalizerSerializer.inj(extern))
+      conf.set(confKey, ExternalizerSerializer.inj(extern))
     }
   }
 
@@ -118,9 +124,9 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
 
-    LzoGenericScheme.setConverter(conv, conf)
+    LzoGenericScheme.setConverter(conv, conf, SourceConfigBinaryConverterProvider.ProviderConfKey)
     MultiInputFormat.setClassConf(clazz, conf)
-    MultiInputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
+    MultiInputFormat.setGenericConverterClassConf(classOf[SourceConfigBinaryConverterProvider[_]], conf)
 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
   }
@@ -128,9 +134,9 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
   override def sinkConfInit(fp: FlowProcess[JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
-    LzoGenericScheme.setConverter(conv, conf)
+    LzoGenericScheme.setConverter(conv, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
-    LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[ConfigBinaryConverterProvider[_]], conf)
+    LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[SinkConfigBinaryConverterProvider[_]], conf)
     DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)
   }
 }
