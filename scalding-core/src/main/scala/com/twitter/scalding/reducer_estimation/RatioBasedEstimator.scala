@@ -83,7 +83,7 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
           }
         }
       case Failure(e) =>
-        LOG.warn("Unable to fetch history. Disabling RatioBasedEstimator.")
+        LOG.warn("Unable to fetch history. Disabling RatioBasedEstimator.", e)
         None
     }
   }
