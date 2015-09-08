@@ -37,7 +37,7 @@ trait KeyedList[K, +T] extends KeyedListLike[K, T, KeyedList]
 
 /**
  * Represents sharded lists of items of type T
- * There are exactly two the fundamental operations:
+ * There are exactly two fundamental operations:
  * toTypedPipe: marks the end of the grouped-on-key operations.
  * mapValueStream: further transforms all values, in order, one at a time,
  *  with a function from Iterator to another Iterator
