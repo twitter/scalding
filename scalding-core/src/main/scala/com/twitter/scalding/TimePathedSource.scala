@@ -46,8 +46,8 @@ object TimePathedSource {
    * Gives all read paths in the given daterange.
    */
   def readPathsFor(pattern: String, dateRange: DateRange, tz: TimeZone): Iterable[String] = {
-    TimePathedSource.stepSize(pattern, DateOps.UTC) match {
-      case Some(duration) => allPathsWithDuration(pattern, duration, dateRange, DateOps.UTC)
+    TimePathedSource.stepSize(pattern, tz) match {
+      case Some(duration) => allPathsWithDuration(pattern, duration, dateRange, tz)
       case None => sys.error(s"No suitable step size for pattern: $pattern")
     }
   }
