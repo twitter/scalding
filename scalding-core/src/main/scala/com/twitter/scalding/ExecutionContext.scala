@@ -105,14 +105,14 @@ trait ExecutionContext {
             flow.setFlowStepStrategy(strategy)
           }
 
-          config.getFlowListeners.foreach { tTry: Try[(Mode, Config) => FlowListener] =>
-            val t: (Mode, Config) => FlowListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow listener $tTry when submitting job"))
-            flow.addListener(t(mode, configWithId))
+          config.getFlowListeners.foreach {
+            case Success(fn) => flow.addListener(fn(mode, configWithId))
+            case Failure(e) => throw new Exception(s"Failed to decode flow listener: $e")
           }
 
-          config.getFlowStepListeners.foreach { tTry: Try[(Mode, Config) => FlowStepListener] =>
-            val t: (Mode, Config) => FlowStepListener = tTry.getOrElse(throw new Exception(s"Failed to decode flow step listener $tTry when submitting job"))
-            flow.addStepListener(t(mode, configWithId))
+          config.getFlowStepListeners.foreach {
+            case Success(fn) => flow.addStepListener(fn(mode, configWithId))
+            case f @ Failure(_) => new Exception(s"Failed to decode flow step listener $f when submitting job")re
           }
 
         case _ => ()
