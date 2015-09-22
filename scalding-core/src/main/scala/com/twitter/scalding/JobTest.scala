@@ -198,6 +198,7 @@ class JobTest(cons: (Args) => Job) {
       System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
     }
 
+    job.validate
     job.run
     // Make sure to clean the state:
     job.clear
