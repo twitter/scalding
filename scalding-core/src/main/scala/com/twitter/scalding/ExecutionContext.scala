@@ -112,7 +112,7 @@ trait ExecutionContext {
 
           config.getFlowStepListeners.foreach {
             case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case f @ Failure(_) => new Exception(s"Failed to decode flow step listener $f when submitting job")re
+            case f @ Failure(_) => new Exception(s"Failed to decode flow step listener $f when submitting job")
           }
 
         case _ => ()
