@@ -94,9 +94,9 @@ trait ExecutionContext {
         case _: HadoopMode =>
           val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
 
-          val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map { tTry: Try[(Mode, Config) => FlowStepStrategy[JobConf]] =>
-            val t: (Mode, Config) => FlowStepStrategy[JobConf] = tTry.getOrElse(throw new Exception(s"Failed to decode flow step strategy $tTry when submitting job"))
-            t(mode, configWithId)
+          val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
+            case Success(fn) => fn(mode, configWithId)
+            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
           }
 
           val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
@@ -107,12 +107,12 @@ trait ExecutionContext {
 
           config.getFlowListeners.foreach {
             case Success(fn) => flow.addListener(fn(mode, configWithId))
-            case Failure(e) => throw new Exception(s"Failed to decode flow listener: $e")
+            case Failure(e) => throw new Exception("Failed to decode flow listener", e)
           }
 
           config.getFlowStepListeners.foreach {
             case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case f @ Failure(_) => new Exception(s"Failed to decode flow step listener $f when submitting job")
+            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
           }
 
         case _ => ()
