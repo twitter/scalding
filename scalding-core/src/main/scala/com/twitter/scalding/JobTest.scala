@@ -65,6 +65,7 @@ class JobTest(cons: (Args) => Job) {
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
+  private var validateJob = false
 
   def arg(inArg: String, value: List[String]) = {
     argsMap += inArg -> value
@@ -164,6 +165,11 @@ class JobTest(cons: (Args) => Job) {
   // This SITS is unfortunately needed to get around Specs
   def finish: Unit = { () }
 
+  def validate(v: Boolean) = {
+    validateJob = v
+    this
+  }
+
   // Registers test files, initializes the global mode, and creates a job.
   private def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
     // Create a global mode to use for testing.
@@ -198,7 +204,9 @@ class JobTest(cons: (Args) => Job) {
       System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
     }
 
-    job.validate
+    if (validateJob) {
+      job.validate
+    }
     job.run
     // Make sure to clean the state:
     job.clear
