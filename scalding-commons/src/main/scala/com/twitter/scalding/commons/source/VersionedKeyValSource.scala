@@ -102,6 +102,7 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
                 .format(version, store.getAllVersions))
           }
         }
+        case _: TestMode => () //no validation in TestMode
 
         case _ => throw new IllegalArgumentException(
           "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
