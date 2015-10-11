@@ -15,6 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import java.io
+import java.io.IOException
+import java.util.StringTokenizer
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.{ IntWritable, LongWritable, Text }
+import org.apache.hadoop.mapred.{ Reporter, OutputCollector, MapReduceBase, Mapper, Reducer }
+import org.apache.hadoop.util.GenericOptionsParser
 import org.scalatest.{ WordSpec, Matchers }
 
 import cascading.tuple.Fields
@@ -1843,6 +1851,71 @@ class DailySuffixTsvTest extends WordSpec with Matchers {
       .sink[(String, Int)](TypedTsv[(String, Int)]("output0")) { buf =>
         "read and write data" in {
           buf shouldBe data
+        }
+      }
+      .run
+      .finish
+  }
+}
+
+class TestMapper extends MapReduceBase with Mapper[LongWritable, Text, Text, IntWritable] {
+  private val one: IntWritable = new IntWritable(1)
+  private var word: Text = new Text()
+
+  @throws(classOf[IOException])
+  override def map(key: LongWritable,
+    value: Text,
+    output: OutputCollector[Text, IntWritable],
+    reporter: Reporter) = {
+    val line: String = value.toString
+    val itr: StringTokenizer = new StringTokenizer(line)
+    while (itr.hasMoreTokens) {
+      word.set(itr.nextToken)
+      output.collect(word, one)
+    }
+  }
+}
+
+class TestReducer extends MapReduceBase with Reducer[Text, IntWritable, Text, IntWritable] {
+  @throws(classOf[IOException])
+  override def reduce(key: Text,
+    values: java.util.Iterator[IntWritable],
+    output: OutputCollector[Text, IntWritable],
+    reporter: Reporter) = {
+    var sum: Int = 0
+    while (values.hasNext) {
+      sum += values.next.get
+    }
+    output.collect(key, new IntWritable(sum))
+  }
+}
+
+class MapReduceTestJob(args: Args) extends MapReduceJob(args) {
+  override def processJobSpecifics: Unit = {
+    job.setMapOutputKeyClass(classOf[Text])
+    job.setMapOutputValueClass(classOf[LongWritable])
+    job.setOutputKeyClass(classOf[Text])
+    job.setOutputValueClass(classOf[Text])
+    job.setMapperClass(classOf[TestMapper])
+    job.setReducerClass(classOf[TestReducer])
+  }
+}
+
+class MapReduceTestJobTest extends WordSpec with Matchers {
+
+  "A MapReduce Job" should {
+    JobTest(new MapReduceTestJob(_))
+      .arg("mapreducejob.input", "fakeIn")
+      .arg("mapreducejob.output", "fakeOut")
+      .source(TextLine("fakeIn"), List("0" -> "single test", "1" -> "single result"))
+      .sink[(Text, IntWritable)](Tsv("fakeOut")) { outBuf =>
+        "must have the right number of lines" in {
+          outBuf should have size 3
+        }
+        "must get the result right" in {
+          //need to convert to sets because order
+          outBuf(0)._1.toString shouldBe "single"
+          outBuf(0)._2.get shouldBe 2
         }
       }
       .run

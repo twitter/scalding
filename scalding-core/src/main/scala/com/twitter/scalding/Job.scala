@@ -536,3 +536,68 @@ private[scalding] case class FlowStepStrategies[A]() extends Semigroup[FlowStepS
       }
     }
 }
+
+/*                                                                             
+ * Run a pre-existing MapReduce job with Scalding.
+ * Note that it is up to the user to properly configure the job.                                      
+ */
+class MapReduceJob(args: Args) extends Job(args) {
+  val conf: Configuration = mode match {
+    case h: HadoopMode => h.jobConf
+    case _ => new Configuration
+  }
+  protected val job = new JobConf(conf, classOf[MapReduceJob])
+
+  def setupMapReduce: Flow[_] = {
+    val input = args.getOrElse("mapreducejob.input", "")
+    val output = args.getOrElse("mapreducejob.output", "")
+    FileInputFormat.addInputPath(job, new Path(input))
+    FileOutputFormat.setOutputPath(job, new Path(output))
+    processJobSpecifics
+    new MapReduceFlow(job)
+  }
+
+  def processJobSpecifics(): Unit = {
+    /* Set up map output K/V class and output K/V class here...
+       *
+       * job.setMapOutputKeyClass(classOf[Text])
+       * job.setMapOutputValueClass(classOf[LongWritable])
+       *
+       * job.setOutputKeyClass(classOf[Text])
+       * job.setOutputValueClass(classOf[Text])
+       *
+       * Set up mapper/reducer class here...
+       *
+       * job.setMapperClass(classOf[Mapper])
+       * job.setReducerClass(classOf[Reducer])
+       */
+  }
+
+  def buildFlowMapReduce(flow: Flow[_]): Flow[_] = {
+    listeners.foreach { flow.addListener(_) }
+    stepListeners.foreach { flow.addStepListener(_) }
+    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+    stepStrategy.foreach { strategy =>
+      val existing = flow.getFlowStepStrategy
+      val composed =
+        if (existing == null)
+          strategy
+        else
+          FlowStepStrategies[Any].plus(
+            existing.asInstanceOf[FlowStepStrategy[Any]],
+            strategy.asInstanceOf[FlowStepStrategy[Any]])
+      flow.setFlowStepStrategy(composed)
+    }
+    flow
+  }
+
+  override def run: Boolean = {
+    val flow = buildFlowMapReduce(setupMapReduce)
+    flow.complete
+    flow.getFlowStats.isSuccessful
+    val statsData = flow.getFlowStats
+    handleStats(statsData)
+    completedFlow = Some(flow)
+    statsData.isSuccessful
+  }
+}
