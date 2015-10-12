@@ -15,14 +15,18 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.hadoop.MapReduceFlow
 import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.Semigroup
 import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.stats.CascadingStats
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.apache.hadoop.mapred.{FileOutputFormat, FileInputFormat, JobConf}
 
 import scala.concurrent.{ Future, Promise }
 import scala.util.Try
