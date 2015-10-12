@@ -130,7 +130,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
   "Single-step job with ratio-based reducer estimator" should {
     "not set reducers when no history is found" in {
       val customConfig = Config.empty.addReducerEstimator(classOf[EmptyHistoryBasedEstimator]) +
-        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (InputSizeReducerEstimator.BytesPerReducer -> "1k") +
         (RatioBasedEstimator.inputRatioThresholdKey -> 0.10f.toString)
 
       HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, customConfig), cluster)
@@ -146,7 +146,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
 
     "not set reducers when error fetching history" in {
       val customConfig = Config.empty.addReducerEstimator(classOf[ErrorHistoryBasedEstimator]) +
-        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (InputSizeReducerEstimator.BytesPerReducer -> "1k") +
         (RatioBasedEstimator.inputRatioThresholdKey -> 0.10f.toString)
 
       HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, customConfig), cluster)
@@ -163,7 +163,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
     "set reducers correctly when there is valid history" in {
       val customConfig = Config.empty
         .addReducerEstimator(classOf[ValidHistoryBasedEstimator]) +
-        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (InputSizeReducerEstimator.BytesPerReducer -> "1k") +
         (RatioBasedEstimator.inputRatioThresholdKey -> 0.10f.toString)
 
       HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, customConfig), cluster)
@@ -182,7 +182,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
 
     "not set reducers when there is no valid history" in {
       val customConfig = Config.empty.addReducerEstimator(classOf[InvalidHistoryBasedEstimator]) +
-        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (InputSizeReducerEstimator.BytesPerReducer -> "1k") +
         (RatioBasedEstimator.inputRatioThresholdKey -> 0.10f.toString)
 
       HadoopPlatformJobTest(new SimpleJobWithNoSetReducers(_, customConfig), cluster)

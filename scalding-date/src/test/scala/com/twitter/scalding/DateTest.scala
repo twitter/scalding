@@ -174,6 +174,9 @@ class DateTest extends WordSpec {
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Hours(2))
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Minutes(1))
     }
+    "reject an end that is before its start" in {
+      intercept[IllegalArgumentException] { DateRange("2010-10-02", "2010-10-01") }
+    }
   }
   "Time units" should {
     def isSame(d1: Duration, d2: Duration) = {

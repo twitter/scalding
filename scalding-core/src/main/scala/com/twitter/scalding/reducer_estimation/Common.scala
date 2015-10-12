@@ -101,7 +101,7 @@ trait HistoryReducerEstimator extends ReducerEstimator {
         LOG.info(s"Reducer estimate: ${estimate}")
         estimate
       case Failure(f) =>
-        LOG.warn(s"Unable to fetch history in $getClass. Error: $f")
+        LOG.warn(s"Unable to fetch history in $getClass", f)
         None
     }
   }

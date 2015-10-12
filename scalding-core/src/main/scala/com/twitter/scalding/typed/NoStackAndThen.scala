@@ -24,8 +24,8 @@ package com.twitter.scalding.typed
  */
 sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
   def apply(a: A): B
-  final def andThen[C](fn: B => C): NoStackAndThen[A, C] = NoStackAndThen.NoStackMore(this, fn)
-  final def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] = {
+  def andThen[C](fn: B => C): NoStackAndThen[A, C] = NoStackAndThen.NoStackMore(this, fn)
+  def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] = {
     import NoStackAndThen._
     @annotation.tailrec
     def push(front: NoStackAndThen[A, Any],
@@ -46,10 +46,23 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
 }
 
 object NoStackAndThen {
-  def apply[A, B](fn: A => B): NoStackAndThen[A, B] = NoStackWrap(fn)
+  private[typed] def buildStackEntry: Array[StackTraceElement] = Thread.currentThread().getStackTrace
+
+  def apply[A, B](fn: A => B): NoStackAndThen[A, B] = WithStackTrace(NoStackWrap(fn), buildStackEntry)
+
   private sealed trait ReversedStack[-A, +B]
   private case class EmptyStack[-A, +B](fn: A => B) extends ReversedStack[A, B]
   private case class NonEmpty[-A, B, +C](head: A => B, rest: ReversedStack[B, C]) extends ReversedStack[A, C]
+
+  private[scalding] case class WithStackTrace[A, B](inner: NoStackAndThen[A, B], stackEntry: Array[StackTraceElement]) extends NoStackAndThen[A, B] {
+    override def apply(a: A): B = inner(a)
+
+    override def andThen[C](fn: B => C): NoStackAndThen[A, C] =
+      WithStackTrace[A, C](inner.andThen(fn), stackEntry ++ buildStackEntry)
+
+    override def andThen[C](that: NoStackAndThen[B, C]): NoStackAndThen[A, C] =
+      WithStackTrace[A, C](inner.andThen(that), stackEntry ++ buildStackEntry)
+  }
 
   // Just wraps a function
   private case class NoStackWrap[A, B](fn: A => B) extends NoStackAndThen[A, B] {

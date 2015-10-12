@@ -89,7 +89,7 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
     }
 
   /**
-   * Use String.format to format the date, as opposed to toString with uses SimpleDateFormat
+   * Use String.format to format the date, as opposed to toString, which uses SimpleDateFormat.
    */
   def format(pattern: String)(implicit tz: TimeZone): String = String.format(pattern, toCalendar(tz))
 

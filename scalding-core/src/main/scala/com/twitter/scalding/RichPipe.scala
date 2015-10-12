@@ -88,6 +88,13 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
+  def setPipeDescriptionFrom(p: Pipe, ste: Option[StackTraceElement]): Pipe = {
+    ste.foreach { ste =>
+      setPipeDescriptions(p, List(ste.toString))
+    }
+    p
+  }
+
 }
 
 /**

@@ -25,7 +25,7 @@ object ScaldingBuild extends Build {
   val avroVersion = "1.7.4"
   val bijectionVersion = "0.8.1"
   val cascadingAvroVersion = "2.1.2"
-  val chillVersion = "0.7.0"
+  val chillVersion = "0.7.1"
   val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.8"
   val hadoopLzoVersion = "0.4.19"
@@ -301,6 +301,7 @@ object ScaldingBuild extends Build {
       "cascading" % "cascading-local" % cascadingVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
+      "com.twitter" %% "chill-bijection" % chillVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "algebird-test" % algebirdVersion % "test",
       "com.twitter" %% "bijection-core" % bijectionVersion,
