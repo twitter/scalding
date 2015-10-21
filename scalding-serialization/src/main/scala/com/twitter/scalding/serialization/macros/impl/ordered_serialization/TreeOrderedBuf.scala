@@ -19,7 +19,7 @@ import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.JavaStreamEnrichments
 import java.io.InputStream
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 

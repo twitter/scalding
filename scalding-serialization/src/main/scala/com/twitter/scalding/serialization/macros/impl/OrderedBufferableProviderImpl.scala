@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 import scala.util.Random
 
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -25,8 +25,8 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.prov
 
 object OrderedSerializationProviderImpl {
   def normalizedDispatcher(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if (!tpe.toString.contains(ImplicitOrderedBuf.macroMarker) && !(tpe.normalize == tpe)) =>
-      buildDispatcher(tpe.normalize)
+    case tpe if (!tpe.toString.contains(ImplicitOrderedBuf.macroMarker) && !(tpe.dealias == tpe)) =>
+      buildDispatcher(tpe.dealias)
   }
 
   def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
