@@ -52,13 +52,13 @@ object ScaldingBuild extends Build {
 
     scalaVersion := "2.11.7",
 
-    crossScalaVersions := Seq("2.10.6", "2.11.7"),
+    crossScalaVersions := Seq(/* "2.10.5", */ "2.11.7"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
-    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
 
-    javacOptions in doc := Seq("-source", "1.6"),
+    javacOptions in doc := Seq("-source", "1.8"),
 
     libraryDependencies ++= Seq(
       "org.mockito" % "mockito-all" % "1.8.5" % "test",
@@ -280,10 +280,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.0.2")
 
   lazy val cascadingJDBCVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-119")
 
   lazy val scaldingBenchmarks = module("benchmarks").settings(
     libraryDependencies ++= Seq(
