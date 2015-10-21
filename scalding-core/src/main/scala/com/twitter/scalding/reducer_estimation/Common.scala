@@ -35,7 +35,7 @@ object Common {
       case t => Seq(t)
     }
 
-  def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
+  def unrollTaps(step: FlowStep[_ <: JobConf]): Seq[Tap[_, _, _]] =
     unrollTaps(step.getSources.asScala.toSeq)
 
   /**
