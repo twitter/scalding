@@ -53,7 +53,7 @@ abstract class SchemedSource extends Source {
     throw ModeException("Cascading local mode not supported for: " + toString)
 
   /** The scheme to use if the source is on hdfs. */
-  def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] =
+  def hdfsScheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _] =
     throw ModeException("Cascading Hadoop mode not supported for: " + toString)
 
   // The mode to use for output taps determining how conflicts with existing output are handled.
@@ -61,7 +61,7 @@ abstract class SchemedSource extends Source {
 }
 
 trait HfsTapProvider {
-  def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
+  def createHfsTap(scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
     sinkMode: SinkMode): Hfs =
     new Hfs(scheme, path, sinkMode)
@@ -69,8 +69,8 @@ trait HfsTapProvider {
 
 private[scalding] object CastFileTap {
   // The scala compiler has problems with the generics in Cascading
-  def apply(tap: FileTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
-    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+  def apply(tap: FileTap): Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]]
 }
 
 /**
@@ -89,7 +89,7 @@ trait LocalSourceOverride extends SchemedSource {
    * @param sinkMode The mode for handling output conflicts.
    * @returns A tap.
    */
-  def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
+  def createLocalTap(sinkMode: SinkMode): Tap[Configuration, _, _] = {
     val taps = localPaths.map {
       p: String =>
         CastFileTap(new FileTap(localScheme, p, sinkMode))
@@ -230,7 +230,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
         }
 
         tryTtp match {
-          case Success(s) => s
+          case Success(s: Tap[_, _, _]) => s
           case Failure(e) => throw new java.lang.IllegalArgumentException(s"Failed to create tap for: $toString, with error: ${e.getMessage}", e)
         }
       }
@@ -288,8 +288,8 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
     }
   }
 
-  protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[JobConf, _, _] = {
-    val taps: List[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]] =
+  protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[Configuration, _, _] = {
+    val taps: List[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]] =
       goodHdfsPaths(hdfsMode)
         .toList.map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
     taps.size match {
@@ -306,8 +306,8 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   }
 }
 
-class ScaldingMultiSourceTap(taps: Seq[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]])
-  extends MultiSourceTap[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]], JobConf, RecordReader[_, _]](taps: _*) {
+class ScaldingMultiSourceTap(taps: Seq[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]])
+  extends MultiSourceTap[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]], Configuration, RecordReader[_, _]](taps: _*) {
   private final val randomId = UUID.randomUUID.toString
   override def getIdentifier() = randomId
   override def hashCode: Int = randomId.hashCode
@@ -402,9 +402,9 @@ trait SuccessFileSource extends FileSource {
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
 trait LocalTapSource extends LocalSourceOverride {
-  override def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
+  override def createLocalTap(sinkMode: SinkMode): Tap[Configuration, _, _] = {
     val taps = localPaths.map { p =>
-      new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+      new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]]
     }.toSeq
 
     taps match {

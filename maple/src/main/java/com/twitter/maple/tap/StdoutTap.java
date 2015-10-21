@@ -5,6 +5,7 @@ import cascading.scheme.hadoop.SequenceFile;
 import cascading.tap.hadoop.Lfs;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryIterator;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class StdoutTap extends Lfs {
     }
 
     @Override
-    public boolean commitResource(JobConf conf) throws java.io.IOException {
+    public boolean commitResource(Configuration conf) throws java.io.IOException {
         TupleEntryIterator it = new HadoopFlowProcess(conf).openTapForRead(this);
         System.out.println("");
         System.out.println("");

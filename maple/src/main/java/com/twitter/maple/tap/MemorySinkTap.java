@@ -7,6 +7,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 
 import java.io.File;
@@ -43,7 +44,7 @@ public class MemorySinkTap extends Lfs {
     }
 
     @Override
-    public boolean commitResource(JobConf conf) throws java.io.IOException {
+    public boolean commitResource(Configuration conf) throws java.io.IOException {
         TupleEntryIterator it = new HadoopFlowProcess(conf).openTapForRead(this);
 
         boolean first_time = true;

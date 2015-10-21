@@ -25,6 +25,7 @@ import cascading.scheme.NullScheme
 
 import java.io.{ Serializable, InputStream, OutputStream }
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -44,9 +45,9 @@ object TestTapFactory extends Serializable {
     override def sourceFields: Fields = fields
     override def sinkFields: Fields = fields
   }
-  def apply[A, B](src: Source, scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
+  def apply[A, B](src: Source, scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
   def apply[A, B](src: Source,
-    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
+    scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
     new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
@@ -57,7 +58,7 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
   def sinkFields: Fields =
     hdfsScheme.map { _.getSinkFields }.getOrElse(sys.error("No sinkFields defined"))
 
-  def hdfsScheme: Option[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
+  def hdfsScheme: Option[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
 
   def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
