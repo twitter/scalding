@@ -18,7 +18,7 @@ package com.twitter.scalding {
   import cascading.operation._
   import cascading.tuple._
   import cascading.flow._
-  import cascading.pipe.assembly.AggregateBy
+  import cascading.pipe.assembly.{ AggregateByProps, AggregateBy }
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
@@ -99,7 +99,7 @@ package com.twitter.scalding {
   /**
    * An implementation of map-side combining which is appropriate for associative and commutative functions
    * If a cacheSize is given, it is used, else we query
-   * the config for cascading.aggregateby.threshold (standard cascading param for an equivalent case)
+   * the config for cascading.aggregateby.capacity (standard cascading param for an equivalent case)
    * else we use a default value of 100,000
    *
    * This keeps a cache of keys up to the cache-size, summing values as keys collide
@@ -134,7 +134,7 @@ package com.twitter.scalding {
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
+    val SIZE_CONFIG_KEY = AggregateByProps.AGGREGATE_BY_CAPACITY
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
