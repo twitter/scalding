@@ -21,7 +21,7 @@ import cascading.stats.{ CascadeStats, CascadingStats, FlowStats }
 import scala.util.{ Failure, Try }
 
 object JobStats {
-  def apply(stats: CascadingStats): JobStats = {
+  def apply(stats: CascadingStats[_]): JobStats = {
     val m = statsMap(stats)
     new JobStats(
       stats match {
@@ -30,14 +30,14 @@ object JobStats {
       })
   }
 
-  private def counterMap(stats: CascadingStats): Map[String, Map[String, Long]] =
+  private def counterMap(stats: CascadingStats[_]): Map[String, Map[String, Long]] =
     stats.getCounterGroups.asScala.map { group =>
       (group, stats.getCountersFor(group).asScala.map { counter =>
         (counter, stats.getCounterValue(group, counter))
       }.toMap)
     }.toMap
 
-  private def statsMap(stats: CascadingStats): Map[String, Any] =
+  private def statsMap(stats: CascadingStats[_]): Map[String, Any] =
     Map(
       "counters" -> counterMap(stats),
       "duration" -> stats.getDuration,
