@@ -135,7 +135,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.twitter.chill.algebird.AveragedValueSerializer],
       classOf[com.twitter.algebird.Semigroup[_]],
       classOf[com.twitter.chill.KryoInstantiator],
-      classOf[org.jgrapht.ext.EdgeNameProvider[_]],
+      //classOf[org.jgrapht.ext.EdgeNameProvider[_]],
       classOf[org.apache.commons.lang.StringUtils],
       classOf[cascading.scheme.local.TextDelimited],
       classOf[org.apache.commons.logging.LogFactory],
