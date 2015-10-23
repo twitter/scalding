@@ -22,6 +22,7 @@ import cascading.pipe.{ CoGroup, Pipe }
 
 import com.twitter.scalding._
 
+import scala.annotation.meta.param
 import scala.collection.JavaConverters._
 
 import com.twitter.scalding.serialization.Externalizer
@@ -314,7 +315,7 @@ trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped] with CoGroupable[K
 
 abstract class CoGroupedJoiner[K](inputSize: Int,
   getter: TupleGetter[K],
-  @transient inJoinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
+  @(transient @param) inJoinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
 
   /**
    * We have a test that should fail if Externalizer is not used here.
@@ -360,7 +361,7 @@ abstract class CoGroupedJoiner[K](inputSize: Int,
 // If all the input pipes are unique, this works:
 class DistinctCoGroupJoiner[K](count: Int,
   getter: TupleGetter[K],
-  @transient joinF: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
+  @(transient @param) joinF: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any])
   extends CoGroupedJoiner[K](count, getter, joinF) {
   val distinctSize = count
   def distinctIndexOf(idx: Int) = idx

@@ -22,13 +22,15 @@ import com.twitter.bijection.ImplicitBijection
 import com.twitter.scalding._
 import serialization.Externalizer
 
+import scala.annotation.meta.param
+
 object BijectedSourceSink {
   type SourceSink[T] = TypedSource[T] with TypedSink[T]
   def apply[T, U](parent: SourceSink[T])(implicit transformer: ImplicitBijection[T, U]): BijectedSourceSink[T, U] =
     new BijectedSourceSink(parent)(transformer)
 }
 
-class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implicit @transient transformer: ImplicitBijection[T, U]) extends TypedSource[U] with TypedSink[U] {
+class BijectedSourceSink[T, U](parent: BijectedSourceSink.SourceSink[T])(implicit @(transient @param) transformer: ImplicitBijection[T, U]) extends TypedSource[U] with TypedSink[U] {
 
   val lockedBij = Externalizer(transformer)
 

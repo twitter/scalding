@@ -31,6 +31,7 @@ import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
+import scala.annotation.meta.param
 import scala.util.Try
 
 /**
@@ -928,10 +929,10 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
 /**
  * This is an instance of a TypedPipe that wraps a cascading Pipe
  */
-class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
+class TypedPipeInst[T] private[scalding] (@(transient @param) inpipe: Pipe,
   fields: Fields,
-  @transient localFlowDef: FlowDef,
-  @transient val mode: Mode,
+  @(transient @param) localFlowDef: FlowDef,
+  @(transient @param) val mode: Mode,
   flatMapFn: FlatMapFn[T]) extends TypedPipe[T] {
 
   /**
