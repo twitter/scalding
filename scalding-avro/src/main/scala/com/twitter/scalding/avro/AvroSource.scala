@@ -25,6 +25,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.Properties
 import cascading.tuple.Fields
+import org.apache.hadoop.conf.Configuration
 import collection.JavaConverters._
 import org.apache.hadoop.mapred.{ OutputCollector, RecordReader, JobConf }
 
@@ -32,7 +33,7 @@ trait UnpackedAvroFileScheme extends FileSource {
   def schema: Option[Schema]
 
   // HadoopSchemeInstance gives compile errors in 2.10 for some reason
-  override def hdfsScheme = (new AvroScheme(schema.getOrElse(null))).asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+  override def hdfsScheme = (new AvroScheme(schema.getOrElse(null))).asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
 
   override def localScheme = (new LAvroScheme(schema.getOrElse(null))).asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
 
@@ -42,7 +43,7 @@ trait PackedAvroFileScheme[T] extends FileSource {
   def schema: Schema
 
   // HadoopSchemeInstance gives compile errors for this in 2.10 for some reason
-  override def hdfsScheme = (new PackedAvroScheme[T](schema)).asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+  override def hdfsScheme = (new PackedAvroScheme[T](schema)).asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
 
   override def localScheme = (new LPackedAvroScheme[T](schema)).asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
 }

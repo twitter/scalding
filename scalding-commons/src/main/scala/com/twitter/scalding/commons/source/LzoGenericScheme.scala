@@ -16,11 +16,12 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
+import scala.annotation.meta.param
 import scala.reflect.ClassTag
 
 import com.twitter.bijection._
 import com.twitter.chill.Externalizer
-import com.twitter.elephantbird.cascading2.scheme.LzoBinaryScheme
+import com.twitter.elephantbird.cascading3.scheme.LzoBinaryScheme
 import com.twitter.elephantbird.mapreduce.input.combine.DelegateCombineFileInputFormat
 import com.twitter.elephantbird.mapreduce.io.{ BinaryConverter, GenericWritable }
 import com.twitter.elephantbird.mapreduce.input.{ BinaryConverterProvider, MultiInputFormat }
@@ -97,7 +98,7 @@ object LzoGenericScheme {
   /**
    * From a Binary Converter passed in configure in the JobConf using of that by ElephantBird
    */
-  def setConverter[M](conv: BinaryConverter[M], conf: JobConf, confKey: String, overrideConf: Boolean = false): Unit = {
+  def setConverter[M](conv: BinaryConverter[M], conf: Configuration, confKey: String, overrideConf: Boolean = false): Unit = {
     if ((conf.get(confKey) == null) || overrideConf) {
       val extern = Externalizer(conv)
       try {
@@ -115,26 +116,28 @@ object LzoGenericScheme {
  * Generic scheme for data stored as lzo-compressed protobuf messages.
  * Serialization is performed using the supplied BinaryConverter.
  */
-class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) extends LzoBinaryScheme[M, GenericWritable[M]] {
+class LzoGenericScheme[M](@(transient @param) conv: BinaryConverter[M], clazz: Class[M]) extends LzoBinaryScheme[M, GenericWritable[M]] {
+
+  val convBox = Externalizer(conv)
 
   override protected def prepareBinaryWritable(): GenericWritable[M] =
-    new GenericWritable(conv)
+    new GenericWritable(convBox.get)
 
-  override def sourceConfInit(fp: FlowProcess[JobConf],
+  override def sourceConfInit(fp: FlowProcess[_ <: Configuration],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
 
-    LzoGenericScheme.setConverter(conv, conf, SourceConfigBinaryConverterProvider.ProviderConfKey)
+    LzoGenericScheme.setConverter(convBox.get, conf, SourceConfigBinaryConverterProvider.ProviderConfKey)
     MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[SourceConfigBinaryConverterProvider[_]], conf)
 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
   }
 
-  override def sinkConfInit(fp: FlowProcess[JobConf],
-    tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-    conf: JobConf): Unit = {
-    LzoGenericScheme.setConverter(conv, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)
+  override def sinkConfInit(fp: FlowProcess[_ <: Configuration],
+    tap: Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]],
+    conf: Configuration): Unit = {
+    LzoGenericScheme.setConverter(convBox.get, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[SinkConfigBinaryConverterProvider[_]], conf)
     DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)
