@@ -120,12 +120,12 @@ object HRavenHistoryService extends HistoryService {
    */
   def fetchPastJobDetails(step: FlowStep[JobConf], max: Int): Try[Seq[JobDetails]] = {
     val conf = step.getConfig
-    val stepNum = step.getStepNum
+    val stepId = step.getID
 
     def findMatchingJobStep(pastFlow: Flow) =
       pastFlow.getJobs.asScala.find { step =>
         try {
-          step.getConfiguration.get("cascading.flow.step.num").toInt == stepNum
+          step.getConfiguration.get("cascading.flow.step.id").toInt == stepId
         } catch {
           case _: NumberFormatException => false
         }
