@@ -172,7 +172,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     val base = Config.empty
       .setListSpillThreshold(defaultSpillThreshold)
       .setMapSpillThreshold(defaultSpillThreshold)
-      .setMapSideAggregationThreshold(defaultSpillThreshold)
+      .setMapSideAggregationCapacity(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
     AppProps.addApplicationFramework(null,
