@@ -124,8 +124,8 @@ class LzoGenericScheme[M](@(transient @param) conv: BinaryConverter[M], clazz: C
     new GenericWritable(convBox.get)
 
   override def sourceConfInit(fp: FlowProcess[_ <: Configuration],
-    tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
-    conf: JobConf): Unit = {
+    tap: Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]],
+    conf: Configuration): Unit = {
 
     LzoGenericScheme.setConverter(convBox.get, conf, SourceConfigBinaryConverterProvider.ProviderConfKey)
     MultiInputFormat.setClassConf(clazz, conf)
