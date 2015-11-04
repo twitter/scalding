@@ -11,7 +11,7 @@ class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
   leftTypedPipe
     .sketch(1)
     .leftJoin(rightTypedPipe)
-    .map{
+    .map {
       case (a, (b, c)) =>
         (a, b, c.getOrElse(-1))
     }
@@ -21,11 +21,11 @@ class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
 class TypedSketchJoinJobForEmptyKeysTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedSketchJoinJobForEmptyKeysTest" should {
-    "Sketch leftJoin should be the same an Join which is empty" in {
+    "Sketch leftJoin with a single left key should be correct" in {
       JobTest(new TypedSketchJoinJobForEmptyKeys(_))
         .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output")) { outBuf =>
+          outBuf should have size 1
           val unordered = outBuf.toSet
-          unordered should have size 1
           unordered should contain (1, 1111, -1)
         }
         .run
