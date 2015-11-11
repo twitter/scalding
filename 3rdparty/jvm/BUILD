@@ -1,4 +1,4 @@
-def make_dep(name, org, version, artifact_name=None, server=None, tpe=jar):
+def make_dep(name, org, version, artifact_name=None, tpe=jar):
   artifact_name = artifact_name or name
   return jar_library(
     name=name,
@@ -9,18 +9,15 @@ def make_dep(name, org, version, artifact_name=None, server=None, tpe=jar):
 
 make_dep(
   name = "cascading-core",
-  org = "cascading", version = "2.6.1",
-  server = "concurrent-maven")
+  org = "cascading", version = "2.6.1")
 
 make_dep(
   name = "cascading-hadoop",
-  org = "cascading", version = "2.6.1",
-  server = "concurrent-maven")
+  org = "cascading", version = "2.6.1")
 
 make_dep(
   name = "cascading-local",
-  org = "cascading", version = "2.6.1",
-  server = "concurrent-maven")
+  org = "cascading", version = "2.6.1")
 
 make_dep(
   name = "chill-hadoop",
@@ -69,13 +66,12 @@ make_dep(name="hbase", org = "org.apache.hbase", version = hbase_version)
 #make_dep(name="hbase-client", org = "org.apache.hbase", version = hbase_version)
 
 make_dep(name="java-ewah", org = "com.googlecode.javaewah", version = "0.6.6", artifact_name = "JavaEWAH")
-make_dep(name="jgraph", org = "thirdparty", version = "0.8.1", server = "concurrent-maven", artifact_name = "jgrapht-jdk1.6")
+make_dep(name="jgraph", org = "thirdparty", version = "0.8.1", artifact_name = "jgrapht-jdk1.6")
 make_dep(name="kryo", org = "com.esotericsoftware.kryo", version = "2.21")
 
 make_dep(
   name = "riffle",
-  org = "riffle", version = "0.1-dev",
-  server = "concurrent-maven")
+  org = "riffle", version = "0.1-dev")
 
 make_dep(
   name = "scala-library",
