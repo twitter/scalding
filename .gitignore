@@ -3,7 +3,9 @@
 .settings
 .classpath
 *.swp
-BUILD
+.pants.d/
+.pants.run
+.pids/
 target/
 lib_managed/
 project/boot/
