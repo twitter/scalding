@@ -1,5 +1,3 @@
-load("/bazel_tools/scala", "scala_library")
-
 scala_library(
   name = "scalding-serialization",
   srcs = glob(["**/*.scala"]),

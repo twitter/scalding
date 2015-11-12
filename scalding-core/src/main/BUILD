@@ -1,5 +1,3 @@
-load("/bazel_tools/scala", "scala_library")
-
 java_library(
   name ="core-java",
   srcs = glob(["**/*.java"]),
