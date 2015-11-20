@@ -429,6 +429,8 @@ trait TypedPipe[+T] extends Serializable {
    * Does not require a reduce step.
    */
   def sample(fraction: Double, seed: Long): TypedPipe[T] = {
+    require(0.0 <= fraction && fraction <= 1.0, s"got $fraction which is an invalid fraction")
+
     // Make sure to fix the seed, otherwise restarts cause subtle errors
     lazy val rand = new Random(seed)
     filter(_ => rand.nextDouble < fraction)
