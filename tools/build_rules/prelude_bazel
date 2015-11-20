@@ -1,1 +1,1 @@
-load("/bazel_tools/scala", "scala_library")
+load("/bazel_tools/scala", "scala_library", "scala_macro_library", "scala_binary")

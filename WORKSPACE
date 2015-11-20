@@ -1,3 +1,13 @@
+# TODO: This is totally broken for anyone but me. Figure out the right
+# way to point to these tools from scalding
+local_repository(
+  name = "bazel_tools",
+  path = "/Users/oscar/.bazel/base_workspace/tools")
+
+local_repository(
+  name = "bazel_third_party",
+  path = "/Users/oscar/.bazel/base_workspace/third_party")
+
 maven_server(
   name = "concurrent-maven",
   url = "http://conjars.org/repo")

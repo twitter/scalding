@@ -1,4 +1,4 @@
-scala_library(
+scala_macro_library(
   name = "scalding-serialization",
   srcs = glob(["**/*.scala"]),
   deps = [":scalding-serialization-java"],
