@@ -419,19 +419,21 @@ trait TypedPipe[+T] extends Serializable {
 
   private[this] def defaultSeed: Long = System.identityHashCode(this) * 2654435761L ^ System.currentTimeMillis
   /**
-   * Sample uniformly independently at random each element of the pipe
+   * Sample a fraction (between 0 and 1) uniformly independently at random each element of the pipe
    * does not require a reduce step.
    */
-  def sample(percent: Double): TypedPipe[T] = sample(percent, defaultSeed)
+  def sample(fraction: Double): TypedPipe[T] = sample(fraction, defaultSeed)
   /**
-   * Sample uniformly independently at random each element of the pipe with
+   * Sample a fraction (between 0 and 1) uniformly independently at random each element of the pipe with
    * a given seed.
    * Does not require a reduce step.
    */
-  def sample(percent: Double, seed: Long): TypedPipe[T] = {
+  def sample(fraction: Double, seed: Long): TypedPipe[T] = {
+    require(0.0 <= fraction && fraction <= 1.0, s"got $fraction which is an invalid fraction")
+
     // Make sure to fix the seed, otherwise restarts cause subtle errors
     lazy val rand = new Random(seed)
-    filter(_ => rand.nextDouble < percent)
+    filter(_ => rand.nextDouble < fraction)
   }
 
   /**
@@ -1023,8 +1025,8 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     MergedTypedPipe(left.flatMap(f), right.flatMap(f))
 
-  override def sample(percent: Double, seed: Long): TypedPipe[T] =
-    MergedTypedPipe(left.sample(percent, seed), right.sample(percent, seed))
+  override def sample(fraction: Double, seed: Long): TypedPipe[T] =
+    MergedTypedPipe(left.sample(fraction, seed), right.sample(fraction, seed))
 
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
     MergedTypedPipe(left.sumByLocalKeys, right.sumByLocalKeys)
