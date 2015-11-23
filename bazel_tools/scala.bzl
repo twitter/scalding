@@ -36,7 +36,7 @@ def _compile(ctx, jars, buildijar):
   if buildijar:
     ijar_cmd = "\n_bin/ijar {out} {ijar_out}".format(
     #ijar_cmd = "\n{ijar} {out} {ijar_out}".format(
-      ijar=ctx.file._ijar.short_path,
+      #ijar=ctx.file._ijar.short_path,
       out=ctx.outputs.jar.path,
       ijar_out=ctx.outputs.ijar.path)
   cmd = """
@@ -140,7 +140,7 @@ def _scala_binary_impl(ctx):
   _write_manifest(ctx)
   _compile(ctx, cjars, True)
 
-  rjars += [ctx.outputs.jar]
+  rjars += [ctx.outputs.jar, ctx.file._scalalib]
   _write_launcher(ctx, rjars)
 
   runfiles = ctx.runfiles(
