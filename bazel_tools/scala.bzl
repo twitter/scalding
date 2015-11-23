@@ -17,10 +17,6 @@
 
 _scala_filetype = FileType([".scala"])
 
-# TODO(bazel-team): Add local_repository to properly declare the dependency.
-_scala_library_path = "/usr/share/java/scala-library.jar"
-_scalac_path = "/opt/twitter/bin/scalac"
-
 def _adjust_resources_path(path):
   dir_1, dir_2, rel_path = path.partition("resources")
   if rel_path:
@@ -38,8 +34,9 @@ def _compile(ctx, jars, buildijar):
     res_cmd = "\njar uf {out} " + change_dir + " " + res_path
   ijar_cmd = ""
   if buildijar:
-    ijar_cmd = "\n{ijar} {out} {ijar_out}".format(
-      ijar=ctx.file._ijar.path,
+    ijar_cmd = "\n_bin/ijar {out} {ijar_out}".format(
+    #ijar_cmd = "\n{ijar} {out} {ijar_out}".format(
+      ijar=ctx.file._ijar.short_path,
       out=ctx.outputs.jar.path,
       ijar_out=ctx.outputs.ijar.path)
   cmd = """
@@ -52,7 +49,7 @@ touch -t 198001010000 {manifest}
 jar cmf {manifest} {out} -C {out}_tmp .
 """ + ijar_cmd + res_cmd
   cmd = cmd.format(
-      scalac=_scalac_path,
+      scalac=ctx.file._scalac.path,
       scala_opts=" ".join(ctx.attr.scalacopts),
       jvm_flags=" ".join(["-J" + flag for flag in ctx.attr.jvm_flags]),
       out=ctx.outputs.jar.path,
@@ -71,7 +68,7 @@ jar cmf {manifest} {out} -C {out}_tmp .
 
 def _write_manifest(ctx):
   # TODO: I don't think this classpath is what you want
-  manifest = "Class-Path: %s\n" % _scala_library_path
+  manifest = "Class-Path: %s\n" % ctx.file._scalalib.path
   if getattr(ctx.attr, "main_class", ""):
     manifest += "Main-Class: %s\n" % ctx.attr.main_class
 
@@ -166,7 +163,9 @@ scala_library = rule(
       "resources": attr.label_list(allow_files=True),
       "scalacopts": attr.string_list(),
       "jvm_flags": attr.string_list(),
-      "_ijar": attr.label(executable=True, default=Label("@bazel_tools//jdk:ijar"), single_file=True, allow_files=True)
+      "_ijar": attr.label(executable=True, default=Label("@bazel//third_party/ijar:ijar"), single_file=True, allow_files=True),
+      "_scalac": attr.label(executable=True, default=Label("@scala//:bin/scalac"), single_file=True, allow_files=True),
+      "_scalalib": attr.label(default=Label("@scala//:lib/scala-library.jar"), single_file=True, allow_files=True),
       # the following does not work. It fails at runtime because there is no ijar tool actually
       # built.
       #"_ijar": attr.label(executable=True, default=Label("@bazel_third_party//ijar:ijar"), single_file=True, allow_files=True)
@@ -190,6 +189,10 @@ scala_macro_library = rule(
       "resources": attr.label_list(allow_files=True),
       "scalacopts": attr.string_list(),
       "jvm_flags": attr.string_list(),
+      "_ijar": attr.label(executable=True, default=Label("@bazel//third_party/ijar:ijar"), single_file=True, allow_files=True),
+      "_scalac": attr.label(executable=True, default=Label("@scala//:bin/scalac"), single_file=True, allow_files=True),
+      "_scalalib": attr.label(default=Label("@scala//:lib/scala-library.jar"), single_file=True, allow_files=True),
+      "_scala-reflect": attr.label(default=Label("@scala//:lib/scala-reflect.jar"), single_file=True, allow_files=True),
       },
   outputs={
       "jar": "%{name}_deploy.jar",
@@ -209,6 +212,8 @@ scala_binary = rule(
       "resources": attr.label_list(allow_files=True),
       "scalacopts":attr.string_list(),
       "jvm_flags": attr.string_list(),
+      "_scalac": attr.label(executable=True, default=Label("@scala//:bin/scalac"), single_file=True, allow_files=True),
+      "_scalalib": attr.label(default=Label("@scala//:lib/scala-library.jar"), single_file=True, allow_files=True),
       },
   outputs={
       "jar": "%{name}_deploy.jar",

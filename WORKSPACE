@@ -1,12 +1,20 @@
-# TODO: This is totally broken for anyone but me. Figure out the right
-# way to point to these tools from scalding
-local_repository(
-  name = "bazel_tools",
-  path = "/Users/oscar/.bazel/base_workspace/tools")
+# these two are for the scala rule
+git_repository(
+  name = "bazel",
+  remote = "https://github.com/bazelbuild/bazel.git",
+  tag = "0.1.1")
 
-local_repository(
-  name = "bazel_third_party",
-  path = "/Users/oscar/.bazel/base_workspace/third_party")
+#local_repository(
+#  name = "bazel",
+#  path = "/Users/oscar/.bazel/base_workspace")
+
+new_http_archive(
+    name = "scala",
+    strip_prefix = "scala-2.11.7",
+    sha256 = "ffe4196f13ee98a66cf54baffb0940d29432b2bd820bd0781a8316eec22926d0",
+    url = "http://downloads.typesafe.com/scala/2.11.7/scala-2.11.7.tgz",
+    build_file = "scala.BUILD",
+)
 
 maven_server(
   name = "concurrent-maven",
@@ -82,6 +90,7 @@ maven_jar(
   artifact = "riffle:riffle:0.1-dev",
   server = "concurrent-maven")
 
+# TODO: these should probably be from the new_http_archive
 maven_jar(
   name = "scala-library",
   artifact = "org.scala-lang:scala-library:2.11.7")
