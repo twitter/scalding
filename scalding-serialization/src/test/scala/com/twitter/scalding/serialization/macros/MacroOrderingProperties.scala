@@ -19,9 +19,12 @@ package com.twitter.scalding.serialization.macros
 import java.io.{ ByteArrayOutputStream, InputStream }
 import java.nio.ByteBuffer
 
+import org.junit.runner.RunWith
+
 import com.twitter.scalding.serialization.{ JavaStreamEnrichments, Law, Law1, Law2, Law3, OrderedSerialization, Serialization }
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import org.scalacheck.{ Arbitrary, Gen, Prop }
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.prop.{ Checkers, PropertyChecks }
 import org.scalatest.{ FunSuite, ShouldMatchers }
 
@@ -180,6 +183,8 @@ object Container {
   type SetAlias = Set[Double]
   case class InnerCaseClass(e: SetAlias)
 }
+
+@RunWith(classOf[JUnitRunner])
 class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
   type SetAlias = Set[Double]
 
