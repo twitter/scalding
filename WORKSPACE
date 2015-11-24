@@ -1,13 +1,4 @@
-# these two are for the scala rule
-git_repository(
-  name = "bazel",
-  remote = "https://github.com/bazelbuild/bazel.git",
-  tag = "0.1.1")
-
-#local_repository(
-#  name = "bazel",
-#  path = "/Users/oscar/.bazel/base_workspace")
-
+# this is for the scala rule
 new_http_archive(
     name = "scala",
     strip_prefix = "scala-2.11.7",

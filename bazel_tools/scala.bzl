@@ -34,9 +34,9 @@ def _compile(ctx, jars, buildijar):
     res_cmd = "\njar uf {out} " + change_dir + " " + res_path
   ijar_cmd = ""
   if buildijar:
-    ijar_cmd = "\n_bin/ijar {out} {ijar_out}".format(
-    #ijar_cmd = "\n{ijar} {out} {ijar_out}".format(
-      #ijar=ctx.file._ijar.short_path,
+    #ijar_cmd = "\n_bin/ijar {out} {ijar_out}".format(
+    ijar_cmd = "\n{ijar} {out} {ijar_out}".format(
+      ijar=ctx.file._ijar.path,
       out=ctx.outputs.jar.path,
       ijar_out=ctx.outputs.ijar.path)
   cmd = """
@@ -163,12 +163,9 @@ scala_library = rule(
       "resources": attr.label_list(allow_files=True),
       "scalacopts": attr.string_list(),
       "jvm_flags": attr.string_list(),
-      "_ijar": attr.label(executable=True, default=Label("@bazel//third_party/ijar:ijar"), single_file=True, allow_files=True),
+      "_ijar": attr.label(executable=True, default=Label("@bazel_tools//tools/jdk:ijar"), single_file=True, allow_files=True),
       "_scalac": attr.label(executable=True, default=Label("@scala//:bin/scalac"), single_file=True, allow_files=True),
       "_scalalib": attr.label(default=Label("@scala//:lib/scala-library.jar"), single_file=True, allow_files=True),
-      # the following does not work. It fails at runtime because there is no ijar tool actually
-      # built.
-      #"_ijar": attr.label(executable=True, default=Label("@bazel_third_party//ijar:ijar"), single_file=True, allow_files=True)
       },
   outputs={
       "jar": "%{name}_deploy.jar",
@@ -189,7 +186,7 @@ scala_macro_library = rule(
       "resources": attr.label_list(allow_files=True),
       "scalacopts": attr.string_list(),
       "jvm_flags": attr.string_list(),
-      "_ijar": attr.label(executable=True, default=Label("@bazel//third_party/ijar:ijar"), single_file=True, allow_files=True),
+      "_ijar": attr.label(executable=True, default=Label("@bazel_tools//tools/jdk:ijar"), single_file=True, allow_files=True),
       "_scalac": attr.label(executable=True, default=Label("@scala//:bin/scalac"), single_file=True, allow_files=True),
       "_scalalib": attr.label(default=Label("@scala//:lib/scala-library.jar"), single_file=True, allow_files=True),
       "_scala-reflect": attr.label(default=Label("@scala//:lib/scala-reflect.jar"), single_file=True, allow_files=True),
