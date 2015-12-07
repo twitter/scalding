@@ -24,7 +24,7 @@ object ScaldingBuild extends Build {
   val algebirdVersion = "0.11.0"
   val avroVersion = "1.7.4"
   val bijectionVersion = "0.8.1"
-  val cascadingAvroVersion = "3.0-SNAPSHOT" // https://github.com/ScaleUnlimited/cascading.avro/pull/44
+  val cascadingAvroVersion = "3.0-SNAPSHOT"    // https://github.com/ScaleUnlimited/cascading.avro/pull/44
   val chillVersion = "0.7.1"
   val elephantbirdVersion = "4.11-SNAPSHOT" // https://github.com/twitter/elephant-bird/pull/454
   val hadoopLzoVersion = "0.4.19"
@@ -34,7 +34,7 @@ object ScaldingBuild extends Build {
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"
-  val parquetVersion = "1.8.1"
+  val parquetVersion = "1.8.2-SNAPSHOT"        // https://github.com/apache/parquet-mr/pull/284
   val protobufVersion = "2.4.1"
   val quasiquotesVersion = "2.0.1"
   val scalaCheckVersion = "1.12.2"
@@ -76,7 +76,9 @@ object ScaldingBuild extends Build {
       "Concurrent Maven Repo" at "http://conjars.org/repo",
       "Clojars Repository" at "http://clojars.org/repo",
       "Twitter Maven" at "http://maven.twttr.com",
-      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
+      "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
+
+      "Conjars Repository" at "http://conjars.org/repo"   /* TEMPORARY: to get at the depencencies' snapshots while preparing the PR1446 branch */
     ),
 
     printDependencyClasspath := {
