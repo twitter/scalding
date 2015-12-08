@@ -59,9 +59,9 @@ object ScaldingBuild extends Build {
 
     ScalariformKeys.preferences := formattingPreferences,
 
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+    javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
-    javacOptions in doc := Seq("-source", "1.8"),
+    javacOptions in doc := Seq("-source", "1.6"),
 
     libraryDependencies ++= Seq(
       "org.mockito" % "mockito-all" % "1.8.5" % "test",
