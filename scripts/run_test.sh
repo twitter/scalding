@@ -19,17 +19,17 @@ PROGRESS_REPORTER_PID=$!
 
 echo "running..."
 
-echo time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false ++$TRAVIS_SCALA_VERSION "$(withCmd "test:compile")"
+echo time $TRAVIS_WAIT ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false ++$TRAVIS_SCALA_VERSION "$(withCmd "test:compile")"
 export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=168m -XX:+TieredCompilation -XX:MaxPermSize=256m -Xms512m -Xmx1500m -Xss8m"
 
-time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false ++$TRAVIS_SCALA_VERSION "$(withCmd "test:compile")" # &> /dev/null
+time $TRAVIS_WAIT ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false ++$TRAVIS_SCALA_VERSION "$(withCmd "test:compile")" # &> /dev/null
 
 kill -9 $PROGRESS_REPORTER_PID
 
 export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=128m -XX:+TieredCompilation -XX:MaxPermSize=256m -Xms256m -Xmx768m -Xss2m"
 echo "calling ... "
 echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd test)"
-time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test)"
+time $TRAVIS_WAIT ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test)"
 TST_EXIT_CODE=$?
 echo "all done"
 
