@@ -11,7 +11,6 @@ addons:
   apt:
     packages:
     - md5deep
-    -
 matrix:
   include:
 #BASE TESTS
@@ -20,7 +19,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -28,7 +27,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -36,7 +35,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -44,7 +43,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-hadoop-test" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -52,7 +51,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-serialization" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -60,7 +59,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-thrift-macros" TRAVIS_WAIT=travis_wait
+      env: BUILD="base" TEST_TARGET="scalding-thrift-macros"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
@@ -73,7 +72,7 @@ matrix:
       - "scripts/test_matrix_tutorials.sh"
 
     - scala: 2.11.7
-      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" TRAVIS_WAIT=travis_wait
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
       - "scripts/run_test.sh"
       - "scripts/build_assembly_no_test.sh scalding-assembly"
@@ -92,7 +91,7 @@ matrix:
       - "scripts/test_execution_tutorial.sh"
 
     - scala: 2.11.7
-      env: BUILD="test repl and typed tutorials" TRAVIS_WAIT=travis_wait
+      env: BUILD="test repl and typed tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"
