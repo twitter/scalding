@@ -356,8 +356,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "temp.cchepelov.org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
-        exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
+      "org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
         exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
         exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
         exclude("org.apache.parquet", "parquet-pig")
@@ -404,15 +403,19 @@ object ScaldingBuild extends Build {
     .settings(
       libraryDependencies ++= Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-        "org.apache.parquet" % "parquet-cascading" % parquetVersion
-          exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
+        "org.apache.parquet" % "parquet-cascading3" % parquetVersion
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
           exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
          "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests",
+        "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
+          exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
+          exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
+          exclude("org.apache.parquet", "parquet-pig")
+          exclude("com.twitter.elephantbird", "elephant-bird-pig")
+          exclude("com.twitter.elephantbird", "elephant-bird-core"),
          "com.twitter" %% "scrooge-serializer" % scroogeVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
         "com.novocode" % "junit-interface" % "0.11" % "test",
