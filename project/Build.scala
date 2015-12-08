@@ -44,6 +44,9 @@ object ScaldingBuild extends Build {
   val slf4jVersion = "1.6.6"
   val thriftVersion = "0.5.0"
   val junitVersion = "4.10"
+  
+  /* NOTE: the temp.cchepelov.* groupIds are to let the scalding build machine access the patched upstream dependencies until they get merged. 
+    This *must* be removed before proceeding. */
 
   val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -321,13 +324,14 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       // TODO: split into scalding-protobuf
       "com.google.protobuf" % "protobuf-java" % protobufVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
       "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.twitter" %% "chill" % chillVersion,
-      "com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion,
-      "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
+      "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion,
+      "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
@@ -342,7 +346,7 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingAvro = module("avro").settings(
     libraryDependencies ++= Seq(
-      "cascading.avro" % "avro-scheme" % cascadingAvroVersion,
+      "temp.cchepelov.cascading.avro" % "avro-scheme" % cascadingAvroVersion,
       "org.apache.avro" % "avro" % avroVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
@@ -352,7 +356,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
+      "temp.cchepelov.org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
+        exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
+        exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
+        exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
@@ -398,6 +405,9 @@ object ScaldingBuild extends Build {
       libraryDependencies ++= Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
         "org.apache.parquet" % "parquet-cascading" % parquetVersion
+          exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
+          exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
+          exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
           exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
@@ -485,7 +495,7 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
       "org.json4s" %% "json4s-native" % json4SVersion,
-      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
+      "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion % "provided"
       )
     }
   ).dependsOn(scaldingCore)
