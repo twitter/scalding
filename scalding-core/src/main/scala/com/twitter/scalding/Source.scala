@@ -39,6 +39,17 @@ import scala.collection.JavaConverters._
  */
 class InvalidSourceException(message: String) extends RuntimeException(message)
 
+class InvalidSourceTap(tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]])
+  extends Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]() {
+  def getIdentifier = "invalidTap"
+  def openForRead(flowProcess: FlowProcess[JobConf], record: RecordReader[_, _]) = tap.openForRead(flowProcess, record)
+  def openForWrite(flowProcess: FlowProcess[JobConf], output: OutputCollector[_, _]) = tap.openForWrite(flowProcess, output)
+  def createResource(conf: JobConf) = false
+  def deleteResource(conf: JobConf) = false
+  def resourceExists(conf: JobConf) = false
+  def getModifiedTime(conf: JobConf) = 0
+}
+
 /*
  * Denotes the access mode for a Source
  */

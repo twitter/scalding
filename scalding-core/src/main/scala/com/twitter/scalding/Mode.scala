@@ -121,14 +121,18 @@ trait HadoopMode extends Mode {
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
-    val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
-    val conf = new JobConf(true) // initialize the default config
-    // copy over Config
-    config.toMap.foreach{ case (k, v) => conf.set(k, v) }
-    val fp = new HadoopFlowProcess(conf)
-    htap.retrieveSourceFields(fp)
-    htap.sourceConfInit(fp, conf)
-    htap.openForRead(fp)
+    tap match {
+      case invalidSource: InvalidSourceTap => throw new InvalidSourceException("No good paths")
+      case _ =>
+        val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
+        val conf = new JobConf(true) // initialize the default config
+        // copy over Config
+        config.toMap.foreach{ case (k, v) => conf.set(k, v) }
+        val fp = new HadoopFlowProcess(conf)
+        htap.retrieveSourceFields(fp)
+        htap.sourceConfInit(fp, conf)
+        htap.openForRead(fp)
+    }
   }
 }
 
