@@ -17,8 +17,10 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{ FsShell, FileSystem }
 import typed.KeyedListLike
-import scala.util.{ Failure, Success }
+import scala.util.{ Try, Failure, Success }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 /**
@@ -43,8 +45,15 @@ trait BaseReplState {
   private[scalding] var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
-  def useLocalMode() { mode = Local(false) }
-  def useStrictLocalMode() { mode = Local(true) }
+  def useLocalMode() {
+    mode = Local(false)
+    modeBanner
+  }
+
+  def useStrictLocalMode() {
+    mode = Local(true)
+    modeBanner
+  }
 
   /** Switch to Hdfs mode */
   private def useHdfsMode_() {
@@ -58,12 +67,62 @@ trait BaseReplState {
     useHdfsMode_()
     customConfig -= mr1Key
     customConfig -= mr2Key
+    modeBanner
   }
 
   def useHdfsLocalMode() {
     useHdfsMode_()
     customConfig += mr1Key -> mrLocal
     customConfig += mr2Key -> mrLocal
+    modeBanner
+  }
+
+  def modeBanner: Unit = {
+    val scaldingMode = mode match {
+      case localMode: Local => {
+        (localMode.toString, System.getProperty("user.dir"))
+      }
+      case hdfsMode: Hdfs => {
+        val defaultFs = FileSystem.get(hdfsMode.jobConf)
+        val m = customConfig.get(mr2Key) match {
+          case Some("local") =>
+            s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strict})"
+          case _ =>
+            s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strict})"
+        }
+        (m, defaultFs.getWorkingDirectory.toString)
+      }
+    }
+    println(s"${Console.GREEN}#### Scalding mode: ${scaldingMode._1}")
+    println(s"#### User home: ${scaldingMode._2}${Console.RESET}")
+  }
+
+  /**
+   * List files under path
+   *
+   * @param pathStr
+   * @return
+   */
+  def fs_ls(pathStr: String) = {
+    val args = Seq("-ls", pathStr).toArray
+    mode match {
+      case hdfsMode: Hdfs => Try(new FsShell(hdfsMode.jobConf).run(args))
+      case _ => new FsShell(new Configuration(false)).run(args)
+    }
+  }
+
+  /**
+   * Run fs -text. Dump text, automatically decompress if needed
+   *
+   * @param pathStr
+   * @return
+   */
+  def fs_cat(pathStr: String) = {
+    val args = Seq("-text", pathStr).toArray
+    mode match {
+      case hdfsMode: Hdfs => Try(new FsShell(hdfsMode.jobConf).run(args))
+      case _ => new FsShell(new Configuration(false)).run(args)
+    }
   }
 
   /**
