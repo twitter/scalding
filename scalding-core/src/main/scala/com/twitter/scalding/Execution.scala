@@ -221,7 +221,7 @@ object Execution {
    * as it is evaluating.
    */
   private[scalding] class EvalCache {
-    private[this] val cache = new FutureCache[Execution[Any], (Any, ExecutionCounters)]
+    private[this] val cache = new FutureSoftCache[Execution[Any], (Any, ExecutionCounters)]
 
     private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
 
