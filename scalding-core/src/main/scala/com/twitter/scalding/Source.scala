@@ -16,15 +16,15 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io.{ InputStream, OutputStream }
-import java.util.{ Map => JMap, Properties }
+import java.util.{ Map => JMap, Properties, UUID }
 
 import cascading.flow.FlowDef
 import cascading.flow.FlowProcess
 import cascading.scheme.{ NullScheme, Scheme }
 import cascading.tap.hadoop.Hfs
 import cascading.tap.SinkMode
-import cascading.tap.{ Tap, SinkTap }
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector }
+import cascading.tap.{ Tap, SourceTap, SinkTap }
+import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector, TupleEntryIterator }
 
 import cascading.pipe.Pipe
 
@@ -40,18 +40,45 @@ import scala.collection.JavaConverters._
 class InvalidSourceException(message: String) extends RuntimeException(message)
 
 /**
- * Represents an invalid tap which throws when openForRead is called
+ * InvalidSourceTap used in createTap method when we want to defer
+ * the failures to validateTaps method.
+ *
+ * This is used because for Job classes, createTap method on sources is called
+ * when the class is initialized. In most cases though, we want any exceptions to be
+ * thrown by validateTaps method, which is called subsequently during flow planning.
+ *
+ * hdfsPaths represents user-supplied list that was detected as not containing any valid paths.
  */
-class InvalidSourceTap(tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]])
-  extends Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]() {
-  def getIdentifier = "invalidTap"
-  def openForRead(flowProcess: FlowProcess[JobConf], record: RecordReader[_, _]) =
-    throw new InvalidSourceException("No good paths in the sources")
-  def openForWrite(flowProcess: FlowProcess[JobConf], output: OutputCollector[_, _]) = tap.openForWrite(flowProcess, output)
-  def createResource(conf: JobConf) = false
-  def deleteResource(conf: JobConf) = false
-  def resourceExists(conf: JobConf) = false
-  def getModifiedTime(conf: JobConf) = 0
+class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobConf, RecordReader[_, _]] {
+
+  private final val randomId = UUID.randomUUID.toString
+
+  override def getIdentifier: String = s"InvalidSourceTap-$randomId"
+
+  override def hashCode: Int = randomId.hashCode
+
+  override def getModifiedTime(conf: JobConf): Long = 0L
+
+  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
+    sys.error(s"InvalidSourceTap: No good paths in $hdfsPaths")
+
+  override def resourceExists(conf: JobConf): Boolean = false
+
+  override def getScheme = new NullScheme()
+
+  // We set a dummy input format here so that mapred.input.format.class key is present,
+  // which is a requirement for casading's MultiInputFormat at flow plan time.
+  // So the order of operations here will be:
+  // 1. source.createTap
+  // 2. tap.sourceConfInit
+  // 3. scheme.sourceConfInit
+  // 4. source.validateTaps (throws InvalidSourceException)
+  // In the worst case if the flow plan is misconfigured,
+  // openForRead on mappers should fail when using this tap.
+  override def sourceConfInit(flow: FlowProcess[JobConf], conf: JobConf): Unit = {
+    conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
+    super.sourceConfInit(flow, conf)
+  }
 }
 
 /*
