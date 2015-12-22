@@ -113,7 +113,7 @@ object ScaldingBuild extends Build {
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 
     // Uncomment if you don't want to run all the tests before building assembly
-    test in assembly := {},
+    // test in assembly := {},
     logLevel in assembly := Level.Warn,
 
     // Publishing options:
@@ -447,7 +447,7 @@ object ScaldingBuild extends Build {
         import com.twitter.scalding.ReplImplicitContext._
         """,
       libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-        "org.scala-lang" % "jline" % scalaVersion,
+        "jline" % "jline" % scalaVersion.take(4),
         "org.scala-lang" % "scala-compiler" % scalaVersion,
         "org.scala-lang" % "scala-reflect" % scalaVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",

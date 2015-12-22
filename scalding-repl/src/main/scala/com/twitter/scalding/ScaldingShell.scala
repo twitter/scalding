@@ -94,7 +94,7 @@ trait BaseScaldingShell extends MainGenericRunner {
       case _ => ()
     }
 
-    replState.modeBanner
+    replState.printModeBanner
     scaldingREPL.get.setPrompt(Console.BLUE + "\nscalding> " + Console.RESET)
     scaldingREPL.get.process(command.settings)
   }

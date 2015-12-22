@@ -47,12 +47,12 @@ trait BaseReplState {
   /** Switch to Local mode */
   def useLocalMode() {
     mode = Local(false)
-    modeBanner
+    printModeBanner()
   }
 
   def useStrictLocalMode() {
     mode = Local(true)
-    modeBanner
+    printModeBanner()
   }
 
   /** Switch to Hdfs mode */
@@ -67,18 +67,18 @@ trait BaseReplState {
     useHdfsMode_()
     customConfig -= mr1Key
     customConfig -= mr2Key
-    modeBanner
+    printModeBanner()
   }
 
   def useHdfsLocalMode() {
     useHdfsMode_()
     customConfig += mr1Key -> mrLocal
     customConfig += mr2Key -> mrLocal
-    modeBanner
+    printModeBanner()
   }
 
-  def modeBanner: Unit = {
-    val scaldingMode = mode match {
+  private[scalding] def printModeBanner(): Unit = {
+    val (modeString, homeDir) = mode match {
       case localMode: Local => {
         (localMode.toString, System.getProperty("user.dir"))
       }
@@ -93,8 +93,15 @@ trait BaseReplState {
         (m, defaultFs.getWorkingDirectory.toString)
       }
     }
-    println(s"${Console.GREEN}#### Scalding mode: ${scaldingMode._1}")
-    println(s"#### User home: ${scaldingMode._2}${Console.RESET}")
+    println(s"${Console.GREEN}#### Scalding mode: ${modeString}")
+    println(s"#### User home: ${homeDir}${Console.RESET}")
+  }
+
+  private def modeHadoopConf: Configuration = {
+    mode match {
+      case hdfsMode: Hdfs => hdfsMode.jobConf
+      case _ => new Configuration(false)
+    }
   }
 
   /**
@@ -103,12 +110,13 @@ trait BaseReplState {
    * @param pathStr
    * @return
    */
-  def fs_ls(pathStr: String) = {
+  def fsLs(pathStr: String): Int = {
     val args = Seq("-ls", pathStr).toArray
-    mode match {
-      case hdfsMode: Hdfs => Try(new FsShell(hdfsMode.jobConf).run(args))
-      case _ => new FsShell(new Configuration(false)).run(args)
-    }
+    new FsShell(modeHadoopConf).run(args)
+  }
+
+  def fsLs(): Int = {
+    fsLs(".")
   }
 
   /**
@@ -117,12 +125,9 @@ trait BaseReplState {
    * @param pathStr
    * @return
    */
-  def fs_cat(pathStr: String) = {
+  def fsCat(pathStr: String): Int = {
     val args = Seq("-text", pathStr).toArray
-    mode match {
-      case hdfsMode: Hdfs => Try(new FsShell(hdfsMode.jobConf).run(args))
-      case _ => new FsShell(new Configuration(false)).run(args)
-    }
+    new FsShell(modeHadoopConf).run(args)
   }
 
   /**
