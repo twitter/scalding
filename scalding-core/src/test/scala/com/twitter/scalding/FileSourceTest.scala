@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.scheme.NullScheme
+import cascading.tuple.Fields
 import org.scalatest.{ Matchers, WordSpec }
 import org.apache.hadoop.conf.Configuration
 
@@ -197,12 +199,13 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
 
 object TestInvalidFileSource extends FileSource {
 
-  override def hdfsPaths: Iterable[String] = "invalid_hdfs_ath"
-  override def localPaths: Iterable[String] = "invalid_local_path"
-  override def pathIsGood(p: String) = false
+  override def hdfsPaths: Iterable[String] = Iterable("invalid_hdfs_path")
+  override def localPaths: Iterable[String] = Iterable("invalid_local_path")
+  override def hdfsScheme = new NullScheme(Fields.ALL, Fields.NONE)
 
   val conf = new Configuration()
 
-  val hdfsMode: Hdfs = Hdfs(true, conf)
+  def pathIsGood(p: String) = false
+  val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
 }
