@@ -157,8 +157,7 @@ class FileSourceTest extends WordSpec with Matchers {
   }
 
   "invalid source input" should {
-    import TestEmptyFileSource.hdfsPaths
-    import TestEmptyFileSource.createHdfsReadTap
+    import TestInvalidFileSource.createHdfsReadTap
 
     "Create an InvalidSourceTap an empty directory is given" in {
       createHdfsReadTap shouldBe a[InvalidSourceTap]
@@ -196,10 +195,11 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
 }
 
-object TestEmptyFileSource extends FileSource {
+object TestInvalidFileSource extends FileSource {
 
-  override def hdfsPaths: Iterable[String] = Iterable.empty
-  override def localPaths: Iterable[String] = Iterable.empty
+  override def hdfsPaths: Iterable[String] = "invalid_hdfs_ath"
+  override def localPaths: Iterable[String] = "invalid_local_path"
+  override def pathIsGood(p: String) = false
 
   val conf = new Configuration()
 
