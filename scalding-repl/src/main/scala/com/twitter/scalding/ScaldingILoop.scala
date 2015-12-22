@@ -53,6 +53,13 @@ class ScaldingILoop
    */
   private val scaldingCommands: List[LoopCommand] = List()
 
+  /**
+   * Change the shell prompt to read scalding&gt;
+   *
+   * @return a prompt string to use for this REPL.
+   */
+  override def prompt: String = Console.BLUE + "\nscalding> " + Console.RESET
+
   private[this] def addImports(ids: String*): IR.Result =
     if (ids.isEmpty) IR.Success
     else intp.interpret("import " + ids.mkString(", "))
