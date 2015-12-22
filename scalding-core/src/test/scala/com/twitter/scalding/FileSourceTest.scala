@@ -155,6 +155,15 @@ class FileSourceTest extends WordSpec with Matchers {
     }
 
   }
+
+  "invalid source input" should {
+    import TestEmptyFileSource.hdfsPaths
+    import TestEmptyFileSource.createHdfsReadTap
+
+    "Create an InvalidSourceTap an empty directory is given" in {
+      createHdfsReadTap shouldBe a[InvalidSourceTap]
+    }
+  }
 }
 
 object TestPath {
@@ -185,4 +194,15 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
   val conf = new Configuration()
 
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
+}
+
+object TestEmptyFileSource extends FileSource {
+
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
+
+  val conf = new Configuration()
+
+  val hdfsMode: Hdfs = Hdfs(true, conf)
+  def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
 }
