@@ -20,7 +20,7 @@ import cascading.pipe.Pipe
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FsShell, FileSystem }
 import typed.KeyedListLike
-import scala.util.{ Try, Failure, Success }
+import scala.util.{ Failure, Success }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 /**
