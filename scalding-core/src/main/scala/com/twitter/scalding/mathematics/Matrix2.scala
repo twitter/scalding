@@ -358,7 +358,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C2] = right.colOrd
-  implicit def withOrderedSerialization: Ordering[(R, C2)] = OrderedSerialization2.maybeOrderedSerialization(rowOrd, colOrd)
+  implicit def withOrderedSerialization: Ordering[(R, C2)] = OrderedSerialization2.maybeOrderedSerialization2(rowOrd, colOrd)
 
   override lazy val transpose: Product[C2, C, R, V] = Product(right.transpose, left.transpose, ring)
   override def negate(implicit g: Group[V]): Product[R, C, C2, V] = {
@@ -437,7 +437,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
-  implicit def withOrderedSerialization: Ordering[(R, C)] = OrderedSerialization2.maybeOrderedSerialization(rowOrd, colOrd)
+  implicit def withOrderedSerialization: Ordering[(R, C)] = OrderedSerialization2.maybeOrderedSerialization2(rowOrd, colOrd)
 
   override lazy val transpose: Sum[C, R, V] = Sum(left.transpose, right.transpose, mon)
   override def negate(implicit g: Group[V]): Sum[R, C, V] = Sum(left.negate, right.negate, mon)
@@ -482,7 +482,7 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
 
   implicit override val rowOrd: Ordering[R] = left.rowOrd
   implicit override val colOrd: Ordering[C] = left.colOrd
-  implicit def withOrderedSerialization: Ordering[(R, C)] = OrderedSerialization2.maybeOrderedSerialization(rowOrd, colOrd)
+  implicit def withOrderedSerialization: Ordering[(R, C)] = OrderedSerialization2.maybeOrderedSerialization2(rowOrd, colOrd)
 }
 
 case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)],
