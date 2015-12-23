@@ -15,10 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
+import cascading.flow.{ FlowStep, FlowStepListener }
 import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding._
 import com.twitter.algebird.monad.Reader
+import org.apache.hadoop.conf.Configuration
 
 // Need this to flatMap Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -66,6 +68,61 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
     def execute(r: Runnable) = r.run
     def reportFailure(t: Throwable) = ()
   }
+}
+
+/**
+ * Run to two execution in paralel (zip) setting different config option
+ * and verify that Execution.setExtraConfig are preserved in each flowStep
+ *
+ */
+class ConfTestExecution(args: Args) extends ExecutionJob[Unit](args) {
+
+  override def config: Map[AnyRef, AnyRef] = {
+    //addFlowStepListerner to verify that Execution.setExtraConfig works
+    val newconf = Config.empty.addFlowStepListener{ (m: Mode, c: Config) =>
+      (m, c) match {
+        case (_, _) => new TestExecutionFlowListener()
+      }
+    }
+    super.config ++ newconf.toMap
+  }
+
+  def execution = {
+    val exec1 = TypedPipe.from(TypedTsv[(String, Int)](args("input1"))).writeExecution(TypedTsv[(String, Int)](args("output1")))
+    val exec2 = TypedPipe.from(TypedTsv[(String, Int)](args("input2"))).writeExecution(TypedTsv[(String, Int)](args("output2")))
+    exec1.setExtraConfig(Config(Map("testconf1" -> "1")))
+    exec2.setExtraConfig(Config(Map("testconf2" -> "2")))
+    val zippedExec = exec1.zip(exec2)
+    zippedExec.setExtraConfig(Config(Map("testconf3" -> "3")))
+    zippedExec.unit
+  }
+
+  private[this] class TestExecutionFlowListener extends FlowStepListener {
+
+    override def onStepCompleted(flowStep: FlowStep[_]): Unit = ()
+    override def onStepRunning(flowStep: FlowStep[_]): Unit = ()
+    override def onStepStopping(flowStep: FlowStep[_]): Unit = ()
+    override def onStepStarting(flowStep: FlowStep[_]): Unit = {
+      flowStep.getConfig() match {
+        case conf: Configuration =>
+          if (conf.get("testconf1") != null)
+            ConfTestExecutionCounter.test1 = ConfTestExecutionCounter.test1 + 1;
+          if (conf.get("testconf2") != null)
+            ConfTestExecutionCounter.test2 = ConfTestExecutionCounter.test2 + 1;
+          if (conf.get("testconf3") != null)
+            ConfTestExecutionCounter.test3 = ConfTestExecutionCounter.test3 + 1;
+        case _ => ()
+      }
+    }
+    override def onStepThrowable(flowStep: FlowStep[_], throwable: Throwable): Boolean = false
+  }
+
+}
+
+object ConfTestExecutionCounter {
+  var test1: Int = 0
+  var test2: Int = 0
+  var test3: Int = 0
 }
 
 class ExecutionTest extends WordSpec with Matchers {
@@ -166,6 +223,33 @@ class ExecutionTest extends WordSpec with Matchers {
         .run
         .runHadoop
         .finish
+    }
+  }
+  "Executions" should {
+    "allow setting config key values on a per execution basis" in {
+
+      val testInput: List[(String, Int)] = List(("a", 1), ("b", 2))
+
+      // Sources
+      def ourType(str: String) = TypedTsv[(String, Int)](str)
+
+      // A method that runs a JobTest where the sources don't match
+      JobTest(new ConfTestExecution(_))
+        .arg("input1", "input1")
+        .arg("input2", "input2")
+        .arg("output1", "output1")
+        .arg("output2", "output2")
+        .source(ourType("input1"), testInput)
+        .source(ourType("input2"), testInput)
+        .sink[(String, Int)](ourType("output1")){ outBuf => { outBuf shouldBe testInput } }
+        .sink[(String, Int)](ourType("output2")){ outBuf => { outBuf shouldBe testInput } }
+        .runHadoop
+        .finish
+
+      ConfTestExecutionCounter.test1 shouldBe 1
+      ConfTestExecutionCounter.test2 shouldBe 1
+      ConfTestExecutionCounter.test3 shouldBe 2
+
     }
   }
   "Executions" should {
