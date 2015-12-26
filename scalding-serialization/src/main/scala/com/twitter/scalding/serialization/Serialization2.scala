@@ -58,6 +58,16 @@ class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B
   } yield a + b
 }
 
+object OrderedSerialization2 {
+  def maybeOrderedSerialization2[A, B](implicit ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] = {
+    (ordA, ordB) match {
+      case (ordA: OrderedSerialization[_], ordB: OrderedSerialization[_]) =>
+        new OrderedSerialization2(ordA.asInstanceOf[OrderedSerialization[A]], ordB.asInstanceOf[OrderedSerialization[B]])
+      case _ => Ordering.Tuple2(ordA, ordB)
+    }
+  }
+}
+
 class OrderedSerialization2[A, B](val ordA: OrderedSerialization[A],
   val ordB: OrderedSerialization[B]) extends Serialization2[A, B](ordA, ordB) with OrderedSerialization[(A, B)] {
   override def compare(x: (A, B), y: (A, B)) = {

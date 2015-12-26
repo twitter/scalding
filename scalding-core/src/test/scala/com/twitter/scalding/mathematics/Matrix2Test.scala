@@ -16,10 +16,14 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
+import com.twitter.scalding.serialization._
 import com.twitter.scalding.source.TypedText
 import cascading.pipe.joiner._
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.{ Ring, Group }
+
+import java.io.{ InputStream, OutputStream }
+import scala.util.{ Try, Success }
 
 class Matrix2Sum(args: Args) extends Job(args) {
 
@@ -34,6 +38,23 @@ class Matrix2Sum(args: Args) extends Job(args) {
 
   val p2 = Tsv("mat2", ('x2, 'y2, 'v2)).read
   val tp2 = p2.toTypedPipe[(Int, Int, Double)](('x2, 'y2, 'v2))
+  val mat2 = MatrixLiteral(tp2, NoClue)
+
+  val sum = mat1 + mat2
+  sum.write(TypedText.tsv[(Int, Int, Double)]("sum"))
+}
+
+class Matrix2SumOrderedSerialization(args: Args) extends Job(args) {
+  import Matrix2._
+  import RequiredBinaryComparators.orderedSerialization
+
+  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
+  implicit val intOS = orderedSerialization[Int]
+
+  val tp1 = TypedPipe.from(TypedText.tsv[(Int, Int, Double)]("mat1"))
+  val mat1 = MatrixLiteral(tp1, NoClue)
+
+  val tp2 = TypedPipe.from(TypedText.tsv[(Int, Int, Double)]("mat2"))
   val mat2 = MatrixLiteral(tp2, NoClue)
 
   val sum = mat1 + mat2
@@ -283,6 +304,21 @@ class Matrix2Test extends WordSpec with Matchers {
       JobTest(new Matrix2Sum(_))
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
+        .typedSink(TypedText.tsv[(Int, Int, Double)]("sum")) { ob =>
+          "correctly compute sums" in {
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
+          }
+        }
+        .runHadoop
+        .finish
+    }
+  }
+
+  "A MatrixSum job with Orderedserialization" should {
+    TUtil.printStack {
+      JobTest(new Matrix2SumOrderedSerialization(_))
+        .source(TypedText.tsv[(Int, Int, Double)]("mat1"), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
+        .source(TypedText.tsv[(Int, Int, Double)]("mat2"), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
             toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
