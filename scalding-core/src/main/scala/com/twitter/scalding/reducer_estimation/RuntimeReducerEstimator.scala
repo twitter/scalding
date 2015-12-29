@@ -1,9 +1,5 @@
 package com.twitter.scalding.reducer_estimation
 
-import scala.collection.JavaConverters._
-import cascading.flow.FlowStep
-import cascading.tap.{ Tap, CompositeTap }
-import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
@@ -193,15 +189,11 @@ trait RuntimeReducerEstimator extends HistoryReducerEstimator {
 }
 
 object MedianEstimationScheme extends RuntimeEstimationScheme {
-  import reducer_estimation.{ mean, median }
-
-  def estimateJobTime(times: Seq[Double]) = mean(times)
+  def estimateJobTime(times: Seq[Double]) = median(times)
   def estimateTaskTime(times: Seq[Double]) = median(times)
 }
 
 object MeanEstimationScheme extends RuntimeEstimationScheme {
-  import reducer_estimation.{ mean, median }
-
   def estimateJobTime(times: Seq[Double]) = mean(times)
   def estimateTaskTime(times: Seq[Double]) = mean(times)
 }
