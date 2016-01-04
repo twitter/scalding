@@ -105,29 +105,13 @@ trait BaseReplState {
   }
 
   /**
-   * List files under path
+   * Access to Hadoop FsShell
    *
-   * @param pathStr
+   * @param cmdArgs
    * @return
    */
-  def fsLs(pathStr: String): Int = {
-    val args = Seq("-ls", pathStr).toArray
-    new FsShell(modeHadoopConf).run(args)
-  }
-
-  def fsLs(): Int = {
-    fsLs(".")
-  }
-
-  /**
-   * Run fs -text. Dump text, automatically decompress if needed
-   *
-   * @param pathStr
-   * @return
-   */
-  def fsCat(pathStr: String): Int = {
-    val args = Seq("-text", pathStr).toArray
-    new FsShell(modeHadoopConf).run(args)
+  def fsShell(cmdArgs: String*): Int = {
+    new FsShell(modeHadoopConf).run(cmdArgs.toArray)
   }
 
   /**
