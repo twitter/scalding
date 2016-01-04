@@ -107,11 +107,21 @@ trait BaseReplState {
   /**
    * Access to Hadoop FsShell
    *
-   * @param cmdArgs
+   * @param cmdArgs list of command line parameters for FsShell, one per method argument
    * @return
    */
-  def fsShell(cmdArgs: String*): Int = {
+  def fsShellExp(cmdArgs: String*): Int = {
     new FsShell(modeHadoopConf).run(cmdArgs.toArray)
+  }
+
+  /**
+   * Access to Hadoop FsShell
+   *
+   * @param cmdLine command line parameters for FsShell as a single string
+   * @return
+   */
+  def fsShell(cmdLine: String): Int = {
+    new FsShell(modeHadoopConf).run(cmdLine.trim.split(" "))
   }
 
   /**
