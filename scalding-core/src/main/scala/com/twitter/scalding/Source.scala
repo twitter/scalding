@@ -60,7 +60,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
 
   override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
+  override def openForRead(flow: FlowProcess[_ <: JobConf], input: RecordReader[_, _]): TupleEntryIterator =
     sys.error(s"InvalidSourceTap: No good paths in $hdfsPaths")
 
   override def resourceExists(conf: JobConf): Boolean = false
@@ -76,7 +76,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
   // 4. source.validateTaps (throws InvalidSourceException)
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
-  override def sourceConfInit(flow: FlowProcess[JobConf], conf: JobConf): Unit = {
+  override def sourceConfInit(flow: FlowProcess[_ <: JobConf], conf: JobConf): Unit = {
     conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
     super.sourceConfInit(flow, conf)
   }

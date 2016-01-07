@@ -288,7 +288,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
     }
   }
 
-  protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[Configuration, _, _] = {
+  protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[_ <: Configuration, _, _] = {
     val taps: List[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]] =
       goodHdfsPaths(hdfsMode)
         .toList.map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
