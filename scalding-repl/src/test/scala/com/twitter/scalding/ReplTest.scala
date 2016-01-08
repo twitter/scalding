@@ -16,6 +16,8 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.Fields
+import java.io.File
+import java.nio.file.Files
 import org.scalatest.WordSpec
 import scala.collection.JavaConverters._
 import org.apache.hadoop.mapred.JobConf
@@ -187,5 +189,33 @@ class ReplTest extends WordSpec {
   "REPL in Hadoop mode" should {
     mode = Hdfs(strict = true, new JobConf)
     test()
+  }
+
+  "findAllUpPath" should {
+    val root = Files.createTempDirectory("scalding-repl").toFile
+    root.deleteOnExit()
+
+    val matchingFile = new File(root, "this_matches")
+    matchingFile.createNewFile()
+
+    val currentDirectory = new File(root, "arbitrary_directory")
+    currentDirectory.mkdir()
+
+    "enumerate matching files" in {
+      root.setReadable(true)
+
+      val actual = ScaldingILoop
+        .findAllUpPath(currentDirectory.getAbsolutePath)("this_matches")
+      assert(actual === List(matchingFile))
+    }
+
+    "ignore directories with restricted permissions" in {
+      root.setReadable(false)
+
+      intercept[RuntimeException] {
+        ScaldingILoop
+          .findAllUpPath(currentDirectory.getAbsolutePath)("this_matches")
+      }
+    }
   }
 }
