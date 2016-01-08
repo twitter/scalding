@@ -31,7 +31,6 @@ object ScaldingILoop {
         .iterate(currentDir)(new File(_).getParent)
         .takeWhile(_ != "/")
 
-      // Drop files when the user does not have the correct permissions
       children = Option(new File(ancestor).listFiles)
         .getOrElse(
           sys.error(s"The current directory '$currentDir' could not be accessed"))
