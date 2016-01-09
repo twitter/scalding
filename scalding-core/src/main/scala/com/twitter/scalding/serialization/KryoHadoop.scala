@@ -26,7 +26,10 @@ import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
 import com.twitter.chill.{ SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator }
 
-class KryoHadoop(config: Config) extends KryoInstantiator {
+class KryoHadoop(@transient config: Config) extends KryoInstantiator {
+  // keeping track of references is costly for memory, and often triggers OOM on Hadoop
+  val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
+
   /**
    * TODO!!!
    * Deal with this issue.  The problem is grouping by Kryo serialized
@@ -76,8 +79,7 @@ class KryoHadoop(config: Config) extends KryoInstantiator {
      * is serialized, but that's very expensive.
      */
     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
-    // keeping track of references is costly for memory, and often triggers OOM on Hadoop
-    val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
+
     newK.setReferences(useRefs)
 
     /**

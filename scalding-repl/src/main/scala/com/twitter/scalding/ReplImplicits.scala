@@ -17,6 +17,8 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{ FsShell, FileSystem }
 import typed.KeyedListLike
 import scala.util.{ Failure, Success }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
@@ -43,8 +45,15 @@ trait BaseReplState {
   private[scalding] var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
-  def useLocalMode() { mode = Local(false) }
-  def useStrictLocalMode() { mode = Local(true) }
+  def useLocalMode() {
+    mode = Local(false)
+    printModeBanner()
+  }
+
+  def useStrictLocalMode() {
+    mode = Local(true)
+    printModeBanner()
+  }
 
   /** Switch to Hdfs mode */
   private def useHdfsMode_() {
@@ -58,12 +67,61 @@ trait BaseReplState {
     useHdfsMode_()
     customConfig -= mr1Key
     customConfig -= mr2Key
+    printModeBanner()
   }
 
   def useHdfsLocalMode() {
     useHdfsMode_()
     customConfig += mr1Key -> mrLocal
     customConfig += mr2Key -> mrLocal
+    printModeBanner()
+  }
+
+  private[scalding] def printModeBanner(): Unit = {
+    val (modeString, homeDir) = mode match {
+      case localMode: Local => {
+        (localMode.toString, System.getProperty("user.dir"))
+      }
+      case hdfsMode: Hdfs => {
+        val defaultFs = FileSystem.get(hdfsMode.jobConf)
+        val m = customConfig.get(mr2Key) match {
+          case Some("local") =>
+            s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strict})"
+          case _ =>
+            s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strict})"
+        }
+        (m, defaultFs.getWorkingDirectory.toString)
+      }
+    }
+    println(s"${Console.GREEN}#### Scalding mode: ${modeString}")
+    println(s"#### User home: ${homeDir}${Console.RESET}")
+  }
+
+  private def modeHadoopConf: Configuration = {
+    mode match {
+      case hdfsMode: Hdfs => hdfsMode.jobConf
+      case _ => new Configuration(false)
+    }
+  }
+
+  /**
+   * Access to Hadoop FsShell
+   *
+   * @param cmdArgs list of command line parameters for FsShell, one per method argument
+   * @return
+   */
+  def fsShellExp(cmdArgs: String*): Int = {
+    new FsShell(modeHadoopConf).run(cmdArgs.toArray)
+  }
+
+  /**
+   * Access to Hadoop FsShell
+   *
+   * @param cmdLine command line parameters for FsShell as a single string
+   * @return
+   */
+  def fsShell(cmdLine: String): Int = {
+    new FsShell(modeHadoopConf).run(cmdLine.trim.split(" "))
   }
 
   /**

@@ -15,37 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ CMS, CMSHasher }
+import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 
 import scala.language.experimental.macros
 
-object Sketched {
-
-  // TODO: there are more efficient orderings we could use here if this turns
-  // out to be a bottleneck, and this should actually never end up gettings used.
-  // We may be able to remove this after some refactoring in Algebird.
-  implicit val byteArrayOrdering = Ordering.by((_: Array[Byte]).toIterable)
-
-  /**
-   * This is based on the CMSHasherBigInt found in algebird (see docs for in depth explanation):
-   * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1086
-   *
-   * TODO: We need to move this hasher to CMSHasherImplicits in algebird:
-   * https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/CountMinSketch.scala#L1054
-   * See: https://github.com/twitter/scalding/issues/1177
-   */
-  implicit object CMSHasherByteArray extends CMSHasher[Array[Byte]] {
-    override def hash(a: Int, b: Int, width: Int)(x: Array[Byte]): Int = {
-      val hash: Int = scala.util.hashing.MurmurHash3.arrayHash(x, a)
-      // We only want positive integers for the subsequent modulo.  This method mimics Java's Hashtable
-      // implementation.  The Java code uses `0x7FFFFFFF` for the bit-wise AND, which is equal to Int.MaxValue.
-      val positiveHash = hash & Int.MaxValue
-      positiveHash % width
-    }
-  }
-}
+// This was a bad design choice, we should have just put these in the CMSHasher object
+import CMSHasherImplicits._
 
 /**
  * This class is generally only created by users
@@ -58,16 +35,15 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   seed: Int)(implicit serialization: K => Array[Byte],
     ordering: Ordering[K])
   extends MustHaveReducers {
-  import Sketched._
 
   def serialize(k: K): Array[Byte] = serialization(k)
 
   def reducers = Some(numReducers)
 
-  private lazy implicit val cms = CMS.monoid[Array[Byte]](eps, delta, seed)
-  lazy val sketch: TypedPipe[CMS[Array[Byte]]] =
+  private lazy implicit val cms = CMS.monoid[Bytes](eps, delta, seed)
+  lazy val sketch: TypedPipe[CMS[Bytes]] =
     pipe
-      .map { case (k, v) => cms.create(serialization(k)) }
+      .map { case (k, _) => cms.create(Bytes(serialization(k))) }
       .groupAll
       .sum
       .values
@@ -104,14 +80,13 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
 
   private def flatMapWithReplicas[W](pipe: TypedPipe[(K, W)])(fn: Int => Iterable[Int]) =
     pipe.cross(left.sketch).flatMap{
-      case (v, cms) =>
+      case ((k, w), cms) =>
         val maxPerReducer = (cms.totalCount / numReducers) * maxReducerFraction + 1
-        val maxReplicas = (cms.frequency(left.serialize(v._1)).estimate.toDouble / maxPerReducer)
-
+        val maxReplicas = (cms.frequency(Bytes(left.serialize(k))).estimate.toDouble / maxPerReducer)
         //if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
         //if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it
         val replicas = fn(maxReplicas.ceil.toInt.min(numReducers))
-        replicas.map{ i => (i, v._1) -> v._2 }
+        replicas.map{ i => (i, k) -> w }
     }
 
   lazy val toTypedPipe: TypedPipe[(K, R)] = {

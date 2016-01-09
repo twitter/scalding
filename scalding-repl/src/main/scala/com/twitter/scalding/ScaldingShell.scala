@@ -94,6 +94,7 @@ trait BaseScaldingShell extends MainGenericRunner {
       case _ => ()
     }
 
+    replState.printModeBanner()
     scaldingREPL.get.process(command.settings)
   }
 

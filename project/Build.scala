@@ -51,9 +51,9 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    scalaVersion := "2.10.5",
+    scalaVersion := "2.11.7",
 
-    crossScalaVersions := Seq("2.10.5", "2.11.7"),
+    crossScalaVersions := Seq("2.10.6", "2.11.7"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -527,7 +527,7 @@ object ScaldingBuild extends Build {
     autoScalaLibrary := false,
     // Disable cross publishing for this artifact
     publishArtifact <<= (scalaVersion) { scalaVersion =>
-        if(scalaVersion.startsWith("2.11")) false else true
+        if(scalaVersion.startsWith("2.10")) false else true
         },
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",

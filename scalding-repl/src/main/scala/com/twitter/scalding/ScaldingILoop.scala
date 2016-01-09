@@ -20,6 +20,28 @@ import java.io.File
 import scala.tools.nsc.interpreter.IR
 import scala.tools.nsc.GenericRunnerSettings
 
+object ScaldingILoop {
+  /**
+   * Search for files with the given name in all directories from current directory
+   * up to root.
+   */
+  private[scalding] def findAllUpPath(currentDir: String)(filename: String): List[File] = {
+    val matchingFiles = for {
+      ancestor <- Iterator
+        .iterate(currentDir)(new File(_).getParent)
+        .takeWhile(_ != "/")
+
+      children = Option(new File(ancestor).listFiles)
+        .getOrElse(
+          sys.error(s"The current directory '$currentDir' could not be accessed"))
+
+      child <- children if child.toString.endsWith(filename)
+    } yield child
+
+    matchingFiles.toList
+  }
+}
+
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
@@ -65,16 +87,6 @@ class ScaldingILoop
     else intp.interpret("import " + ids.mkString(", "))
 
   /**
-   * Search for files with the given name in all directories from current directory
-   * up to root.
-   */
-  private def findAllUpPath(filename: String): List[File] =
-    Iterator.iterate(System.getProperty("user.dir"))(new File(_).getParent)
-      .takeWhile(_ != "/")
-      .flatMap(new File(_).listFiles.filter(_.toString.endsWith(filename)))
-      .toList
-
-  /**
    * Gets the list of commands that this REPL supports.
    *
    * @return a list of the command supported by this REPL.
@@ -94,8 +106,10 @@ class ScaldingILoop
 
       settings match {
         case s: GenericRunnerSettings =>
-          findAllUpPath(".scalding_repl").reverse.foreach {
-            f => s.loadfiles.appendToValue(f.toString)
+          val cwd = System.getProperty("user.dir")
+
+          ScaldingILoop.findAllUpPath(cwd)(".scalding_repl").reverse.foreach { f =>
+            s.loadfiles.appendToValue(f.toString)
           }
         case _ => ()
       }

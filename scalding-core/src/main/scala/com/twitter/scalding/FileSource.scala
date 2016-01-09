@@ -259,9 +259,10 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
-        // validateTaps, so we just put a dummy path to return something so the
-        // Job constructor does not fail.
-        CastHfsTap(createHfsTap(hdfsScheme, hdfsPaths.head, sinkMode))
+        // validateTaps. Return an InvalidSource here so the Job constructor does not fail.
+        // In the worst case if the flow plan is misconfigured,
+        //openForRead on mappers should fail when using this tap.
+        new InvalidSourceTap(hdfsPaths)
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
