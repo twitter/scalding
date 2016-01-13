@@ -15,9 +15,11 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import java.util.Properties
+
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
-import cascading.flow.planner.BaseFlowStep
+import cascading.flow._
+import cascading.flow.planner.{ BaseFlowNode, BaseFlowStep }
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
@@ -43,11 +45,11 @@ trait ExecutionContext {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
-    val conf = step.getConfig
-    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
-      conf.set(Config.StepDescriptions, descriptionString)
-    })
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[_]): Unit = {
+    import ConfigBridge._
+
+    getIdentifierOpt(ExecutionContext.getDesc(step))
+      .foreach(descriptionString => step.setConfigValue(Config.StepDescriptions, descriptionString))
   }
 
   final def buildFlow: Try[Flow[_]] =
@@ -79,11 +81,12 @@ trait ExecutionContext {
       }
 
       flow match {
-        case hadoopFlow: HadoopFlow =>
-          val flowSteps = hadoopFlow.getFlowSteps.asScala
+        case baseFlow: BaseFlow[_] =>
+          val flowSteps = baseFlow.getFlowSteps.asScala
           flowSteps.foreach {
-            case baseFlowStep: BaseFlowStep[JobConf] =>
+            case baseFlowStep: BaseFlowStep[_] =>
               updateStepConfigWithDescriptions(baseFlowStep)
+            case anyOtherBaseFlowStep => throw new NotImplementedError("unknown flowStep type ${anyOtherBaseFlowStep.getClass}")
           }
         case _ => // descriptions not yet supported in other modes
       }
@@ -151,7 +154,7 @@ object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
   private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
-    baseFlowStep.getFlowNodeGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+    baseFlowStep.getElementGraph.vertexSet.asScala.toSeq.flatMap(_ match {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
       case _ => List() // no descriptions
     })

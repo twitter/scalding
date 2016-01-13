@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import cascading.flow.FlowStep
+import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
 import cascading.tuple.Tuple
 
@@ -271,6 +273,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+  import ConfigBridge._
 
   "An InAndOutTest" should {
     val inAndOut = Seq("a", "b", "c")
@@ -321,15 +324,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   "A TypedPipeForceToDiskWithDescriptionPipe" should {
     "have a custom step name from withDescription" in {
+
       HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          val firstStep = steps.filter(_.getName.startsWith("(1/2"))
-          val secondStep = steps.filter(_.getName.startsWith("(2/2"))
-          val lab1 = firstStep.map(_.getConfig.get(Config.StepDescriptions))
+          val firstStep = steps.filter(_.getName.startsWith("(1/2)"))
+          val secondStep = steps.filter(_.getName.startsWith("(2/2)"))
+          val lab1 = firstStep.map(_.getConfigValue(Config.StepDescriptions))
           lab1 should have size 1
           lab1(0) should include ("write words to disk")
-          val lab2 = secondStep.map(_.getConfig.get(Config.StepDescriptions))
+          val lab2 = secondStep.map(_.getConfigValue(Config.StepDescriptions))
           lab2 should have size 1
           lab2(0) should include ("output frequency by length")
         }
@@ -343,14 +347,15 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
-          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(147, 150, 154).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
-          }
-          firstStep should include ("leftJoin")
-          firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
-          steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
+          val firstStepDescs = steps.headOption.map(_.getConfigValue(Config.StepDescriptions)).getOrElse("")
+          val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
+
+          val expected = Set(149, 151, 152, 155, 156).map { i =>
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i)"
+          } ++ Seq("leftJoin", "hashJoin")
+
+          firstStepDescSet should equal(expected)
+          steps.map(_.getConfigValue(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
@@ -361,18 +366,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          val descs = List("map stage - assign words to 1",
+          val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
-            "write",
-            // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:137)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:141)")
+            "write") ++
+            Seq(138, 139, 141, 142, 143).map(
+              linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
-          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
-          descs.foreach { d =>
-            assert(foundDescs.size == 1)
-            assert(foundDescs(0).contains(d))
-          }
+          val foundDescs = steps.map(_.getConfigValue(Config.StepDescriptions).split(",").map(_.trim).toSet)
+          foundDescs should have size 1
+
+          foundDescs.head should equal(expectedDescs)
           //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
