@@ -507,9 +507,7 @@ object Config {
    * This copy also forces all expressions in values to be evaluated, freezing them
    * as well.
    */
-  def fromHadoop(conf: Configuration): Config =
-    // use `conf.get` to force JobConf to evaluate expressions
-    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
+  def fromHadoop(anyConf: Any): Config = ConfigBridge.fromPlatform(anyConf)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,
