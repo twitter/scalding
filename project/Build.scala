@@ -285,7 +285,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.0.3")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.0.4-wip-dev") // TEMPORARY. This is how a local build ends up named on my machine today -- cchepelov, 2016-01-13
 
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-120")
@@ -302,7 +302,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingCore = module("core").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "cascading" % "cascading-core" % cascadingVersion,
-      "cascading" % "cascading-hadoop" % cascadingVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion, // ought to become "provided" or no longer here.
       "cascading" % "cascading-local" % cascadingVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
@@ -417,6 +417,8 @@ object ScaldingBuild extends Build {
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
          "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+        "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
+        "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-pig" % elephantbirdVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
         "com.novocode" % "junit-interface" % "0.11" % "test",
         "junit" % "junit" % junitVersion % "test"
@@ -521,6 +523,7 @@ object ScaldingBuild extends Build {
       "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
       "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
       "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+    // ought to depend here on "cascading" % "cascading-hadoop" % cascadingVersion
       "com.twitter" %% "chill-algebird" % chillVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
@@ -529,6 +532,11 @@ object ScaldingBuild extends Build {
     )
     }
   ).dependsOn(scaldingCore, scaldingSerialization)
+
+  /* cchepelov 2016-01-13 Question: create scaldingHadoop2MR1Test, scaldingHadoop2TezTest modules here? Depending on a scalding-hadoop-common ?
+  * scaldingHadoopTest & scaldingHadoop2MR1Test can probably share the reducer_estimation tests. Much less sure about Tez.
+  * */
+
 
   // This one uses a different naming convention
   lazy val maple = Project(
