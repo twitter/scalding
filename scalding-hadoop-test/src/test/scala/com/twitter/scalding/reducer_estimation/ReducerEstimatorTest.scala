@@ -146,7 +146,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         .sink[Double](out)(_.head shouldBe 2.86 +- 0.0001)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
+          val reducers = steps.map(step => Config.fromHadoop(step.getConfig).getNumReducers.getOrElse(0)).toList
           reducers shouldBe List(3, 1, 1)
         }
         .run

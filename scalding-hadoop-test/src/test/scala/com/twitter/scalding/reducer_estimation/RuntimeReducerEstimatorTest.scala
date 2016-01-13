@@ -49,7 +49,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
           // So our histories are (taking median runtimes):
           //
           // 2 * inputSize bytes, 3 reducers * 1000 ms for each reducer
@@ -66,7 +66,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // so we anticipate that processing (inputSize bytes)
           // will take 1500 ms total.
           // To do this in 25 ms, we need 60 reducers.
-          assert(conf.getNumReduceTasks == 60)
+          assert(conf.getNumReducers.get == 60)
         }
         .run
     }
@@ -83,7 +83,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
           // So our histories are (taking mean runtimes):
           //
           // 2 * inputSize bytes,  3 reducers * 1336.67 ms for each reducer
@@ -101,7 +101,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // will take 1525.8 ms total.
           //
           // To do this in 25 ms, we need 61.03 reducers, which rounds up to 62.
-          assert(conf.getNumReduceTasks == 62)
+          assert(conf.getNumReducers.get == 62)
         }
         .run
     }
@@ -118,7 +118,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
           // So our histories are (taking mean runtimes):
           //
           // 2 * inputSize bytes, 3 reducers * 1337 ms for each reducer
@@ -131,7 +131,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // that the job will take 3342 ms total.
           //
           // To do this in 25 ms, we need 134 reducers.
-          assert(conf.getNumReduceTasks == 134)
+          assert(conf.getNumReducers.get == 134)
         }
         .run
     }
@@ -148,7 +148,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
           // So our histories are (taking median runtimes):
           //
           // 2 * inputSize bytes, 3 reducers * 1000 ms for each reducer
@@ -161,7 +161,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // that the job will take 3000 ms total.
           //
           // To do this in 25 ms, we need 120 reducers.
-          assert(conf.getNumReduceTasks == 120)
+          assert(conf.getNumReducers.get == 120)
         }
         .run
     }
@@ -176,12 +176,12 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
 
           // EmptyRuntimeEstimator should have returned None,
           // so it should have fallen back to DummyEstimator,
           // which returns 42.
-          assert(conf.getNumReduceTasks == 42)
+          assert(conf.getNumReducers.get == 42)
         }
     }
 
@@ -195,12 +195,12 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           val steps = flow.getFlowSteps.asScala
           assert(steps.length == 1)
 
-          val conf = steps.head.getConfig
+          val conf = Config.fromHadoop(steps.head.getConfig)
 
           // ErrorRuntimeEstimator should have returned None,
           // so it should have fallen back to DummyEstimator,
           // which returns 42.
-          assert(conf.getNumReduceTasks == 42)
+          assert(conf.getNumReducers.get == 42)
         }
     }
   }
