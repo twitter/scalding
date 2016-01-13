@@ -164,8 +164,8 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
-    "accept a directory with only _SUCCESS when specified as a glob" in {
-      pathIsGood("test_data/2013/06/*") shouldBe true
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") shouldBe false
     }
 
     "reject a directory with the _SUCCESS directory" in {

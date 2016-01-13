@@ -33,6 +33,7 @@ import cascading.tap.local.FileTap
 import cascading.tuple.Fields
 
 import com.etsy.cascading.tap.local.LocalTap
+import com.twitter.algebird.{ MapAlgebra, OrVal }
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
@@ -139,33 +140,35 @@ object FileSource {
    * @return whether globPath contains a _SUCCESS file
    */
   def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, SuccessFileFilter).isEmpty
-  }
-
-  def allPathsCommitted(globPath: String, conf: Configuration): Boolean = {
-    case class PathUsage(val path: Path, committed: Boolean)
-
-    val usedDirs: Iterable[PathUsage] = glob(globPath, conf, AcceptAllPathFilter)
+    // Produce tuples (dirName, hasSuccess, hasNonHidden) keyed by dir
+    //
+    val usedDirs = glob(globPath, conf, AcceptAllPathFilter)
       .map { fileStatus: FileStatus =>
+        // stringify Path for Semigroup
         val dir =
           if (fileStatus.isDirectory)
-            fileStatus.getPath
+            fileStatus.getPath.toString
           else
-            fileStatus.getPath.getParent
+            fileStatus.getPath.getParent.toString
 
         if (fileStatus.isFile && SuccessFileFilter.accept(fileStatus.getPath)) {
-          PathUsage(dir, true)
+          dir -> (dir, OrVal(true), OrVal(false))
         } else {
-          PathUsage(dir, false)
+          dir -> (dir, OrVal(false), OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
         }
       }
-      .groupBy { case PathUsage(path, _) => path }
-      .map {
-        case (path, usageIter) =>
-          usageIter.reduce { (pu1, pu2) => PathUsage(path, pu1.committed || pu2.committed) }
-      }
 
-    usedDirs.nonEmpty && usedDirs.forall(pu => pu.committed)
+    // OR by key
+    val uniqueUsedDirs = MapAlgebra
+      .sumByKey(usedDirs)
+      .filter { case (_, (_, _, hasNonHidden)) => hasNonHidden.get }
+
+    // there is at least one valid path, and all paths either have success
+    //
+    uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
+      case (_, (_, hasSuccess, _)) =>
+        hasSuccess.get
+    }
   }
 }
 
@@ -365,7 +368,7 @@ trait SequenceFileScheme extends SchemedSource {
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
-    FileSource.allPathsCommitted(p, conf)
+    FileSource.globHasSuccessFile(p, conf)
 }
 
 /**
