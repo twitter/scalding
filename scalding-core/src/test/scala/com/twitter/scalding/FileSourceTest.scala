@@ -95,13 +95,21 @@ class FileSourceTest extends WordSpec with Matchers {
    * /test_data/2013/04/2013-04.txt
    * /test_data/2013/04/_SUCCESS
    *
-   * /test_data/2013/05                 (empty dir)
+   * /test_data/2013/05                 (logically empty dir: git does not support empty dirs)
    *
    * /test_data/2013/06                 (dir with only a _SUCCESS file)
    * /test_data/2013/06/_SUCCESS
+   *
+   * /test_data/2013/07
+   * /test_data/2013/07/2013-07.txt
+   * /test_data/2013/07/_SUCCESS
    */
   "default pathIsGood" should {
     import TestFileSource.pathIsGood
+    "reject a non-existing directory" in {
+      pathIsGood("test_data/2013/02/") shouldBe false
+      pathIsGood("test_data/2013/02/*") shouldBe false
+    }
 
     "accept a directory with data in it" in {
       pathIsGood("test_data/2013/03/") shouldBe true
@@ -113,9 +121,12 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/04/*") shouldBe true
     }
 
-    "reject an empty directory" in {
-      pathIsGood("test_data/2013/05/") shouldBe false
+    "reject an empty directory with a glob" in {
       pathIsGood("test_data/2013/05/*") shouldBe false
+    }
+
+    "accept an empty directory with a glob" in {
+      pathIsGood("test_data/2013/05/") shouldBe true
     }
 
     "reject a directory with only _SUCCESS when specified as a glob" in {
@@ -130,6 +141,11 @@ class FileSourceTest extends WordSpec with Matchers {
   "success file source pathIsGood" should {
     import TestSuccessFileSource.pathIsGood
 
+    "reject a non-existing directory" in {
+      pathIsGood("test_data/2013/02/") shouldBe false
+      pathIsGood("test_data/2013/02/*") shouldBe false
+    }
+
     "reject a directory with data in it but no _SUCCESS file" in {
       pathIsGood("test_data/2013/03/") shouldBe false
       pathIsGood("test_data/2013/03/*") shouldBe false
@@ -143,19 +159,26 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/04/") shouldBe false
     }
 
-    "reject an empty directory" in {
+    "reject an empty directory (all files ignored) without __SUCCESS" in {
       pathIsGood("test_data/2013/05/") shouldBe false
       pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
-    "reject a directory with only _SUCCESS when specified as a glob" in {
-      pathIsGood("test_data/2013/06/*") shouldBe false
+    "accept a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") shouldBe true
     }
 
-    "reject a directory with only _SUCCESS when specified without a glob" in {
-      pathIsGood("test_data/2013/06/") shouldBe false
+    "reject a directory with the _SUCCESS directory" in {
+      pathIsGood("test_data/2013/07/*") shouldBe false
     }
 
+    "reject a multi-dir glob with only one _SUCCESS" in {
+      pathIsGood("test_data/2013/{03,04}/*") shouldBe false
+    }
+
+    "accept a multi-dir glob if every dir has _SUCCESS" in {
+      pathIsGood("test_data/2013/{04,08}/*") shouldBe true
+    }
   }
 
   "invalid source input" should {

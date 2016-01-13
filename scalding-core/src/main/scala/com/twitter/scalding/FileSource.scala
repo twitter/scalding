@@ -142,6 +142,31 @@ object FileSource {
     !glob(globPath, conf, SuccessFileFilter).isEmpty
   }
 
+  def allPathsCommitted(globPath: String, conf: Configuration): Boolean = {
+    case class PathUsage(val path: Path, committed: Boolean)
+
+    val usedDirs: Iterable[PathUsage] = glob(globPath, conf, AcceptAllPathFilter)
+      .map { fileStatus: FileStatus =>
+        val dir =
+          if (fileStatus.isDirectory)
+            fileStatus.getPath
+          else
+            fileStatus.getPath.getParent
+
+        if (fileStatus.isFile && SuccessFileFilter.accept(fileStatus.getPath)) {
+          PathUsage(dir, true)
+        } else {
+          PathUsage(dir, false)
+        }
+      }
+      .groupBy { case PathUsage(path, _) => path }
+      .map {
+        case (path, usageIter) =>
+          usageIter.reduce { (pu1, pu2) => PathUsage(path, pu1.committed || pu2.committed) }
+      }
+
+    usedDirs.nonEmpty && usedDirs.forall(pu => pu.committed)
+  }
 }
 
 /**
@@ -340,7 +365,7 @@ trait SequenceFileScheme extends SchemedSource {
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
-    FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
+    FileSource.allPathsCommitted(p, conf)
 }
 
 /**
