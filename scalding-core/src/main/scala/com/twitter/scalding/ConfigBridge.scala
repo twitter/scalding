@@ -34,6 +34,11 @@ object ConfigBridge {
 
   def fromPlatform(anyConf: Any): Config = {
     anyConf match {
+        /* NOTE: for now we always return a Config instance (actually, an anonymous realization of the Config trait)
+        no matter what the underlying fabric/platform. Here would be a GREAT opportunity to return a specific Config
+        implementation (notably, to deal with things like HadoopNumReducers* )
+         */
+
       // use `conf.get` to force JobConf to evaluate expressions
       case conf: org.apache.hadoop.conf.Configuration => Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
       case conf: org.apache.commons.configuration.Configuration => Config(conf.getKeys.asScala.map { k => k.asInstanceOf[String] }.map { (k: String) => k -> conf.getString(k) }.toMap)

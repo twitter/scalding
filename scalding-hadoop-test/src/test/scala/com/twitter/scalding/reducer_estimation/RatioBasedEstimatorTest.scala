@@ -129,7 +129,9 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should equal (1) // default
+
+          val numReducers = conf.getNumReducers
+          conf.getNumReducers.get should equal (1) // default
         }
         .run
     }
@@ -145,7 +147,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should equal (1) // default
+          conf.getNumReducers.get should equal (1) // default
         }
         .run
     }
@@ -165,7 +167,9 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           // reducer ratio from history = 0.5
           // final estimate = ceil(3 * 0.5) = 2
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should equal (2)
+
+          val numReducers = conf.getNumReducers
+          conf.getNumReducers.get should equal (2)
         }
         .run
     }
@@ -181,7 +185,9 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should equal (1) // default
+
+          val numReducers = conf.getNumReducers
+          conf.getNumReducers.get should equal (1) // default
         }
         .run
     }
