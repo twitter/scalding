@@ -31,7 +31,7 @@ object ScaldingBuild extends Build {
   val hadoopLzoVersion = "0.4.19"
   val hadoopVersion = "2.5.0"
   val hbaseVersion = "0.94.10"
-  val hravenVersion = "0.9.16"
+  val hravenVersion = "0.9.17.t05"
   val jacksonVersion = "2.4.2"
   val json4SVersion = "3.2.11"
   val paradiseVersion = "2.0.1"

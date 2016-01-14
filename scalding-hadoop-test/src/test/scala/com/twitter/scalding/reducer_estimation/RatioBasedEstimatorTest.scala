@@ -39,20 +39,10 @@ object HistoryServiceWithData {
     val tasks = taskRuntimes.map { time =>
       val startTime = random.nextLong
       Task(
-        taskId = "foo",
         taskType = "REDUCE",
         status = "SUCCEEDED",
-        splits = Seq(),
         startTime = startTime,
-        finishTime = startTime + time,
-        taskAttemptId = "foo",
-        trackerName = "foo",
-        httpPort = random.nextInt,
-        hostname = "foo",
-        state = "foo",
-        error = "foo",
-        shuffleFinished = random.nextInt,
-        sortFinished = random.nextInt)
+        finishTime = startTime + time)
     }
 
     FlowStepHistory(
