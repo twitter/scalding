@@ -17,10 +17,10 @@ package com.twitter.scalding.commons.source
 
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
+import com.twitter.scalding.commons.datastores.VersionedStore;
 import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
-import com.backtype.hadoop.datastores.VersionedStore
 import org.apache.hadoop.mapred.JobConf
 
 // Use the scalacheck generators
