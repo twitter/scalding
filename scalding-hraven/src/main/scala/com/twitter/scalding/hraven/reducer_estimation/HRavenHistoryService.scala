@@ -38,6 +38,15 @@ object HRavenHistoryService extends HistoryService {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
+  // List of fields that we consume from fetchTaskDetails api.
+  // This is sent to hraven service to filter the response data
+  // and avoid hitting http content length limit on hraven side.
+  private val TaskDetailFields = List(
+    "taskType",
+    "status",
+    "startTime",
+    "finishTime").asJava
+
   val RequiredJobConfigs = Seq("cascading.flow.step.num")
 
   case class MissingFieldsException(fields: Seq[String]) extends Exception
@@ -84,7 +93,7 @@ object HRavenHistoryService extends HistoryService {
             flow.getJobs.asScala.foreach { job =>
 
               // client.fetchTaskDetails might throw IOException
-              val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId)
+              val tasks = client.fetchTaskDetails(flow.getCluster, job.getJobId, TaskDetailFields)
               job.addTasks(tasks)
             }
           }
@@ -165,7 +174,8 @@ object HRavenHistoryService extends HistoryService {
       for {
         step <- history
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, "")
-        tasks = step.getTasks.asScala.map{ t => Task(t.getTaskId, t.getType, t.getStatus, t.getSplits.toSeq, t.getStartTime, t.getFinishTime, t.getTaskAttemptId, t.getTrackerName, t.getHttpPort, t.getHostname, t.getState, t.getError, t.getShuffleFinished, t.getSortFinished) }
+        // update HRavenHistoryService.TaskDetailFields when consuming additional task fields from hraven below
+        tasks = step.getTasks.asScala.map { t => Task(t.getType, t.getStatus, t.getStartTime, t.getFinishTime) }
       } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0, tasks)
     }
 

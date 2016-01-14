@@ -215,6 +215,7 @@ final case class FlowStepHistory(keys: FlowStepKeys,
   reduceShuffleBytes: Long,
   cost: Double,
   tasks: Seq[Task])
+
 final case class FlowStepKeys(jobName: String,
   user: String,
   priority: String,
@@ -222,20 +223,11 @@ final case class FlowStepKeys(jobName: String,
   version: String,
   queue: String)
 
-final case class Task(taskId: String,
+final case class Task(
   taskType: String,
   status: String,
-  splits: Seq[String],
   startTime: Long,
-  finishTime: Long,
-  taskAttemptId: String,
-  trackerName: String,
-  httpPort: Int,
-  hostname: String,
-  state: String,
-  error: String,
-  shuffleFinished: Long,
-  sortFinished: Long)
+  finishTime: Long)
 
 /**
  * Provider of information about prior runs.
