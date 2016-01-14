@@ -176,9 +176,31 @@ object HRavenHistoryService extends HistoryService {
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, "")
         // update HRavenHistoryService.TaskDetailFields when consuming additional task fields from hraven below
         tasks = step.getTasks.asScala.map { t => Task(t.getType, t.getStatus, t.getStartTime, t.getFinishTime) }
-      } yield FlowStepHistory(keys, step.getSubmitTime, step.getLaunchTime, step.getFinishTime, step.getTotalMaps, step.getTotalReduces, step.getFinishedMaps, step.getFinishedReduces, step.getFailedMaps, step.getFailedReduces, step.getMapFileBytesRead, step.getMapFileBytesWritten, step.getReduceFileBytesRead, step.getHdfsBytesRead, step.getHdfsBytesWritten, step.getMapSlotMillis, step.getReduceSlotMillis, step.getReduceShuffleBytes, 0, tasks)
+      } yield toFlowStepHistory(keys, step, tasks)
     }
 
+  private def toFlowStepHistory(keys: FlowStepKeys, step: JobDetails, tasks: Seq[Task]) =
+    FlowStepHistory(
+      keys = keys,
+      submitTime = step.getSubmitTime,
+      launchTime = step.getLaunchTime,
+      finishTime = step.getFinishTime,
+      totalMaps = step.getTotalMaps,
+      totalReduces = step.getTotalReduces,
+      finishedMaps = step.getFinishedMaps,
+      finishedReduces = step.getFinishedReduces,
+      failedMaps = step.getFailedMaps,
+      failedReduces = step.getFailedReduces,
+      mapFileBytesRead = step.getMapFileBytesRead,
+      mapFileBytesWritten = step.getMapFileBytesWritten,
+      reduceFileBytesRead = step.getReduceFileBytesRead,
+      hdfsBytesRead = step.getHdfsBytesRead,
+      hdfsBytesWritten = step.getHdfsBytesWritten,
+      mapperTimeMillis = step.getMapSlotMillis,
+      reducerTimeMillis = step.getReduceSlotMillis,
+      reduceShuffleBytes = step.getReduceShuffleBytes,
+      cost = 0,
+      tasks = tasks)
 }
 
 class HRavenRatioBasedEstimator extends RatioBasedEstimator {
