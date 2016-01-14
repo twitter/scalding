@@ -121,12 +121,12 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/04/*") shouldBe true
     }
 
-    "reject an empty directory with a glob" in {
-      pathIsGood("test_data/2013/05/*") shouldBe false
+    "accept a single directory without glob" in {
+      pathIsGood("test_data/2013/05/") shouldBe true
     }
 
-    "accept an empty directory with a glob" in {
-      pathIsGood("test_data/2013/05/") shouldBe true
+    "reject a single directory glob with ignored files" in {
+      pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
     "reject a directory with only _SUCCESS when specified as a glob" in {
@@ -151,6 +151,14 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/03/*") shouldBe false
     }
 
+    "reject a single directory without glob" in {
+      pathIsGood("test_data/2013/05/") shouldBe false
+    }
+
+    "reject a single directory glob with only _SUCCESS and ignored files" in {
+      pathIsGood("test_data/2013/05/*") shouldBe false
+    }
+
     "accept a directory with data and _SUCCESS in it when specified as a glob" in {
       pathIsGood("test_data/2013/04/*") shouldBe true
     }
@@ -159,7 +167,7 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/04/") shouldBe false
     }
 
-    "reject an empty directory (all files ignored) without __SUCCESS" in {
+    "reject an empty directory" in {
       pathIsGood("test_data/2013/05/") shouldBe false
       pathIsGood("test_data/2013/05/*") shouldBe false
     }
@@ -168,8 +176,8 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/06/*") shouldBe false
     }
 
-    "reject a directory with the _SUCCESS directory" in {
-      pathIsGood("test_data/2013/07/*") shouldBe false
+    "reject a directory with only _SUCCESS when specified without a glob" in {
+      pathIsGood("test_data/2013/06/") shouldBe false
     }
 
     "reject a multi-dir glob with only one _SUCCESS" in {

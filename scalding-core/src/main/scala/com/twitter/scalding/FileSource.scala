@@ -163,7 +163,7 @@ object FileSource {
       .sumByKey(usedDirs)
       .filter { case (_, (_, _, hasNonHidden)) => hasNonHidden.get }
 
-    // there is at least one valid path, and all paths either have success
+    // there is at least one valid path, and all paths have success
     //
     uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
       case (_, (_, hasSuccess, _)) =>
