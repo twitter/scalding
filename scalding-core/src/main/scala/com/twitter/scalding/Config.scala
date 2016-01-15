@@ -361,8 +361,8 @@ trait Config extends Serializable {
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducersLegacy)
-      .orElse(get(Config.HadoopNumReducers2))
-      .map(_.toInt)
+    .orElse(get(Config.HadoopNumReducers2))
+    .map(_.toInt)
 
   def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducersLegacy -> n.toString) // Note: setting the legacy key for cascading-hadoop compat, hadoop-2.6.0 still accepts it.
 

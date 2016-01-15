@@ -45,7 +45,7 @@ trait ExecutionContext {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[_]): Unit = {
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[_ <: Any]): Unit = {
     import ConfigBridge._
 
     getIdentifierOpt(ExecutionContext.getDesc(step))

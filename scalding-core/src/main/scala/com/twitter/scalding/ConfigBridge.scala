@@ -10,9 +10,9 @@ import scala.collection.JavaConverters._
 object ConfigBridge {
   /**
    * This adapter handles the various vessel types that can be used to configure properties of a a
-   * FlowStep[_] since Cascading 3.0
+   * FlowStep[_<: Any] since Cascading 3.0
    */
-  class FlowStepAdapter(flowStep: FlowStep[_]) {
+  class FlowStepAdapter(flowStep: FlowStep[_ <: Any]) {
     def getConfigValue(key: String): String =
       flowStep.getConfig match {
         case conf: org.apache.hadoop.conf.Configuration => conf.get(key)
@@ -21,7 +21,7 @@ object ConfigBridge {
         case _ => throw new NotImplementedError(s"unknown flowStep Config type ${flowStep.getConfig.getClass}")
       }
 
-    def setConfigValue(name: String, value: String): FlowStep[_] = {
+    def setConfigValue(name: String, value: String): FlowStep[_ <: Any] = {
       flowStep.getConfig match {
         case conf: org.apache.hadoop.conf.Configuration => conf.set(name, value)
         case conf: org.apache.commons.configuration.Configuration => conf.addProperty(name, value)
@@ -34,7 +34,7 @@ object ConfigBridge {
 
   def fromPlatform(anyConf: Any): Config = {
     anyConf match {
-        /* NOTE: for now we always return a Config instance (actually, an anonymous realization of the Config trait)
+      /* NOTE: for now we always return a Config instance (actually, an anonymous realization of the Config trait)
         no matter what the underlying fabric/platform. Here would be a GREAT opportunity to return a specific Config
         implementation (notably, to deal with things like HadoopNumReducers* )
          */
@@ -47,5 +47,5 @@ object ConfigBridge {
     }
   }
 
-  implicit def toFlowStepPimpFromFlowStep(flowStep: FlowStep[_]): FlowStepAdapter = new FlowStepAdapter(flowStep)
+  implicit def toFlowStepPimpFromFlowStep(flowStep: FlowStep[_ <: Any]): FlowStepAdapter = new FlowStepAdapter(flowStep)
 }
