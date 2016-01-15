@@ -23,6 +23,7 @@ import com.twitter.bijection.Injection
 import com.google.common.io.Files
 import org.apache.hadoop.mapred.JobConf
 
+import java.io.File
 // Use the scalacheck generators
 import scala.collection.mutable.Buffer
 
@@ -134,6 +135,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
     val store = new VersionedStore(root.getAbsolutePath)
     versions foreach { v =>
       val p = store.createVersion(v)
+      new File(p).mkdirs()
       store.succeedVersion(p)
     }
 
