@@ -49,6 +49,8 @@ object ScaldingILoop {
  */
 class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
   extends ILoopCompat(in, out) {
+  def this(in: BufferedReader, out: JPrintWriter) = this(Some(in), out)
+  def this() = this(None, new JPrintWriter(Console.out, true))
 
   settings = new GenericRunnerSettings({ s => echo(s) })
 
