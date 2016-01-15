@@ -53,9 +53,9 @@ object ScaldingBuild extends Build {
   val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
     organization := "com.twitter",
 
-    scalaVersion := "2.10.5",
+    scalaVersion := "2.10.6",
 
-    crossScalaVersions := Seq("2.10.5", "2.11.7"),
+    crossScalaVersions := Seq("2.10.6", "2.11.7"),
 
     ScalariformKeys.preferences := formattingPreferences,
 
@@ -285,10 +285,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.0.4-wip-dev") // TEMPORARY. This is how a local build ends up named on my machine today -- cchepelov, 2016-01-13
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-dev") // TEMPORARY. This is how a local build ends up named on my machine today -- cchepelov, 2016-01-13
 
   lazy val cascadingJDBCVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-120")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-127")
 
   lazy val scaldingBenchmarks = module("benchmarks").settings(
     libraryDependencies ++= Seq(
@@ -356,9 +356,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingParquet = module("parquet").settings(
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
+      "temp.cchepelov.org.apache.parquet" % "parquet-cascading3" % parquetVersion // FIXME: https://github.com/apache/parquet-mr/pull/284
         exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
         exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
+        exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
@@ -403,14 +404,15 @@ object ScaldingBuild extends Build {
     .settings(
       libraryDependencies ++= Seq(
         // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-        "org.apache.parquet" % "parquet-cascading3" % parquetVersion
+        "temp.cchepelov.org.apache.parquet" % "parquet-cascading3" % parquetVersion
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
+          exclude("temp.cchepelov.org.apache.parquet", "parquet-pig")
           exclude("org.apache.parquet", "parquet-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-pig")
           exclude("com.twitter.elephantbird", "elephant-bird-core"),
          "org.slf4j" % "slf4j-api" % slf4jVersion,
-        "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
+        "org.apache.parquet" % "parquet-thrift" % "1.8.1" /* FIXME: parquetVersion */ % "test" classifier "tests"
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-pig")
           exclude("temp.cchepelov.com.twitter.elephantbird", "elephant-bird-core")
           exclude("org.apache.parquet", "parquet-pig")
