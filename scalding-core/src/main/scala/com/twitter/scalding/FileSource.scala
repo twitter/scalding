@@ -139,7 +139,16 @@ object FileSource {
   /**
    * @return whether globPath contains a _SUCCESS file
    */
-  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
+  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = allGlobFilesWithSuccess(globPath, conf, hiddenFilter = false)
+
+  /**
+   * Determines whether each file in the glob has a _SUCCESS sibling file in the same directory
+   * @param globPath path to check
+   * @param conf Hadoop Configuration to create FileSystem
+   * @param hiddenFilter true, if only non-hidden files are checked
+   * @return true if the directory has files after filters are applied
+   */
+  def allGlobFilesWithSuccess(globPath: String, conf: Configuration, hiddenFilter: Boolean): Boolean = {
     // Produce tuples (dirName, hasSuccess, hasNonHidden) keyed by dir
     //
     val usedDirs = glob(globPath, conf, AcceptAllPathFilter)
@@ -151,23 +160,22 @@ object FileSource {
           else
             fileStatus.getPath.getParent.toString
 
-        if (fileStatus.isFile && SuccessFileFilter.accept(fileStatus.getPath)) {
-          dir -> (dir, OrVal(true), OrVal(false))
-        } else {
-          dir -> (dir, OrVal(false), OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
-        }
+        // HiddenFileFilter should better be called non-hidden but it borrows its name from the
+        // private field name in hadoop FileInputFormat
+        //
+        dir -> (dir,
+          OrVal(SuccessFileFilter.accept(fileStatus.getPath) && fileStatus.isFile),
+          OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
       }
 
     // OR by key
-    val uniqueUsedDirs = MapAlgebra
-      .sumByKey(usedDirs)
-      .filter { case (_, (_, _, hasNonHidden)) => hasNonHidden.get }
+    val uniqueUsedDirs = MapAlgebra.sumByKey(usedDirs)
+      .filter { case (_, (_, _, hasNonHidden)) => (!hiddenFilter || hasNonHidden.get) }
 
     // there is at least one valid path, and all paths have success
     //
     uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
-      case (_, (_, hasSuccess, _)) =>
-        hasSuccess.get
+      case (_, (_, hasSuccess, _)) => hasSuccess.get
     }
   }
 }
@@ -363,12 +371,30 @@ trait SequenceFileScheme extends SchemedSource {
 }
 
 /**
- * Ensures that a _SUCCESS file is present in the Source path, which must be a glob,
- * as well as the requirements of [[FileSource.pathIsGood]]
+ * Ensures that a _SUCCESS file is present in every directory included by a glob,
+ * as well as the requirements of [[FileSource.pathIsGood]]. The set of directories to check for
+ * _SUCCESS
+ * is determined by examining the list of all paths returned by globPaths and adding parent
+ * directories of the non-hidden files encountered.
+ * pathIsGood should still be considered just a best-effort test. As an illustration the following
+ * layout with an in-flight job is accepted for the glob dir*&#47;*:
+ * <pre>
+ *   dir1/_temporary
+ *   dir2/file1
+ *   dir2/_SUCCESS
+ * </pre>
+ *
+ * Similarly if dir1 is physically empty pathIsGood is still true for dir*&#47;* above
+ *
+ * On the other hand it will reject an empty output directory of a finished job:
+ * <pre>
+ *   dir1/_SUCCESS
+ * </pre>
+ *
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
-    FileSource.globHasSuccessFile(p, conf)
+    FileSource.allGlobFilesWithSuccess(p, conf, true)
 }
 
 /**

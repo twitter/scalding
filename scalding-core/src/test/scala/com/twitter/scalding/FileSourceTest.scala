@@ -87,6 +87,7 @@ class FileSourceTest extends WordSpec with Matchers {
 
   /**
    * The layout of the test data looks like this:
+   * /test_data/2013/02 does not exist
    *
    * /test_data/2013/03                 (dir with a single data file in it)
    * /test_data/2013/03/2013-03.txt
@@ -135,6 +136,29 @@ class FileSourceTest extends WordSpec with Matchers {
 
     "accept a directory with only _SUCCESS when specified without a glob" in {
       pathIsGood("test_data/2013/06/") shouldBe true
+    }
+  }
+
+  "FileSource.globHasSuccessFile" should {
+    import TestFileSource.globHasSuccessFile
+    "accept a directory glob with only _SUCCESS" in {
+      globHasSuccessFile("test_data/2013/06/*") shouldBe true
+    }
+
+    "accept a directory glob with _SUCCESS and other hidden files" in {
+      globHasSuccessFile("test_data/2013/05/*") shouldBe true
+    }
+
+    "accept a directory glob with _SUCCESS and other non-hidden files" in {
+      globHasSuccessFile("test_data/2013/04/*") shouldBe true
+    }
+
+    "reject a path without glob" in {
+      globHasSuccessFile("test_data/2013/04/") shouldBe false
+    }
+
+    "reject a multi-dir glob without _SUCCESS" in {
+      globHasSuccessFile("test_data/2013/{02,03}/*") shouldBe false
     }
   }
 
@@ -187,6 +211,16 @@ class FileSourceTest extends WordSpec with Matchers {
     "accept a multi-dir glob if every dir has _SUCCESS" in {
       pathIsGood("test_data/2013/{04,08}/*") shouldBe true
     }
+
+    "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while dirs with " +
+      "hidden ones don't" in {
+        pathIsGood("test_data/2013/{04,05}/*") shouldBe true
+      }
+
+    "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while other dirs " +
+      "are empty or don't exist" in {
+        pathIsGood("test_data/2013/{02,04,05}/*") shouldBe true
+      }
   }
 
   "invalid source input" should {
@@ -216,6 +250,7 @@ object TestFileSource extends FileSource {
   val conf = new Configuration()
 
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
+  def globHasSuccessFile(p: String) = FileSource.globHasSuccessFile(testfsPathRoot + p, conf)
 }
 
 object TestSuccessFileSource extends FileSource with SuccessFileSource {
