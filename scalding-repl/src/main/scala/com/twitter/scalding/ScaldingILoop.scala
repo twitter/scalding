@@ -16,8 +16,10 @@
 package com.twitter.scalding
 
 import java.io.File
+import java.io.BufferedReader
 
 import scala.tools.nsc.interpreter.IR
+import scala.tools.nsc.interpreter.JPrintWriter
 import scala.tools.nsc.GenericRunnerSettings
 
 object ScaldingILoop {
@@ -45,8 +47,9 @@ object ScaldingILoop {
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
-class ScaldingILoop
-  extends ILoopCompat {
+class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
+  extends ILoopCompat(in, out) {
+  def this() = this(None, new JPrintWriter(Console.out, true))
 
   settings = new GenericRunnerSettings({ s => echo(s) })
 
