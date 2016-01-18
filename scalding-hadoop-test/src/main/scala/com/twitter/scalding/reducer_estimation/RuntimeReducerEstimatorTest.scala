@@ -34,7 +34,7 @@ class DummyEstimator extends ReducerEstimator {
   def estimateReducers(info: FlowStrategyInfo) = Some(42)
 }
 
-class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+trait RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
 
   "Single-step job with runtime-based reducer estimator" should {
     "set reducers correctly with median estimation scheme" in {

@@ -114,7 +114,7 @@ class InvalidHistoryBasedEstimator extends RatioBasedEstimator {
   override val historyService = InvalidHistoryService
 }
 
-class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+trait RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   import HipJob._
 
   "Single-step job with ratio-based reducer estimator" should {

@@ -84,7 +84,7 @@ class SimpleMapOnlyJob(args: Args, customConfig: Config) extends Job(args) {
     .write(TypedTsv[String]("mapped_output"))
 }
 
-class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+trait ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   import HipJob._
 
   "Single-step job with reducer estimator" should {

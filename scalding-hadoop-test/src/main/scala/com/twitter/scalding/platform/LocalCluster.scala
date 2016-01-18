@@ -171,7 +171,10 @@ class LocalCluster(mutex: Boolean = true) {
   private def getFileForClass[T](clazz: Class[T]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
 
-  def mode: Mode = Hdfs(true, jobConf)
+  def mode: Mode = {
+    Mode.setDefaultFabricFromClasspath(jobConf)
+    Hdfs(true, jobConf)
+  }
 
   def putFile(file: File, location: String): Boolean = {
     val hdfsLocation = new Path(location)

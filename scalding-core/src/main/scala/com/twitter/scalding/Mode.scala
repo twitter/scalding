@@ -66,14 +66,55 @@ object Mode {
   val CascadingFlowConnectorClassKey = "cascading.flow.connector.class"
   val CascadingFlowProcessClassKey = "cascading.flow.process.class"
 
+  case class FabricSelector(flowConnectorClassName: String, flowProcessClassName: String) {
+    def exists = {
+      try {
+        val k1 = Class.forName(flowConnectorClassName)
+        val k2 = Class.forName(flowProcessClassName)
+        (k1 != null) && (k2 != null)
+      } catch {
+        case ncd: ClassNotFoundException => false
+      }
+    }
+
+    def selectInto(config: Configuration) = {
+      config.set(CascadingFlowConnectorClassKey, flowConnectorClassName)
+      config.set(CascadingFlowProcessClassKey, flowProcessClassName)
+    }
+  }
+
   val DefaultHadoopFlowConnector = "cascading.flow.hadoop.HadoopFlowConnector"
   val DefaultHadoopFlowProcess = "cascading.flow.hadoop.HadoopFlowProcess"
+  val DefaultHadoopFabric = FabricSelector(DefaultHadoopFlowConnector, DefaultHadoopFlowProcess)
 
   val DefaultHadoop2Mr1FlowConnector = "cascading.flow.hadoop2.Hadoop2MR1FlowConnector"
   val DefaultHadoop2Mr1FlowProcess = "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
+  val DefaultHadoop2Mr1Fabric = FabricSelector(DefaultHadoop2Mr1FlowConnector, DefaultHadoop2Mr1FlowProcess)
 
   val DefaultHadoop2TezFlowConnector = "cascading.flow.tez.Hadoop2TezFlowConnector"
   val DefaultHadoop2TezFlowProcess = "cascading.flow.tez.Hadoop2TezFlowProcess"
+  val DefaultHadoop2TezFabric = FabricSelector(DefaultHadoop2TezFlowConnector, DefaultHadoop2TezFlowProcess)
+
+  val DefaultFlinkFlowConnector = "com.dataartisans.flink.cascading.FlinkConnector"
+  val DefaultFlinkFlowProcess = "com.dataartisans.flink.cascading.runtime.util.FlinkFlowProcess"
+  val DefaultFlinkFabric = FabricSelector(DefaultFlinkFlowConnector, DefaultFlinkFlowProcess)
+
+  private lazy val selectedFabric = {
+    val candidates = Seq(DefaultHadoop2TezFabric, DefaultHadoopFabric, DefaultHadoop2Mr1Fabric, DefaultFlinkFabric)
+
+    val selected = candidates.find(_.exists)
+    if (selected.isEmpty) {
+      throw new IllegalArgumentException("Can't find a default Cascading fabric. Have you put one in the CLASSPATH?")
+    }
+
+    LoggerFactory.getLogger(getClass)
+      .info(s"Using Cascading Flow Connector: ${selected.get.flowConnectorClassName} found in CLASSPATH")
+    selected.get
+  }
+
+  def setDefaultFabricFromClasspath(config: Configuration) = {
+    selectedFabric.selectInto(config)
+  }
 
   // This should be passed ALL the args supplied after the job name
   def apply(args: Args, config: Configuration): Mode = {
@@ -85,22 +126,23 @@ object Mode {
 
     if (args.boolean("local"))
       Local(strictSources)
-    else if (args.boolean("hdfs")) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
+    else if (args.boolean("hdfs")) {
+      setDefaultFabricFromClasspath(config)
       Hdfs(strictSources, config)
-    else if (args.boolean("hadoop1")) {
-      config.set(CascadingFlowConnectorClassKey, DefaultHadoopFlowConnector)
-      config.set(CascadingFlowProcessClassKey, DefaultHadoopFlowProcess)
+    } else if (args.boolean("hadoop1")) {
+      DefaultHadoopFabric.selectInto(config)
       Hdfs(strictSources, config)
     } else if (args.boolean("hadoop2-mr1")) {
-      config.set(CascadingFlowConnectorClassKey, DefaultHadoop2Mr1FlowConnector)
-      config.set(CascadingFlowProcessClassKey, DefaultHadoop2Mr1FlowProcess)
+      DefaultHadoop2Mr1Fabric.selectInto(config)
       Hdfs(strictSources, config)
     } else if (args.boolean("hadoop2-tez")) {
-      config.set(CascadingFlowConnectorClassKey, DefaultHadoop2TezFlowConnector)
-      config.set(CascadingFlowProcessClassKey, DefaultHadoop2TezFlowProcess)
+      DefaultHadoop2TezFabric.selectInto(config)
+      Hdfs(strictSources, config)
+    } else if (args.boolean("flink")) {
+      DefaultFlinkFabric.selectInto(config)
       Hdfs(strictSources, config)
     } else
-      throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none")
+      throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez, --flink or --hdfs, you provided none")
   }
 }
 

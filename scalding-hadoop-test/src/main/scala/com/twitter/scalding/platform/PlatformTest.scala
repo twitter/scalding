@@ -313,7 +313,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+trait PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   import ConfigBridge._
 
   "An InAndOutTest" should {

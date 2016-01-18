@@ -47,6 +47,22 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
+      env: BUILD="base" TEST_TARGET="scalding-hadoop2-mr1-test"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.7
+      env: BUILD="base" TEST_TARGET="scalding-hadoop2-mr1-test"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.6
+      env: BUILD="base" TEST_TARGET="scalding-hadoop2-tez-test"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.7
+      env: BUILD="base" TEST_TARGET="scalding-hadoop2-tez-test"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.6
       env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
