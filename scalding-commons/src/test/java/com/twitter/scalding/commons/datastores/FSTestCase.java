@@ -1,12 +1,11 @@
 package com.twitter.scalding.commons.datastores;
 
-import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
 
-public class FSTestCase extends TestCase {
+public class FSTestCase {
     public FileSystem local;
     public FileSystem fs;
 

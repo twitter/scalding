@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class VersionedStore {
     public static final String FINISHED_VERSION_SUFFIX = ".version";
@@ -150,10 +151,12 @@ public class VersionedStore {
     }
 
     public List<Long> getAllVersions(boolean skipVersionSuffix) throws IOException {
-        List<Long> ret = new ArrayList<Long>();
 
         Path rootPath = new Path(getRoot());
         if (getFileSystem().exists(rootPath)) {
+            // we use a set so we can automatically de-dupe folders that
+            // have both version suffix and success flag below
+            Set<Long> ret = new HashSet<Long>();
             for(Path p: listDir(getRoot())) {
                 final FileStatus status = getFileSystem().getFileStatus(p);
                 if (skipVersionSuffix) {
@@ -177,10 +180,14 @@ public class VersionedStore {
                     }
                 }
             }
-            Collections.sort(ret);
-            Collections.reverse(ret);
+            List<Long> retList = new ArrayList<Long>(ret);
+            // now sort the versions most recent first per the api contract
+            Collections.sort(retList);
+            Collections.reverse(retList);
+            return retList;
+        } else {
+            return Collections.emptyList();
         }
-        return ret;
     }
 
     public boolean hasVersion(long version) throws IOException {
