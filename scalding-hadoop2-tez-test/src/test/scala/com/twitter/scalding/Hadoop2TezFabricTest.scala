@@ -8,7 +8,7 @@ import cascading.flow.FlowRuntimeProps
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class Hadoop2TezPlatformTest
+class Hadoop2TezFabricTest
   extends PlatformTest
   with RatioBasedReducerEstimatorTest
   with ReducerEstimatorTest
@@ -22,12 +22,12 @@ class Hadoop2TezPlatformTest
     cluster.initialize(Config.empty
       + (TezConfiguration.TEZ_LOCAL_MODE, "true")
       + ("tez.runtime.optimize.local.fetch" -> "true")
-      + ("tez.am.inline.task.execution.max-tasks" -> "3")
+      + (TezConfiguration.TEZ_AM_INLINE_TASK_EXECUTION_MAX_TASKS -> "3")
       + (TezConfiguration.TEZ_IGNORE_LIB_URIS -> "true")
       + (TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS -> "true")
-      + ("tez.am.mode.session" -> "true") // allows multiple TezClient instances to be used in a single jvm
+      + (TezConfiguration.TEZ_AM_SESSION_MODE -> "true") // allows multiple TezClient instances to be used in a single jvm
       + ("hadoop.tmp.dir" -> tempdir)
-      + ("mapred.mapper.new-api" -> "true") /* mandatory to use Tez */
+      // + ("mapred.mapper.new-api" -> "true") /* mandatory to use Tez */
       + (cascading.flow.FlowRuntimeProps.GATHER_PARTITIONS -> "4") /* a value must be provided */ )
   }
 }

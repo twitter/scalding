@@ -5,7 +5,7 @@ import com.twitter.scalding.reducer_estimation.{ RuntimeReducerEstimatorTest, Re
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class Hadoop2MR1PlatformTest
+class Hadoop2MR1FabricTest
   extends PlatformTest
   with RatioBasedReducerEstimatorTest
   with ReducerEstimatorTest
