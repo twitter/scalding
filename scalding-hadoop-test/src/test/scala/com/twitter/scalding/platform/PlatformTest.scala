@@ -24,7 +24,7 @@ import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.util.{ Iterator => JIterator }
 import org.scalacheck.{ Arbitrary, Gen }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Ignore, Matchers, WordSpec }
 import org.slf4j.{ LoggerFactory, Logger }
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
@@ -34,6 +34,7 @@ class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
 }
 
+/*********** RFC SECTION ***********/
 object TinyJoinAndMergeJob {
   val peopleInput = TypedTsv[Int]("input1")
   val peopleData = List(1, 2, 3, 4)
@@ -44,7 +45,6 @@ object TinyJoinAndMergeJob {
   val output = TypedTsv[(Int, Int)]("output")
   val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
 }
-
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
@@ -56,6 +56,47 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
 
   (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
+
+class TinyJoinAndMergeJob2(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val messages = messageInput.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, people)
+    .forceToDisk
+
+  (messages ++ people).groupBy('id) { _.size('count) }.write(output)
+}
+
+object TinyJoinAndMergeJob3 {
+  val peopleInput = TypedTsv[Int]("input1")
+  val peopleData = List(1, 2, 3, 4)
+
+  val messageInput = TypedTsv[Int]("input2")
+  val messageData = List(1, 2, 3)
+
+  val peopleInput3 = TypedTsv[Int]("input3")
+  val peopleData3 = peopleData
+
+  val output = TypedTsv[(Int, Int)]("output")
+  val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
+}
+class TinyJoinAndMergeJob3(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob3._
+
+  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+  val people3 = peopleInput3.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val messages = messageInput.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, people)
+    .forceToDisk
+
+  (messages ++ people3).groupBy('id) { _.size('count) }.write(output)
+}
+/************** END RFC SECTION ************/
 
 object TsvNoCacheJob {
   val dataInput = TypedTsv[String]("fakeInput")
@@ -286,10 +327,12 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  /********** RFC SECTION **********/
   "A TinyJoinAndMergeJob" should {
     import TinyJoinAndMergeJob._
 
-    "merge and joinWithTiny shouldn't duplicate data" in {
+    /* FIXME: @cwensel says this leads to an unsupportable query plan, and from Cascading 3.0 this is rejected… */
+    "merge and joinWithTiny shouldn't duplicate data" ignore {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
         .source(peopleInput, peopleData)
         .source(messageInput, messageData)
@@ -298,6 +341,32 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  "A TinyJoinAndMergeJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and joinWithTiny shouldn't duplicate data (2)" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob2(_), cluster)
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  "A TinyJoinAndMergeJob" should {
+    import TinyJoinAndMergeJob3._
+
+    "merge and joinWithTiny shouldn't duplicate data (3)" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob3(_), cluster)
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .source(peopleInput3, peopleData3)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  /************** END RFC SECTION ***************/
   "A TsvNoCacheJob" should {
     import TsvNoCacheJob._
 
