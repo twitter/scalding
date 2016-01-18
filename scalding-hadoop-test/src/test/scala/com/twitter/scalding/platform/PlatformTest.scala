@@ -419,10 +419,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val firstStepDescs = steps.headOption.map(_.getConfigValue(Config.StepDescriptions)).getOrElse("")
           val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
 
-          val expected = Set(149, 151, 152, 155, 156).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i)"
-          } ++ Seq("leftJoin", "hashJoin")
-
+          val expected = Set(190, 192, 193, 196, 197).map(linenum => /* WARNING: keep aligned with line numbers above */
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
           firstStepDescSet should equal(expected)
           steps.map(_.getConfigValue(Config.StepDescriptions)).foreach(s => info(s))
         }
@@ -438,7 +436,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
             "write") ++
-            Seq(138, 139, 141, 142, 143).map(
+            Seq(180, 179, 182, 183, 184).map( /* WARNING: keep aligned with line numbers above */
               linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
           val foundDescs = steps.map(_.getConfigValue(Config.StepDescriptions).split(",").map(_.trim).toSet)
