@@ -28,7 +28,7 @@ object ScaldingBuild extends Build {
   val chillVersion = "0.7.1"
   val elephantbirdVersion = "4.11-SNAPSHOT"    // https://github.com/twitter/elephant-bird/pull/454
   val hadoopLzoVersion = "0.4.19"
-  val hadoopVersion = "2.5.0"
+  val hadoopVersion = "2.7.1"
   val hbaseVersion = "0.94.10"
   val hravenVersion = "0.9.17.t05"
   val jacksonVersion = "2.4.2"
