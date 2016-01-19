@@ -36,3 +36,4 @@ scalding-hadoop-test/NOTICE
 NOTICE
 *~
 build/
+.staging

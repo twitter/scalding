@@ -391,25 +391,6 @@ trait PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   }
 
-  "A TypedPipeForceToDiskWithDescriptionPipe" should {
-    "have a custom step name from withDescription" in {
-
-      HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
-        .inspectCompletedFlow { flow =>
-          val steps = flow.getFlowSteps.asScala
-          val firstStep = steps.filter(_.getName.startsWith("(1/2)"))
-          val secondStep = steps.filter(_.getName.startsWith("(2/2)"))
-          val lab1 = firstStep.map(_.getConfigValue(Config.StepDescriptions))
-          lab1 should have size 1
-          lab1(0) should include ("write words to disk")
-          val lab2 = secondStep.map(_.getConfigValue(Config.StepDescriptions))
-          lab2 should have size 1
-          lab2(0) should include ("output frequency by length")
-        }
-        .run
-    }
-  }
-
   "A TypedPipeJoinWithDescriptionPipe" should {
     "have a custom step name from withDescription" in {
       HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)

@@ -1,12 +1,12 @@
 package com.twitter.scalding
 
-import com.twitter.scalding.platform.PlatformTest
+import com.twitter.scalding.platform.StepwisePlatformTest
 import com.twitter.scalding.reducer_estimation.{ RuntimeReducerEstimatorTest, ReducerEstimatorTest, RatioBasedReducerEstimatorTest }
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class Hadoop2MR1FabricTest
-  extends PlatformTest
+  extends StepwisePlatformTest
   with RatioBasedReducerEstimatorTest
   with ReducerEstimatorTest
   with RuntimeReducerEstimatorTest {

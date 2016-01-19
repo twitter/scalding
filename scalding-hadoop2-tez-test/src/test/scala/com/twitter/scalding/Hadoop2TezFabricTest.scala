@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import cascading.pipe.assembly.AggregateByProps
-import com.twitter.scalding.platform.PlatformTest
+import com.twitter.scalding.platform.DagwisePlatformTest
 import com.twitter.scalding.reducer_estimation.{ RuntimeReducerEstimatorTest, ReducerEstimatorTest, RatioBasedReducerEstimatorTest }
 import org.apache.tez.dag.api.TezConfiguration
 import cascading.flow.FlowRuntimeProps
@@ -9,7 +9,7 @@ import cascading.flow.FlowRuntimeProps
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class Hadoop2TezFabricTest
-  extends PlatformTest /*with RatioBasedReducerEstimatorTest
+  extends DagwisePlatformTest /*with RatioBasedReducerEstimatorTest
   with ReducerEstimatorTest
   with RuntimeReducerEstimatorTest */ {
   /* just realizing here the tests in a Tez context, using cascading-hadoop2-tez */

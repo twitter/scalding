@@ -217,14 +217,13 @@ trait HadoopMode extends Mode {
         throw new IllegalArgumentException(s"FlowProcess configuration type ${confClazz} does not implement ${classOf[Configuration]}")
       }
 
-
       val conf = {
         try {
           /* first constructor attempted: supposed to accept a Boolean where "true" means "load system defaults" */
           val confCtor = confClazz.getConstructor(java.lang.Boolean.TYPE)
           confCtor.newInstance(java.lang.Boolean.TRUE).asInstanceOf[Configuration]
         } catch {
-          case _ : NoSuchMethodError | _ : NoSuchMethodException => {
+          case _: NoSuchMethodError | _: NoSuchMethodException => {
             /* fallback: the Configuration should have a default constructor */
             val confCtor = confClazz.getConstructor()
             confCtor.newInstance().asInstanceOf[Configuration]
@@ -233,7 +232,6 @@ trait HadoopMode extends Mode {
       } // initialize the default config
       // copy over Config
       config.toMap.foreach{ case (k, v) => conf.set(k, v) }
-
 
       val ctor = clazz.getConstructor(confClazz)
       val inst = ctor.newInstance(conf)
