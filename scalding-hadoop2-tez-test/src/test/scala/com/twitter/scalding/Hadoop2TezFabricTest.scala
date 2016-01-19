@@ -26,7 +26,11 @@ class Hadoop2TezFabricTest
       + (TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS -> "true")
       + (TezConfiguration.TEZ_AM_SESSION_MODE -> "true") // allows multiple TezClient instances to be used in a single jvm
       + ("hadoop.tmp.dir" -> tempdir)
-      // + ("mapred.mapper.new-api" -> "true") /* mandatory to use Tez */
+      + ("mapred.mapper.new-api" -> {
+        if (classOf[org.apache.hadoop.mapred.InputFormat[_, _]].isAssignableFrom(classOf[com.twitter.maple.tap.TupleMemoryInputFormat])) "false"
+        else if (classOf[org.apache.hadoop.mapreduce.InputFormat[_, _]].isAssignableFrom(classOf[com.twitter.maple.tap.TupleMemoryInputFormat])) "true"
+        else ???
+      }) /* we are using c.t.maple.tap.MemorySourceTap, which Cascading can't identify as being in the old or new API */
       + (cascading.flow.FlowRuntimeProps.GATHER_PARTITIONS -> "4") /* a value must be provided */ )
   }
 }
