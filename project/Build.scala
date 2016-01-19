@@ -118,7 +118,7 @@ object ScaldingBuild extends Build {
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 
     // Uncomment if you don't want to run all the tests before building assembly
-    // test in assembly := {},
+    test in assembly := {},
     logLevel in assembly := Level.Warn,
 
     // Publishing options:
@@ -237,7 +237,7 @@ object ScaldingBuild extends Build {
   ).settings(
     test := {},
     publish := {}, // skip publishing for this root project.
-    publishLocal := {}
+    publishLocal := {} 
   ).aggregate(
     scaldingArgs,
     scaldingDate,
@@ -482,7 +482,8 @@ object ScaldingBuild extends Build {
         "org.scala-lang" % "scala-reflect" % scalaVersion,
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
         "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "unprovided",
-        "cascading" % "cascading-hadoop" % cascadingVersion % "provided",
+        "cascading" % "cascading-hadoop" % cascadingVersion /* % "provided" */, /* need to have a fabric around, can't just leave it to "provided" */
+        "cascading" % "cascading-hadoop" % cascadingVersion % "unprovided",  /* for 'sbt run' */
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
         "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
