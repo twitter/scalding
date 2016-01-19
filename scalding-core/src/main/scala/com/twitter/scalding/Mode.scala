@@ -65,39 +65,46 @@ object Mode {
 
   val CascadingFlowConnectorClassKey = "cascading.flow.connector.class"
   val CascadingFlowProcessClassKey = "cascading.flow.process.class"
+  val CascadingFlowProcessConfigClassKey = "cascading.flow.process.config.class"
 
-  case class FabricSelector(flowConnectorClassName: String, flowProcessClassName: String) {
+  case class FabricSelector(flowConnectorClassName: String, flowProcessClassName: String, flowProcessConfigClassName: String) {
     def exists = {
       try {
         val k1 = Class.forName(flowConnectorClassName)
         val k2 = Class.forName(flowProcessClassName)
-        (k1 != null) && (k2 != null)
+        val k3 = Class.forName(flowProcessConfigClassName)
+        (k1 != null) && (k2 != null) && (k3 != null)
       } catch {
-        case ncd: ClassNotFoundException => false
+        case cnfe: ClassNotFoundException => false
       }
     }
 
     def selectInto(config: Configuration) = {
       config.set(CascadingFlowConnectorClassKey, flowConnectorClassName)
       config.set(CascadingFlowProcessClassKey, flowProcessClassName)
+      config.set(CascadingFlowProcessConfigClassKey, flowProcessConfigClassName)
     }
   }
 
   val DefaultHadoopFlowConnector = "cascading.flow.hadoop.HadoopFlowConnector"
   val DefaultHadoopFlowProcess = "cascading.flow.hadoop.HadoopFlowProcess"
-  val DefaultHadoopFabric = FabricSelector(DefaultHadoopFlowConnector, DefaultHadoopFlowProcess)
+  val DefaultHadoopFlowProcessConfig = "org.apache.hadoop.mapred.JobConf"
+  val DefaultHadoopFabric = FabricSelector(DefaultHadoopFlowConnector, DefaultHadoopFlowProcess, DefaultHadoopFlowProcessConfig)
 
   val DefaultHadoop2Mr1FlowConnector = "cascading.flow.hadoop2.Hadoop2MR1FlowConnector"
-  val DefaultHadoop2Mr1FlowProcess = "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
-  val DefaultHadoop2Mr1Fabric = FabricSelector(DefaultHadoop2Mr1FlowConnector, DefaultHadoop2Mr1FlowProcess)
+  val DefaultHadoop2Mr1FlowProcess = DefaultHadoopFlowProcess // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
+  val DefaultHadoop2Mr1FlowProcessConfig = DefaultHadoopFlowProcessConfig
+  val DefaultHadoop2Mr1Fabric = FabricSelector(DefaultHadoop2Mr1FlowConnector, DefaultHadoop2Mr1FlowProcess, DefaultHadoop2Mr1FlowProcessConfig)
 
   val DefaultHadoop2TezFlowConnector = "cascading.flow.tez.Hadoop2TezFlowConnector"
   val DefaultHadoop2TezFlowProcess = "cascading.flow.tez.Hadoop2TezFlowProcess"
-  val DefaultHadoop2TezFabric = FabricSelector(DefaultHadoop2TezFlowConnector, DefaultHadoop2TezFlowProcess)
+  val DefaultHadoop2TezFlowProcessConfig = "org.apache.tez.dag.api.TezConfiguration"
+  val DefaultHadoop2TezFabric = FabricSelector(DefaultHadoop2TezFlowConnector, DefaultHadoop2TezFlowProcess, DefaultHadoop2TezFlowProcessConfig)
 
   val DefaultFlinkFlowConnector = "com.dataartisans.flink.cascading.FlinkConnector"
   val DefaultFlinkFlowProcess = "com.dataartisans.flink.cascading.runtime.util.FlinkFlowProcess"
-  val DefaultFlinkFabric = FabricSelector(DefaultFlinkFlowConnector, DefaultFlinkFlowProcess)
+  val DefaultFlinkFlowProcessConfiguration = "org.apache.hadoop.conf.Configuration"
+  val DefaultFlinkFabric = FabricSelector(DefaultFlinkFlowConnector, DefaultFlinkFlowProcess, DefaultFlinkFlowProcessConfiguration)
 
   private lazy val selectedFabric = {
     val candidates = Seq(DefaultHadoop2TezFabric, DefaultHadoopFabric, DefaultHadoop2Mr1Fabric, DefaultFlinkFabric)
@@ -198,17 +205,39 @@ trait HadoopMode extends Mode {
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
-    val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
-    val conf = new JobConf(true) // initialize the default config
-    // copy over Config
-    config.toMap.foreach{ case (k, v) => conf.set(k, v) }
+    val htap: Tap[Configuration, _, _] = tap.asInstanceOf[Tap[Configuration, _, _]]
 
     val flowProcessClass = jobConf.get(Mode.CascadingFlowProcessClassKey, Mode.DefaultHadoopFlowProcess)
+    val flowProcessConfigClass = jobConf.get(Mode.CascadingFlowProcessConfigClassKey, Mode.DefaultHadoopFlowProcessConfig)
 
-    val fp = try {
+    val (fp, conf) = try {
       val clazz = Class.forName(flowProcessClass)
-      val ctor = clazz.getConstructor(classOf[JobConf])
-      ctor.newInstance(conf).asInstanceOf[FlowProcess[JobConf]]
+      val confClazz = Class.forName(flowProcessConfigClass)
+      if (!classOf[Configuration].isAssignableFrom(confClazz)) {
+        throw new IllegalArgumentException(s"FlowProcess configuration type ${confClazz} does not implement ${classOf[Configuration]}")
+      }
+
+
+      val conf = {
+        try {
+          /* first constructor attempted: supposed to accept a Boolean where "true" means "load system defaults" */
+          val confCtor = confClazz.getConstructor(java.lang.Boolean.TYPE)
+          confCtor.newInstance(java.lang.Boolean.TRUE).asInstanceOf[Configuration]
+        } catch {
+          case _ : NoSuchMethodError | _ : NoSuchMethodException => {
+            /* fallback: the Configuration should have a default constructor */
+            val confCtor = confClazz.getConstructor()
+            confCtor.newInstance().asInstanceOf[Configuration]
+          }
+        }
+      } // initialize the default config
+      // copy over Config
+      config.toMap.foreach{ case (k, v) => conf.set(k, v) }
+
+
+      val ctor = clazz.getConstructor(confClazz)
+      val inst = ctor.newInstance(conf)
+      (inst.asInstanceOf[FlowProcess[_ <: Configuration]], conf)
     } catch {
       case ncd: ClassNotFoundException => {
         throw new ModeLoadException("Failed to load Cascading flow process class " + flowProcessClass, ncd)
