@@ -455,19 +455,19 @@ trait PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     "distinct properly from normal data" in {
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
         .source[String]("input", data ++ data ++ data)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
 
     "distinctBy(identity) properly from a list in memory" in {
       HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
   }
