@@ -31,6 +31,7 @@ tutorial/data/rightDiff.tsv
 tutorial/data/tmp3.tsv
 tutorial/data/jsonoutput0.tsv
 tutorial/data/avrooutput0.avro
+tutorial/data/execution_output.txt
 .scalding_repl
 scalding-hadoop-test/NOTICE
 NOTICE
