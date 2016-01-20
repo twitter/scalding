@@ -287,7 +287,7 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-47")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-48")
 
   lazy val tezVersion =
     System.getenv.asScala.getOrElse("SCALDING_TEZ_VERSION", "0.6.2") // should match what cascading-hadoop2-tez is using
