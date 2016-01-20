@@ -26,7 +26,6 @@ object ScaldingBuild extends Build {
   val bijectionVersion = "0.8.1"
   val cascadingAvroVersion = "2.1.2"
   val chillVersion = "0.7.1"
-  val dfsDatastoresVersion = "1.3.4"
   val elephantbirdVersion = "4.8"
   val hadoopLzoVersion = "0.4.19"
   val hadoopVersion = "2.5.0"
@@ -65,7 +64,8 @@ object ScaldingBuild extends Build {
       "org.mockito" % "mockito-all" % "1.8.5" % "test",
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
       "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+      "com.novocode" % "junit-interface" % "0.10" % "test"
     ),
 
     resolvers ++= Seq(
@@ -319,8 +319,6 @@ object ScaldingBuild extends Build {
 
   lazy val scaldingCommons = module("commons").settings(
     libraryDependencies ++= Seq(
-      "com.backtype" % "dfs-datastores-cascading" % dfsDatastoresVersion,
-      "com.backtype" % "dfs-datastores" % dfsDatastoresVersion,
       // TODO: split into scalding-protobuf
       "com.google.protobuf" % "protobuf-java" % protobufVersion,
       "com.twitter" %% "bijection-core" % bijectionVersion,
@@ -330,11 +328,13 @@ object ScaldingBuild extends Build {
       "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
       // TODO: split this out into scalding-thrift
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.apache.thrift" % "libthrift" % thriftVersion,
       // TODO: split this out into a scalding-scrooge
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
+      "junit" % "junit" % junitVersion % "test"
     )
   ).dependsOn(scaldingArgs, scaldingDate, scaldingCore, scaldingHadoopTest % "test")
 
