@@ -102,19 +102,15 @@ The suffix denotes the scala version.
 To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
 
 ## Contact
-
-For user questions, we are using the cascading-user mailing list for discussions:
-<http://groups.google.com/group/cascading-user>
-
-For scalding development (internals, extending, release planning):
-<https://groups.google.com/forum/#!forum/scalding-dev>
+For user questions or scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev> (Google search also works as a first step)
 
 In the remote possibility that there exist bugs in this code, please report them to:
 <https://github.com/twitter/scalding/issues>
 
 Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
 
-Chat (IRC): [freenode](https://webchat.freenode.net/) channel: #scalding
+Chat: [![Gitter](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
