@@ -338,6 +338,7 @@ object ScaldingBuild extends Build {
       "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion,
       "temp.cchepelov.com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
       "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion % "provided",
       "cascading" % "cascading-hadoop" % cascadingVersion % "test",
       // TODO: split this out into scalding-thrift
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
