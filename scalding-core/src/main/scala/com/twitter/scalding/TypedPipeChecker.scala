@@ -9,7 +9,7 @@ object TypedPipeChecker {
    * Takes a List and a transform function.
    * The resulting TypedPipe form the transform will be run through asserts
    */
-  def checkOutputTransform[T, U](input: List[T])(transform: TypedPipe[T] => TypedPipe[U])(assertions: List[U] => Unit) =
+  def checkOutputTransform[T, U, R](input: List[T])(transform: TypedPipe[T] => TypedPipe[U])(assertions: List[U] => R): R =
     assertions(checkOutputInline(transform(TypedPipe.from(input))))
 
   /*
@@ -17,7 +17,7 @@ object TypedPipeChecker {
    * a list and run it through a function that makes arbitrary
    * assertions on it.
    */
-  def checkOutput[T](output: TypedPipe[T])(assertions: List[T] => Unit) =
+  def checkOutput[T, R](output: TypedPipe[T])(assertions: List[T] => R): R =
     assertions(checkOutputInline(output))
 
   /**
