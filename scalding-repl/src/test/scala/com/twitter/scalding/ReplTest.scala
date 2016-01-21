@@ -212,10 +212,9 @@ class ReplTest extends WordSpec {
     "ignore directories with restricted permissions" in {
       root.setReadable(false)
 
-      intercept[RuntimeException] {
-        ScaldingILoop
-          .findAllUpPath(currentDirectory.getAbsolutePath)("this_matches")
-      }
+      val actual = ScaldingILoop
+        .findAllUpPath(currentDirectory.getAbsolutePath)("this_matches")
+      assert(actual === List.empty)
     }
   }
 }
