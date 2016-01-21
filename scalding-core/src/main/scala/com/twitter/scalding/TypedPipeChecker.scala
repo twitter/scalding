@@ -10,7 +10,7 @@ object TypedPipeChecker {
    * The resulting TypedPipe form the transform will be run through asserts
    */
   def checkOutputTransform[T, U, R](input: List[T])(transform: TypedPipe[T] => TypedPipe[U])(assertions: List[U] => R): R =
-    assertions(checkOutputInline(transform(TypedPipe.from(input))))
+    assertions(inMemoryToList(transform(TypedPipe.from(input))))
 
   /*
    * Execute a TypedPipe in memory, convert the resulting Iterator to
@@ -18,12 +18,12 @@ object TypedPipeChecker {
    * assertions on it.
    */
   def checkOutput[T, R](output: TypedPipe[T])(assertions: List[T] => R): R =
-    assertions(checkOutputInline(output))
+    assertions(inMemoryToList(output))
 
   /**
    * Execute a TypedPipe in memory and return the result as a List
    */
-  def checkOutputInline[T](output: TypedPipe[T]): List[T] =
+  def inMemoryToList[T](output: TypedPipe[T]): List[T] =
     output
       .toIterableExecution
       .waitFor(Config.unitTestDefault, Local(strictSources = true))

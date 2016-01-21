@@ -16,7 +16,7 @@ class TypedPipeCheckerTest extends WordSpec with Matchers {
 
   it should {
     "give back a list" in {
-      val list = checkOutputInline(TypedPipe.from(List(1, 2, 3, 4)))
+      val list = inMemoryToList(TypedPipe.from(List(1, 2, 3, 4)))
       assert(list == List(1, 2, 3, 4))
     }
   }
