@@ -417,6 +417,12 @@ object Config {
       .setScaldingVersion
       .setHRavenHistoryUserName
 
+  /*
+   * Extensions to the Default Config to tune it for unit tests
+   */
+  def unitTestDefault: Config =
+    Config(Config.default.toMap ++ Map("cascading.update.skip" -> "true"))
+
   /**
    * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)
    */
