@@ -287,10 +287,10 @@ object ScaldingBuild extends Build {
   lazy val scaldingDate = module("date")
 
   lazy val cascadingVersion =
-    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-48")
+    System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-52")
 
   lazy val tezVersion =
-    System.getenv.asScala.getOrElse("SCALDING_TEZ_VERSION", "0.6.2") // should match what cascading-hadoop2-tez is using
+    System.getenv.asScala.getOrElse("SCALDING_TEZ_VERSION", "0.8.2") // should match what cascading-hadoop2-tez is using
 
   lazy val cascadingJDBCVersion =
     System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-127")
@@ -585,6 +585,7 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
+      "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion % "provided"
     )
     }
