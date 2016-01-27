@@ -1,5 +1,9 @@
 package com.twitter.scalding
 
-import scala.tools.nsc.interpreter.ILoop
+import java.io.BufferedReader
 
-trait ILoopCompat extends ILoop
+import scala.tools.nsc.interpreter.ILoop
+import scala.tools.nsc.interpreter.JPrintWriter
+
+class ILoopCompat(in: Option[BufferedReader], out: JPrintWriter)
+  extends ILoop(in, out)
