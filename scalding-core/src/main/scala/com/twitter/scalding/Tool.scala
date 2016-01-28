@@ -147,7 +147,7 @@ class Tool extends Configured with HTool {
 object Tool {
   def main(args: Array[String]) {
     try {
-      ToolRunner.run(new JobConf, new Tool, args)
+      ToolRunner.run(new JobConf, new Tool, ExpandLibJarsGlobs(args))
     } catch {
       case t: Throwable => {
         //re-throw the exception with extra info
