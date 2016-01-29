@@ -56,7 +56,7 @@ object ExpandLibJarsGlobs {
     val parentPath =
       if (absoluteGlob.getFileName.toString.contains("*")) absoluteGlob.getParent else absoluteGlob
 
-    val pathStream = tree(parentPath.toFile, true).map(_.toPath)
+    val pathStream = tree(parentPath.toFile).map(_.toPath)
 
     val globMatchingPaths = pathStream.filter(matcher.matches)
 
