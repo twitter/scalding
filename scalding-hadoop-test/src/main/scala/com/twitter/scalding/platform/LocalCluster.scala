@@ -135,7 +135,7 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.twitter.chill.algebird.AveragedValueSerializer],
       classOf[com.twitter.algebird.Semigroup[_]],
       classOf[com.twitter.chill.KryoInstantiator],
-      classOf[org.jgrapht.ext.EdgeNameProvider[_]],
+      //classOf[org.jgrapht.ext.EdgeNameProvider[_]],
       classOf[org.apache.commons.lang.StringUtils],
       classOf[cascading.scheme.local.TextDelimited],
       classOf[org.apache.commons.logging.LogFactory],
@@ -171,7 +171,10 @@ class LocalCluster(mutex: Boolean = true) {
   private def getFileForClass[T](clazz: Class[T]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
 
-  def mode: Mode = Hdfs(true, jobConf)
+  def mode: Mode = {
+    Mode.setDefaultFabricFromClasspath(jobConf)
+    Hdfs(true, jobConf)
+  }
 
   def putFile(file: File, location: String): Boolean = {
     val hdfsLocation = new Path(location)

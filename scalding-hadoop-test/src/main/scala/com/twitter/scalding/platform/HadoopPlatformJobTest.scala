@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import scala.collection.JavaConverters._
 import cascading.flow.Flow
 import com.twitter.scalding._
 import com.twitter.scalding.source.TypedText
@@ -37,7 +38,7 @@ case class HadoopPlatformJobTest(
   dataToCreate: Seq[(String, Seq[String])] = Vector(),
   sourceWriters: Seq[Args => Job] = Vector.empty,
   sourceReaders: Seq[Mode => Unit] = Vector.empty,
-  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) {
+  flowCheckers: Seq[Flow[_] => Unit] = Vector.empty) {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))
@@ -59,7 +60,7 @@ case class HadoopPlatformJobTest(
   def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
     copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq) })
 
-  def inspectCompletedFlow(checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
+  def inspectCompletedFlow(checker: Flow[_] => Unit): HadoopPlatformJobTest =
     copy(flowCheckers = flowCheckers :+ checker)
 
   private def createSources() {
@@ -98,7 +99,7 @@ case class HadoopPlatformJobTest(
     checkSinks()
     flowCheckers.foreach { checker =>
       job.completedFlow.collect {
-        case f: Flow[JobConf] => checker(f)
+        case f: Flow[_] => checker(f)
       }
     }
   }
@@ -107,6 +108,13 @@ case class HadoopPlatformJobTest(
 
   @annotation.tailrec
   private final def runJob(job: Job) {
+    // create cascading 3.0 planner trace files during tests
+    if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
+      System.setProperty("cascading.planner.plan.path", "target/test/cascading/traceplan/" + job.name)
+      System.setProperty("cascading.planner.plan.transforms.path", "target/test/cascading/traceplan/" + job.name + "/transform")
+      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
+    }
+
     job.run
     job.clear
     job.next match {

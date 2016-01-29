@@ -31,12 +31,14 @@ object Common {
   private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
     taps.flatMap {
       case multi: CompositeTap[_] =>
-        unrollTaps(multi.getChildTaps.asScala.toSeq)
+        unrollTaps(multi.getChildTaps.asScala.map(x => x.asInstanceOf[Tap[_, _, _]]).toSeq)
       case t => Seq(t)
     }
 
-  def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
-    unrollTaps(step.getSources.asScala.toSeq)
+  def unrollTaps(step: FlowStep[_ <: JobConf]): Seq[Tap[_, _, _]] = {
+    val x = step.getFlowNodeGraph.getSourceTaps.asScala.toSeq
+    unrollTaps(x.toSeq)
+  }
 
   /**
    * Get the total size of the file(s) specified by the Hfs, which may contain a glob
@@ -156,7 +158,9 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-    val stepNumReducers = conf.get(Config.HadoopNumReducers)
+    val stepNumReducers = Option(conf.get(Config.HadoopNumReducersLegacy))
+      .orElse(Option(conf.get(Config.HadoopNumReducers2)))
+      .getOrElse("-1")
 
     // whether the reducers have been set explicitly with `withReducers`
     val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)

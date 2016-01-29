@@ -803,7 +803,7 @@ object ExecutionCounters {
    * Just gets the counters from the CascadingStats and ignores
    * all the other fields present
    */
-  def fromCascading(cs: cascading.stats.CascadingStats): ExecutionCounters = new ExecutionCounters {
+  def fromCascading(cs: cascading.stats.CascadingStats[_]): ExecutionCounters = new ExecutionCounters {
     import scala.collection.JavaConverters._
 
     val keys = (for {

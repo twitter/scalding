@@ -33,6 +33,7 @@ import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
 import org.apache.hadoop.mapred.JobConf
+import scala.annotation.meta.param
 import scala.collection.JavaConverters._
 
 /**
@@ -54,7 +55,7 @@ object VersionedKeyValSource {
 
 class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Long], val sinkVersion: Option[Long],
   val maxFailures: Int, val versionsToKeep: Int)(
-    implicit @transient codec: Injection[(K, V), (Array[Byte], Array[Byte])]) extends Source
+    implicit @(transient @param) codec: Injection[(K, V), (Array[Byte], Array[Byte])]) extends Source
   with Mappable[(K, V)]
   with TypedSink[(K, V)] {
 

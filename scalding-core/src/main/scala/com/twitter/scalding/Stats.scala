@@ -62,11 +62,11 @@ object Stats {
 
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.
-  def getCounterValue(key: StatKey)(implicit cascadingStats: CascadingStats): Long =
+  def getCounterValue(key: StatKey)(implicit cascadingStats: CascadingStats[_]): Long =
     cascadingStats.getCounterValue(key.group, key.counter)
 
   // Returns a map of all custom counter names and their counts.
-  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
+  def getAllCustomCounters()(implicit cascadingStats: CascadingStats[_]): Map[String, Long] = {
     val counts = for {
       counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
       value = getCounterValue(counter)

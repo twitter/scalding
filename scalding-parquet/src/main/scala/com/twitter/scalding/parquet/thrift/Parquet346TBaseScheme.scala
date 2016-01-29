@@ -33,7 +33,7 @@ import scala.collection.JavaConverters._
 class Parquet346TBaseScheme[T <: TBase[_, _]](config: ParquetValueScheme.Config[T])
   extends ParquetTBaseScheme[T](config) {
 
-  override def sourceConfInit(fp: FlowProcess[JobConf],
+  override def sourceConfInit(fp: FlowProcess[_ <: JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     jobConf: JobConf): Unit = {
 

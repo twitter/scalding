@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.commons.source
 
+import org.apache.hadoop.fs.Path
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.scalding.commons.datastores.VersionedStore;
@@ -135,7 +136,12 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
     val store = new VersionedStore(root.getAbsolutePath)
     versions foreach { v =>
       val p = store.createVersion(v)
+      /* since dfs-datastores 1.3.5, store.succeedVersion() will fail if the directory
+        doesn't exist, and it won't exist after createVersion() until data is actually inserted.
+        So we cheat here to keep the test mechanism alive
+        */
       new File(p).mkdirs()
+      /* /cheat */
       store.succeedVersion(p)
     }
 

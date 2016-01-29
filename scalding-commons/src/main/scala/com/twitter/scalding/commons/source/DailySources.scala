@@ -26,10 +26,12 @@ import cascading.tuple.Fields
 import java.io.Serializable
 import org.apache.thrift.TBase
 
+import scala.annotation.meta.param
+
 // Retrieve implicits
 import Dsl._
 
-abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @transient suppliedInjection: Injection[T, Array[Byte]])
+abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @(transient @param) suppliedInjection: Injection[T, Array[Byte]])
   extends DailySuffixSource(prefix, dateRange) with LzoCodec[T] {
   val boxed = Externalizer(suppliedInjection)
   override lazy val injection = boxed.get

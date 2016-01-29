@@ -172,7 +172,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     val base = Config.empty
       .setListSpillThreshold(defaultSpillThreshold)
       .setMapSpillThreshold(defaultSpillThreshold)
-      .setMapSideAggregationThreshold(defaultSpillThreshold)
+      .setMapSideAggregationCapacity(defaultSpillThreshold)
 
     // This is setting a property for cascading/driven
     AppProps.addApplicationFramework(null,
@@ -254,7 +254,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.clear(flowDef)
   }
 
-  protected def handleStats(statsData: CascadingStats) {
+  protected def handleStats(statsData: CascadingStats[_]) {
     scaldingCascadingStats = Some(statsData)
     // TODO: Why the two ways to do stats? Answer: jank-den.
     if (args.boolean("scalding.flowstats")) {
@@ -281,7 +281,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   // This awful name is designed to avoid collision
   // with subclasses
   @transient
-  private[scalding] var scaldingCascadingStats: Option[CascadingStats] = None
+  private[scalding] var scaldingCascadingStats: Option[CascadingStats[_]] = None
 
   /**
    * Save the Flow object after a run to allow clients to inspect the job.

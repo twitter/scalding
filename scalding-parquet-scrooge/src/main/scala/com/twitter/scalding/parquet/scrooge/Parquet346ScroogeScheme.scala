@@ -31,7 +31,7 @@ import scala.util.control.NonFatal
 class Parquet346ScroogeScheme[T <: ThriftStruct](config: ParquetValueScheme.Config[T])
   extends ParquetScroogeScheme[T](config) {
 
-  override def sourceConfInit(fp: FlowProcess[JobConf],
+  override def sourceConfInit(fp: FlowProcess[_ <: JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     jobConf: JobConf): Unit = {
 

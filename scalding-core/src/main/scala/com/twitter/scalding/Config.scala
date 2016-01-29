@@ -18,11 +18,12 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.slf4j.{ Logger, LoggerFactory }
 import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
 
-import cascading.pipe.assembly.AggregateBy
+import cascading.pipe.assembly.{ AggregateByProps, AggregateBy }
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -36,6 +37,7 @@ import scala.util.{ Failure, Success, Try }
  * This is a wrapper class on top of Map[String, String]
  */
 trait Config extends Serializable {
+  @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   import Config._ // get the constants
   def toMap: Map[String, String]
@@ -101,15 +103,21 @@ trait Config extends Serializable {
   def setMapSpillThreshold(count: Int): Config =
     this + (SpillableProps.MAP_THRESHOLD -> count.toString)
 
+  @deprecated("deprecated in Cascading 2.7 and dropped in Cascading 3.0, use setMapSideAggregationCapacity", "cascading 2.7")
+  def setMapSideAggregationThreshold(count: Int): Config = {
+    logger.warn("Ignoring deprecated setMapSideAggregationThreshold")
+    this
+  }
+
   /*
    * Used in map-side aggregation of associative operations (Semigroup/Monoid)
    * This controls how many keys are in an in-memory cache. If a significant
    * probability mass of the key-space is far bigger than this value, it
    * does not help much (and may hurt, so experiment with disabling to get
-   * the best results
+   * the best results)
    */
-  def setMapSideAggregationThreshold(count: Int): Config =
-    this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
+  def setMapSideAggregationCapacity(capacity: Int): Config =
+    this + (AggregateByProps.AGGREGATE_BY_CAPACITY -> capacity.toString)
 
   /**
    * Set this configuration option to require all grouping/cogrouping
@@ -352,8 +360,11 @@ trait Config extends Serializable {
       .toList
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
-  def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
-  def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
+  def getNumReducers: Option[Int] = get(Config.HadoopNumReducersLegacy)
+    .orElse(get(Config.HadoopNumReducers2))
+    .map(_.toInt)
+
+  def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducersLegacy -> n.toString) // Note: setting the legacy key for cascading-hadoop compat, hadoop-2.6.0 still accepts it.
 
   /** Set username from System.used for querying hRaven. */
   def setHRavenHistoryUserName: Config =
@@ -387,7 +398,13 @@ object Config {
    * Parameter that actually controls the number of reduce tasks.
    * Be sure to set this in the JobConf for the *step* not the flow.
    */
-  val HadoopNumReducers = "mapred.reduce.tasks"
+  val HadoopNumReducersLegacy = "mapred.reduce.tasks"
+  val HadoopNumReducers2 = "mapreduce.job.reduces"
+
+  @deprecated(
+    message = "please select between HadoopNumReducersLegacy or HadoopNumReducers2. Or use getNumReducers()",
+    since = "2016-01-16")
+  val HadoopNumReducers = HadoopNumReducersLegacy // kept for source-level compatibility, for now (RFC)d
 
   /** Name of parameter to specify which class to use as the default estimator. */
   val ReducerEstimators = "scalding.reducer.estimator.classes"
@@ -412,7 +429,7 @@ object Config {
     empty
       .setListSpillThreshold(100 * 1000)
       .setMapSpillThreshold(100 * 1000)
-      .setMapSideAggregationThreshold(100 * 1000)
+      .setMapSideAggregationCapacity(100 * 1000)
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
       .setHRavenHistoryUserName
@@ -499,9 +516,7 @@ object Config {
    * This copy also forces all expressions in values to be evaluated, freezing them
    * as well.
    */
-  def fromHadoop(conf: Configuration): Config =
-    // use `conf.get` to force JobConf to evaluate expressions
-    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
+  def fromHadoop(anyConf: Any): Config = ConfigBridge.fromPlatform(anyConf)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,
@@ -512,7 +527,7 @@ object Config {
     (empty
       .setListSpillThreshold(100 * 1000)
       .setMapSpillThreshold(100 * 1000)
-      .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
+      .setMapSideAggregationCapacity(100 * 1000) ++ fromHadoop(conf))
       .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
   /*

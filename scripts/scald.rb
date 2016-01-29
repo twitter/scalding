@@ -262,7 +262,10 @@ end
 
 if (!CONFIG["jar"])
   #what jar has all the dependencies for this job
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"  
+  EXTRACP = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+else
+  EXTRACP = ""
 end
 
 #Check that we can find the jar:
@@ -508,7 +511,7 @@ end
 def build_job_jar
   $stderr.puts("compiling " + JOBFILE)
   FileUtils.mkdir_p(BUILDDIR)
-  classpath = (([LIBCP, JARPATH, MODULEJARPATHS, CLASSPATH].select { |s| s != "" }) + convert_dependencies_to_jars).flatten.join(":")
+  classpath = (([LIBCP, JARPATH, MODULEJARPATHS, EXTRACP, CLASSPATH].select { |s| s != "" }) + convert_dependencies_to_jars).flatten.join(":")
   puts("#{file_type}c -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
   unless system("#{COMPILE_CMD} -classpath #{classpath} -d #{BUILDDIR} #{JOBFILE}")
     puts "[SUGGESTION]: Try scald.rb --clean, you may have corrupt jars lying around"
@@ -523,7 +526,7 @@ def build_job_jar
 end
 
 def hadoop_classpath
-  (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).flatten.join(":")
+  (["/usr/share/java/hadoop-lzo-0.4.15.jar", JARBASE, EXTRACP, MODULEJARPATHS.map{|n| File.basename(n)}, "job-jars/#{JOBJAR}"].select { |s| s != "" }).flatten.join(":")
 end
 
 def hadoop_command
@@ -570,7 +573,7 @@ def local_cmd(mode)
     []
   end
 
-  classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
+  classpath = ([JARPATH, EXTRACP, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
   "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} #{JOB_ARGS}"
 end

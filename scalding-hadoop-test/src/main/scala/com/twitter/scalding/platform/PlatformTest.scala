@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import cascading.flow.FlowStep
+import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
 import cascading.tuple.Tuple
 
@@ -22,7 +24,7 @@ import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.util.{ Iterator => JIterator }
 import org.scalacheck.{ Arbitrary, Gen }
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ Ignore, Matchers, WordSpec }
 import org.slf4j.{ LoggerFactory, Logger }
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
@@ -32,6 +34,7 @@ class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
 }
 
+/*********** RFC SECTION ***********/
 object TinyJoinAndMergeJob {
   val peopleInput = TypedTsv[Int]("input1")
   val peopleData = List(1, 2, 3, 4)
@@ -42,7 +45,6 @@ object TinyJoinAndMergeJob {
   val output = TypedTsv[(Int, Int)]("output")
   val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
 }
-
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
@@ -54,6 +56,47 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
 
   (messages ++ people).groupBy('id) { _.size('count) }.write(output)
 }
+
+class TinyJoinAndMergeJob2(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val messages = messageInput.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, people)
+    .forceToDisk
+
+  (messages ++ people).groupBy('id) { _.size('count) }.write(output)
+}
+
+object TinyJoinAndMergeJob3 {
+  val peopleInput = TypedTsv[Int]("input1")
+  val peopleData = List(1, 2, 3, 4)
+
+  val messageInput = TypedTsv[Int]("input2")
+  val messageData = List(1, 2, 3)
+
+  val peopleInput3 = TypedTsv[Int]("input3")
+  val peopleData3 = peopleData
+
+  val output = TypedTsv[(Int, Int)]("output")
+  val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
+}
+class TinyJoinAndMergeJob3(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob3._
+
+  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+  val people3 = peopleInput3.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val messages = messageInput.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, people)
+    .forceToDisk
+
+  (messages ++ people3).groupBy('id) { _.size('count) }.write(output)
+}
+/************** END RFC SECTION ************/
 
 object TsvNoCacheJob {
   val dataInput = TypedTsv[String]("fakeInput")
@@ -270,7 +313,8 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
-class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+trait PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
+  import ConfigBridge._
 
   "An InAndOutTest" should {
     val inAndOut = Seq("a", "b", "c")
@@ -283,10 +327,12 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  /********** RFC SECTION **********/
   "A TinyJoinAndMergeJob" should {
     import TinyJoinAndMergeJob._
 
-    "merge and joinWithTiny shouldn't duplicate data" in {
+    /* FIXME: @cwensel says this leads to an unsupportable query plan, and from Cascading 3.0 this is rejected… */
+    "merge and joinWithTiny shouldn't duplicate data" ignore {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
         .source(peopleInput, peopleData)
         .source(messageInput, messageData)
@@ -295,6 +341,32 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  "A TinyJoinAndMergeJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and joinWithTiny shouldn't duplicate data (2)" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob2(_), cluster)
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  "A TinyJoinAndMergeJob" should {
+    import TinyJoinAndMergeJob3._
+
+    "merge and joinWithTiny shouldn't duplicate data (3)" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeJob3(_), cluster)
+        .source(peopleInput, peopleData)
+        .source(messageInput, messageData)
+        .source(peopleInput3, peopleData3)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  /************** END RFC SECTION ***************/
   "A TsvNoCacheJob" should {
     import TsvNoCacheJob._
 
@@ -319,38 +391,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   }
 
-  "A TypedPipeForceToDiskWithDescriptionPipe" should {
-    "have a custom step name from withDescription" in {
-      HadoopPlatformJobTest(new TypedPipeForceToDiskWithDescriptionJob(_), cluster)
-        .inspectCompletedFlow { flow =>
-          val steps = flow.getFlowSteps.asScala
-          val firstStep = steps.filter(_.getName.startsWith("(1/2"))
-          val secondStep = steps.filter(_.getName.startsWith("(2/2"))
-          val lab1 = firstStep.map(_.getConfig.get(Config.StepDescriptions))
-          lab1 should have size 1
-          lab1(0) should include ("write words to disk")
-          val lab2 = secondStep.map(_.getConfig.get(Config.StepDescriptions))
-          lab2 should have size 1
-          lab2(0) should include ("output frequency by length")
-        }
-        .run
-    }
-  }
-
   "A TypedPipeJoinWithDescriptionPipe" should {
     "have a custom step name from withDescription" in {
       HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
-          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(147, 150, 154).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
-          }
-          firstStep should include ("leftJoin")
-          firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
-          steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
+          val firstStepDescs = steps.headOption.map(_.getConfigValue(Config.StepDescriptions)).getOrElse("")
+          val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
+
+          val expected = Set(190, 192, 193, 196, 197).map(linenum => /* WARNING: keep aligned with line numbers above */
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
+          firstStepDescSet should equal(expected)
+          steps.map(_.getConfigValue(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
     }
@@ -361,18 +414,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          val descs = List("map stage - assign words to 1",
+          val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
-            "write",
-            // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:137)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:141)")
+            "write") ++
+            Seq(180, 179, 182, 183, 184).map( /* WARNING: keep aligned with line numbers above */
+              linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
-          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
-          descs.foreach { d =>
-            assert(foundDescs.size == 1)
-            assert(foundDescs(0).contains(d))
-          }
+          val foundDescs = steps.map(_.getConfigValue(Config.StepDescriptions).split(",").map(_.trim).toSet)
+          foundDescs should have size 1
+
+          foundDescs.head should equal(expectedDescs)
           //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run
@@ -385,19 +436,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     "distinct properly from normal data" in {
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
         .source[String]("input", data ++ data ++ data)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
 
     "distinctBy(identity) properly from a list in memory" in {
       HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
-        .sink[String]("output") { _.toList shouldBe data }
+        .sink[String]("output") { _.toList.sorted shouldBe data.sorted } // important: don't do set comparisons or "distinct" issues might be missed
         .run
     }
   }

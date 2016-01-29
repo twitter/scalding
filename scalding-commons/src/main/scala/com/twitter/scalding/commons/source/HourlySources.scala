@@ -24,7 +24,9 @@ import com.twitter.scalding._
 import com.twitter.scalding.source._
 import org.apache.thrift.TBase
 
-abstract class HourlySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @transient suppliedInjection: Injection[T, Array[Byte]])
+import scala.annotation.meta.param
+
+abstract class HourlySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @(transient @param) suppliedInjection: Injection[T, Array[Byte]])
   extends HourlySuffixSource(prefix, dateRange) with LzoCodec[T] {
   val boxed = Externalizer(suppliedInjection)
   override lazy val injection = boxed.get

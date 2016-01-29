@@ -26,6 +26,7 @@ import com.twitter.scalding._
 
 import java.util.Arrays
 import org.apache.hadoop.io.BytesWritable
+import scala.annotation.meta.param
 import scala.collection.JavaConverters._
 
 /**
@@ -46,7 +47,7 @@ object CodecSource {
   def apply[T](paths: String*)(implicit codec: Injection[T, Array[Byte]]) = new CodecSource[T](paths)
 }
 
-class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
+class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @(transient @param) injection: Injection[T, Array[Byte]])
   extends FileSource
   with Mappable[T]
   with LocalTapSource {
