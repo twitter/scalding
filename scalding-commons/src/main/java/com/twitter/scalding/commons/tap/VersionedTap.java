@@ -60,7 +60,7 @@ public class VersionedTap extends Hfs {
   }
 
   public VersionedStore getStore(JobConf conf) throws IOException {
-    return new VersionedStore(FileSystem.get(conf), getOutputDirectory());
+    return new VersionedStore(getPath().getFileSystem(conf), getOutputDirectory());
   }
 
   public String getSourcePath(JobConf conf) {
@@ -138,7 +138,7 @@ public class VersionedTap extends Hfs {
 
   @Override
   public boolean commitResource(JobConf conf) throws IOException {
-    VersionedStore store = new VersionedStore(FileSystem.get(conf), getOutputDirectory());
+    VersionedStore store = getStore(conf);
 
     if (newVersionPath != null) {
       store.succeedVersion(newVersionPath);
@@ -151,7 +151,7 @@ public class VersionedTap extends Hfs {
   }
 
   private static void markSuccessfulOutputDir(Path path, JobConf conf) throws IOException {
-      FileSystem fs = FileSystem.get(conf);
+      FileSystem fs = path.getFileSystem(conf);
       // create a file in the folder to mark it
       if (fs.exists(path)) {
           Path filePath = new Path(path, VersionedStore.HADOOP_SUCCESS_FLAG);
