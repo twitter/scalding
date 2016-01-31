@@ -31,6 +31,12 @@ time $SCALD --json tutorial/JsonTutorial0.scala
 
 time $SCALD --avro --json tutorial/AvroTutorial0.scala
 
+time $SCALD --lingual tutorial/LingualTutorial0.scala \
+  --output tutorial/data/lingualOutput0.tsv
+
+time $SCALD --lingual tutorial/LingualTutorial1.scala \
+  --output tutorial/data/lingualOutput1.tsv
+
 # restore stty
 SCALA_EXIT_STATUS=0
 onExit

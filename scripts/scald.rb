@@ -28,6 +28,7 @@ CONFIG_DEFAULT = begin
     "repo_root" => repo_root, #full path to the repo you use, Twitter specific
     "cp" => ENV['CLASSPATH'] || "",
     "localmem" => "3g", #how much memory for java to use when running in local mode
+    "compilemem" => "1g", #how much memory for java to use when compiling the job jar
     "namespaces" => { "abj" => "com.twitter.ads.batch.job", "s" => "com.twitter.scalding" },
     "hadoop_opts" => { "mapred.reduce.tasks" => 20, #be conservative by default
                        "mapred.min.split.size" => "2000000000" }, #2 billion bytes!!!
@@ -68,6 +69,7 @@ TMPDIR=CONFIG["tmpdir"] || ENV['TMPDIR'] || "/tmp"
 TMPMAVENDIR = File.join(TMPDIR, "maven")
 BUILDDIR=CONFIG["builddir"] || File.join(TMPDIR,"script-build")
 LOCALMEM=CONFIG["localmem"] || "3g"
+JOBCOMPILEMEM=CONFIG["compilemem"] || "1g"
 DEPENDENCIES=CONFIG["depends"] || []
 RSYNC_STATFILE_PREFIX = TMPDIR + "/scald.touch."
 
@@ -91,6 +93,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :json, "Add scalding-json to classpath"
   opt :parquet, "Add scalding-parquet to classpath"
   opt :repl, "Add scalding-repl to classpath"
+  opt :lingual, "Add scalding-lingual to classpath"
   opt :tool, "The scalding main class, defaults to com.twitter.scalding.Tool", :type => String
 
   stop_on_unknown #Stop parsing for options parameters once we reach the job file.
@@ -207,7 +210,7 @@ end
 
 LIBCP= libs.join(":")
 
-COMPILE_CMD="java -cp #{LIBCP} -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
+COMPILE_CMD="java -Xmx#{JOBCOMPILEMEM} -cp #{LIBCP} -Dscala.home=#{SCALA_LIB_DIR} scala.tools.nsc.Main"
 
 HOST = OPTS[:host] || CONFIG["host"]
 
@@ -241,6 +244,10 @@ if OPTS[:parquet]
   MODULEJARPATHS.push(repo_root + "/scalding-parquet/target/scala-#{SHORT_SCALA_VERSION}/scalding-parquet-assembly-#{SCALDING_VERSION}.jar")
 end
 
+if OPTS[:lingual]
+  MODULEJARPATHS.push(repo_root + "/scalding-lingual/target/scala-#{SHORT_SCALA_VERSION}/scalding-lingual-assembly-#{SCALDING_VERSION}.jar")
+end
+
 if OPTS[:repl]
   MODULEJARPATHS.push(repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar")
 
@@ -272,7 +279,9 @@ if (!File.exist?(CONFIG["jar"]))
 end
 
 JARFILE =
-  if OPTS[:jar]
+  if OPTS[:jar] && File.exists?(OPTS[:jar])
+    OPTS[:jar]
+  elsif OPTS[:jar] && !File.exists?(OPTS[:jar])
     jarname = OPTS[:jar]
     #highly Twitter specific here:
     CONFIG["repo_root"] + "/dist/#{jarname}-deploy.jar"
@@ -572,8 +581,11 @@ def local_cmd(mode)
 
   classpath = ([JARPATH, MODULEJARPATHS].select { |s| s != "" } + convert_dependencies_to_jars + localHadoopDepPaths).flatten.join(":") + (is_file? ? ":#{JOBJARPATH}" : "") +
                 ":" + CLASSPATH
-  "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} #{JOB_ARGS}"
+  cmd  = "java -Xmx#{LOCALMEM} -cp #{classpath} #{TOOL} #{JOB} #{mode} #{JOB_ARGS}"
+  puts cmd
+  cmd
 end
+
 
 SHELL_COMMAND =
   if OPTS[:print_cp]
