@@ -10,6 +10,7 @@ import cascading.tuple.Tuple;
 import cascading.tuple.Fields;
 
 import org.apache.parquet.hadoop.api.ReadSupport;
+import org.apache.parquet.hadoop.api.ReadSupport.ReadContext;
 import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.MessageType;
 

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.api.WriteSupport;
+import org.apache.parquet.hadoop.api.WriteSupport.WriteContext;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
