@@ -1,7 +1,6 @@
 package com.twitter.scalding.parquet.tuple;
 
 import cascading.tuple.Tuple;
-import cascading.tuple.Fields;
 
 import org.apache.parquet.io.api.GroupConverter;
 import org.apache.parquet.io.api.RecordMaterializer;

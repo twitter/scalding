@@ -1,7 +1,6 @@
 package com.twitter.scalding.parquet.tuple;
 
 import java.util.Map;
-import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
@@ -9,7 +8,6 @@ import org.apache.commons.lang.StringUtils;
 
 import cascading.tuple.Tuple;
 import cascading.tuple.Fields;
-import cascading.flow.hadoop.util.HadoopUtil;
 
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.io.api.RecordMaterializer;

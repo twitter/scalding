@@ -24,6 +24,7 @@ object ScaldingBuild extends Build {
   def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
   val algebirdVersion = "0.11.0"
+  val apacheCommonsVersion = "2.2"
   val avroVersion = "1.7.4"
   val bijectionVersion = "0.8.1"
   val cascadingAvroVersion = "2.1.2"
@@ -370,7 +371,7 @@ object ScaldingBuild extends Build {
       },
       libraryDependencies ++= Seq(
         "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
-        "commons-lang" % "commons-lang" % "2.2",
+        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
         "org.apache.thrift" % "libthrift" % thriftVersion
       )
     )
@@ -379,9 +380,9 @@ object ScaldingBuild extends Build {
     libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
       "org.apache.parquet" % "parquet-column" % parquetVersion,
       "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
-      "org.apache.parquet" % "parquet-pig" % parquetVersion,
       "org.apache.parquet" % "parquet-thrift" % parquetVersion
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
+        exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
       "org.apache.thrift" % "libthrift" % "0.7.0",
@@ -416,6 +417,7 @@ object ScaldingBuild extends Build {
       },
       libraryDependencies ++= Seq(
         "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
         "org.apache.thrift" % "libthrift" % thriftVersion
       )
     )

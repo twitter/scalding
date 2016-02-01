@@ -2,17 +2,12 @@ package com.twitter.scalding.parquet.tuple;
 
 import cascading.tuple.Tuple;
 
-import org.apache.parquet.io.ParquetDecodingException;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.io.api.GroupConverter;
 import org.apache.parquet.io.api.PrimitiveConverter;
-import org.apache.parquet.pig.TupleConversionException;
 import org.apache.parquet.schema.GroupType;
-import org.apache.parquet.schema.OriginalType;
-import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
-import org.apache.parquet.schema.Type.Repetition;
 
 public class ParquetTupleConverter extends GroupConverter {
 
