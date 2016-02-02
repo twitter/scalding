@@ -5,7 +5,7 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 TARGET=$1
 
 cd $BASE_DIR
-sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' project/Build.scala
+sed -i'' -e 's/\/\/ test in assembly/test in assembly/g' build.sbt
 
 bash -c "while true; do echo -n .; sleep 5; done" &
 PROGRESS_REPORTER_PID=$!
