@@ -4,29 +4,13 @@ object ArgOptions extends Enumeration {
   type ArgOptions = Value
   val RequiredArg, OptionalArg, ListArg, BooleanArg = Value
 }
+import ArgOptions._
 
-class DescriptionArgs(override val m: Map[String, List[String]]) extends Args(m){
-  import ArgOptions._
+case class DescribedArg(key: String, description: String, argOption: ArgOptions)
 
-  private val map = new scala.collection.mutable.HashMap[String, (String, ArgOptions)]()
-
-  def isHelpState = boolean("help")
-
-  def optionalDescription(key: String, description: String): Unit =
-    map += key -> (description, OptionalArg)
-
-  def requiredDescription(key: String, description: String): Unit =
-    map += key -> (description, RequiredArg)
-
-  def booleanDescription(key: String, description: String): Unit =
-    map += key -> (description, BooleanArg)
-
-  def listDescription(key: String, description: String): Unit =
-    map += key -> (description, ListArg)
-
-
+case class ArgHelp(describedArgs: Seq[DescribedArg]) {
   def argString: String = {
-    map.foldLeft("") { case (str, (key, (description, opt))) =>
+    describedArgs.foldLeft("") { case (str, DescribedArg(key, description, opt)) =>
       val msg = opt match {
         case RequiredArg => s"--$key VALUE "
         case OptionalArg => s"[--$key VALUE] "
@@ -38,7 +22,7 @@ class DescriptionArgs(override val m: Map[String, List[String]]) extends Args(m)
   }
 
   def help: String = {
-    map.foldLeft("") { case (str, (key, (description, opt))) =>
+    describedArgs.foldLeft("") { case (str, DescribedArg(key, description, opt)) =>
       str + s"--$key($opt) :: $description \n"
     } + "--help :: Show this help message."
   }
@@ -50,23 +34,22 @@ class DescriptionArgs(override val m: Map[String, List[String]]) extends Args(m)
   */
 trait DescribedExecutionApp { this: ExecutionApp =>
 
-  def descriptions(args: DescriptionArgs): Unit
+  def descriptions: List[DescribedArg]
 
   def describedJob(args: Args): Execution[Unit]
 
   def job = {
     Execution.getArgs.flatMap{args =>
-      val descriptionArgs = new DescriptionArgs(args.m)
-      descriptions(descriptionArgs)
-      if(descriptionArgs.isHelpState){
+      if(args.boolean("help")){
+        val helper = ArgHelp(descriptions)
         val top = "\n###########################################################################\n\n"
-        val usage = s"Command Line Args :: ${descriptionArgs.argString}\n\n\n"
-        val help = descriptionArgs.help
+        val usage = s"Command Line Args :: ${helper.argString}\n\n\n"
+        val help = helper.help
         val bottom = "\n\n###########################################################################\n"
         println(top + usage + help + bottom)
         Execution.unit
       } else {
-        describedJob(descriptionArgs)
+        describedJob(args)
       }
     }
   }
