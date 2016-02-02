@@ -1,7 +1,6 @@
 package com.twitter.scalding.parquet.thrift
 
 import com.twitter.scalding.parquet.ParquetValueScheme
-import com.twitter.scalding.parquet.thrift.ParquetTBaseScheme
 
 import cascading.flow.FlowProcess
 import cascading.tap.Tap

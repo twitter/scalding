@@ -57,7 +57,7 @@ CONFIG_RC = begin
 
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
-BUILDFILE = open(CONFIG["repo_root"] + "/project/Build.scala").read
+BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
 VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
 SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 
@@ -80,7 +80,7 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :hdfs_local, "Run in Hadoop local mode"
   opt :local, "Run in Cascading local mode (does not use Hadoop)"
   opt :print, "Print the command YOU SHOULD enter on the remote node. Useful for screen sessions"
-  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in project/Build.scala)", :type => String
+  opt :scalaversion, "version of Scala for scalac (defaults to scalaVersion in build.sbt)", :type => String
   opt :print_cp, "Print the Scala classpath"
   opt :jar, "Specify the jar file", :type => String
   opt :host, "Specify the hadoop host where the job runs", :type => String
