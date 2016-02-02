@@ -10,8 +10,35 @@ case class OptionalArg(key: String, description: String) extends DescribedArg
 case class ListArg(key: String, description: String) extends DescribedArg
 case class BooleanArg(key: String, description: String) extends DescribedArg
 
-case class ArgHelp(describedArgs: Seq[DescribedArg]) {
-  def argString: String = {
+object ArgHelp {
+  /**
+    * Describe the Arguments of this Execution.  By running --help the args will output
+    * and the execution will end
+    * @param describedArgs List of Argument Descriptions
+    * @param ex Input Execution
+    * @return Output Execution
+    */
+  def describe(describedArgs: Seq[DescribedArg], ex: Execution[Unit]): Execution[Unit] = {
+    Execution.getArgs.flatMap { args =>
+      if (args.boolean("help")) {
+        val top = "\n###########################################################################\n\n"
+        val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
+        val help = help(describedArgs)
+        val bottom = "\n\n###########################################################################\n"
+        println(top + usage + help + bottom)
+        Execution.unit
+      } else {
+        ex
+      }
+    }
+  }
+
+  /**
+    * Command line arg string given the Described Args
+    * @param describedArgs List of Argument Descriptions
+    * @return Command Line Parameters
+    */
+  def argString(describedArgs: Seq[DescribedArg]): String = {
     describedArgs.foldLeft("") { case (str, describedArg) =>
       val msg = describedArg match {
         case RequiredArg(key, _) => s"--$key VALUE "
@@ -23,7 +50,12 @@ case class ArgHelp(describedArgs: Seq[DescribedArg]) {
     } + "[--help]"
   }
 
-  def help: String = {
+  /**
+    * More detailed help command for these described arguments
+    * @param describedArgs List of Argument Descriptions
+    * @return Detailed Help for the Args
+    */
+  def help(describedArgs: Seq[DescribedArg]): String = {
     describedArgs.foldLeft("") { case (str, describedArg) =>
       val msg = describedArg match {
         case RequiredArg(key, description) => s"--$key(Required) :: $description \n"
@@ -33,32 +65,5 @@ case class ArgHelp(describedArgs: Seq[DescribedArg]) {
       }
       str + msg
     } + "--help :: Show this help message."
-  }
-}
-
-/**
-  * Extending this Trait allows for descriptions to be added to Jobs
-  * If you run a job with --help the descriptions are output
-  */
-trait DescribedExecutionApp { this: ExecutionApp =>
-
-  def descriptions: List[DescribedArg]
-
-  def describedJob(args: Args): Execution[Unit]
-
-  def job = {
-    Execution.getArgs.flatMap{args =>
-      if(args.boolean("help")){
-        val helper = ArgHelp(descriptions)
-        val top = "\n###########################################################################\n\n"
-        val usage = s"Command Line Args :: ${helper.argString}\n\n\n"
-        val help = helper.help
-        val bottom = "\n\n###########################################################################\n"
-        println(top + usage + help + bottom)
-        Execution.unit
-      } else {
-        describedJob(args)
-      }
-    }
   }
 }
