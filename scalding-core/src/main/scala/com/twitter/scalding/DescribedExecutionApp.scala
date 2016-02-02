@@ -1,30 +1,37 @@
 package com.twitter.scalding
 
-sealed abstract class ArgOptions
+sealed abstract class DescribedArg {
+  def key: String
+  def description: String
+}
 
-object RequiredArg extends ArgOptions
-object OptionalArg extends ArgOptions
-object ListArg extends ArgOptions
-object BooleanArg extends ArgOptions
-
-case class DescribedArg(key: String, description: String, argOption: ArgOptions)
+case class RequiredArg(key: String, description: String) extends DescribedArg
+case class OptionalArg(key: String, description: String) extends DescribedArg
+case class ListArg(key: String, description: String) extends DescribedArg
+case class BooleanArg(key: String, description: String) extends DescribedArg
 
 case class ArgHelp(describedArgs: Seq[DescribedArg]) {
   def argString: String = {
-    describedArgs.foldLeft("") { case (str, DescribedArg(key, description, opt)) =>
-      val msg = opt match {
-        case RequiredArg => s"--$key VALUE "
-        case OptionalArg => s"[--$key VALUE] "
-        case ListArg => s"[--$key VALUE VALUE2] "
-        case BooleanArg => s"[--$key] "
+    describedArgs.foldLeft("") { case (str, describedArg) =>
+      val msg = describedArg match {
+        case RequiredArg(key, _) => s"--$key VALUE "
+        case OptionalArg(key, _) => s"[--$key VALUE] "
+        case ListArg(key, _) => s"[--$key VALUE VALUE2] "
+        case BooleanArg(key, _) => s"[--$key] "
       }
       str + msg
     } + "[--help]"
   }
 
   def help: String = {
-    describedArgs.foldLeft("") { case (str, DescribedArg(key, description, opt)) =>
-      str + s"--$key($opt) :: $description \n"
+    describedArgs.foldLeft("") { case (str, describedArg) =>
+      val msg = describedArg match {
+        case RequiredArg(key, description) => s"--$key(Required) :: $description \n"
+        case OptionalArg(key, description) => s"--$key(Optional) :: $description \n"
+        case ListArg(key, description) => s"--$key(List) :: $description \n"
+        case BooleanArg(key, description) => s"--$key(Boolean) :: $description \n"
+      }
+      str + msg
     } + "--help :: Show this help message."
   }
 }
