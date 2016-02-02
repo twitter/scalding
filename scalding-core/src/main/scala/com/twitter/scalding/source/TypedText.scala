@@ -18,9 +18,12 @@ object TypedText {
   val ONE = TypedSep("\u0001")
   val COMMA = TypedSep(",")
 
-  def tsv[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = new FixedTypedText[T](TAB, path: _*)
-  def osv[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = new FixedTypedText[T](ONE, path: _*)
-  def csv[T: TypeDescriptor](path: String*): TypedTextDelimited[T] = new FixedTypedText[T](COMMA, path: _*)
+  def tsv[T: TypeDescriptor](path: String*): Source with TypedTextDelimited[T] =
+    new FixedTypedText[T](TAB, path: _*)
+  def osv[T: TypeDescriptor](path: String*): Source with TypedTextDelimited[T] =
+    new FixedTypedText[T](ONE, path: _*)
+  def csv[T: TypeDescriptor](path: String*): Source with TypedTextDelimited[T] =
+    new FixedTypedText[T](COMMA, path: _*)
 
   /**
    * Prefix might be "/logs/awesome"
@@ -37,7 +40,6 @@ object TypedText {
     require(prefix.last != '/', "prefix should not include trailing /")
     new TimePathTypedText[T](COMMA, prefix + TimePathedSource.YEAR_MONTH_DAY_HOUR + "/*")
   }
-
   def dailyTsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
     require(prefix.last != '/', "prefix should not include trailing /")
     new TimePathTypedText[T](TAB, prefix + TimePathedSource.YEAR_MONTH_DAY + "/*")
