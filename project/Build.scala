@@ -247,7 +247,11 @@ object ScaldingBuild extends Build {
     scaldingJson,
     scaldingJdbc,
     maple,
-    scaldingSerialization
+    scaldingSerialization,
+    luiCore,
+    luiScrooge,
+    luiThriftFixtures,
+    luiScaldingScrooge
   )
 
   lazy val formattingPreferences = {
@@ -630,4 +634,75 @@ lazy val scaldingThriftMacros = module("thrift-macros")
       scaldingHadoopTest % "test",
       scaldingSerialization,
       scaldingThriftMacrosFixtures % "test->test")
+
+  def luiModule(name: String) = {
+    val id = "lui-%s".format(name)
+    Project(id = id, base = file(id), settings = sharedSettings ++ Seq(
+      Keys.name := id))
+  }
+
+  lazy val luiCore = luiModule("core").settings(
+    libraryDependencies <++= (scalaVersion) { scalaVersion =>
+      Seq(
+        "org.apache.parquet" % "parquet-column" % parquetVersion,
+        "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+        "org.scala-lang" % "scala-reflect" % scalaVersion)
+    })
+
+  lazy val luiThriftFixtures = {
+    import ScroogeSBT.autoImport._
+    luiModule("thrift-fixtures")
+      .settings(ScroogeSBT.newSettings: _*)
+      .settings(
+        scroogeThriftSourceFolder in Compile <<= baseDirectory {
+          base => base / "src/test/resources"
+        },
+        sourceGenerators in Compile <+= (
+          streams,
+          scroogeThriftSources in Compile,
+          scroogeIsDirty in Compile,
+          sourceManaged).map { (out, sources, isDirty, outputDir) =>
+            // for some reason, sbt sometimes calls us multiple times, often with no source files.
+            if (isDirty && sources.nonEmpty) {
+              out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
+              ScroogeSBT.compile(out.log, outputDir, sources.toSet, Set(), Map(), "java", Set())
+            }
+            (outputDir ** "*.java").get.toSeq
+          },
+        libraryDependencies ++= Seq(
+          "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+          "org.apache.thrift" % "libthrift" % thriftVersion))
+  }
+
+  lazy val luiScrooge = luiModule("scrooge")
+    .settings(
+      libraryDependencies <++= (scalaVersion) { scalaVersion =>
+        Seq(
+          "com.twitter" %% "algebird-core" % algebirdVersion,
+          "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+          "org.slf4j" % "slf4j-api" % slf4jVersion,
+          "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+          "org.apache.parquet" % "parquet-column" % parquetVersion,
+          "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
+          "org.apache.parquet" % "parquet-thrift" % parquetVersion,
+          "org.scala-lang" % "scala-compiler" % scalaVersion)
+      })
+    .dependsOn(luiCore)
+
+  lazy val luiScaldingScrooge = luiModule("scalding-scrooge")
+    .settings(
+      libraryDependencies ++=
+        Seq(
+          "org.slf4j" % "slf4j-api" % slf4jVersion,
+          "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+          "org.apache.parquet" % "parquet-column" % parquetVersion,
+          "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
+          "org.apache.parquet" % "parquet-thrift" % parquetVersion,
+          "cascading" % "cascading-core" % cascadingVersion,
+          "cascading" % "cascading-hadoop" % cascadingVersion))
+    .dependsOn(scaldingCore, luiScrooge, luiThriftFixtures  % "test->test", scaldingParquetScrooge % "test->test")
+
 }
+
