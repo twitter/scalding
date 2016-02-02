@@ -16,7 +16,6 @@ limitations under the License.
 
 package com.twitter.scalding.parquet.tuple
 
-import org.apache.parquet.cascading.ParquetTupleScheme
 import cascading.scheme.Scheme
 import cascading.tuple.Fields
 import com.twitter.scalding._

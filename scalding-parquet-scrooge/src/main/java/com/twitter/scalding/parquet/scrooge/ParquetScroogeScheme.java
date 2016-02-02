@@ -22,11 +22,11 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
+import com.twitter.scalding.parquet.ParquetValueScheme;
 import com.twitter.scrooge.ThriftStruct;
 
 import cascading.flow.FlowProcess;
 import cascading.tap.Tap;
-import org.apache.parquet.cascading.ParquetValueScheme;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
