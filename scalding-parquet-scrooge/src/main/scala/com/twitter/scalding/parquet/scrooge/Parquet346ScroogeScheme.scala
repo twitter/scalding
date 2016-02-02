@@ -2,10 +2,10 @@ package com.twitter.scalding.parquet.scrooge
 
 import cascading.flow.FlowProcess
 import cascading.tap.Tap
+import com.twitter.scalding.parquet.ParquetValueScheme
 import com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer
 import com.twitter.scrooge.{ ThriftStruct, ThriftStructCodec }
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
-import org.apache.parquet.cascading.ParquetValueScheme
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport
 import org.apache.parquet.schema.MessageType
 import org.apache.parquet.thrift.struct.ThriftType.StructType

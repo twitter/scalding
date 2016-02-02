@@ -1,9 +1,11 @@
 package com.twitter.scalding.parquet.thrift
 
+import com.twitter.scalding.parquet.ParquetValueScheme
+import com.twitter.scalding.parquet.thrift.ParquetTBaseScheme
+
 import cascading.flow.FlowProcess
 import cascading.tap.Tap
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
-import org.apache.parquet.cascading.{ ParquetTBaseScheme, ParquetValueScheme }
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport
 import org.apache.parquet.io.ParquetDecodingException
 import org.apache.parquet.schema.MessageType
