@@ -19,6 +19,7 @@ import cascading.scheme.NullScheme
 import cascading.tuple.Fields
 import org.scalatest.{ Matchers, WordSpec }
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.JobConf
 
 class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
@@ -224,10 +225,12 @@ class FileSourceTest extends WordSpec with Matchers {
   }
 
   "invalid source input" should {
-    import TestInvalidFileSource.createHdfsReadTap
-
     "Create an InvalidSourceTap an empty directory is given" in {
-      createHdfsReadTap shouldBe a[InvalidSourceTap]
+      TestInvalidFileSource.createHdfsReadTap shouldBe a[InvalidSourceTap]
+    }
+    "Throw in toIterator because no data is present" in {
+      an[InvalidSourceException] should be thrownBy (
+        TestInvalidFileSource.toIterator(Config.default, Hdfs(true, new JobConf())))
     }
   }
 }
@@ -263,11 +266,13 @@ object TestSuccessFileSource extends FileSource with SuccessFileSource {
   def pathIsGood(p: String) = super.pathIsGood(testfsPathRoot + p, conf)
 }
 
-object TestInvalidFileSource extends FileSource {
+object TestInvalidFileSource extends FileSource with Mappable[String] {
 
   override def hdfsPaths: Iterable[String] = Iterable("invalid_hdfs_path")
   override def localPaths: Iterable[String] = Iterable("invalid_local_path")
   override def hdfsScheme = new NullScheme(Fields.ALL, Fields.NONE)
+  override def converter[U >: String] =
+    TupleConverter.asSuperConverter[String, U](implicitly[TupleConverter[String]])
 
   val conf = new Configuration()
 

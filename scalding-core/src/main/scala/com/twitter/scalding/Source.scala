@@ -60,7 +60,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
   override def getModifiedTime(conf: JobConf): Long = 0L
 
   override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
-    sys.error(s"InvalidSourceTap: No good paths in $hdfsPaths")
+    throw new InvalidSourceException(s"InvalidSourceTap: No good paths in $hdfsPaths")
 
   override def resourceExists(conf: JobConf): Boolean = false
 
@@ -193,6 +193,7 @@ abstract class Source extends java.io.Serializable {
 
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
+    validateTaps(mode)
     val tap = createTap(Read)(mode)
     mode.openForRead(Config.defaultFrom(mode), tap).asScala.map { conv(_) }.toStream
   }
@@ -227,6 +228,7 @@ trait Mappable[+T] extends Source with TypedSource[T] {
    * Typical use might be to read in Job.next to determine if another job is needed
    */
   def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
+    validateTaps(mode)
     val tap = createTap(Read)(mode)
     val conv = converter
     mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
