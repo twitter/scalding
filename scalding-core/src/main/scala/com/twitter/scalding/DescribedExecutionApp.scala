@@ -1,10 +1,11 @@
 package com.twitter.scalding
 
-object ArgOptions extends Enumeration {
-  type ArgOptions = Value
-  val RequiredArg, OptionalArg, ListArg, BooleanArg = Value
-}
-import ArgOptions._
+sealed abstract class ArgOptions
+
+object RequiredArg extends ArgOptions
+object OptionalArg extends ArgOptions
+object ListArg extends ArgOptions
+object BooleanArg extends ArgOptions
 
 case class DescribedArg(key: String, description: String, argOption: ArgOptions)
 
