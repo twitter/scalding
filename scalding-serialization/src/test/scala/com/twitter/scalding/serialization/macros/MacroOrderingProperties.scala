@@ -29,7 +29,7 @@ import scala.collection.immutable.Queue
 import scala.language.experimental.macros
 
 trait LowerPriorityImplicit {
-  implicit def primitiveOrderedBufferSupplier[T] = macro impl.OrderedSerializationProviderImpl[T]
+  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro impl.OrderedSerializationProviderImpl[T]
 }
 
 object LawTester {

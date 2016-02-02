@@ -14,6 +14,7 @@ project/plugins/src_managed/
 /.idea/
 /.idea_modules/
 *.iml
+sonatype.sbt
 tutorial/data/cofollows.tsv
 tutorial/data/cosineSim.tsv
 tutorial/data/graphFiltered.tsv
