@@ -54,7 +54,7 @@ trait ArgHelper {
     }
   }
 
-  def helpRequest(describedArgs: Seq[DescribedArg]): Execution[Unit] = {
+  private[scalding] def helpRequest(describedArgs: Seq[DescribedArg]): Execution[Unit] = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
     val bottom = "\n\n###########################################################################\n"
