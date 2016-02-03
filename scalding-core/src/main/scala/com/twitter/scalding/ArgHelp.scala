@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-sealed abstract class DescribedArg {
+sealed trait DescribedArg {
   def key: String
   def description: String
 }
