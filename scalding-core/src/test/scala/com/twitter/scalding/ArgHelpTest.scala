@@ -3,7 +3,7 @@ package com.twitter.scalding
 import org.scalatest.{ Matchers, WordSpec }
 
 case class ArgHelperTest(testFn: Seq[DescribedArg] => Unit) extends ArgHelper {
-  override def helpRequest[T](describedArgs: Seq[DescribedArg]): Nothing = {
+  override def helpRequest(describedArgs: Seq[DescribedArg]): Nothing = {
     testFn(describedArgs)
     throw new HelpException()
   }

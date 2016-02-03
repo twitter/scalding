@@ -70,7 +70,7 @@ trait ArgHelper {
     if (args.boolean("help")) helpRequest(describedArgs)
     else ()
 
-  def helpRequest[T](describedArgs: Seq[DescribedArg]): Nothing = {
+  def helpRequest(describedArgs: Seq[DescribedArg]): Nothing = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
     val bottom = "\n\n###########################################################################\n"
