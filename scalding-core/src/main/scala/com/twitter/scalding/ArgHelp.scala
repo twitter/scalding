@@ -16,25 +16,32 @@ class DescriptionValidationException(msg: String) extends RuntimeException(msg)
 trait ArgHelper {
   /**
    * Similar to describe but validate all args are described
+   *
    * @param describedArgs List of Argument Descriptions
    * @param ex Input Execution
    * @return Output Execution
    */
   def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
-    val describedKeys = describedArgs.map(_.key).toSet
     Execution.getArgs.flatMap { args =>
-      val missingKeys = args.m.keySet.filter(_.nonEmpty).diff(describedKeys)
+      validatedDescribe(describedArgs, args)
+      ex
+    }
+  }
 
-      if (args.boolean("help")) {
-        helpRequest(describedArgs)
-      } else {
-        if (missingKeys.nonEmpty) {
-          val msg = missingKeys.mkString(", ")
-          throw new DescriptionValidationException(s"Must describe missing keys : $msg")
-        } else {
-          ex
-        }
-      }
+  /**
+   * Describe a set of Args given Descriptions and validate all Args are described
+   * @param describedArgs List of Argument Descriptions
+   * @param args Job Arguments
+   */
+  def validatedDescribe(describedArgs: Seq[DescribedArg], args: Args): Unit = {
+    describe(describedArgs, args)
+
+    val describedKeys = describedArgs.map(_.key).toSet
+    val missingKeys = args.m.keySet.filter(_.nonEmpty).diff(describedKeys)
+
+    if (missingKeys.nonEmpty) {
+      val msg = missingKeys.mkString(", ")
+      throw new DescriptionValidationException(s"Must describe missing keys : $msg")
     }
   }
 
@@ -48,15 +55,22 @@ trait ArgHelper {
    */
   def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
     Execution.getArgs.flatMap { args =>
-      if (args.boolean("help")) {
-        helpRequest(describedArgs)
-      } else {
-        ex
-      }
+      describe(describedArgs, args)
+      ex
     }
   }
 
-  def helpRequest[T](describedArgs: Seq[DescribedArg]): Execution[T] = {
+  /**
+   * Describe a set of Args given Descriptions
+   *
+   * @param describedArgs List of Argument Descriptions
+   * @param args Job Arguments
+   */
+  def describe(describedArgs: Seq[DescribedArg], args: Args): Unit =
+    if (args.boolean("help")) helpRequest(describedArgs)
+    else ()
+
+  def helpRequest[T](describedArgs: Seq[DescribedArg]): Nothing = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
     val bottom = "\n\n###########################################################################\n"
