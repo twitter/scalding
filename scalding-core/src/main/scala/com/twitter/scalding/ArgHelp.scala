@@ -10,6 +10,9 @@ case class OptionalArg(key: String, description: String) extends DescribedArg
 case class ListArg(key: String, description: String) extends DescribedArg
 case class BooleanArg(key: String, description: String) extends DescribedArg
 
+class HelpException extends RuntimeException("User asked for help")
+class DescriptionValidationException(msg: String) extends RuntimeException(msg)
+
 trait ArgHelper {
   /**
    * Similar to describe but validate all args are described
@@ -17,10 +20,9 @@ trait ArgHelper {
    * @param ex Input Execution
    * @return Output Execution
    */
-  def validatedDescribe(describedArgs: Seq[DescribedArg], ex: Execution[Unit]): Execution[Unit] = {
+  def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
     val describedKeys = describedArgs.map(_.key).toSet
     Execution.getArgs.flatMap { args =>
-      val describedEx = describe(describedArgs, ex)
       val missingKeys = args.m.keySet.filter(_.nonEmpty).diff(describedKeys)
 
       if (args.boolean("help")) {
@@ -28,7 +30,7 @@ trait ArgHelper {
       } else {
         if (missingKeys.nonEmpty) {
           val msg = missingKeys.mkString(", ")
-          Execution.failed(throw new RuntimeException(s"Must describe missing keys : $msg"))
+          Execution.failed(throw new DescriptionValidationException(s"Must describe missing keys : $msg"))
         } else {
           ex
         }
@@ -44,7 +46,7 @@ trait ArgHelper {
    * @param ex Input Execution
    * @return Output Execution
    */
-  def describe(describedArgs: Seq[DescribedArg], ex: Execution[Unit]): Execution[Unit] = {
+  def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
     Execution.getArgs.flatMap { args =>
       if (args.boolean("help")) {
         helpRequest(describedArgs)
@@ -54,14 +56,14 @@ trait ArgHelper {
     }
   }
 
-  def helpRequest(describedArgs: Seq[DescribedArg]): Execution[Unit] = {
+  def helpRequest[T](describedArgs: Seq[DescribedArg]): Execution[T] = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
     val bottom = "\n\n###########################################################################\n"
 
     println(top + usage + help(describedArgs) + bottom)
 
-    Execution.unit
+    Execution.failed(throw new HelpException())
   }
 
   /**
