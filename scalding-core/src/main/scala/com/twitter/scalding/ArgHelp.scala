@@ -30,7 +30,7 @@ trait ArgHelper {
       } else {
         if (missingKeys.nonEmpty) {
           val msg = missingKeys.mkString(", ")
-          Execution.failed(throw new DescriptionValidationException(s"Must describe missing keys : $msg"))
+          throw new DescriptionValidationException(s"Must describe missing keys : $msg")
         } else {
           ex
         }
@@ -63,7 +63,7 @@ trait ArgHelper {
 
     println(top + usage + help(describedArgs) + bottom)
 
-    Execution.failed(throw new HelpException())
+    throw new HelpException()
   }
 
   /**

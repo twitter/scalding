@@ -5,7 +5,7 @@ import org.scalatest.{ Matchers, WordSpec }
 case class ArgHelperTest(testFn: Seq[DescribedArg] => Unit) extends ArgHelper {
   override def helpRequest[T](describedArgs: Seq[DescribedArg]): Execution[T] = {
     testFn(describedArgs)
-    Execution.failed(throw new HelpException())
+    throw new HelpException()
   }
 }
 
