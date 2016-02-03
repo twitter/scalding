@@ -54,7 +54,7 @@ trait ArgHelper {
     }
   }
 
-  private[scalding] def helpRequest(describedArgs: Seq[DescribedArg]): Execution[Unit] = {
+  def helpRequest(describedArgs: Seq[DescribedArg]): Execution[Unit] = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
     val bottom = "\n\n###########################################################################\n"
@@ -70,7 +70,7 @@ trait ArgHelper {
    * @param describedArgs List of Argument Descriptions
    * @return Command Line Parameters
    */
-  def argString(describedArgs: Seq[DescribedArg]): String = {
+  private[this] def argString(describedArgs: Seq[DescribedArg]): String = {
     describedArgs.foldLeft("") {
       case (str, describedArg) =>
         val msg = describedArg match {
@@ -89,7 +89,7 @@ trait ArgHelper {
    * @param describedArgs List of Argument Descriptions
    * @return Detailed Help for the Args
    */
-  def help(describedArgs: Seq[DescribedArg]): String = {
+  private[this] def help(describedArgs: Seq[DescribedArg]): String = {
     describedArgs.foldLeft("") {
       case (str, describedArg) =>
         val msg = describedArg match {
