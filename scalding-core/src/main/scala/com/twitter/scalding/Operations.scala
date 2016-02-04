@@ -123,6 +123,10 @@ package com.twitter.scalding {
    * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
    * the typed-API.
    */
+  object MapsideReduce {
+    val COUNTER_GROUP = "MapsideReduce"
+  }
+
   class MapsideReduce[V](
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
@@ -132,7 +136,6 @@ package com.twitter.scalding {
     with ScaldingPrepare[MapsideCache[V]] {
 
     val boxedSemigroup = Externalizer(commutativeSemigroup)
-    val COUNTER_GROUP = "MapsideReduce"
 
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       //Set up the context:
@@ -162,18 +165,11 @@ package com.twitter.scalding {
       // Have to keep a copy of the key tuple because cascading will modify it
       val key = keyValueTE.selectEntry(keyFields).getTupleCopy
       val value = conv(keyValueTE.selectEntry(valueFields))
-      val (stats, evicted) = cache.put(key, value)
+      val evicted = cache.put(key, value)
       add(evicted, functionCall)
 
-      //iterator for performance
-      val it = stats.iterator
-      while (it.hasNext) {
-        val (key, value) = it.next
-        flowProcess.increment(COUNTER_GROUP, key, value)
-      }
-
       if (evicted.isDefined)
-        flowProcess.increment(COUNTER_GROUP, "evictions", evicted.get.size)
+        flowProcess.increment(MapsideReduce.COUNTER_GROUP, "evictions", evicted.get.size)
     }
 
     override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
@@ -193,7 +189,7 @@ package com.twitter.scalding {
 
   sealed trait MapsideCache[V] {
     def flush: Option[Map[Tuple, V]]
-    def put(key: Tuple, value: V): (Map[String, Int], Option[Map[Tuple, V]])
+    def put(key: Tuple, value: V): Option[Map[Tuple, V]]
   }
 
   object MapsideCache {
@@ -211,35 +207,50 @@ package com.twitter.scalding {
       val size = cacheSize.getOrElse{ getCacheSize(flowProcess) }
       val adaptive = Option(flowProcess.getStringProperty(ADAPTIVE_CACHE_KEY)).isDefined
       if (adaptive)
-        new AdaptiveMapsideCache(new AdaptiveCache(size))
+        new AdaptiveMapsideCache(flowProcess, new AdaptiveCache(size))
       else
-        new SummingMapsideCache(new SummingWithHitsCache(size))
+        new SummingMapsideCache(flowProcess, new SummingWithHitsCache(size))
     }
   }
 
-  class SummingMapsideCache[V](summingCache: SummingWithHitsCache[Tuple, V])
+  class SummingMapsideCache[V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[Tuple, V])
     extends MapsideCache[V] {
+    private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
+    private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
+    private[this] val evicitions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evicitions"))
+
     def flush = summingCache.flush
     def put(key: Tuple, value: V) = {
-      val (hits, evicted) = summingCache.putWithHits(Map(key -> value))
-      (Map(
-        "misses" -> (1 - hits),
-        "hits" -> hits),
-        evicted)
+      val (curHits, evicted) = summingCache.putWithHits(Map(key -> value))
+      misses.increment(1 - curHits)
+      hits.increment(curHits)
+
+      if (evicted.isDefined)
+        evicitions.increment(evicted.get.size)
+      evicted
     }
   }
 
-  class AdaptiveMapsideCache[V](adaptiveCache: AdaptiveCache[Tuple, V])
+  class AdaptiveMapsideCache[V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[Tuple, V])
     extends MapsideCache[V] {
+    private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
+    private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
+    private[this] val capacity = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "capacity"))
+    private[this] val sentinel = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "sentinel"))
+    private[this] val evicitions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evicitions"))
+
     def flush = adaptiveCache.flush
     def put(key: Tuple, value: V) = {
       val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
-      (Map(
-        "misses" -> (1 - stats.hits),
-        "hits" -> stats.hits,
-        "capacity" -> stats.cacheGrowth,
-        "sentinel" -> stats.sentinelGrowth),
-        evicted)
+      misses.increment(1 - stats.hits)
+      hits.increment(stats.hits)
+      capacity.increment(stats.cacheGrowth)
+      sentinel.increment(stats.sentinelGrowth)
+
+      if (evicted.isDefined)
+        evicitions.increment(evicted.get.size)
+
+      evicted
     }
   }
 

@@ -46,6 +46,15 @@ object StatKey {
     StatKey(counter, Stats.ScaldingGroup)
   implicit def fromStat(stat: Stat): StatKey = stat.key
 }
+
+private[scalding] object CounterImpl {
+  def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
+    fp match {
+      case hFP: HadoopFlowProcess => HadoopFlowPCounterImpl(hFP, statKey)
+      case _ => GenericFlowPCounterImpl(fp, statKey)
+    }
+}
+
 sealed private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
@@ -63,13 +72,7 @@ object Stat {
 
   def apply(k: StatKey)(implicit uid: UniqueID): Stat = new Stat {
     // This is materialized on the mappers, and will throw an exception if users incBy before then
-    private[this] lazy val cntr: CounterImpl = {
-      val fp = RuntimeStats.getFlowProcessForUniqueId(uid)
-      fp match {
-        case hFP: HadoopFlowProcess => HadoopFlowPCounterImpl(hFP, k)
-        case _ => GenericFlowPCounterImpl(fp, k)
-      }
-    }
+    private[this] lazy val cntr = CounterImpl(RuntimeStats.getFlowProcessForUniqueId(uid), k)
 
     def incBy(amount: Long): Unit = cntr.increment(amount)
     def key: StatKey = k
