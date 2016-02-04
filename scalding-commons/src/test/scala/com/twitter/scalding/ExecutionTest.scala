@@ -80,6 +80,23 @@ class ExecutionTest extends WordSpec with Matchers {
           case (it1, it2) => (it1.head, it2.head)
         }) shouldBe ((0 until 100).sum, (100 until 200).sum)
     }
+    "lift to try" in {
+      val res = ExecutionTestJobs
+        .wordCount2(TypedPipe.from(List("a", "b")))
+        .liftToTry
+        .waitFor(Config.default, Local(false)).get
+
+      assert(res.isSuccess)
+    }
+    "lift to try on exception" in {
+      val res = ExecutionTestJobs
+        .wordCount2(TypedPipe.from(List("a", "b")))
+        .map(_ => throw new RuntimeException("Something went wrong"))
+        .liftToTry
+        .waitFor(Config.default, Local(false)).get
+
+      assert(res.isFailure)
+    }
     "merge fanouts without error" in {
       def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
         (l.size == r.size) && (l.toSet == r.toSet)
