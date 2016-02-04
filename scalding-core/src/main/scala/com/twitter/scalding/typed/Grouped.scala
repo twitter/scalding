@@ -27,6 +27,7 @@ import com.twitter.scalding.serialization.{
   Boxed,
   BoxedOrderedSerialization,
   CascadingBinaryComparator,
+  EquivOrderedSerialization,
   OrderedSerialization,
   WrappedSerialization
 }
@@ -97,7 +98,8 @@ object Grouped {
    * to prevent other serializers from handling the key
    */
   private[scalding] def getBoxFnAndOrder[K](ordser: OrderedSerialization[K], flowDef: FlowDef): (K => Boxed[K], BoxedOrderedSerialization[K]) = {
-    val (boxfn, cls) = Boxed.next[K]
+    // We can only supply a cacheKey if the equals and hashcode are known sane
+    val (boxfn, cls) = Boxed.next[K](if (ordser.isInstanceOf[EquivOrderedSerialization[_]]) Some(ordser) else None)
     val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
 
     WrappedSerialization.rawSetBinary(List((cls, boxordSer)),

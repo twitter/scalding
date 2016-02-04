@@ -34,6 +34,12 @@ trait OrderedSerialization[T] extends Ordering[T] with Serialization[T] {
   def compareBinary(a: InputStream, b: InputStream): OrderedSerialization.Result
 }
 
+/**
+ * In order to cache OrderedSerializations having equality and hashes can be useful.
+ * Extend this trait when those two properties can be satisfied
+ */
+trait EquivOrderedSerialization[T] extends OrderedSerialization[T]
+
 object OrderedSerialization {
   /**
    * Represents the result of a comparison that might fail due
