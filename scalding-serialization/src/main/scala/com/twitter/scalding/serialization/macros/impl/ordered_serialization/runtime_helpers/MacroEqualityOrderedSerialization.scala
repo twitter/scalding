@@ -1,5 +1,5 @@
 /*
- Copyright 2014 Twitter, Inc.
+ Copyright 2016 Twitter, Inc.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers
 
-import com.twitter.scalding.serialization.EquivOrderedSerialization
+import com.twitter.scalding.serialization.EquivSerialization
 
 object MacroEqualityOrderedSerialization {
   private val seed = "MacroEqualityOrderedSerialization".hashCode
 }
 
-abstract class MacroEqualityOrderedSerialization[T] extends EquivOrderedSerialization[T] {
+abstract class MacroEqualityOrderedSerialization[T] extends EquivSerialization[T] {
   def uniqueId: String
   override def hashCode = MacroEqualityOrderedSerialization.seed ^ uniqueId.hashCode
   override def equals(other: Any): Boolean = other match {
