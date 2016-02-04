@@ -238,6 +238,9 @@ trait TypedPipe[+T] extends Serializable {
   /** adds a description to the pipe */
   def withDescription(description: String): TypedPipe[T] = new WithDescriptionTypedPipe[T](this, description)
 
+  /* add a config parameter to this pipe */
+  def withExtraConfig(key: String, value: String): TypedPipe[T] = new WithExtraConfig[T](this, key, value)
+
   /**
    * Returns the set of distinct elements in the TypedPipe
    * This is the same as: .map((_, ())).group.sum.keys
@@ -1097,6 +1100,17 @@ case class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: Str
     WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
+}
+
+case class WithExtraConfig[T](typedPipe: TypedPipe[T], key: String, value: String) extends TypedPipe[T] {
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]) = {
+    val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+    RichPipe.setPipeExtraConfig(pipe, key, value)
+  }
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
+    WithExtraConfig(typedPipe.cross(tiny), key, value)
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+    WithExtraConfig(typedPipe.flatMap(f), key, value)
 }
 
 /**

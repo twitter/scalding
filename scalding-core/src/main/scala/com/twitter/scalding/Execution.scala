@@ -125,6 +125,12 @@ sealed trait Execution[+T] extends java.io.Serializable {
     ResetCounters(this)
 
   /**
+   * You can use this to set common values of Config that will be shared
+   * by all the flows created by this Execution. Must be set before execution runs.
+   */
+  def setExtraConfig(conf: Config): Unit = ()
+
+  /**
    * This causes the Execution to occur. The result is not cached, so each call
    * to run will result in the computation being re-run. Avoid calling this
    * until the last possible moment by using flatMap, zip and recoverWith.
@@ -475,12 +481,29 @@ object Execution {
    */
 
   private trait ToWrite {
+    def setExtraConfig(conf: Config): Config = Config.empty
+
     def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
   }
+
   private case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite {
+
+    var extraConfig = Config.empty
+
+    override def setExtraConfig(conf: Config): Config = {
+      extraConfig = extraConfig ++ conf
+      extraConfig
+    }
+
     def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
       // This has the side effect of mutating flowDef
-      pipe.write(sink)(flowDef, mode)
+      var tempPipe: TypedPipe[T] = pipe
+      var key: String = "";
+      var value: String = "";
+      for ((key, value) <- extraConfig.toMap) {
+        tempPipe = tempPipe.withExtraConfig(key, value)
+      }
+      tempPipe.write(sink)(flowDef, mode)
       ()
     }
   }
@@ -496,6 +519,13 @@ object Execution {
    * DAG and optimize it later (a goal, but not done yet).
    */
   private case class WriteExecution[T](head: ToWrite, tail: List[ToWrite], fn: (Config, Mode) => T) extends Execution[T] {
+
+    /**
+     * override this so that we can push down the conf value to the current TypedPipes
+     */
+    override def setExtraConfig(conf: Config): Unit = {
+      (head :: tail).foreach(_.setExtraConfig(conf))
+    }
 
     /**
      * Apply a pure function to the result. This may not
