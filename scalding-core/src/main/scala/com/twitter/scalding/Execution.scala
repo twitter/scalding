@@ -49,10 +49,12 @@ sealed trait Execution[+T] extends java.io.Serializable {
 
   /**
    * Lift an Execution into a Try
-   * @return Execution with object wrapped in a Try
+   *
+   * When this function is called the Execution should never be failed
+   * instead only the Try.
    */
   def liftToTry: Execution[Try[T]] =
-    map(e => Try(e)).recoverWith{ case throwable => Execution.from(Failure(throwable)) }
+    map(e => Success(e)).recoverWith{ case throwable => Execution.from(Failure(throwable)) }
 
   /**
    * Scala uses the filter method in for syntax for pattern matches that can fail.
