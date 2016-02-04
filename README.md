@@ -75,7 +75,7 @@ We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage re
 
 Scalding modules are available from maven central.
 
-The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.12.0`.
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.16.0-RC1`.
 
 Current published artifacts are
 
