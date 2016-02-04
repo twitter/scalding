@@ -167,9 +167,6 @@ package com.twitter.scalding {
       val value = conv(keyValueTE.selectEntry(valueFields))
       val evicted = cache.put(key, value)
       add(evicted, functionCall)
-
-      if (evicted.isDefined)
-        flowProcess.increment(MapsideReduce.COUNTER_GROUP, "evictions", evicted.get.size)
     }
 
     override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
@@ -217,7 +214,7 @@ package com.twitter.scalding {
     extends MapsideCache[V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
-    private[this] val evicitions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evicitions"))
+    private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
 
     def flush = summingCache.flush
     def put(key: Tuple, value: V) = {
@@ -226,7 +223,7 @@ package com.twitter.scalding {
       hits.increment(curHits)
 
       if (evicted.isDefined)
-        evicitions.increment(evicted.get.size)
+        evictions.increment(evicted.get.size)
       evicted
     }
   }
@@ -237,7 +234,7 @@ package com.twitter.scalding {
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
     private[this] val capacity = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "capacity"))
     private[this] val sentinel = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "sentinel"))
-    private[this] val evicitions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evicitions"))
+    private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
 
     def flush = adaptiveCache.flush
     def put(key: Tuple, value: V) = {
@@ -248,7 +245,7 @@ package com.twitter.scalding {
       sentinel.increment(stats.sentinelGrowth)
 
       if (evicted.isDefined)
-        evicitions.increment(evicted.get.size)
+        evictions.increment(evicted.get.size)
 
       evicted
     }
