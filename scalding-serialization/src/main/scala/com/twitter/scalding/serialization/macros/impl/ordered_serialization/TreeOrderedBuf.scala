@@ -228,9 +228,11 @@ object TreeOrderedBuf {
     val lenB = freshT("lenB")
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
-      new _root_.com.twitter.scalding.serialization.OrderedSerialization[$T] {
+      new _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization[$T] {
         // Ensure macro hygene for Option/Some/None
         import _root_.scala.{Option, Some, None}
+
+        override val uniqueId: String = ${T.tpe.toString}
 
         private[this] var lengthCalculationAttempts: Long = 0L
         private[this] var couldNotLenCalc: Long = 0L

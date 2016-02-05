@@ -818,10 +818,26 @@ object Boxed {
 
   def allClasses: Seq[Class[_ <: Boxed[_]]] = allBoxes.map(_._2)
 
-  def next[K]: (K => Boxed[K], Class[Boxed[K]]) = boxes.get match {
+  private[this] val boxedCache = new java.util.concurrent.ConcurrentHashMap[AnyRef, (Any => Boxed[Any], Class[Boxed[Any]])]()
+
+  private[scalding] def nextCached[K](cacheKey: Option[AnyRef]): (K => Boxed[K], Class[Boxed[K]]) =
+    cacheKey match {
+      case Some(cls) =>
+        val untypedRes = Option(boxedCache.get(cls)) match {
+          case Some(r) => r
+          case None =>
+            val r = next[Any]()
+            boxedCache.putIfAbsent(cls, r)
+            r
+        }
+        untypedRes.asInstanceOf[(K => Boxed[K], Class[Boxed[K]])]
+      case None => next[K]()
+    }
+
+  def next[K](): (K => Boxed[K], Class[Boxed[K]]) = boxes.get match {
     case list @ (h :: tail) if boxes.compareAndSet(list, tail) =>
       h.asInstanceOf[(K => Boxed[K], Class[Boxed[K]])]
-    case (h :: tail) => next[K] // Try again
+    case (h :: tail) => next[K]() // Try again
     case Nil => sys.error(
       """|Scalding's ordered serialization logic exhausted the finite supply of boxed classes.
          |

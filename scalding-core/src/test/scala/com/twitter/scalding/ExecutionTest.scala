@@ -29,6 +29,9 @@ import scala.util.Try
 // this is the scalding ExecutionContext
 import ExecutionContext._
 
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
+
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
     TypedPipe.from(TextLine(in))
@@ -65,6 +68,8 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
     def reportFailure(t: Throwable) = ()
   }
 }
+
+case class MyCustomType(s: String)
 
 class ExecutionTest extends WordSpec with Matchers {
   "An Execution" should {
@@ -167,6 +172,42 @@ class ExecutionTest extends WordSpec with Matchers {
       val res = e3.zip(e2)
       res.waitFor(Config.default, Local(true))
       assert((first, second, third) == (1, 1, 1))
+    }
+
+    "Running a large loop won't exhaust boxed instances" in {
+      var timesEvaluated = 0
+      import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+      // Attempt to use up 4 boxed classes for every execution
+      def baseExecution(idx: Int): Execution[Unit] = TypedPipe.from(0 until 1000).map(_.toShort).flatMap { i =>
+        timesEvaluated += 1
+        List((i, i), (i, i))
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toInt, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toLong, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toString, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (MyCustomType(k), v)
+      }.sumByKey.writeExecution(TypedTsv(s"/tmp/asdf_${idx}"))
+
+      implicitly[OrderedSerialization[MyCustomType]] match {
+        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.typed.MyCustomType")
+        case _ => sys.error("Ordered serialization should have been the MacroEqualityOrderedSerialization for this test")
+      }
+      def executionLoop(idx: Int): Execution[Unit] = {
+        if (idx > 0)
+          baseExecution(idx).flatMap(_ => executionLoop(idx - 1))
+        else
+          Execution.unit
+      }
+
+      executionLoop(55).waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 55 * 1000, "Should run the 55 execution loops for 1000 elements")
     }
 
     "evaluate shared portions just once, writeExecution" in {
