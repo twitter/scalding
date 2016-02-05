@@ -59,7 +59,7 @@ trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
  * In order to cache Serializations having equality and hashes can be useful.
  * Extend this trait when those two properties can be satisfied
  */
-trait EquivSerialization[T] extends OrderedSerialization[T]
+trait EquivSerialization[T] extends Serialization[T]
 
 object Serialization {
   import JavaStreamEnrichments._

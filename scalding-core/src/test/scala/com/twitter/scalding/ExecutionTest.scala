@@ -29,6 +29,9 @@ import scala.util.Try
 // this is the scalding ExecutionContext
 import ExecutionContext._
 
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
+
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
     TypedPipe.from(TextLine(in))
@@ -175,6 +178,10 @@ class ExecutionTest extends WordSpec with Matchers {
           (MyCustomType(k), v)
       }.sumByKey.writeExecution(TypedTsv(s"/tmp/asdf_${idx}"))
 
+      implicitly[OrderedSerialization[MyCustomType]] match {
+        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.typed.MyCustomType")
+        case _ => sys.error("Ordered serialization should have been the MacroEqualityOrderedSerialization for this test")
+      }
       def executionLoop(idx: Int): Execution[Unit] = {
         if (idx > 0)
           baseExecution(idx).flatMap(_ => executionLoop(idx - 1))
