@@ -56,24 +56,27 @@ class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZon
     val estr = format(dr.end)
     if (dr.end < dr.start) {
       Nil
-    } else if (child.isEmpty) {
-      //There is only one block:
-      assert(sstr == estr, "Malformed hierarchy" + sstr + " != " + estr)
-      List(sstr)
     } else {
-      /*
-       * Two cases: we should asterisk our children, or we need
-       * to recurse.  If we fill this entire range, just asterisk,
-       */
-      val bottom = children.last
-      val fillsright = format(leastUpperBound(dr.end)) ==
-        format(bottom.leastUpperBound(dr.end))
-      val fillsleft = format(greatestLowerBound(dr.start)) ==
-        format(bottom.greatestLowerBound(dr.start))
-      if (fillsright && fillsleft) {
-        List(asteriskChildren(dr.start))
-      } else {
-        child.get.globify(dr)
+      child match {
+        case None =>
+          //There is only one block:
+          assert(sstr == estr, "Malformed hierarchy" + sstr + " != " + estr)
+          List(sstr)
+        case Some(c) =>
+          /*
+         * Two cases: we should asterisk our children, or we need
+         * to recurse.  If we fill this entire range, just asterisk,
+         */
+          val bottom = children.last
+          val fillsright = format(leastUpperBound(dr.end)) ==
+            format(bottom.leastUpperBound(dr.end))
+          val fillsleft = format(greatestLowerBound(dr.start)) ==
+            format(bottom.greatestLowerBound(dr.start))
+          if (fillsright && fillsleft) {
+            List(asteriskChildren(dr.start))
+          } else {
+            c.globify(dr)
+          }
       }
     }
   }
