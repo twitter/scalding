@@ -543,6 +543,23 @@ case class BoxedOrderedSerialization[K](box: K => Boxed[K],
 }
 
 object Boxed {
+  /* You might wonder: "Why not do something a little more type-safe like this?"
+   *
+   *     private[this] def f0[K](t: K) = new Boxed0(t)
+   *     private[this] def f1[K](t: K) = new Boxed1(t)
+   *     ...
+   *
+   *    private[this] def allBoxes[K]: List[(K => Boxed[K], Class[_ <: Boxed[K]])] =
+   *      List(
+   *        (f0[K](_), classOf[Boxed0[K]]),
+   *        (f1[K](_), classOf[Boxed1[K]]),
+   *        ...
+   *
+   * The problem with that is that you can only safely store `val`s in an
+   * `AtomicReference`, but `val`s cannot polymorphic, which is the reason for
+   * using `Any` here instead of parametrizing everything over a type parameter
+   * `K`.
+   */
   private[this] val allBoxes = List(
     ({ t: Any => new Boxed0(t) }, classOf[Boxed0[Any]]),
     ({ t: Any => new Boxed1(t) }, classOf[Boxed1[Any]]),
@@ -821,6 +838,13 @@ object Boxed {
     case list @ (h :: tail) if boxes.compareAndSet(list, tail) =>
       h.asInstanceOf[(K => Boxed[K], Class[Boxed[K]])]
     case (h :: tail) => next[K]() // Try again
-    case Nil => sys.error("Exhausted the boxed classes")
+    case Nil => sys.error(
+      """|Scalding's ordered serialization logic exhausted the finite supply of boxed classes.
+         |
+         |Explanation: Scalding's ordered serialization logic internally uses
+         |a large, but fixed, supply of unique wrapper types to box values in
+         |order to control which serialization is used.  Exhausting this supply
+         |means that you happen to have a very complex Scalding job that uses
+         |ordered serialization for a very large number of diverse types""".stripMargin)
   }
 }
