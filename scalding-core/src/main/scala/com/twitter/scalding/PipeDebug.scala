@@ -40,8 +40,8 @@ case class PipeDebug(output: Output = Output.STDERR,
 
   def toDebug: Debug = {
     val debug = new Debug(output, prefix, printFieldsEvery.isDefined)
-    if (printFieldsEvery.isDefined) {
-      debug.setPrintFieldsEvery(printFieldsEvery.get)
+    printFieldsEvery.foreach { x =>
+      debug.setPrintFieldsEvery(x)
     }
     debug.setPrintTupleEvery(printTuplesEvery)
     debug
