@@ -38,17 +38,17 @@ class Tool extends Configured with HTool {
     }
   }
 
-  protected def getJob(args: Args): Job = {
-    if (rootJob.isDefined) {
-      rootJob.get.apply(args)
-    } else if (args.positional.isEmpty) {
-      throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
-    } else {
-      val jobName = args.positional(0)
-      // Remove the job name from the positional arguments:
-      val nonJobNameArgs = args + ("" -> args.positional.tail)
-      Job(jobName, nonJobNameArgs)
-    }
+  protected def getJob(args: Args): Job = rootJob match {
+    case Some(job) => job.apply(args)
+    case None =>
+      if (args.positional.isEmpty) {
+        throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
+      } else {
+        val jobName = args.positional(0)
+        // Remove the job name from the positional arguments:
+        val nonJobNameArgs = args + ("" -> args.positional.tail)
+        Job(jobName, nonJobNameArgs)
+      }
   }
 
   // This both updates the jobConf with hadoop arguments
