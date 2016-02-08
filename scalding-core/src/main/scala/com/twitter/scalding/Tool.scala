@@ -39,7 +39,7 @@ class Tool extends Configured with HTool {
   }
 
   protected def getJob(args: Args): Job = rootJob match {
-    case Some(job) => job.apply(args)
+    case Some(job) => job(args)
     case None =>
       if (args.positional.isEmpty) {
         throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
