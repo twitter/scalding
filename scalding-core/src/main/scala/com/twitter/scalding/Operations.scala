@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, SummingCache }
+  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingWithHitsCache, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -123,36 +123,29 @@ package com.twitter.scalding {
    * to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
    * the typed-API.
    */
+  object MapsideReduce {
+    val COUNTER_GROUP = "MapsideReduce"
+  }
+
   class MapsideReduce[V](
     @transient commutativeSemigroup: Semigroup[V],
     keyFields: Fields, valueFields: Fields,
     cacheSize: Option[Int])(implicit conv: TupleConverter[V], set: TupleSetter[V])
-    extends BaseOperation[SummingCache[Tuple, V]](Fields.join(keyFields, valueFields))
-    with Function[SummingCache[Tuple, V]]
-    with ScaldingPrepare[SummingCache[Tuple, V]] {
+    extends BaseOperation[MapsideCache[V]](Fields.join(keyFields, valueFields))
+    with Function[MapsideCache[V]]
+    with ScaldingPrepare[MapsideCache[V]] {
 
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
-    val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
-
-    def cacheSize(fp: FlowProcess[_]): Int =
-      cacheSize.orElse {
-        Option(fp.getStringProperty(SIZE_CONFIG_KEY))
-          .filterNot { _.isEmpty }
-          .map { _.toInt }
-      }
-        .getOrElse(DEFAULT_CACHE_SIZE)
-
-    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       //Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
-      val cache = SummingCache[Tuple, V](cacheSize(flowProcess))
+      val cache = MapsideCache[V](cacheSize, flowProcess)
       operationCall.setContext(cache)
     }
 
     @inline
-    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[MapsideCache[V]]) {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
       if (evicted.isDefined) {
         val it = evicted.get.iterator
@@ -166,27 +159,95 @@ package com.twitter.scalding {
       }
     }
 
-    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[SummingCache[Tuple, V]]) {
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[MapsideCache[V]]) {
       val cache = functionCall.getContext
       val keyValueTE = functionCall.getArguments
       // Have to keep a copy of the key tuple because cascading will modify it
       val key = keyValueTE.selectEntry(keyFields).getTupleCopy
       val value = conv(keyValueTE.selectEntry(valueFields))
-      add(cache.put(Map(key -> value)), functionCall)
+      val evicted = cache.put(key, value)
+      add(evicted, functionCall)
     }
 
-    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def flush(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       // Docs say it is safe to do this cast:
       // http://docs.cascading.org/cascading/2.1/javadoc/cascading/operation/Operation.html#flush(cascading.flow.FlowProcess, cascading.operation.OperationCall)
-      val functionCall = operationCall.asInstanceOf[FunctionCall[SummingCache[Tuple, V]]]
+      val functionCall = operationCall.asInstanceOf[FunctionCall[MapsideCache[V]]]
       val cache = functionCall.getContext
       add(cache.flush, functionCall)
     }
 
-    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[MapsideCache[V]]) {
       // The cache may be large, but super sure we drop any reference to it ASAP
       // probably overly defensive, but it's super cheap.
       operationCall.setContext(null)
+    }
+  }
+
+  sealed trait MapsideCache[V] {
+    def flush: Option[Map[Tuple, V]]
+    def put(key: Tuple, value: V): Option[Map[Tuple, V]]
+  }
+
+  object MapsideCache {
+    val DEFAULT_CACHE_SIZE = 100000
+    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
+    val ADAPTIVE_CACHE_KEY = "scalding.mapsidecache.adaptive"
+
+    private def getCacheSize(fp: FlowProcess[_]): Int =
+      Option(fp.getStringProperty(SIZE_CONFIG_KEY))
+        .filterNot { _.isEmpty }
+        .map { _.toInt }
+        .getOrElse(DEFAULT_CACHE_SIZE)
+
+    def apply[V: Semigroup](cacheSize: Option[Int], flowProcess: FlowProcess[_]): MapsideCache[V] = {
+      val size = cacheSize.getOrElse{ getCacheSize(flowProcess) }
+      val adaptive = Option(flowProcess.getStringProperty(ADAPTIVE_CACHE_KEY)).isDefined
+      if (adaptive)
+        new AdaptiveMapsideCache(flowProcess, new AdaptiveCache(size))
+      else
+        new SummingMapsideCache(flowProcess, new SummingWithHitsCache(size))
+    }
+  }
+
+  class SummingMapsideCache[V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[Tuple, V])
+    extends MapsideCache[V] {
+    private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
+    private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
+    private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
+
+    def flush = summingCache.flush
+    def put(key: Tuple, value: V) = {
+      val (curHits, evicted) = summingCache.putWithHits(Map(key -> value))
+      misses.increment(1 - curHits)
+      hits.increment(curHits)
+
+      if (evicted.isDefined)
+        evictions.increment(evicted.get.size)
+      evicted
+    }
+  }
+
+  class AdaptiveMapsideCache[V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[Tuple, V])
+    extends MapsideCache[V] {
+    private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
+    private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
+    private[this] val capacity = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "capacity"))
+    private[this] val sentinel = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "sentinel"))
+    private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
+
+    def flush = adaptiveCache.flush
+    def put(key: Tuple, value: V) = {
+      val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
+      misses.increment(1 - stats.hits)
+      hits.increment(stats.hits)
+      capacity.increment(stats.cacheGrowth)
+      sentinel.increment(stats.sentinelGrowth)
+
+      if (evicted.isDefined)
+        evictions.increment(evicted.get.size)
+
+      evicted
     }
   }
 
