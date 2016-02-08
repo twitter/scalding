@@ -209,7 +209,7 @@ object Execution {
     override def join[T, U](t: Execution[T], u: Execution[U]): Execution[(T, U)] = t.zip(u)
   }
 
-  def withConfig[T](ex: => Execution[T])(c: Config => Config): Execution[T] =
+  def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
 
   /**
