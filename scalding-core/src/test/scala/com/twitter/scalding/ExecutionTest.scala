@@ -146,7 +146,7 @@ class ExecutionTest extends WordSpec with Matchers {
       def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
 
       doesNotHaveVariable("Should not see variable before we've started transforming")
-        .flatMapWithConfigTransform(addOption)(_ => hasVariable)
+        .flatMap{ _ => Execution.withConfig(hasVariable)(addOption) }
         .flatMap(_ => doesNotHaveVariable("Should not see variable in flatMap's after the isolation"))
         .map(_ => true)
         .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
@@ -167,7 +167,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       // Here we run without the option, with the option, and finally without again.
       incrementor
-        .flatMapWithConfigTransform(addOption)(_ => incrementor)
+        .flatMap{ _ => Execution.withConfig(incrementor)(addOption) }
         .flatMap(_ => incrementor)
         .map(_ => true)
         .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)

@@ -71,15 +71,7 @@ sealed trait Execution[+T] extends java.io.Serializable {
    * of the function
    */
   def flatMap[U](fn: T => Execution[U]): Execution[U] =
-    FlatMapped(this, fn, identity)
-
-  /**
-   * The passed in Execution will be run inside of a modified configuration given by the
-   * passed transform function. This allows hadoop options to be changed for subsets of a flow.
-   * However these subsets can never be zipped into one Cascading flow as a result.
-   */
-  def flatMapWithConfigTransform[U](transform: Config => Config)(fn: T => Execution[U]): Execution[U] =
-    FlatMapped(this, fn, transform)
+    FlatMapped(this, fn)
 
   /**
    * This is the same as flatMap(identity)
@@ -217,6 +209,9 @@ object Execution {
     override def join[T, U](t: Execution[T], u: Execution[U]): Execution[(T, U)] = t.zip(u)
   }
 
+  def withConfig[T](ex: => Execution[T])(c: Config => Config): Execution[T] =
+    TransformedConfig(ex, c)
+
   /**
    * This is the standard semigroup on an Applicative (zip, then inside the Execution do plus)
    */
@@ -333,13 +328,13 @@ object Execution {
     // Note that unit is not optimized away, since Futures are often used with side-effects, so,
     // we ensure that get is always called in contrast to Mapped, which assumes that fn is pure.
   }
-  private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T], cfgTransform: Config => Config) extends Execution[T] {
+  private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(conf, this,
         for {
           (s, st1) <- prev.runStats(conf, mode, cache)
           next = fn(s)
-          fut2 = next.runStats(cfgTransform(conf), mode, cache)
+          fut2 = next.runStats(conf, mode, cache)
           (t, st2) <- fut2
         } yield (t, Monoid.plus(st1, st2)))
   }
@@ -359,6 +354,13 @@ object Execution {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(conf, this,
         prev.runStats(conf, mode, cache).map { case (t, _) => (t, ExecutionCounters.empty) })
+  }
+
+  private case class TransformedConfig[T](prev: Execution[T], fn: Config => Config) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      val mutatedConfig = fn(conf)
+      cache.getOrElseInsert(mutatedConfig, this, prev.runStats(mutatedConfig, mode, cache))
+    }
   }
 
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
