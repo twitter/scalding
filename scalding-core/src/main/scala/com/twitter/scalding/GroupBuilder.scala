@@ -379,7 +379,11 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
 class ScanLeftIterator[T, U](it: Iterator[T], init: U, fn: (U, T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev: Option[U] = None
   def hasNext: Boolean = { prev.isEmpty || it.hasNext }
-  def next = prev.map { fn(_, it.next) }.getOrElse(init)
+  def next = {
+    prev = prev.map { fn(_, it.next) }
+      .orElse(Some(init))
+    prev.get
+  }
 }
 
 sealed private[scalding] abstract class GroupMode
