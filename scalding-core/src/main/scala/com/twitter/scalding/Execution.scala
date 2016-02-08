@@ -238,7 +238,7 @@ object Execution {
    * as it is evaluating.
    */
   private[scalding] class EvalCache {
-    private[this] val cache = new FutureCache[Execution[Any], (Any, ExecutionCounters)]
+    private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, ExecutionCounters)]
 
     private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
 
@@ -312,19 +312,19 @@ object Execution {
     def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
       toWriteCache.getOrPromise(write)
 
-    def getOrElseInsertWithFeedback[T](ex: Execution[T],
+    def getOrElseInsertWithFeedback[T](cfg: Config, ex: Execution[T],
       res: => Future[(T, ExecutionCounters)]): (Boolean, Future[(T, ExecutionCounters)]) =
       // This cast is safe because we always insert with match T types
-      cache.getOrElseUpdateIsNew(ex, res)
+      cache.getOrElseUpdateIsNew((cfg, ex), res)
         .asInstanceOf[(Boolean, Future[(T, ExecutionCounters)])]
 
-    def getOrElseInsert[T](ex: Execution[T],
+    def getOrElseInsert[T](cfg: Config, ex: Execution[T],
       res: => Future[(T, ExecutionCounters)]): Future[(T, ExecutionCounters)] =
-      getOrElseInsertWithFeedback(ex, res)._2
+      getOrElseInsertWithFeedback(cfg, ex, res)._2
   }
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         for {
           futt <- toFuture(Try(get(cec)))
           t <- futt
@@ -335,7 +335,7 @@ object Execution {
   }
   private case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T], cfgTransform: Config => Config) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         for {
           (s, st1) <- prev.runStats(conf, mode, cache)
           next = fn(s)
@@ -346,24 +346,24 @@ object Execution {
 
   private case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         prev.runStats(conf, mode, cache)
           .map { case (s, stats) => (fn(s), stats) })
   }
   private case class GetCounters[T](prev: Execution[T]) extends Execution[(T, ExecutionCounters)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         prev.runStats(conf, mode, cache).map { case tc @ (t, c) => (tc, c) })
   }
   private case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         prev.runStats(conf, mode, cache).map { case (t, _) => (t, ExecutionCounters.empty) })
   }
 
   private case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
+      cache.getOrElseInsert(conf, this, {
         val res = prev.runStats(conf, mode, cache)
         /**
          * The result we give is only completed AFTER fn is run
@@ -383,7 +383,7 @@ object Execution {
   }
   private case class RecoverWith[T](prev: Execution[T], fn: PartialFunction[Throwable, Execution[T]]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         prev.runStats(conf, mode, cache)
           .recoverWith(fn.andThen(_.runStats(conf, mode, cache))))
   }
@@ -458,7 +458,7 @@ object Execution {
 
   private case class Zipped[S, T](one: Execution[S], two: Execution[T]) extends Execution[(S, T)] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
+      cache.getOrElseInsert(conf, this, {
         val f1 = one.runStats(conf, mode, cache)
         val f2 = two.runStats(conf, mode, cache)
         failFastZip(f1, f2)
@@ -467,7 +467,7 @@ object Execution {
   }
   private case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
+      cache.getOrElseInsert(conf, this, {
         val (uid, nextConf) = conf.ensureUniqueId
         fn(uid).runStats(nextConf, mode, cache)
       })
@@ -477,7 +477,7 @@ object Execution {
    */
   private case class FlowDefExecution(result: (Config, Mode) => FlowDef) extends Execution[Unit] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this,
+      cache.getOrElseInsert(conf, this,
         for {
           flowDef <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
@@ -552,7 +552,7 @@ object Execution {
     // if so we remove them from the cache.
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      cache.getOrElseInsert(this, {
+      cache.getOrElseInsert(conf, this, {
         val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
