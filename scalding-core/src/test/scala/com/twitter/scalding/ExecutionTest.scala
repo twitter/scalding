@@ -151,7 +151,33 @@ class ExecutionTest extends WordSpec with Matchers {
         .map(_ => true)
         .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
     }
+
+    "Config transformer will interact correctly with the cache" in {
+      var incrementIfDefined = 0
+      var totalEvals = 0
+
+      val incrementor = Execution.getConfig.flatMap { cfg =>
+        totalEvals += 1
+        if (cfg.get("test.cfg.variable").isDefined)
+          incrementIfDefined += 1
+        Execution.from(())
+      }
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      // Here we run without the option, with the option, and finally without again.
+      incrementor
+        .flatMapWithConfigTransform(addOption)(_ => incrementor)
+        .flatMap(_ => incrementor)
+        .map(_ => true)
+        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+
+      assert(incrementIfDefined === 1)
+      // We should evaluate once for the default config, and once for the modified config.
+      assert(totalEvals === 2)
+    }
   }
+
   "ExecutionApp" should {
     val parser = new ExecutionApp { def job = Execution.from(()) }
     "parse hadoop args correctly" in {
