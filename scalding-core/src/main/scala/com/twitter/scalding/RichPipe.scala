@@ -280,7 +280,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
 
   private def statefulRandom(optSeed: Option[Long]): Random with Stateful = {
     val random = new Random with Stateful
-    if (optSeed.isDefined) { random.setSeed(optSeed.get) }
+    optSeed.foreach { x => random.setSeed(x) }
     random
   }
 
