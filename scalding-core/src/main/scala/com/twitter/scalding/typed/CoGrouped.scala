@@ -333,6 +333,8 @@ abstract class CoGroupedJoiner[K](inputSize: Int,
 
   override def getIterator(jc: JoinerClosure) = {
     val iters = (0 until distinctSize).map { jc.getIterator(_).asScala.buffered }
+    // Don't pattern match in performance-critical code
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     val keyTuple = iters
       .collectFirst { case iter if iter.nonEmpty => iter.head }
       .get // One of these must have a key

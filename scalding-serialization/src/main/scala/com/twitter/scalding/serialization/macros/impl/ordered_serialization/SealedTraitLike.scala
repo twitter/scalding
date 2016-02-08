@@ -33,6 +33,8 @@ object SealedTraitLike {
    *          we include an index of this sub type, the clase class/type of this sub type,
    *          and finally a means to compare two instances of this type.
    */
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -77,6 +79,8 @@ object SealedTraitLike {
       """
   }
 
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def hash(c: Context)(element: c.TermName)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -110,6 +114,8 @@ object SealedTraitLike {
     }.get
   }
 
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -142,6 +148,8 @@ object SealedTraitLike {
     }.get
   }
 
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._
@@ -199,6 +207,8 @@ object SealedTraitLike {
     MaybeLengthCalculation(c) (prevSizeData)
   }
 
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def get(c: Context)(inputStream: c.TermName)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -235,6 +245,8 @@ object SealedTraitLike {
       """
   }
 
+  // This `_.get` could be removed by switching `subData` to a non-empty list type
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def compare(c: Context)(cmpType: c.Type, elementA: c.TermName, elementB: c.TermName)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
 

@@ -81,7 +81,8 @@ trait BaseScaldingShell extends MainGenericRunner {
     // Force the repl to be synchronous, so all cmds are executed in the same thread
     command.settings.Yreplsync.value = true
 
-    scaldingREPL = Some(scaldingREPLProvider.apply())
+    val repl = scaldingREPLProvider.apply()
+    scaldingREPL = Some(repl)
     replState.mode = mode
     replState.customConfig = replState.customConfig ++ (mode match {
       case _: HadoopMode => cfg
@@ -95,7 +96,7 @@ trait BaseScaldingShell extends MainGenericRunner {
     }
 
     replState.printModeBanner()
-    scaldingREPL.get.process(command.settings)
+    repl.process(command.settings)
   }
 
   // This both updates the jobConf with hadoop arguments

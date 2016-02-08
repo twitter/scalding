@@ -148,6 +148,8 @@ package com.twitter.scalding {
     private def add(evicted: Option[Map[Tuple, V]], functionCall: FunctionCall[MapsideCache[V]]) {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
       if (evicted.isDefined) {
+        // Don't use pattern matching in performance-critical code
+        @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
         val it = evicted.get.iterator
         val tecol = functionCall.getOutputCollector
         while (it.hasNext) {
@@ -217,6 +219,9 @@ package com.twitter.scalding {
     private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
 
     def flush = summingCache.flush
+
+    // Don't use pattern matching in performance-critical code
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def put(key: Tuple, value: V) = {
       val (curHits, evicted) = summingCache.putWithHits(Map(key -> value))
       misses.increment(1 - curHits)
@@ -237,6 +242,9 @@ package com.twitter.scalding {
     private[this] val evictions = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "evictions"))
 
     def flush = adaptiveCache.flush
+
+    // Don't use pattern matching in performance-critical code
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def put(key: Tuple, value: V) = {
       val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
       misses.increment(1 - stats.hits)

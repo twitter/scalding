@@ -53,6 +53,8 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
    * The name here follows the convention of adding
    * Execution to the name so in the repl in is removed
    */
+  // Suppress warning on `_.get` since the behavior is intentionally part of the API
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def getExecution: Execution[T] = toOptionExecution.map(_.get)
   /**
    * Like the above, but with a lazy parameter that is evaluated

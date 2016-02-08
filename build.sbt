@@ -59,6 +59,8 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
 
   javacOptions in doc := Seq("-source", "1.6"),
 
+  wartremoverErrors += Wart.OptionPartial,
+
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",
     "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",

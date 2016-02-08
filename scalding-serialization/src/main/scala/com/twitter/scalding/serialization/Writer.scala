@@ -69,6 +69,8 @@ object Writer {
 
   implicit def option[T: Writer]: Writer[Option[T]] = new Writer[Option[T]] {
     val w = implicitly[Writer[T]]
+    // Don't use pattern matching in a performance-critical section
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def write(os: OutputStream, t: Option[T]) =
       if (t.isDefined) {
         os.write(1: Byte)
