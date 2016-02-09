@@ -58,7 +58,26 @@ class ExecutionUtilTest extends WordSpec with Matchers {
 
       val result = withParallelism(executions, 3)
 
-      assert(run(result).get == (0 to 10).toSeq)
+      assert(run(result).get == 0.to(10).toSeq)
+    }
+
+    "block correctly" in {
+      var seen = 0
+      def updateSeen(idx: Int) {
+        assert(seen === idx)
+        seen += 1
+      }
+
+      val executions = 0.to(10).map{ i =>
+        Execution
+          .from[Int](i)
+          .map{ i => Thread.sleep(10 - i); i }
+          .onComplete(t => updateSeen(t.get))
+      }.toList.reverse
+
+      val result = withParallelism(executions, 1)
+
+      assert(run(result).get == 0.to(10).reverse)
     }
   }
 }
