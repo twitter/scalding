@@ -212,6 +212,17 @@ object Execution {
   def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
 
+  /**
+   * This function allows running the passed execution with its own cache.
+   * This will mean anything inside won't benefit from Execution's global attempts to avoid
+   * repeated executions.
+   *
+   * The main use case here is when generating a lot of Execution results which are large.
+   * Executions caching in this case can lead to out of memory errors as the cache keeps
+   * references to many heap objects.
+   *
+   * Ex. (0 until 1000).map { _ => Execution.withNewCache(myLargeObjectProducingExecution)}
+   */
   def withNewCache[T](ex: Execution[T]): Execution[T] =
     WithNewCache(ex)
 
@@ -235,26 +246,41 @@ object Execution {
    * This is a mutable state that is kept internal to an execution
    * as it is evaluating.
    */
+  private[scalding] object EvalCache {
+    /**
+     * We send messages from other threads into the submit thread here
+     */
+    private[EvalCache] sealed trait FlowDefAction
+    private[EvalCache] case class RunFlowDef(conf: Config,
+      mode: Mode,
+      fd: FlowDef,
+      result: Promise[JobStats]) extends FlowDefAction
+    private[EvalCache] case object Stop extends FlowDefAction
+  }
+
   private[scalding] class EvalCache {
+    import EvalCache._
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, ExecutionCounters)]
 
     private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
 
-    /**
-     * We send messages from other threads into the submit thread here
-     */
-    sealed trait FlowDefAction
-    case class RunFlowDef(conf: Config,
-      mode: Mode,
-      fd: FlowDef,
-      result: Promise[JobStats]) extends FlowDefAction
-    case object Stop extends FlowDefAction
-    private val messageQueue = new LinkedBlockingQueue[FlowDefAction]()
+    // This method with return a 'clean' cache, that shares
+    // the underlying thread and message queue of the parent evalCache
+    def cleanCache: EvalCache = {
+      val self = this
+      new EvalCache {
+        override protected[EvalCache] val messageQueue: LinkedBlockingQueue[EvalCache.FlowDefAction] = self.messageQueue
+        override def start(): Unit = sys.error("Invalid to start child EvalCache")
+        override def finished(): Unit = sys.error("Invalid to finish child EvalCache")
+      }
+    }
+
+    protected[EvalCache] val messageQueue = new LinkedBlockingQueue[EvalCache.FlowDefAction]()
     /**
      * Hadoop and/or cascading has some issues, it seems, with starting jobs
      * from multiple threads. This thread does all the Flow starting.
      */
-    private val thread = new Thread(new Runnable {
+    protected lazy val thread = new Thread(new Runnable {
       def run() {
         @annotation.tailrec
         def go(): Unit = messageQueue.take match {
@@ -366,14 +392,24 @@ object Execution {
     }
   }
 
+  /**
+   * This class allows running the passed execution with its own cache.
+   * This will mean anything inside won't benefit from Execution's global attempts to avoid
+   * repeated executions.
+   *
+   * The main use case here is when generating a lot of Execution results which are large.
+   * Executions caching in this case can lead to out of memory errors as the cache keeps
+   * references to many heap objects.
+   *
+   * We operate here by getting a copy of the super EvalCache, without its cache's.
+   * This is so we can share the singleton thread for scheduling jobs against Cascading.
+   */
   private case class WithNewCache[T](prev: Execution[T]) extends Execution[T] {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
-      val ec = new EvalCache
+      // Share the runner thread, but have own cache
+      val ec = cache.cleanCache
+
       val ret = prev.runStats(conf, mode, ec)
-      // When the final future in complete we stop the submit thread
-      ret.onComplete { _ => ec.finished() }
-      // wait till the end to start the thread in case the above throws
-      ec.start()
       ret
     }
   }
