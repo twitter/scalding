@@ -31,7 +31,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Promise }
 import scala.util.Random
-import scala.util.Try
+import scala.util.{ Try, Success, Failure }
 
 import ExecutionContext._
 
@@ -78,8 +78,10 @@ class ExecutionTest extends WordSpec with Matchers {
   implicit class ExecutionTestHelper[T](ex: Execution[T]) {
     def shouldSucceed(): T = {
       val r = ex.waitFor(Config.default, Local(true))
-      assert(r.isSuccess)
-      r.get
+      r match {
+        case Success(s) => s
+        case Failure(e) => fail(s"Failed running execution, exception:\n$e")
+      }
     }
     def shouldFail(): Unit = {
       val r = ex.waitFor(Config.default, Local(true))
@@ -190,6 +192,37 @@ class ExecutionTest extends WordSpec with Matchers {
       assert(incrementIfDefined === 1)
       // We should evaluate once for the default config, and once for the modified config.
       assert(totalEvals === 2)
+    }
+
+    "Config transformer will interact correctly with the cache when writing" in {
+      import java.io._
+      val srcF = File.createTempFile("tmpoutputLocation", ".tmp").getAbsolutePath
+      val sinkF = File.createTempFile("tmpoutputLocation2", ".tmp").getAbsolutePath
+
+      def writeNums(nums: List[Int]): Unit = {
+        val pw = new PrintWriter(new File(srcF))
+        pw.write(nums.mkString("\n"))
+        pw.close
+      }
+
+      writeNums(List(1, 2, 3))
+
+      val sink = TypedTsv[Int](sinkF)
+      val src = TypedTsv[Int](srcF)
+      val operationTP = (TypedPipe.from(src) ++ TypedPipe.from((1 until 100).toList)).writeExecution(sink).getCounters.map(_._2.toMap)
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      // Here we run without the option, with the option, and finally without again.
+      val (oldCounters, newCounters) = operationTP
+        .flatMap{ oc =>
+          writeNums(List(1, 2, 3, 4, 5, 6, 7))
+          Execution.withConfig(operationTP)(addOption).map { nc => (oc, nc) }
+        }
+        .shouldSucceed()
+
+      assert(oldCounters != newCounters, "With new configs given the source changed we shouldn't cache so the counters should be different")
+
     }
   }
 

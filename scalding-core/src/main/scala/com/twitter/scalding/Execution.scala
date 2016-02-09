@@ -262,7 +262,7 @@ object Execution {
     import EvalCache._
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, ExecutionCounters)]
 
-    private[this] val toWriteCache = new FutureCache[ToWrite, ExecutionCounters]
+    private[this] val toWriteCache = new FutureCache[(Config, ToWrite), ExecutionCounters]
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
@@ -333,8 +333,8 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrLock(write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
-      toWriteCache.getOrPromise(write)
+    def getOrLock(cfg: Config, write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
+      toWriteCache.getOrPromise((cfg, write))
 
     def getOrElseInsertWithFeedback[T](cfg: Config, ex: Execution[T],
       res: => Future[(T, ExecutionCounters)]): (Boolean, Future[(T, ExecutionCounters)]) =
@@ -606,7 +606,7 @@ object Execution {
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       cache.getOrElseInsert(conf, this, {
-        val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(tw)) }
+        val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
         val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
