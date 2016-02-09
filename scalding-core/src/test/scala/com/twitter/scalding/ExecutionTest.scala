@@ -223,7 +223,7 @@ class ExecutionTest extends WordSpec with Matchers {
        * Notice both e3 and e2 need to evaluate e1.
        */
       val res = e3.zip(e2)
-      res.waitFor(Config.default, Local(true))
+      res.map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
       assert((first, second, third) == (1, 1, 1))
     }
 
@@ -259,7 +259,7 @@ class ExecutionTest extends WordSpec with Matchers {
           Execution.unit
       }
 
-      executionLoop(55).waitFor(Config.default, Local(true))
+      executionLoop(55).map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
       assert(timesEvaluated == 55 * 1000, "Should run the 55 execution loops for 1000 elements")
     }
 
@@ -276,7 +276,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2)
 
-      res.waitFor(Config.default, Local(true))
+      res.map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
     }
 
@@ -293,7 +293,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2)
 
-      res.waitFor(Config.default, Local(true))
+      res.map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
     }
 
@@ -310,7 +310,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2).flatMap{ _ => fde1 }.flatMap(_.toIterableExecution)
 
-      res.waitFor(Config.default, Local(true))
+      res.map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
     }
 
@@ -330,7 +330,7 @@ class ExecutionTest extends WordSpec with Matchers {
         }
       }
 
-      writeAll(400).waitFor(Config.default, Local(true))
+      writeAll(400).map(_ => true).waitFor(Config.default, Local(true)) shouldBe scala.util.Success(true)
     }
   }
 }
