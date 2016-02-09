@@ -212,6 +212,9 @@ object Execution {
   def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
 
+  def withNewCache[T](ex: Execution[T]): Execution[T] =
+    WithNewCache(ex)
+
   /**
    * This is the standard semigroup on an Applicative (zip, then inside the Execution do plus)
    */
@@ -360,6 +363,18 @@ object Execution {
     def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
       val mutatedConfig = fn(conf)
       cache.getOrElseInsert(mutatedConfig, this, prev.runStats(mutatedConfig, mode, cache))
+    }
+  }
+
+  private case class WithNewCache[T](prev: Execution[T]) extends Execution[T] {
+    def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      val ec = new EvalCache
+      val ret = prev.runStats(conf, mode, ec)
+      // When the final future in complete we stop the submit thread
+      ret.onComplete { _ => ec.finished() }
+      // wait till the end to start the thread in case the above throws
+      ec.start()
+      ret
     }
   }
 

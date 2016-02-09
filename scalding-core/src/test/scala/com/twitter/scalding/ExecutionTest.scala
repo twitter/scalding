@@ -15,22 +15,25 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.scalatest.{ Matchers, WordSpec }
-
-import com.twitter.scalding._
 import com.twitter.algebird.monad.Reader
 
-// Need this to flatMap Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.twitter.scalding._
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
+import com.twitter.scalding.serialization.OrderedSerialization
+
+import java.nio.file.FileSystems
+import java.nio.file.Path
+
+import org.scalatest.{ Matchers, WordSpec }
+
+import scala.collection.immutable.Range
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Promise }
+import scala.util.Random
 import scala.util.Try
 
-// this is the scalding ExecutionContext
 import ExecutionContext._
-
-import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
@@ -309,6 +312,25 @@ class ExecutionTest extends WordSpec with Matchers {
 
       res.waitFor(Config.default, Local(true))
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
+    }
+
+    "Ability to do isolated caches so we don't exhaust memory" in {
+
+      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] = Execution.from(id).flatMap{ idx =>
+        Execution.from(Array.fill(4000000)(idx.toLong))
+      }
+
+      def writeAll(numExecutions: Int): Execution[Unit] = {
+        if (numExecutions > 0) {
+          memoryWastingExecutionGenerator(numExecutions).flatMap { _ =>
+            writeAll(numExecutions - 1)
+          }
+        } else {
+          Execution.from(())
+        }
+      }
+
+      writeAll(400).waitFor(Config.default, Local(true))
     }
   }
 }
