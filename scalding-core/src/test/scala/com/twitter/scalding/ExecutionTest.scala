@@ -316,9 +316,9 @@ class ExecutionTest extends WordSpec with Matchers {
 
     "Ability to do isolated caches so we don't exhaust memory" in {
 
-      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] = Execution.from(id).flatMap{ idx =>
+      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] = Execution.withNewCache(Execution.from(id).flatMap{ idx =>
         Execution.from(Array.fill(4000000)(idx.toLong))
-      }
+      })
 
       def writeAll(numExecutions: Int): Execution[Unit] = {
         if (numExecutions > 0) {
