@@ -206,6 +206,8 @@ package com.twitter.scalding {
       operationCall.setContext(cache)
     }
 
+    // Don't use pattern matching in a performance-critical section
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     @inline
     private def add(evicted: Option[Map[K, V]], functionCall: FunctionCall[MapsideCache[K, V]]) {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
@@ -232,6 +234,8 @@ package com.twitter.scalding {
       def -(key: K) = backingMap.toMap - key
     }
 
+    // Don't use pattern matching in a performance-critical section
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     private[this] def mergeTraversableOnce[K, V: Semigroup](items: TraversableOnce[(K, V)]): Map[K, V] = {
       val mutable = scala.collection.mutable.OpenHashMap[K, V]() // Scala's OpenHashMap seems faster than Java and Scala's HashMap Impl's
       val innerIter = items.toIterator
@@ -316,6 +320,8 @@ package com.twitter.scalding {
       evicted
     }
 
+    // Don't use pattern matching in a performance-critical section
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def putAll(kvs: Map[K, V]): Option[Map[K, V]] = {
       val (curHits, evicted) = summingCache.putWithHits(kvs)
       misses.increment(kvs.size - curHits)
@@ -353,6 +359,8 @@ package com.twitter.scalding {
 
     }
 
+    // Don't use pattern matching in a performance-critical section
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def putAll(kvs: Map[K, V]): Option[Map[K, V]] = {
       val (stats, evicted) = adaptiveCache.putWithStats(kvs)
       misses.increment(kvs.size - stats.hits)
