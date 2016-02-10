@@ -78,9 +78,11 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
 
   def getTap(mode: TapMode) = {
     val tap = new VersionedTap(path, hdfsScheme, mode).setVersionsToKeep(versionsToKeep)
-    sourceVersion.orElse(sinkVersion) match {
-      case Some(version) if mode == TapMode.SOURCE =>
-        tap.setVersion(version)
+    (sourceVersion, sinkVersion) match {
+      case (Some(v), _) if mode == TapMode.SOURCE =>
+        tap.setVersion(v)
+      case (_, Some(v)) if mode == TapMode.SINK =>
+        tap.setVersion(v)
       case _ =>
         tap
     }
