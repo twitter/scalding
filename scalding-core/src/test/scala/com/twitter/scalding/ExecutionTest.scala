@@ -127,7 +127,57 @@ class ExecutionTest extends WordSpec with Matchers {
         .zip(Execution.from("1"))
         .waitFor(Config.default, Local(true)).get shouldBe (1, "1")
     }
+
+    "Config transformer will isolate Configs" in {
+      def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
+        if (cfg.get("test.cfg.variable").isDefined)
+          Execution.failed(new Exception(s"${message}\n: var: ${cfg.get("test.cfg.variable")}"))
+        else
+          Execution.from(())
+      }
+
+      val hasVariable = Execution.getConfig.flatMap { cfg =>
+        if (cfg.get("test.cfg.variable").isEmpty)
+          Execution.failed(new Exception("Should see variable inside of transform"))
+        else
+          Execution.from(())
+      }
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      doesNotHaveVariable("Should not see variable before we've started transforming")
+        .flatMap{ _ => Execution.withConfig(hasVariable)(addOption) }
+        .flatMap(_ => doesNotHaveVariable("Should not see variable in flatMap's after the isolation"))
+        .map(_ => true)
+        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+    }
+
+    "Config transformer will interact correctly with the cache" in {
+      var incrementIfDefined = 0
+      var totalEvals = 0
+
+      val incrementor = Execution.getConfig.flatMap { cfg =>
+        totalEvals += 1
+        if (cfg.get("test.cfg.variable").isDefined)
+          incrementIfDefined += 1
+        Execution.from(())
+      }
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      // Here we run without the option, with the option, and finally without again.
+      incrementor
+        .flatMap{ _ => Execution.withConfig(incrementor)(addOption) }
+        .flatMap(_ => incrementor)
+        .map(_ => true)
+        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+
+      assert(incrementIfDefined === 1)
+      // We should evaluate once for the default config, and once for the modified config.
+      assert(totalEvals === 2)
+    }
   }
+
   "ExecutionApp" should {
     val parser = new ExecutionApp { def job = Execution.from(()) }
     "parse hadoop args correctly" in {
