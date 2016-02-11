@@ -39,6 +39,15 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
   }
 }
 
+class MultipleTextLineFilesJob(args: Args) extends Job(args) {
+  try {
+    MultipleTextLineFiles("input0", "input1").read.write(Tsv("output0"))
+  } catch {
+    case e: Exception => e.printStackTrace()
+  }
+
+}
+
 class FileSourceTest extends WordSpec with Matchers {
   import Dsl._
 
@@ -80,6 +89,20 @@ class FileSourceTest extends WordSpec with Matchers {
       .run
       .finish
   }
+
+  "A MultipleTextLineFiles Source" should {
+    JobTest(new MultipleTextLineFilesJob(_))
+      .source(MultipleTextLineFiles("input0", "input1"), List("foobar", "helloworld"))
+      .sink[String](Tsv("output0")) { outBuf =>
+        "take multiple text files as input sources" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List("foobar", "helloworld")
+        }
+      }
+      .run
+      .finish
+  }
+
   "TextLine.toIterator" should {
     "correctly read strings" in {
       TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList shouldBe List("Hello world", "Goodbye world")
