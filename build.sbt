@@ -384,8 +384,8 @@ lazy val scaldingParquetFixtures = module("parquet-fixtures")
      )
    )
 
-lazy val scaldingParquet = module("parquet").settings(
-  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+lazy val scaldingParquetCascading = module("parquet-cascading").settings(
+  libraryDependencies ++= Seq(
     "org.apache.parquet" % "parquet-column" % parquetVersion,
     "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.apache.parquet" % "parquet-thrift" % parquetVersion
@@ -394,15 +394,25 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+    "cascading" % "cascading-core" % cascadingVersion,
+    "cascading" % "cascading-hadoop" % cascadingVersion,
+    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+  )
+).dependsOn(scaldingParquetFixtures % "test->test")
+
+lazy val scaldingParquet = module("parquet").settings(
+  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "org.apache.parquet" % "parquet-column" % parquetVersion,
+    "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+    "com.twitter" %% "chill-bijection" % chillVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
 }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
-  .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
+  .dependsOn(scaldingCore, scaldingParquetCascading, scaldingHadoopTest % "test")
 
 
 
