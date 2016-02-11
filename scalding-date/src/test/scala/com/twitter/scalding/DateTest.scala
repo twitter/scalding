@@ -134,6 +134,10 @@ class DateTest extends WordSpec {
       assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) === Seconds(1).floorOf(RichDate("2010-10-01 14:59:59")))
       assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) === Seconds(1).floorOf(RichDate("2010-10-01 14:15:59")))
     }
+    "Have an implicit Ordering" in {
+      implicitly[Ordering[RichDate]]
+      implicitly[Ordering[(String, RichDate)]]
+    }
   }
   "A DateRange" should {
     "correctly iterate on each duration" in {
