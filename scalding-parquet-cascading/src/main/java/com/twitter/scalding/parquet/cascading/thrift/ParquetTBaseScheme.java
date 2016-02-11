@@ -1,6 +1,6 @@
-package com.twitter.scalding.parquet.thrift;
+package com.twitter.scalding.parquet.cascading.thrift;
 
-import com.twitter.scalding.parquet.ParquetValueScheme;
+import com.twitter.scalding.parquet.cascading.ParquetValueScheme;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;

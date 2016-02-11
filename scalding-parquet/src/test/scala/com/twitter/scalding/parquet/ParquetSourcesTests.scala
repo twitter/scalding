@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet
 
-import cascading.tuple.Fields
+import _root_.cascading.tuple.Fields
 import com.twitter.scalding.parquet.thrift.{ DailySuffixParquetThrift, FixedPathParquetThrift, HourlySuffixParquetThrift }
 import com.twitter.scalding.parquet.tuple.{ DailySuffixParquetTuple, FixedPathParquetTuple, HourlySuffixParquetTuple }
 import com.twitter.scalding.{ DateRange, RichDate, Source }

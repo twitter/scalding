@@ -1,4 +1,4 @@
-package com.twitter.scalding.parquet;
+package com.twitter.scalding.parquet.cascading;
 
 import java.io.IOException;
 import java.io.Serializable;

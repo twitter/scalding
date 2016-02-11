@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.twitter.scalding.parquet.scrooge;
+package com.twitter.scalding.parquet.cascading.scrooge;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowProcess;
@@ -47,7 +47,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 import org.junit.Test;
 import org.apache.parquet.hadoop.thrift.ThriftToParquetFileWriter;
 import org.apache.parquet.hadoop.util.ContextUtil;
-import com.twitter.scalding.parquet.ParquetValueScheme.Config;
+import com.twitter.scalding.parquet.cascading.ParquetValueScheme.Config;
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.TestPersonWithAllInformation;
 import com.twitter.scalding.parquet.scrooge.thrift_java.test.Address;
 import com.twitter.scalding.parquet.scrooge.thrift_java.test.Phone;

@@ -1,4 +1,4 @@
-package com.twitter.scalding.parquet.thrift;
+package com.twitter.scalding.parquet.cascading.thrift;
 
 import com.twitter.scalding.parquet.thrift_java.test.Name;
 

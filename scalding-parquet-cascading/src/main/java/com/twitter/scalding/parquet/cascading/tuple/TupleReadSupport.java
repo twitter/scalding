@@ -1,4 +1,4 @@
-package com.twitter.scalding.parquet.tuple;
+package com.twitter.scalding.parquet.cascading.tuple;
 
 import java.util.Map;
 

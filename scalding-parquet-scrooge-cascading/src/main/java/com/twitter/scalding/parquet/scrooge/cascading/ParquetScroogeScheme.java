@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.twitter.scalding.parquet.scrooge;
+package com.twitter.scalding.parquet.cascading.scrooge;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-import com.twitter.scalding.parquet.ParquetValueScheme;
+import com.twitter.scalding.parquet.cascading.ParquetValueScheme;
 import com.twitter.scrooge.ThriftStruct;
 
 import cascading.flow.FlowProcess;

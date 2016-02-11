@@ -1,4 +1,4 @@
-package com.twitter.scalding.parquet.tuple;
+package com.twitter.scalding.parquet.cascading.tuple;
 
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
