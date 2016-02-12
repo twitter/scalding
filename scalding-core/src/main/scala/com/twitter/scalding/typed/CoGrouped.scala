@@ -333,7 +333,7 @@ abstract class CoGroupedJoiner[K](inputSize: Int,
 
   override def getIterator(jc: JoinerClosure) = {
     val iters = (0 until distinctSize).map { jc.getIterator(_).asScala.buffered }
-    // Don't pattern match in performance-critical code
+    // This use of `_.get` is safe, but difficult to prove in the types.
     @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     val keyTuple = iters
       .collectFirst { case iter if iter.nonEmpty => iter.head }
