@@ -385,6 +385,7 @@ lazy val scaldingParquetFixtures = module("parquet-fixtures")
      )
    )
 
+// separate target that only depends on parquet, thrift, eb and cascading. Not scalding.
 lazy val scaldingParquetCascading = module("parquet-cascading").settings(
   libraryDependencies ++= Seq(
     "org.apache.parquet" % "parquet-column" % parquetVersion,
@@ -394,7 +395,7 @@ lazy val scaldingParquetCascading = module("parquet-cascading").settings(
       exclude("org.apache.parquet", "parquet-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
-    "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "cascading" % "cascading-core" % cascadingVersion,
     "cascading" % "cascading-hadoop" % cascadingVersion,
@@ -441,10 +442,12 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   )
 )
 
+// separate target that only depends on parquet, scrooge, eb and cascading. Not scalding.
 lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
   .settings(
     libraryDependencies ++= Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
+      "cascading" % "cascading-core" % cascadingVersion,
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
