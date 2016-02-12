@@ -24,6 +24,7 @@ import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecution
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 import cascading.flow.{ FlowDef, Flow }
+import scala.collection.mutable
 
 /**
  * Execution[T] represents and computation that can be run and
@@ -198,6 +199,40 @@ sealed trait Execution[+T] extends java.io.Serializable {
  * are the preferred way to compose computations in scalding libraries.
  */
 object Execution {
+  private[Execution] class AsyncSemaphore(initialPermits: Int = 0) {
+    private[this] val waiters = new mutable.Queue[() => Unit]
+    private[this] var availablePermits = initialPermits
+
+    private[Execution] class SemaphorePermit {
+      def release() =
+        AsyncSemaphore.this.synchronized {
+          availablePermits += 1
+          if (availablePermits > 0 && waiters.nonEmpty) {
+            availablePermits -= 1
+            waiters.dequeue()()
+          }
+        }
+    }
+
+    def acquire(): Future[SemaphorePermit] = {
+      val promise = Promise[SemaphorePermit]()
+
+      def setAcquired(): Unit =
+        promise.success(new SemaphorePermit)
+
+      synchronized {
+        if (availablePermits > 0) {
+          availablePermits -= 1
+          setAcquired()
+        } else {
+          waiters.enqueue(setAcquired)
+        }
+      }
+
+      promise.future
+    }
+  }
+
   /**
    * This is an instance of Monad for execution so it can be used
    * in functions that apply to all Monads
@@ -778,6 +813,32 @@ object Execution {
     }
     // This pushes all of them onto a list, and then reverse to keep order
     go(exs.toList, from(Nil)).map(_.reverse)
+  }
+
+  /**
+   * Run a sequence of executions but only permitting parallelism amount to run at the
+   * same time.
+   *
+   * @param executions List of executions to run
+   * @param parallelism Number to run in parallel
+   * @return Execution Seq
+   */
+  def withParallelism[T](executions: Seq[Execution[T]], parallelism: Int): Execution[Seq[T]] = {
+    require(parallelism > 0, s"Parallelism must be > 0: $parallelism")
+
+    val sem = new AsyncSemaphore(parallelism)
+
+    def waitRun(e: Execution[T]): Execution[T] = {
+      Execution.fromFuture(_ => sem.acquire())
+        .flatMap(p => e.liftToTry.map((_, p)))
+        .onComplete {
+          case Success((_, p)) => p.release()
+          case Failure(ex) => throw ex // should never happen or there is a logic bug
+        }
+        .flatMap{ case (ex, _) => fromTry(ex) }
+    }
+
+    Execution.sequence(executions.map(waitRun))
   }
 }
 
