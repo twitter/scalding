@@ -34,6 +34,10 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
   private var conf: Option[Configuration] = None
   private var serializations: Map[Class[_], Serialization[_]] = Map.empty
 
+  /* This use of `_.get` can't be fixed since this is constrained by
+   * Hadoop's `Configurable` interface.
+   */
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   override def getConf: Configuration = conf.get
   override def setConf(config: Configuration) {
     conf = Some(config)

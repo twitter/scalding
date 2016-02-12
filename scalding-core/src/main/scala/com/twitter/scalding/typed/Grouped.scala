@@ -227,10 +227,7 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
         mapped
           .toPipe(Grouped.kvFields)(fd, mode, ts)
           .groupBy(fields) { inGb =>
-            val withSort = if (sortOpt.isDefined) {
-              inGb.sortBy(sortOpt.get)
-            } else inGb
-
+            val withSort = sortOpt.fold(inGb)(inGb.sortBy)
             gb(withSort)
           }
       }

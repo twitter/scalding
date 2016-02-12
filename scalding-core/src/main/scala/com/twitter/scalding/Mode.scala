@@ -242,7 +242,12 @@ case class HadoopTest(@transient conf: Configuration,
   }
 
   def finalize(src: Source) {
-    // Get the buffer for the given source, and empty it:
+    /* The following `_.get` is only safe if `src` belongs to the source map.
+     * This invariant is preserved by the `JobTest.sink` and `JobTest.runJob`
+     * functions, and those functions have been documented accordingly to
+     * warn about this invariant.
+     */
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial")) // Get the buffer for the given source, and empty it:
     val buf = buffers(src).get
     buf.clear()
     // Now fill up this buffer with the content of the file
