@@ -41,7 +41,7 @@ public class ParquetTBaseScheme<T extends TBase<?,?>> extends ParquetValueScheme
   }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> fp,
+  public void sourceConfInit(FlowProcess<? extends JobConf> fp,
       Tap<JobConf, RecordReader, OutputCollector> tap, JobConf jobConf) {
     super.sourceConfInit(fp, tap, jobConf);
     jobConf.setInputFormat(DeprecatedParquetInputFormat.class);
@@ -50,7 +50,7 @@ public class ParquetTBaseScheme<T extends TBase<?,?>> extends ParquetValueScheme
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> fp,
+  public void sinkConfInit(FlowProcess<? extends JobConf> fp,
       Tap<JobConf, RecordReader, OutputCollector> tap, JobConf jobConf) {
 
     if (this.config.getKlass() == null) {

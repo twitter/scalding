@@ -120,7 +120,7 @@ public abstract class ParquetValueScheme<T> extends Scheme<JobConf, RecordReader
     }
   }
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> jobConfFlowProcess, Tap<JobConf, RecordReader, OutputCollector> jobConfRecordReaderOutputCollectorTap, final JobConf jobConf) {
+  public void sourceConfInit(FlowProcess<? extends JobConf> jobConfFlowProcess, Tap<JobConf, RecordReader, OutputCollector> jobConfRecordReaderOutputCollectorTap, final JobConf jobConf) {
     setPredicatePushdown(jobConf);
     setProjectionPushdown(jobConf);
     setStrictProjectionPushdown(jobConf);
@@ -135,7 +135,7 @@ public abstract class ParquetValueScheme<T> extends Scheme<JobConf, RecordReader
 
   @SuppressWarnings("unchecked")
   @Override
-  public boolean source(FlowProcess<JobConf> fp, SourceCall<Object[], RecordReader> sc)
+  public boolean source(FlowProcess<? extends JobConf> fp, SourceCall<Object[], RecordReader> sc)
       throws IOException {
     Container<T> value = (Container<T>) sc.getInput().createValue();
     boolean hasNext = sc.getInput().next(null, value);
@@ -150,7 +150,7 @@ public abstract class ParquetValueScheme<T> extends Scheme<JobConf, RecordReader
 
   @SuppressWarnings("unchecked")
   @Override
-  public void sink(FlowProcess<JobConf> fp, SinkCall<Object[], OutputCollector> sc)
+  public void sink(FlowProcess<? extends JobConf> fp, SinkCall<Object[], OutputCollector> sc)
       throws IOException {
     TupleEntry tuple = sc.getOutgoingEntry();
 
