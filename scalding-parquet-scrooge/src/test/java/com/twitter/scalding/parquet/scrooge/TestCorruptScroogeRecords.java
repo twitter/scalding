@@ -33,6 +33,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
 
 import org.apache.parquet.hadoop.thrift.TestCorruptThriftRecords;
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport;
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeRecordConverter;
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.StructWithUnionV2;
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.StructWithUnionV2$;
 
