@@ -89,26 +89,23 @@ object Checkpoint {
     val filename: Option[String] = getFilename(checkpointName)
     val format: String = getFormat(checkpointName)
 
-    if (filename.isDefined && hasInput(checkpointName, filename.get)) {
-      // We have checkpoint input; read the file instead of executing the flow.
-      LOG.info("Checkpoint \"" + checkpointName + "\": reading " + format +
-        " input from \"" + filename.get + "\"")
-      getSource(format, filename.get)
-        .read
-        .mapTo(List.range(0, resultFields.size) -> resultFields)((x: A) => x)(conv, setter)
-    } else {
+    filename match {
+      case Some(name) if hasInput(checkpointName, name) =>
+        // We have checkpoint input; read the file instead of executing the flow.
+        LOG.info(s"""Checkpoint "${checkpointName}": reading ${format} input from "${name}"""")
+        getSource(format, name)
+          .read
+          .mapTo(List.range(0, resultFields.size) -> resultFields)((x: A) => x)(conv, setter)
       // We don't have checkpoint input; execute the flow and project to the
       // requested fields.
-      val pipe = flow.project(resultFields)
+      case Some(name) =>
+        val pipe = flow.project(resultFields)
 
-      // If requested, write the checkpoint output.
-      if (filename.isDefined) {
-        LOG.info("Checkpoint \"" + checkpointName + "\": writing " + format +
-          " output to \"" + filename.get + "\"")
-        pipe.write(getSource(format, filename.get))
-      } else {
-        pipe
-      }
+        // Write the checkpoint output.
+        LOG.info(s"""Checkpoint "${checkpointName}": writing ${format} output to "${name}"""")
+        pipe.write(getSource(format, name))
+      case None =>
+        flow.project(resultFields)
     }
   }
 
@@ -136,7 +133,7 @@ object Checkpoint {
       } else {
         baseValue
       }
-    def isTrue: Boolean = value.isDefined && value.get.toLowerCase != "false"
+    def isTrue: Boolean = value.exists { _.toLowerCase != "false" }
   }
 
   // Returns the filename to use for the given checkpoint, or None if this
@@ -147,13 +144,12 @@ object Checkpoint {
       // The flag "--checkpoint.file.<name>=<filename>" is present; use its
       // value as the filename.
       fileArg.overrideValue
-    } else if (fileArg.baseValue.isDefined) {
-      // The flag "--checkpoint.file=<prefix>"; use "<prefix>_<name>" as the
-      // filename.
-      Some(fileArg.baseValue.get + "_" + checkpointName)
     } else {
-      // Neither flag is present; the checkpoint is disabled.
-      None
+      fileArg.baseValue.map { value =>
+        // The flag "--checkpoint.file=<prefix>"; use "<prefix>_<name>" as the
+        // filename.
+        value + "_" + checkpointName
+      }
     }
   }
 

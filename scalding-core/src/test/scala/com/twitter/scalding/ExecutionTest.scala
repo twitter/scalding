@@ -377,5 +377,45 @@ class ExecutionTest extends WordSpec with Matchers {
 
       writeAll(400).shouldSucceed()
     }
+    "handle failure" in {
+      val result = Execution.withParallelism(Seq(Execution.failed(new Exception("failed"))), 1)
+
+      assert(result.waitFor(Config.default, Local(true)).isFailure)
+    }
+
+    "handle an error running in parallel" in {
+      val executions = Execution.failed(new Exception("failed")) :: 0.to(10).map(i => Execution.from[Int](i)).toList
+
+      val result = Execution.withParallelism(executions, 3)
+
+      assert(result.waitFor(Config.default, Local(true)).isFailure)
+    }
+
+    "run in parallel" in {
+      val executions = 0.to(10).map(i => Execution.from[Int](i)).toList
+
+      val result = Execution.withParallelism(executions, 3)
+
+      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).toSeq)
+    }
+
+    "block correctly" in {
+      var seen = 0
+      def updateSeen(idx: Int) {
+        assert(seen === idx)
+        seen += 1
+      }
+
+      val executions = 0.to(10).map{ i =>
+        Execution
+          .from[Int](i)
+          .map{ i => Thread.sleep(10 - i); i }
+          .onComplete(t => updateSeen(t.get))
+      }.toList.reverse
+
+      val result = Execution.withParallelism(executions, 1)
+
+      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).reverse)
+    }
   }
 }

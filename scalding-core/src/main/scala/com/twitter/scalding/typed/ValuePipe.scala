@@ -53,7 +53,13 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
    * The name here follows the convention of adding
    * Execution to the name so in the repl in is removed
    */
-  def getExecution: Execution[T] = toOptionExecution.map(_.get)
+  def getExecution: Execution[T] = toOptionExecution.flatMap {
+    case Some(t) => Execution.from(t)
+    // same exception as scala.None.get
+    // https://github.com/scala/scala/blob/2.12.x/src/library/scala/Option.scala#L347
+    case None => Execution.failed(new java.util.NoSuchElementException("None.get"))
+  }
+
   /**
    * Like the above, but with a lazy parameter that is evaluated
    * if the value pipe is empty
