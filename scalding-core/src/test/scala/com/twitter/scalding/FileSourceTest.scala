@@ -41,7 +41,7 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
 
 class MultipleTextLineFilesJob(args: Args) extends Job(args) {
   try {
-    MultipleTextLineFiles("input0", "input1").read.write(Tsv("output0"))
+    MultipleTextLineFiles(args.list("input"): _*).write(Tsv("output0"))
   } catch {
     case e: Exception => e.printStackTrace()
   }
@@ -92,6 +92,7 @@ class FileSourceTest extends WordSpec with Matchers {
 
   "A MultipleTextLineFiles Source" should {
     JobTest(new MultipleTextLineFilesJob(_))
+      .arg("input", List("input0", "input1"))
       .source(MultipleTextLineFiles("input0", "input1"), List("foobar", "helloworld"))
       .sink[String](Tsv("output0")) { outBuf =>
         "take multiple text files as input sources" in {
