@@ -396,7 +396,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val result = Execution.withParallelism(executions, 3)
 
-      result.shouldSucceed() == 0.to(10).toSeq
+      assert(result.shouldSucceed() == 0.to(10).toSeq)
     }
 
     "block correctly" in {
