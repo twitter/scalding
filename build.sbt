@@ -19,12 +19,12 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
 }
 def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-val algebirdVersion = "0.12.0"
+val algebirdVersion = "0.11.0"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
-val bijectionVersion = "0.9.0"
+val bijectionVersion = "0.8.1"
 val cascadingAvroVersion = "2.1.2"
-val chillVersion = "0.7.3"
+val chillVersion = "0.7.1"
 val elephantbirdVersion = "4.8"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
