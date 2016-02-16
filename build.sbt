@@ -43,6 +43,7 @@ val scroogeVersion = "3.20.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
+val junitInterfaceVersion = "0.11"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -64,7 +65,7 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
     "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
     "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-    "com.novocode" % "junit-interface" % "0.10" % "test"
+    "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
   ),
 
   resolvers ++= Seq(
@@ -384,8 +385,9 @@ lazy val scaldingParquetFixtures = module("parquet-fixtures")
      )
    )
 
-lazy val scaldingParquet = module("parquet").settings(
-  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+// separate target that only depends on parquet, thrift, eb and cascading. Not scalding.
+lazy val scaldingParquetCascading = module("parquet-cascading").settings(
+  libraryDependencies ++= Seq(
     "org.apache.parquet" % "parquet-column" % parquetVersion,
     "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.apache.parquet" % "parquet-thrift" % parquetVersion
@@ -393,18 +395,26 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("org.apache.parquet", "parquet-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
-    "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.thrift" % "libthrift" % thriftVersion,
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+    "cascading" % "cascading-core" % cascadingVersion,
+    "cascading" % "cascading-hadoop" % cascadingVersion,
+    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+  )
+).dependsOn(scaldingParquetFixtures % "test->test")
+
+lazy val scaldingParquet = module("parquet").settings(
+  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "org.apache.parquet" % "parquet-column" % parquetVersion,
+    "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+    "com.twitter" %% "chill-bijection" % chillVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
 }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
-  .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
-
-
+  .dependsOn(scaldingCore, scaldingParquetCascading, scaldingHadoopTest % "test")
 
 lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   .settings(ScroogeSBT.newSettings:_*)
@@ -432,22 +442,37 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   )
 )
 
-lazy val scaldingParquetScrooge = module("parquet-scrooge")
+// separate target that only depends on parquet, scrooge, eb and cascading. Not scalding.
+lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
   .settings(
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
+      "cascading" % "cascading-core" % cascadingVersion,
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
        "com.twitter" %% "scrooge-serializer" % scroogeVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-      "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
-
     )
-).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
+).dependsOn(scaldingParquetCascading % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
+
+lazy val scaldingParquetScrooge = module("parquet-scrooge")
+  .settings(
+    libraryDependencies ++= Seq(
+      // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
+      "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
+        exclude("org.apache.parquet", "parquet-pig")
+        exclude("com.twitter.elephantbird", "elephant-bird-pig")
+        exclude("com.twitter.elephantbird", "elephant-bird-core"),
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
+      "com.novocode" % "junit-interface" % junitInterfaceVersion % "test",
+      "junit" % "junit" % junitVersion % "test"
+    )
+).dependsOn(scaldingCore, scaldingParquetScroogeCascading, scaldingParquet % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
 
 lazy val scaldingHRaven = module("hraven").settings(
   libraryDependencies ++= Seq(

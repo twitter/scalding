@@ -16,17 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.twitter.scalding.parquet.scrooge;
+package com.twitter.scalding.parquet.cascading.scrooge;
 
-import com.twitter.scalding.parquet.cascading.scrooge.ScroogeReadSupport;
-import org.apache.parquet.hadoop.thrift.ParquetThriftInputFormat;
+import org.apache.parquet.ParquetRuntimeException;
 
 /**
- * Use this class to read Scrooge records from parquet file
- * @param <T>  Type of Scrooge records to read
+ * Throw this exception when there is an error converting a Scrooge class to
+ * thrift schema
  */
-public class ParquetScroogeInputFormat<T> extends ParquetThriftInputFormat<T> {
-  public ParquetScroogeInputFormat() {
-    super(ScroogeReadSupport.class);
+class ScroogeSchemaConversionException extends ParquetRuntimeException {
+  public ScroogeSchemaConversionException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ScroogeSchemaConversionException(String message) {
+    super(message);
   }
 }
+
