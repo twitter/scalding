@@ -42,7 +42,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector<JobConf, TupleE
   /** Field writer */
   private RecordWriter writer;
   /** Field flowProcess */
-  private final FlowProcess<JobConf> hadoopFlowProcess;
+  private final FlowProcess<? extends JobConf> hadoopFlowProcess;
   /** Field tap */
   private final Tap<JobConf, RecordReader, OutputCollector> tap;
   /** Field reporter */
@@ -58,7 +58,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector<JobConf, TupleE
    * @throws IOException
    *           when fails to initialize
    */
-  public HBaseTapCollector(FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap) throws IOException {
+  public HBaseTapCollector(FlowProcess<? extends JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap) throws IOException {
     super(flowProcess, tap.getScheme());
     this.hadoopFlowProcess = flowProcess;
     this.tap = tap;

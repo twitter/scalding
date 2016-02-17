@@ -294,6 +294,10 @@ lazy val scaldingDate = module("date")
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
 
+// This is a temporary placeholder while we migrate to cascading3, a few subprojects at a time
+// and should eventually be folded into cascadingVersion when we merge to develop.
+val cascadingThreeVersion = "3.0.3"
+
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
@@ -597,7 +601,7 @@ lazy val maple = Project(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingVersion
+    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided"
   )
   }
 )
