@@ -421,7 +421,7 @@ abstract class FixedPathSource(path: String*) extends FileSource {
 
   // `toString` is used by equals in JobTest, which causes
   // problems due to unstable collection type of `path`
-  override def toString = getClass.getName + path.mkString(",")
+  override def toString = getClass.getName + path.mkString("(", ",", ")")
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
 }
