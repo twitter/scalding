@@ -403,8 +403,6 @@ lazy val scaldingParquetCascading = module("parquet-cascading").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
     "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided",
-    "com.twitter" %% "bijection-core" % bijectionVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
   )
 ).dependsOn(scaldingParquetFixtures % "test->test")
