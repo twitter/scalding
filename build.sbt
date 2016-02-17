@@ -454,6 +454,7 @@ lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
     libraryDependencies ++= Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
       "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
+      "cascading" % "cascading-hadoop" % cascadingThreeVersion % "test",
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
