@@ -83,8 +83,8 @@ object TestCC {
 
   implicit def arbitraryTestEE: Arbitrary[TestCaseClassE] = Arbitrary {
     for {
-      aInt <- arb[Int]
-    } yield TestCaseClassE(aInt)
+      aString <- arb[String]
+    } yield TestCaseClassE(aString)
   }
 
   implicit def arbitraryTestObjectE: Arbitrary[TestObjectE.type] = Arbitrary {
@@ -109,7 +109,7 @@ case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[
 
 case class TestCaseClassD(a: Int) extends SealedTraitTest
 
-case class TestCaseClassE(a: Int) extends AnyVal
+case class TestCaseClassE(a: String) extends AnyVal
 
 case object TestObjectE extends SealedTraitTest
 
