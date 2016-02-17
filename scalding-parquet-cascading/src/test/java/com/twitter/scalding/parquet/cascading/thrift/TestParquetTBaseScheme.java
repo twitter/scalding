@@ -159,7 +159,7 @@ public class TestParquetTBaseScheme {
       TupleEntry arguments = functionCall.getArguments();
       Tuple result = new Tuple();
 
-      Name name = (Name) arguments.get(0);
+      Name name = (Name) arguments.getObject(0);
       result.add(name.getFirst_name());
       result.add(name.getLast_name());
       functionCall.getOutputCollector().add(result);

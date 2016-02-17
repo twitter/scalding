@@ -51,7 +51,7 @@ public class ParquetScroogeScheme<T extends ThriftStruct> extends ParquetValueSc
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> fp,
+  public void sinkConfInit(FlowProcess<? extends JobConf> fp,
       Tap<JobConf, RecordReader, OutputCollector> tap, JobConf jobConf) {
     DeprecatedParquetOutputFormat.setAsOutputFormat(jobConf);
     ParquetOutputFormat.setWriteSupportClass(jobConf, ScroogeWriteSupport.class);
@@ -59,7 +59,7 @@ public class ParquetScroogeScheme<T extends ThriftStruct> extends ParquetValueSc
   }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> fp,
+  public void sourceConfInit(FlowProcess<? extends JobConf> fp,
       Tap<JobConf, RecordReader, OutputCollector> tap, JobConf jobConf) {
     super.sourceConfInit(fp, tap, jobConf);
     jobConf.setInputFormat(DeprecatedParquetInputFormat.class);
