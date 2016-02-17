@@ -81,6 +81,12 @@ object TestCC {
     } yield TestCaseClassD(aInt)
   }
 
+  implicit def arbitraryTestEE: Arbitrary[TestCaseClassE] = Arbitrary {
+    for {
+      aInt <- arb[Int]
+    } yield TestCaseClassE(aInt)
+  }
+
   implicit def arbitraryTestObjectE: Arbitrary[TestObjectE.type] = Arbitrary {
     for {
       e <- Gen.const(TestObjectE)
@@ -102,6 +108,8 @@ case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String],
 case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) extends SealedTraitTest
 
 case class TestCaseClassD(a: Int) extends SealedTraitTest
+
+case class TestCaseClassE(a: Int) extends AnyVal
 
 case object TestObjectE extends SealedTraitTest
 
@@ -321,6 +329,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkMany[Int]
     checkCollisions[Int]
   }
+
+  test("Test out AnyVal of Int") {
+    import TestCC._
+    check[TestCaseClassE]
+    checkMany[TestCaseClassE]
+    checkCollisions[TestCaseClassE]
+  }
+
   test("Test out jl.Integer") {
     implicit val a = arbMap { b: Int => java.lang.Integer.valueOf(b) }
     check[java.lang.Integer]
