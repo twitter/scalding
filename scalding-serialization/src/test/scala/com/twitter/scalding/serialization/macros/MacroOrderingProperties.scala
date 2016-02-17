@@ -81,6 +81,12 @@ object TestCC {
     } yield TestCaseClassD(aInt)
   }
 
+  implicit def arbitraryTestEE: Arbitrary[TestCaseClassE] = Arbitrary {
+    for {
+      aString <- arb[String]
+    } yield TestCaseClassE(aString)
+  }
+
   implicit def arbitraryTestObjectE: Arbitrary[TestObjectE.type] = Arbitrary {
     for {
       e <- Gen.const(TestObjectE)
@@ -95,13 +101,27 @@ object TestCC {
       t <- Gen.oneOf(cc, bb, dd, TestObjectE)
     } yield t
   }
+
+  implicit def arbitraryTestSealedAbstractClass: Arbitrary[TestSealedAbstractClass] = Arbitrary {
+    for {
+      testSealedAbstractClass <- Gen.oneOf(A, B)
+    } yield testSealedAbstractClass
+  }
+
 }
+
+sealed abstract class TestSealedAbstractClass(val name: Option[String])
+case object A extends TestSealedAbstractClass(None)
+case object B extends TestSealedAbstractClass(Some("b"))
+
 sealed trait SealedTraitTest
 case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer) extends SealedTraitTest
 
 case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String]) extends SealedTraitTest
 
 case class TestCaseClassD(a: Int) extends SealedTraitTest
+
+case class TestCaseClassE(a: String) extends AnyVal
 
 case object TestObjectE extends SealedTraitTest
 
@@ -321,6 +341,30 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkMany[Int]
     checkCollisions[Int]
   }
+
+  test("Test out AnyVal of String") {
+    import TestCC._
+    check[TestCaseClassE]
+    checkMany[TestCaseClassE]
+    checkCollisions[TestCaseClassE]
+  }
+
+  test("Test out Tuple of AnyVal's of String") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[(TestCaseClassE, TestCaseClassE)]
+    check[(TestCaseClassE, TestCaseClassE)]
+    checkMany[(TestCaseClassE, TestCaseClassE)]
+    checkCollisions[(TestCaseClassE, TestCaseClassE)]
+  }
+
+  test("Test out Tuple of TestSealedAbstractClass") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[TestSealedAbstractClass]
+    check[TestSealedAbstractClass]
+    checkMany[TestSealedAbstractClass]
+    checkCollisions[TestSealedAbstractClass]
+  }
+
   test("Test out jl.Integer") {
     implicit val a = arbMap { b: Int => java.lang.Integer.valueOf(b) }
     check[java.lang.Integer]
