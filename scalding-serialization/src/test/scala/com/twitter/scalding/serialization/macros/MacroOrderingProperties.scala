@@ -330,11 +330,19 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkCollisions[Int]
   }
 
-  test("Test out AnyVal of Int") {
+  test("Test out AnyVal of String") {
     import TestCC._
     check[TestCaseClassE]
     checkMany[TestCaseClassE]
     checkCollisions[TestCaseClassE]
+  }
+
+  test("Test out Tuple of AnyVal's of String") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[(TestCaseClassE, TestCaseClassE)]
+    check[(TestCaseClassE, TestCaseClassE)]
+    checkMany[(TestCaseClassE, TestCaseClassE)]
+    checkCollisions[(TestCaseClassE, TestCaseClassE)]
   }
 
   test("Test out jl.Integer") {
