@@ -602,7 +602,7 @@ lazy val maple = Project(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingVersion
+    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided"
   )
   }
 )

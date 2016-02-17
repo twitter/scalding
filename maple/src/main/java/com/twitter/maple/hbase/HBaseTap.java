@@ -143,7 +143,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf) {
+  public void sinkConfInit(FlowProcess<? extends JobConf> process, JobConf conf) {
     if(quorumNames != null) {
       conf.set("hbase.zookeeper.quorum", quorumNames);
     }
@@ -178,12 +178,12 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
   }
 
   @Override
-  public TupleEntryIterator openForRead(FlowProcess<JobConf> jobConfFlowProcess, RecordReader recordReader) throws IOException {
+  public TupleEntryIterator openForRead(FlowProcess<? extends JobConf> jobConfFlowProcess, RecordReader recordReader) throws IOException {
     return new HadoopTupleEntrySchemeIterator(jobConfFlowProcess, this, recordReader);
   }
 
   @Override
-  public TupleEntryCollector openForWrite(FlowProcess<JobConf> jobConfFlowProcess, OutputCollector outputCollector) throws IOException {
+  public TupleEntryCollector openForWrite(FlowProcess<? extends JobConf> jobConfFlowProcess, OutputCollector outputCollector) throws IOException {
     HBaseTapCollector hBaseCollector = new HBaseTapCollector( jobConfFlowProcess, this );
     hBaseCollector.prepare();
     return hBaseCollector;
@@ -230,7 +230,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
   }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf) {
+  public void sourceConfInit(FlowProcess<? extends JobConf> process, JobConf conf) {
     // a hack for MultiInputFormat to see that there is a child format
     FileInputFormat.setInputPaths( conf, getPath() );
 
