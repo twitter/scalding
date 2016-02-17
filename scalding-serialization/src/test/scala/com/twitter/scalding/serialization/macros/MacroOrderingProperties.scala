@@ -101,7 +101,19 @@ object TestCC {
       t <- Gen.oneOf(cc, bb, dd, TestObjectE)
     } yield t
   }
+
+  implicit def arbitraryTestSealedAbstractClass: Arbitrary[TestSealedAbstractClass] = Arbitrary {
+    for {
+      testSealedAbstractClass <- Gen.oneOf(A, B)
+    } yield testSealedAbstractClass
+  }
+
 }
+
+sealed abstract class TestSealedAbstractClass(val name: Option[String])
+case object A extends TestSealedAbstractClass(None)
+case object B extends TestSealedAbstractClass(Some("b"))
+
 sealed trait SealedTraitTest
 case class TestCC(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String], f: Option[List[String]], aBB: ByteBuffer) extends SealedTraitTest
 
@@ -343,6 +355,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     check[(TestCaseClassE, TestCaseClassE)]
     checkMany[(TestCaseClassE, TestCaseClassE)]
     checkCollisions[(TestCaseClassE, TestCaseClassE)]
+  }
+
+  test("Test out Tuple of TestSealedAbstractClass") {
+    import TestCC._
+    primitiveOrderedBufferSupplier[TestSealedAbstractClass]
+    check[TestSealedAbstractClass]
+    checkMany[TestSealedAbstractClass]
+    checkCollisions[TestSealedAbstractClass]
   }
 
   test("Test out jl.Integer") {
