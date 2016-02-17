@@ -404,7 +404,10 @@ trait SuccessFileSource extends FileSource {
 trait LocalTapSource extends LocalSourceOverride {
   override def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
     val taps = localPaths.map { p =>
-      new LocalTap(p, hdfsScheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+      // temporary workaround. Remove when scalding-core is migrated to cascading3.
+      val scheme = hdfsScheme.asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
+      // end temporary workaround
+      new LocalTap(p, scheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
     }.toSeq
 
     taps match {
