@@ -419,7 +419,8 @@ abstract class FixedPathSource(path: String*) extends FileSource {
   def localPaths = path.toList
   def hdfsPaths = path.toList
 
-  // The collection type of `path` causes equality issues in JobTest
+  // `toString` is used by equals in JobTest, which causes
+  // problems due to unstable collection type of `path`
   override def toString = getClass.getName + path.mkString(",")
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
