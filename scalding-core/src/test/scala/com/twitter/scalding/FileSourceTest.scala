@@ -248,6 +248,26 @@ class FileSourceTest extends WordSpec with Matchers {
       }
   }
 
+  "FixedPathSource.stripTrailingStar" should {
+    import TestFixedPathSource.stripTrailingStar
+
+    "remove * from a path ending in /*" in {
+      stripTrailingStar("test_data/2013/06/*") shouldBe "test_data/2013/06/"
+    }
+
+    "leave path as-is when it ends in a directory name" in {
+      stripTrailingStar("test_data/2013/06") shouldBe "test_data/2013/06"
+    }
+
+    "leave path as-is when it ends in a directory name/" in {
+      stripTrailingStar("test_data/2013/06/") shouldBe "test_data/2013/06/"
+    }
+
+    "leave path as-is when it ends in * without a preceeding /" in {
+      stripTrailingStar("test_data/2013/06*") shouldBe "test_data/2013/06*"
+    }
+  }
+
   "invalid source input" should {
     "Create an InvalidSourceTap an empty directory is given" in {
       TestInvalidFileSource.createHdfsReadTap shouldBe a[InvalidSourceTap]
@@ -303,4 +323,8 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
   def pathIsGood(p: String) = false
   val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
+}
+
+object TestFixedPathSource extends FixedPathSource {
+  override def stripTrailingStar(path: String) = super.stripTrailingStar(path)
 }
