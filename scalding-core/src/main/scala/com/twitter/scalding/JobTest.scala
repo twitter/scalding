@@ -59,7 +59,7 @@ object CascadeTest {
 class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
   private val callbacks = Buffer[() => Unit]()
-  private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
+  private val statsCallbacks = Buffer[(CascadingStats[_]) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
   private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
@@ -124,13 +124,13 @@ class JobTest(cons: (Args) => Job) {
   // If this test is checking for multiple jobs chained by next, this only checks
   // for the counters in the final job's FlowStat.
   def counter(counter: String, group: String = Stats.ScaldingGroup)(op: Long => Unit) = {
-    statsCallbacks += ((stats: CascadingStats) => op(Stats.getCounterValue(counter, group)(stats)))
+    statsCallbacks += ((stats: CascadingStats[_]) => op(Stats.getCounterValue(counter, group)(stats)))
     this
   }
 
   // Used to check an assertion on all custom counters of a given scalding job.
   def counters(op: Map[String, Long] => Unit) = {
-    statsCallbacks += ((stats: CascadingStats) => op(Stats.getAllCustomCounters()(stats)))
+    statsCallbacks += ((stats: CascadingStats[_]) => op(Stats.getAllCustomCounters()(stats)))
     this
   }
 

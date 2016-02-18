@@ -91,8 +91,7 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
 /**
  * An implementation of TSV output, split over a partition tap.
  *
- * Similar to TemplateSource, but with addition of tsvFields, to
- * let users explicitly specify which fields they want to see in
+ * tsvFields lets users explicitly specify which fields they want to see in
  * the TSV (allows user to discard path fields).
  *
  * apply assumes user wants a DelimitedPartition (the only

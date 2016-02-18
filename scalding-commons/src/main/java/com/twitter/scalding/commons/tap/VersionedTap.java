@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.twitter.scalding.commons.datastores.VersionedStore;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -30,7 +31,7 @@ public class VersionedTap extends Hfs {
   // sink-specific
   private String newVersionPath;
 
-  public VersionedTap(String dir, Scheme<JobConf,RecordReader,OutputCollector,?,?> scheme, TapMode mode)
+  public VersionedTap(String dir, Scheme<Configuration,RecordReader,OutputCollector,?,?> scheme, TapMode mode)
       throws IOException {
     super(scheme, dir);
     this.mode = mode;
@@ -59,11 +60,11 @@ public class VersionedTap extends Hfs {
     return getPath().toString();
   }
 
-  public VersionedStore getStore(JobConf conf) throws IOException {
+  public VersionedStore getStore(Configuration conf) throws IOException {
     return new VersionedStore(FileSystem.get(conf), getOutputDirectory());
   }
 
-  public String getSourcePath(JobConf conf) {
+  public String getSourcePath(Configuration conf) {
     VersionedStore store;
     try {
       store = getStore(conf);
@@ -77,7 +78,7 @@ public class VersionedTap extends Hfs {
     }
   }
 
-  public String getSinkPath(JobConf conf) {
+  public String getSinkPath(Configuration conf) {
     try {
       VersionedStore store = getStore(conf);
       String sinkPath = (version == null) ? store.createVersion() : store.createVersion(version);
@@ -91,33 +92,35 @@ public class VersionedTap extends Hfs {
   }
 
   @Override
-  public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf) {
-    super.sourceConfInit(process, conf);
-    FileInputFormat.setInputPaths(conf, getSourcePath(conf));
+  public void sourceConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
+    JobConf jobConf = new JobConf(conf);
+    super.sourceConfInit(process, jobConf);
+    FileInputFormat.setInputPaths(jobConf, getSourcePath(jobConf));
   }
 
   @Override
-  public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf) {
-    super.sinkConfInit(process, conf);
+  public void sinkConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
+    JobConf jobConf = new JobConf(conf);
+    super.sinkConfInit(process, jobConf);
 
     if (newVersionPath == null)
-      newVersionPath = getSinkPath(conf);
+      newVersionPath = getSinkPath(jobConf);
 
-    FileOutputFormat.setOutputPath(conf, new Path(newVersionPath));
+    FileOutputFormat.setOutputPath(jobConf, new Path(newVersionPath));
   }
 
   @Override
-  public boolean resourceExists(JobConf jc) throws IOException {
+  public boolean resourceExists(Configuration jc) throws IOException {
     return getStore(jc).mostRecentVersion() != null;
   }
 
   @Override
-  public boolean createResource(JobConf jc) throws IOException {
+  public boolean createResource(Configuration jc) throws IOException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public boolean deleteResource(JobConf jc) throws IOException {
+  public boolean deleteResource(Configuration jc) throws IOException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -131,13 +134,13 @@ public class VersionedTap extends Hfs {
   }
 
   @Override
-  public long getModifiedTime(JobConf conf) throws IOException {
+  public long getModifiedTime(Configuration conf) throws IOException {
     VersionedStore store = getStore(conf);
     return (mode == TapMode.SINK) ? 0 : store.mostRecentVersion();
   }
 
   @Override
-  public boolean commitResource(JobConf conf) throws IOException {
+  public boolean commitResource(Configuration conf) throws IOException {
     VersionedStore store = new VersionedStore(FileSystem.get(conf), getOutputDirectory());
 
     if (newVersionPath != null) {
@@ -150,7 +153,7 @@ public class VersionedTap extends Hfs {
     return true;
   }
 
-  private static void markSuccessfulOutputDir(Path path, JobConf conf) throws IOException {
+  private static void markSuccessfulOutputDir(Path path, Configuration conf) throws IOException {
       FileSystem fs = FileSystem.get(conf);
       // create a file in the folder to mark it
       if (fs.exists(path)) {
@@ -160,7 +163,7 @@ public class VersionedTap extends Hfs {
   }
 
   @Override
-  public boolean rollbackResource(JobConf conf) throws IOException {
+  public boolean rollbackResource(Configuration conf) throws IOException {
     if (newVersionPath != null) {
       getStore(conf).failVersion(newVersionPath);
       newVersionPath = null;

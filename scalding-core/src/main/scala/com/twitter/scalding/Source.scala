@@ -28,6 +28,7 @@ import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollecto
 
 import cascading.pipe.Pipe
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -49,7 +50,7 @@ class InvalidSourceException(message: String) extends RuntimeException(message)
  *
  * hdfsPaths represents user-supplied list that was detected as not containing any valid paths.
  */
-class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobConf, RecordReader[_, _]] {
+class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[Configuration, RecordReader[_, _]] {
 
   private final val randomId = UUID.randomUUID.toString
 
@@ -57,12 +58,12 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
 
   override def hashCode: Int = randomId.hashCode
 
-  override def getModifiedTime(conf: JobConf): Long = 0L
+  override def getModifiedTime(conf: Configuration): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
+  override def openForRead(flow: FlowProcess[_ <: Configuration], input: RecordReader[_, _]): TupleEntryIterator =
     sys.error(s"InvalidSourceTap: No good paths in $hdfsPaths")
 
-  override def resourceExists(conf: JobConf): Boolean = false
+  override def resourceExists(conf: Configuration): Boolean = false
 
   override def getScheme = new NullScheme()
 
@@ -75,8 +76,10 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
   // 4. source.validateTaps (throws InvalidSourceException)
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
-  override def sourceConfInit(flow: FlowProcess[JobConf], conf: JobConf): Unit = {
-    conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
+  override def sourceConfInit(flow: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
+    conf.setClass("mapred.input.format.class",
+      classOf[cascading.tap.hadoop.io.MultiInputFormat],
+      classOf[org.apache.hadoop.mapred.InputFormat[_, _]]);
     super.sourceConfInit(flow, conf)
   }
 }
@@ -94,13 +97,13 @@ case object Write extends AccessMode
 
 object HadoopSchemeInstance {
   def apply(scheme: Scheme[_, _, _, _, _]) =
-    scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+    scheme.asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
 }
 
 object CastHfsTap {
   // The scala compiler has problems with the generics in Cascading
-  def apply(tap: Hfs): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
-    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+  def apply(tap: Hfs): Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]]
 }
 
 /**
@@ -251,7 +254,7 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
     SinkMode.UPDATE) {
 
   def getIdentifier = "nullTap"
-  def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
+  def openForWrite(flowProcess: FlowProcess[_ <: Config], output: Output) =
     new TupleEntryCollector {
       override def add(te: TupleEntry) {}
       override def add(t: CTuple) {}
@@ -269,7 +272,7 @@ trait BaseNullSource extends Source {
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")
       case Write => mode match {
-        case Hdfs(_, _) => new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
+        case Hdfs(_, _) => new NullTap[Configuration, RecordReader[_, _], OutputCollector[_, _], Any, Any]
         case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
         case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
       }

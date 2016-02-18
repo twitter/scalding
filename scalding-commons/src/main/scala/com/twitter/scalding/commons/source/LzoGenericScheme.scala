@@ -120,7 +120,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
   override protected def prepareBinaryWritable(): GenericWritable[M] =
     new GenericWritable(conv)
 
-  override def sourceConfInit(fp: FlowProcess[JobConf],
+  override def sourceConfInit(fp: FlowProcess[_ <: JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
 
@@ -131,7 +131,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
   }
 
-  override def sinkConfInit(fp: FlowProcess[JobConf],
+  override def sinkConfInit(fp: FlowProcess[_ <: JobConf],
     tap: Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]],
     conf: JobConf): Unit = {
     LzoGenericScheme.setConverter(conv, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)

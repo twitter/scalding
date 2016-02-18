@@ -18,7 +18,7 @@ package com.twitter.scalding {
   import cascading.operation._
   import cascading.tuple._
   import cascading.flow._
-  import cascading.pipe.assembly.AggregateBy
+  import cascading.pipe.assembly.{ AggregateBy, AggregateByProps }
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
@@ -134,15 +134,23 @@ package com.twitter.scalding {
     val boxedSemigroup = Externalizer(commutativeSemigroup)
 
     val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
+    val CASCADING2_SIZE_CONFIG_KEY = Config.CascadingAggregateByThreshold
+    val CASCADING3_SIZE_CONFIG_KEY = AggregateByProps.AGGREGATE_BY_CAPACITY
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
-        Option(fp.getStringProperty(SIZE_CONFIG_KEY))
-          .filterNot { _.isEmpty }
-          .map { _.toInt }
-      }
-        .getOrElse(DEFAULT_CACHE_SIZE)
+        val cascading2Property = Option(fp.getStringProperty(CASCADING2_SIZE_CONFIG_KEY)).filterNot(_.isEmpty).map(_.toInt)
+        val cascading3Property = Option(fp.getStringProperty(CASCADING3_SIZE_CONFIG_KEY)).filterNot(_.isEmpty).map(_.toInt)
+        // we support both old and new properties for backward compatibility
+        // and pick the max of the two, when both exist
+        (cascading2Property, cascading3Property) match {
+          case (Some(a), Some(b)) if a >= b => Some(a)
+          case (Some(a), Some(b)) if b > a => Some(b)
+          case (None, None) => None
+          case (Some(a), _) => Some(a)
+          case (_, Some(b)) => Some(b)
+        }
+      }.getOrElse(DEFAULT_CACHE_SIZE)
 
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[SummingCache[Tuple, V]]) {
       //Set up the context:

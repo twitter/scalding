@@ -3,6 +3,7 @@ package com.twitter.scalding.commons.scheme;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -29,7 +30,7 @@ public class KeyValueByteScheme extends WritableSequenceFile {
   }
 
   @Override
-  public boolean source(FlowProcess<JobConf> flowProcess,
+  public boolean source(FlowProcess<? extends Configuration> flowProcess,
       SourceCall<Object[], RecordReader> sourceCall) throws IOException {
     BytesWritable key = (BytesWritable) sourceCall.getContext()[0];
     BytesWritable value = (BytesWritable) sourceCall.getContext()[1];
@@ -47,7 +48,7 @@ public class KeyValueByteScheme extends WritableSequenceFile {
   }
 
   @Override
-  public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Void, OutputCollector> sinkCall)
+  public void sink(FlowProcess<? extends Configuration> flowProcess, SinkCall<Void, OutputCollector> sinkCall)
       throws IOException {
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
 

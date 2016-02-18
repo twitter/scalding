@@ -292,11 +292,7 @@ lazy val scaldingArgs = module("args")
 lazy val scaldingDate = module("date")
 
 lazy val cascadingVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
-
-// This is a temporary placeholder while we migrate to cascading3, a few subprojects at a time
-// and should eventually be folded into cascadingVersion when we merge to develop.
-val cascadingThreeVersion = "3.0.3"
+  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.0.3")
 
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
@@ -401,8 +397,8 @@ lazy val scaldingParquetCascading = module("parquet-cascading").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided",
+    "cascading" % "cascading-core" % cascadingVersion % "provided",
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided",
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
   )
 ).dependsOn(scaldingParquetFixtures % "test->test")
@@ -451,8 +447,8 @@ lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
   .settings(
     libraryDependencies ++= Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
-      "cascading" % "cascading-hadoop" % cascadingThreeVersion % "test",
+      "cascading" % "cascading-core" % cascadingVersion % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion % "test",
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
@@ -602,7 +598,7 @@ lazy val maple = Project(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided"
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided"
   )
   }
 )
@@ -628,6 +624,7 @@ lazy val scaldingDb = module("db").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.scala-lang" % "scala-library" % scalaVersion,
     "org.scala-lang" % "scala-reflect" % scalaVersion,
+    "cascading" % "cascading-core" % cascadingVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
 },
