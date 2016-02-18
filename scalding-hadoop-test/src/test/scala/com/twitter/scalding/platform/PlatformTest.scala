@@ -33,11 +33,14 @@ class InAndOutJob(args: Args) extends Job(args) {
 }
 
 object TinyJoinAndMergeJob {
-  val peopleInput = TypedTsv[Int]("input1")
-  val peopleData = List(1, 2, 3, 4)
+  val joinInput1 = TypedTsv[Int]("input1")
+  val joinData1 = List(1, 2, 3, 4)
 
-  val messageInput = TypedTsv[Int]("input2")
-  val messageData = List(1, 2, 3)
+  val joinInput2 = TypedTsv[Int]("input2")
+  val joinData2 = List(1, 2, 3)
+
+  val mergerInput = TypedTsv[Int]("input3")
+  val mergerData = List(1, 2, 3, 4)
 
   val output = TypedTsv[(Int, Int)]("output")
   val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
@@ -46,13 +49,43 @@ object TinyJoinAndMergeJob {
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
-  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
 
-  val messages = messageInput.read
+  val joinedData = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
-    .joinWithTiny('id -> 'id, people)
+    .joinWithTiny('id -> 'id, input1)
 
-  (messages ++ people).groupBy('id) { _.size('count) }.write(output)
+  val mergerData = mergerInput.read.mapTo(0 -> 'id) { v: Int => v }
+
+  (mergerData ++ joinedData).groupBy('id) { _.size('count) }.write(output)
+}
+
+class TinyJoinAndMergeUnsupportedJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+
+  // merging the output of a hashjoin with one of its inputs is
+  // no longer supported in cascading3. So we verify we fail here.
+  (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
+}
+
+class TinyJoinAndMergeForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .forceToDisk // workaround for cascading3
+
+  // this should work with the forceToDisk workaround
+  (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
 }
 
 object TsvNoCacheJob {
@@ -288,8 +321,35 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "merge and joinWithTiny shouldn't duplicate data" in {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
-        .source(peopleInput, peopleData)
-        .source(messageInput, messageData)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .source(mergerInput, mergerData)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .run
+    }
+  }
+
+  "A TinyJoinAndMergeUnsupportedJob" should {
+    import TinyJoinAndMergeJob._
+
+    "fail without the forceToDisk workaround" in {
+      an[cascading.flow.planner.PlannerException] should be thrownBy {
+        HadoopPlatformJobTest(new TinyJoinAndMergeUnsupportedJob(_), cluster)
+          .source(joinInput1, joinData1)
+          .source(joinInput2, joinData2)
+          .sink(output) { _.toSet shouldBe (outputData.toSet) }
+          .run
+      }
+    }
+  }
+
+  "A TinyJoinAndMergeForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with forceToDisk workaround" in {
+      HadoopPlatformJobTest(new TinyJoinAndMergeForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
         .run
     }
