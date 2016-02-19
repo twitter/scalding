@@ -139,13 +139,13 @@ package com.twitter.scalding {
 
     def cacheSize(fp: FlowProcess[_]): Int =
       cacheSize.orElse {
-        val cascading2Property = Option(fp.getStringProperty(CASCADING2_SIZE_CONFIG_KEY)).filterNot(_.isEmpty).map(_.toInt)
-        val cascading3Property = Option(fp.getStringProperty(CASCADING3_SIZE_CONFIG_KEY)).filterNot(_.isEmpty).map(_.toInt)
+        def getInt(k: String): Option[Int] = Option(fp.getStringProperty(k)).filterNot(_.isEmpty).map(_.toInt)
+        val cascading2Property = getInt(CASCADING2_SIZE_CONFIG_KEY)
+        val cascading3Property = getInt(CASCADING3_SIZE_CONFIG_KEY)
         // we support both old and new properties for backward compatibility
         // and pick the max of the two, when both exist
         (cascading2Property, cascading3Property) match {
-          case (Some(a), Some(b)) if a >= b => Some(a)
-          case (Some(a), Some(b)) if b > a => Some(b)
+          case (Some(a), Some(b)) => Some(Ordering[Int].max(a, b))
           case (None, None) => None
           case (Some(a), _) => Some(a)
           case (_, Some(b)) => Some(b)
