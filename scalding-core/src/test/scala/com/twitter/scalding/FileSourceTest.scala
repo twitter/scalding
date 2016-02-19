@@ -248,23 +248,38 @@ class FileSourceTest extends WordSpec with Matchers {
       }
   }
 
-  "FixedPathSource.stripTrailingStar" should {
-    import TestFixedPathSource.stripTrailingStar
+  "FixedPathSource.stripTrailing" should {
+    import TestFixedPathSource.stripTrailing
 
-    "remove * from a path ending in /*" in {
-      stripTrailingStar("test_data/2013/06/*") shouldBe "test_data/2013/06/"
+    "crib if path == *" in {
+      intercept[AssertionError] { stripTrailing("*") }
+    }
+
+    "crib if path == /*" in {
+      intercept[AssertionError] { stripTrailing("/*") }
+    }
+
+    "remove /* from a path ending in /*" in {
+      stripTrailing("test_data/2013/06/*") shouldBe "test_data/2013/06"
     }
 
     "leave path as-is when it ends in a directory name" in {
-      stripTrailingStar("test_data/2013/06") shouldBe "test_data/2013/06"
+      stripTrailing("test_data/2013/06") shouldBe "test_data/2013/06"
     }
 
     "leave path as-is when it ends in a directory name/" in {
-      stripTrailingStar("test_data/2013/06/") shouldBe "test_data/2013/06/"
+      stripTrailing("test_data/2013/06/") shouldBe "test_data/2013/06/"
     }
 
     "leave path as-is when it ends in * without a preceeding /" in {
-      stripTrailingStar("test_data/2013/06*") shouldBe "test_data/2013/06*"
+      stripTrailing("test_data/2013/06*") shouldBe "test_data/2013/06*"
+    }
+  }
+
+  //Verify stripTrailing has been integrated in FixedPathSource
+  "FixedPathSource.hdfsWritePath" should {
+    "remove * from a path ending in /*" in {
+      TestFixedPathSource("test_data/2013/06/*").hdfsWritePath shouldBe "test_data/2013/06"
     }
   }
 
@@ -326,5 +341,7 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
 }
 
 object TestFixedPathSource extends FixedPathSource {
-  override def stripTrailingStar(path: String) = super.stripTrailingStar(path)
+  override def stripTrailing(path: String) = super.stripTrailing(path)
 }
+
+case class TestFixedPathSource(path: String*) extends FixedPathSource(path: _*)
