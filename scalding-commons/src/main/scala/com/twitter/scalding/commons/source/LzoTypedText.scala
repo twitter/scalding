@@ -3,7 +3,7 @@ package com.twitter.scalding.commons.source
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{ TextDelimited => CHTextDelimited }
 import cascading.scheme.local.{ TextDelimited => CLTextDelimited }
-import com.twitter.elephantbird.cascading2.scheme.LzoTextDelimited
+import com.twitter.elephantbird.cascading3.scheme.LzoTextDelimited
 import com.twitter.scalding._
 import com.twitter.scalding.source.TypedTextDelimited
 import com.twitter.scalding.source.TypedSep

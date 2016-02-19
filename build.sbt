@@ -25,7 +25,7 @@ val avroVersion = "1.7.4"
 val bijectionVersion = "0.8.1"
 val cascadingAvroVersion = "2.1.2"
 val chillVersion = "0.7.1"
-val elephantbirdVersion = "4.8"
+val elephantbirdVersion = "4.13"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
@@ -336,7 +336,7 @@ lazy val scaldingCommons = module("commons").settings(
     "com.twitter" %% "bijection-core" % bijectionVersion,
     "com.twitter" %% "algebird-core" % algebirdVersion,
     "com.twitter" %% "chill" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
+    "com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
     "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
     // TODO: split this out into scalding-thrift
