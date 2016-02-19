@@ -248,38 +248,29 @@ class FileSourceTest extends WordSpec with Matchers {
       }
   }
 
-  "FixedPathSource.stripTrailing" should {
-    import TestFixedPathSource.stripTrailing
-
+  "FixedPathSource.hdfsWritePath" should {
     "crib if path == *" in {
-      intercept[AssertionError] { stripTrailing("*") }
+      intercept[AssertionError] { TestFixedPathSource("*").hdfsWritePath }
     }
 
     "crib if path == /*" in {
-      intercept[AssertionError] { stripTrailing("/*") }
+      intercept[AssertionError] { TestFixedPathSource("/*").hdfsWritePath }
     }
 
     "remove /* from a path ending in /*" in {
-      stripTrailing("test_data/2013/06/*") shouldBe "test_data/2013/06"
+      TestFixedPathSource("test_data/2013/06/*").hdfsWritePath shouldBe "test_data/2013/06"
     }
 
     "leave path as-is when it ends in a directory name" in {
-      stripTrailing("test_data/2013/06") shouldBe "test_data/2013/06"
+      TestFixedPathSource("test_data/2013/06").hdfsWritePath shouldBe "test_data/2013/06"
     }
 
     "leave path as-is when it ends in a directory name/" in {
-      stripTrailing("test_data/2013/06/") shouldBe "test_data/2013/06/"
+      TestFixedPathSource("test_data/2013/06/").hdfsWritePath shouldBe "test_data/2013/06/"
     }
 
     "leave path as-is when it ends in * without a preceeding /" in {
-      stripTrailing("test_data/2013/06*") shouldBe "test_data/2013/06*"
-    }
-  }
-
-  //Verify stripTrailing has been integrated in FixedPathSource
-  "FixedPathSource.hdfsWritePath" should {
-    "remove * from a path ending in /*" in {
-      TestFixedPathSource("test_data/2013/06/*").hdfsWritePath shouldBe "test_data/2013/06"
+      TestFixedPathSource("test_data/2013/06*").hdfsWritePath shouldBe "test_data/2013/06*"
     }
   }
 
@@ -338,10 +329,6 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
   def pathIsGood(p: String) = false
   val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
-}
-
-object TestFixedPathSource extends FixedPathSource {
-  override def stripTrailing(path: String) = super.stripTrailing(path)
 }
 
 case class TestFixedPathSource(path: String*) extends FixedPathSource(path: _*)
