@@ -27,7 +27,7 @@ class TypedFieldsTest extends WordSpec with Matchers {
 
     "throw an exception if a field is not comparable" in {
       val thrown = the[FlowException] thrownBy untypedJob
-      thrown.getMessage shouldBe "local step failed"
+      thrown.getMessage should startWith("local step failed")
     }
 
     // Now run the typed fields version
