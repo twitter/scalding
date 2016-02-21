@@ -37,7 +37,6 @@ object RichDate {
 
   implicit def apply(d: Date): RichDate = RichDate(d.getTime)
   implicit def apply(d: Calendar): RichDate = RichDate(d.getTime)
-
   /**
    * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.
    * We allow either date, date with time in minutes, date with time down to seconds.
