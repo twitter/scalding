@@ -27,13 +27,23 @@ class DateTest extends WordSpec {
     "implicitly convert strings" in {
       val rd1: RichDate = "2011-10-20"
       val rd2: RichDate = "2011-10-20"
+      val rd3: RichDate = "20111020"
+      val rd4: RichDate = "20111020"
       assert(rd1 === rd2)
+      assert(rd3 === rd4)
     }
     "implicitly convert calendars" in {
+      val rd1WithoutDash: RichDate = "20111020"
+      val calWithoutDash = Calendar.getInstance(tz)
+      calWithoutDash.setTime(rd1WithoutDash.value)
+      val rd2WithoutDash: RichDate = calWithoutDash
+
       val rd1: RichDate = "2011-10-20"
       val cal = Calendar.getInstance(tz)
       cal.setTime(rd1.value)
       val rd2: RichDate = cal
+
+      assert(rd1WithoutDash == rd2WithoutDash)
       assert(rd1 === rd2)
     }
     "deal with strings with spaces" in {
@@ -63,6 +73,11 @@ class DateTest extends WordSpec {
     }
     "be able to deal with arithmetic operations with whitespace" in {
       val rd1: RichDate = RichDate("2010-10-02") + Seconds(1)
+      val rd2: RichDate = "  2010-10-02  T  00:00:01    "
+      assert(rd1 === rd2)
+    }
+    "be able to deal with arithmetic operations without hyphens and whitespaces" in {
+      val rd1: RichDate = RichDate("20101002") + Seconds(1)
       val rd2: RichDate = "  2010-10-02  T  00:00:01    "
       assert(rd1 === rd2)
     }
@@ -115,9 +130,13 @@ class DateTest extends WordSpec {
     "know the most recent time units" in {
       //10-25 is a Tuesday, earliest in week is a monday
       assert(Weeks(1).floorOf("2011-10-25") === RichDate("2011-10-24"))
+      assert(Weeks(1).floorOf("20111025") === RichDate("2011-10-24"))
       assert(Days(1).floorOf("2011-10-25 10:01") === RichDate("2011-10-25 00:00"))
+      assert(Days(1).floorOf("201110251001") === RichDate("2011-10-25 00:00"))
       //Leaving off the time should give the same result:
+      assert(Days(1).floorOf("201110251001") === RichDate("2011-10-25"))
       assert(Days(1).floorOf("2011-10-25 10:01") === RichDate("2011-10-25"))
+      assert(Hours(1).floorOf("201110251001") === RichDate("2011-10-25 10:00"))
       assert(Hours(1).floorOf("2011-10-25 10:01") === RichDate("2011-10-25 10:00"))
     }
     "correctly do arithmetic" in {
@@ -130,6 +149,9 @@ class DateTest extends WordSpec {
       }
     }
     "correctly calculate upperBound" in {
+      assert(Seconds(1).floorOf(RichDate.upperBound("20101001")) === Seconds(1).floorOf(RichDate("2010-10-01 23:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("2010100114")) === Seconds(1).floorOf(RichDate("2010-10-01 14:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("201010011415")) === Seconds(1).floorOf(RichDate("2010-10-01 14:15:59")))
       assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) === Seconds(1).floorOf(RichDate("2010-10-01 23:59:59")))
       assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) === Seconds(1).floorOf(RichDate("2010-10-01 14:59:59")))
       assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) === Seconds(1).floorOf(RichDate("2010-10-01 14:15:59")))
@@ -153,6 +175,7 @@ class DateTest extends WordSpec {
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Minutes(13))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Hours(13))
       assert(DateRange("2010-10-01", "2010-10-10").each(Days(1)).size === 10)
+      assert(DateRange("201010010000", RichDate("2010-10-02") - Millisecs(1)).each(Hours(1)).size === 24)
       assert(DateRange("2010-10-01 00:00", RichDate("2010-10-02") - Millisecs(1)).each(Hours(1)).size === 24)
       assert(DateRange("2010-10-01 00:00", RichDate("2010-10-02") + Millisecs(1)).each(Hours(1)).size === 25)
       assert(DateRange("2010-10-01", RichDate.upperBound("2010-10-20")).each(Days(1)).size === 20)

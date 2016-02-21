@@ -37,6 +37,7 @@ object RichDate {
 
   implicit def apply(d: Date): RichDate = RichDate(d.getTime)
   implicit def apply(d: Calendar): RichDate = RichDate(d.getTime)
+
   /**
    * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.
    * We allow either date, date with time in minutes, date with time down to seconds.
@@ -51,9 +52,13 @@ object RichDate {
   def upperBound(s: String)(implicit tz: TimeZone, dp: DateParser) = {
     val end = apply(s)
     (DateOps.getFormatObject(s) match {
+      case Some(DateOps.Format.DATE_WITHOUT_DASH) => end + Days(1)
       case Some(DateOps.Format.DATE_WITH_DASH) => end + Days(1)
+      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH) => end + Hours(1)
       case Some(DateOps.Format.DATEHOUR_WITH_DASH) => end + Hours(1)
+      case Some(DateOps.Format.DATETIME_WITHOUT_DASH) => end + Minutes(1)
       case Some(DateOps.Format.DATETIME_WITH_DASH) => end + Minutes(1)
+      case Some(DateOps.Format.DATETIME_HMS_WITHOUT_DASH) => end + Seconds(1)
       case Some(DateOps.Format.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
       case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
       case None => Days(1).floorOf(end + Days(1))
