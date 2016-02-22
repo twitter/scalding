@@ -248,6 +248,32 @@ class FileSourceTest extends WordSpec with Matchers {
       }
   }
 
+  "FixedPathSource.hdfsWritePath" should {
+    "crib if path == *" in {
+      intercept[AssertionError] { TestFixedPathSource("*").hdfsWritePath }
+    }
+
+    "crib if path == /*" in {
+      intercept[AssertionError] { TestFixedPathSource("/*").hdfsWritePath }
+    }
+
+    "remove /* from a path ending in /*" in {
+      TestFixedPathSource("test_data/2013/06/*").hdfsWritePath shouldBe "test_data/2013/06"
+    }
+
+    "leave path as-is when it ends in a directory name" in {
+      TestFixedPathSource("test_data/2013/06").hdfsWritePath shouldBe "test_data/2013/06"
+    }
+
+    "leave path as-is when it ends in a directory name/" in {
+      TestFixedPathSource("test_data/2013/06/").hdfsWritePath shouldBe "test_data/2013/06/"
+    }
+
+    "leave path as-is when it ends in * without a preceeding /" in {
+      TestFixedPathSource("test_data/2013/06*").hdfsWritePath shouldBe "test_data/2013/06*"
+    }
+  }
+
   "invalid source input" should {
     "Create an InvalidSourceTap an empty directory is given" in {
       TestInvalidFileSource.createHdfsReadTap shouldBe a[InvalidSourceTap]
@@ -304,3 +330,5 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
   val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
 }
+
+case class TestFixedPathSource(path: String*) extends FixedPathSource(path: _*)

@@ -422,8 +422,24 @@ abstract class FixedPathSource(path: String*) extends FileSource {
   // `toString` is used by equals in JobTest, which causes
   // problems due to unstable collection type of `path`
   override def toString = getClass.getName + path.mkString("(", ",", ")")
+  override def hdfsWritePath = stripTrailing(super.hdfsWritePath)
+
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
+
+  /**
+    * Similar in behavior to {@link TimePathedSource.writePathFor}.
+    * Strip out the trailing slash star.
+    */
+  protected def stripTrailing(path: String): String = {
+    assert(path != "*", "Path must not be *")
+    assert(path != "/*", "Path must not be /*")
+    if(path.takeRight(2) == "/*") {
+      path.dropRight(2)
+    } else {
+      path
+    }
+  }
 }
 
 /**
