@@ -33,7 +33,6 @@ import cascading.tap.local.FileTap
 import cascading.tuple.Fields
 
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{ MapAlgebra, OrVal }
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
@@ -58,13 +57,6 @@ abstract class SchemedSource extends Source {
 
   // The mode to use for output taps determining how conflicts with existing output are handled.
   val sinkMode: SinkMode = SinkMode.REPLACE
-}
-
-trait HfsTapProvider {
-  def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
-    path: String,
-    sinkMode: SinkMode): Hfs =
-    new Hfs(scheme, path, sinkMode)
 }
 
 private[scalding] object CastFileTap {
@@ -124,7 +116,7 @@ object FileSource {
     val path = new Path(glob)
     Option(path.getFileSystem(conf).globStatus(path, filter)).map {
       _.toIterable // convert java Array to scala Iterable
-    }.getOrElse {
+    } getOrElse {
       Iterable.empty
     }
   }
@@ -139,51 +131,16 @@ object FileSource {
   /**
    * @return whether globPath contains a _SUCCESS file
    */
-  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = allGlobFilesWithSuccess(globPath, conf, hiddenFilter = false)
-
-  /**
-   * Determines whether each file in the glob has a _SUCCESS sibling file in the same directory
-   * @param globPath path to check
-   * @param conf Hadoop Configuration to create FileSystem
-   * @param hiddenFilter true, if only non-hidden files are checked
-   * @return true if the directory has files after filters are applied
-   */
-  def allGlobFilesWithSuccess(globPath: String, conf: Configuration, hiddenFilter: Boolean): Boolean = {
-    // Produce tuples (dirName, hasSuccess, hasNonHidden) keyed by dir
-    //
-    val usedDirs = glob(globPath, conf, AcceptAllPathFilter)
-      .map { fileStatus: FileStatus =>
-        // stringify Path for Semigroup
-        val dir =
-          if (fileStatus.isDirectory)
-            fileStatus.getPath.toString
-          else
-            fileStatus.getPath.getParent.toString
-
-        // HiddenFileFilter should better be called non-hidden but it borrows its name from the
-        // private field name in hadoop FileInputFormat
-        //
-        dir -> (dir,
-          OrVal(SuccessFileFilter.accept(fileStatus.getPath) && fileStatus.isFile),
-          OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
-      }
-
-    // OR by key
-    val uniqueUsedDirs = MapAlgebra.sumByKey(usedDirs)
-      .filter { case (_, (_, _, hasNonHidden)) => (!hiddenFilter || hasNonHidden.get) }
-
-    // there is at least one valid path, and all paths have success
-    //
-    uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
-      case (_, (_, hasSuccess, _)) => hasSuccess.get
-    }
+  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
+    !glob(globPath, conf, SuccessFileFilter).isEmpty
   }
+
 }
 
 /**
  * This is a base class for File-based sources
  */
-abstract class FileSource extends SchemedSource with LocalSourceOverride with HfsTapProvider {
+abstract class FileSource extends SchemedSource with LocalSourceOverride {
 
   /**
    * Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
@@ -215,7 +172,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
       }
       case hdfsMode @ Hdfs(_, _) => readOrWrite match {
         case Read => createHdfsReadTap(hdfsMode)
-        case Write => CastHfsTap(createHfsTap(hdfsScheme, hdfsWritePath, sinkMode))
+        case Write => CastHfsTap(new Hfs(hdfsScheme, hdfsWritePath, sinkMode))
       }
       case _ => {
         val tryTtp = Try(TestTapFactory(this, hdfsScheme, sinkMode)).map {
@@ -291,14 +248,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[JobConf, _, _] = {
     val taps: List[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]] =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
+        .toList.map { path => CastHfsTap(new Hfs(hdfsScheme, path, sinkMode)) }
     taps.size match {
       case 0 => {
         // This case is going to result in an error, but we don't want to throw until
-        // validateTaps. Return an InvalidSource here so the Job constructor does not fail.
-        // In the worst case if the flow plan is misconfigured,
-        //openForRead on mappers should fail when using this tap.
-        new InvalidSourceTap(hdfsPaths)
+        // validateTaps, so we just put a dummy path to return something so the
+        // Job constructor does not fail.
+        CastHfsTap(new Hfs(hdfsScheme, hdfsPaths.head, sinkMode))
       }
       case 1 => taps.head
       case _ => new ScaldingMultiSourceTap(taps)
@@ -371,30 +327,12 @@ trait SequenceFileScheme extends SchemedSource {
 }
 
 /**
- * Ensures that a _SUCCESS file is present in every directory included by a glob,
- * as well as the requirements of [[FileSource.pathIsGood]]. The set of directories to check for
- * _SUCCESS
- * is determined by examining the list of all paths returned by globPaths and adding parent
- * directories of the non-hidden files encountered.
- * pathIsGood should still be considered just a best-effort test. As an illustration the following
- * layout with an in-flight job is accepted for the glob dir*&#47;*:
- * <pre>
- *   dir1/_temporary
- *   dir2/file1
- *   dir2/_SUCCESS
- * </pre>
- *
- * Similarly if dir1 is physically empty pathIsGood is still true for dir*&#47;* above
- *
- * On the other hand it will reject an empty output directory of a finished job:
- * <pre>
- *   dir1/_SUCCESS
- * </pre>
- *
+ * Ensures that a _SUCCESS file is present in the Source path, which must be a glob,
+ * as well as the requirements of [[FileSource.pathIsGood]]
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
-    FileSource.allGlobFilesWithSuccess(p, conf, true)
+    FileSource.globHasNonHiddenPaths(p, conf) && FileSource.globHasSuccessFile(p, conf)
 }
 
 /**
@@ -419,27 +357,9 @@ abstract class FixedPathSource(path: String*) extends FileSource {
   def localPaths = path.toList
   def hdfsPaths = path.toList
 
-  // `toString` is used by equals in JobTest, which causes
-  // problems due to unstable collection type of `path`
-  override def toString = getClass.getName + path.mkString("(", ",", ")")
-  override def hdfsWritePath = stripTrailing(super.hdfsWritePath)
-
+  override def toString = getClass.getName + path
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
-
-  /**
-    * Similar in behavior to {@link TimePathedSource.writePathFor}.
-    * Strip out the trailing slash star.
-    */
-  protected def stripTrailing(path: String): String = {
-    assert(path != "*", "Path must not be *")
-    assert(path != "/*", "Path must not be /*")
-    if(path.takeRight(2) == "/*") {
-      path.dropRight(2)
-    } else {
-      path
-    }
-  }
 }
 
 /**

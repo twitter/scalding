@@ -1,18 +1,31 @@
 package com.twitter.scalding
 
 import com.twitter.algebird.Semigroup
+import org.slf4j.LoggerFactory
+
+import scala.util.{ Failure, Success, Try }
 
 object ExecutionUtil {
+  @transient private[this] lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  /**
+   * Useful for when using parallelism and want to output the final state of the job
+   */
+  def liftedSequenceUnit[T](executions: Execution[Seq[Try[T]]], handleComplete: Try[T] => Unit): Execution[Unit] =
+    executions.onComplete {
+      case Success(sequence) => sequence.foreach(handleComplete)
+      case Failure(ex) => () //If the execution was lifted this should never occur
+    }.unit
+
   /**
    * Generate a list of executions from a date range
    *
    * @param duration Duration to split daterange
-   * @param parallelism How many jobs to run in parallel
    * @param fn Function to run a execution given a date range
    * @return Sequence of Executions per Day
    */
-  def executionsFromDates[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[T]] =
-    dr.each(duration).map(fn).toSeq
+  def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[(DateRange, T)]] =
+    dr.each(duration).map(d => fn(d).map((d, _))).toSeq
 
   /**
    * Split a DateRange and allow for max parallel running of executions
@@ -22,11 +35,8 @@ object ExecutionUtil {
    * @param fn Function to run a execution given a date range
    * @return Seq of Dates split by Duration with corresponding execution result
    */
-  def runDatesWithParallelism[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[(DateRange, T)]] = {
-
-    val dates = dr.each(duration).toSeq
-    Execution.withParallelism(dates.map(fn), parallelism).map(e => dates.zip(e))
-  }
+  def runDatesWithParallelism[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[(DateRange, T)]] =
+    Execution.withParallelism(executionsFromDates(duration)(fn), parallelism)
 
   /**
    * Split a DateRange and allow for max parallel running of executions

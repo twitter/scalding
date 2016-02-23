@@ -2,6 +2,8 @@ package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
 
+import scala.util.Try
+
 class ExecutionUtilTest extends WordSpec with Matchers {
   import ExecutionUtil._
 
@@ -36,6 +38,21 @@ class ExecutionUtilTest extends WordSpec with Matchers {
       val days = dateRange.each(Days(1)).toSeq
       val result = runDateRangeWithParallelismSum(Days(1))(testJob)
       assert(run(result).get == days.map(d => 1).sum)
+    }
+
+    "call complete function" in {
+      var i = 0
+      def callBack(item: Try[(DateRange, Int)]) = {
+        i += item.get._2
+      }
+
+      val execs = Execution.withParallelism(
+        executionsFromDates(Days(1))(testJob).map(_.liftToTry),
+        parallelism = 1)
+
+      run(ExecutionUtil.liftedSequenceUnit(execs, callBack))
+
+      assert(i == 10)
     }
   }
 }
