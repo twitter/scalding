@@ -1,9 +1,8 @@
 package com.twitter.scalding
 
 import com.twitter.algebird.Semigroup
-import org.slf4j.LoggerFactory
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 object ExecutionUtil {
   /**
