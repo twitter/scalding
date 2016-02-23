@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory
 import scala.util.{ Failure, Success, Try }
 
 object ExecutionUtil {
-  @transient private[this] lazy val logger = LoggerFactory.getLogger(this.getClass)
-
   /**
    * Useful for when using parallelism and want to output the final state of the job
    */
