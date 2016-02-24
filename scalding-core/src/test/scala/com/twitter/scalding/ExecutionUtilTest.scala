@@ -2,8 +2,6 @@ package com.twitter.scalding
 
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.util.Try
-
 class ExecutionUtilTest extends WordSpec with Matchers {
   import ExecutionUtil._
 

@@ -2,8 +2,6 @@ package com.twitter.scalding
 
 import com.twitter.algebird.Semigroup
 
-import scala.util.{Failure, Success, Try}
-
 object ExecutionUtil {
   /**
    * Generate a list of executions from a date range
