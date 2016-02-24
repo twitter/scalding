@@ -6,22 +6,13 @@ import scala.util.{Failure, Success, Try}
 
 object ExecutionUtil {
   /**
-   * Useful for when using parallelism and want to output the final state of the job
-   */
-  def liftedSequenceUnit[T](executions: Execution[Seq[Try[T]]], handleComplete: Try[T] => Unit): Execution[Unit] =
-    executions.onComplete {
-      case Success(sequence) => sequence.foreach(handleComplete)
-      case Failure(ex) => () //If the execution was lifted this should never occur
-    }.unit
-
-  /**
    * Generate a list of executions from a date range
    *
    * @param duration Duration to split daterange
    * @param fn Function to run a execution given a date range
    * @return Sequence of Executions per Day
    */
-  def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[(DateRange, T)]] =
+  private[scalding] def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[(DateRange, T)]] =
     dr.each(duration).map(d => fn(d).map((d, _))).toSeq
 
   /**
