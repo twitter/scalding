@@ -31,6 +31,7 @@ class DateTest extends WordSpec {
       val rd4: RichDate = "20111020"
       assert(rd1 === rd2)
       assert(rd3 === rd4)
+      assert(rd1 === rd3)
     }
     "implicitly convert calendars" in {
       val rd1WithoutDash: RichDate = "20111020"

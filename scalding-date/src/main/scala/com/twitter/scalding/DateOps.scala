@@ -42,19 +42,18 @@ object DateOps extends java.io.Serializable {
   }
 
   private[scalding] object Format {
-    private val dateWithoutSep = """\d{4}\d{2}\d{2}"""
     private val date = """\d{4}-\d{2}-\d{2}"""
     private val sep = """(T?|\s*)"""
     private val emptyBegin = """^\s*"""
     private val emptyEnd = """\s*$"""
 
-    case object DATE_WITHOUT_DASH extends Format(DateOps.DATE_WITHOUT_DASH, new Regex(emptyBegin + dateWithoutSep + emptyEnd))
+    case object DATE_WITHOUT_DASH extends Format(DateOps.DATE_WITHOUT_DASH, new Regex(emptyBegin + """\d{8}""" + emptyEnd))
     case object DATE_WITH_DASH extends Format(DateOps.DATE_WITH_DASH, new Regex(emptyBegin + date + emptyEnd))
-    case object DATEHOUR_WITHOUT_DASH extends Format(DateOps.DATEHOUR_WITHOUT_DASH, new Regex(emptyBegin + dateWithoutSep + """\d\d""" + emptyEnd))
+    case object DATEHOUR_WITHOUT_DASH extends Format(DateOps.DATEHOUR_WITHOUT_DASH, new Regex(emptyBegin + """\d{10}""" + emptyEnd))
     case object DATEHOUR_WITH_DASH extends Format(DateOps.DATEHOUR_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d""" + emptyEnd))
-    case object DATETIME_WITHOUT_DASH extends Format(DateOps.DATETIME_WITHOUT_DASH, new Regex(emptyBegin + dateWithoutSep + """\d\d\d\d""" + emptyEnd))
+    case object DATETIME_WITHOUT_DASH extends Format(DateOps.DATETIME_WITHOUT_DASH, new Regex(emptyBegin + """\d{12}""" + emptyEnd))
     case object DATETIME_WITH_DASH extends Format(DateOps.DATETIME_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d""" + emptyEnd))
-    case object DATETIME_HMS_WITHOUT_DASH extends Format(DateOps.DATETIME_HMS_WITHOUT_DASH, new Regex(emptyBegin + dateWithoutSep + """\d\d\d\d\d\d""" + emptyEnd))
+    case object DATETIME_HMS_WITHOUT_DASH extends Format(DateOps.DATETIME_HMS_WITHOUT_DASH, new Regex(emptyBegin + """\d{14}""" + emptyEnd))
     case object DATETIME_HMS_WITH_DASH extends Format(DateOps.DATETIME_HMS_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d:\d\d""" + emptyEnd))
     case object DATETIME_HMSM_WITH_DASH extends Format(DateOps.DATETIME_HMSM_WITH_DASH, new Regex(emptyBegin + date + sep + """\d\d:\d\d:\d\d\.\d{1,3}""" + emptyEnd))
   }
@@ -69,16 +68,15 @@ object DateOps extends java.io.Serializable {
    */
   private[scalding] def getFormatObject(s: String): Option[Format] = {
     val formats: List[Format] = List(
-      Format.DATE_WITHOUT_DASH,
       Format.DATE_WITH_DASH,
       Format.DATEHOUR_WITH_DASH,
-      Format.DATEHOUR_WITHOUT_DASH,
       Format.DATETIME_WITH_DASH,
-      Format.DATETIME_WITHOUT_DASH,
       Format.DATETIME_HMS_WITH_DASH,
-      Format.DATETIME_HMS_WITHOUT_DASH,
-      Format.DATETIME_HMSM_WITH_DASH
-    )
+      Format.DATETIME_HMSM_WITH_DASH,
+      Format.DATE_WITHOUT_DASH,
+      Format.DATEHOUR_WITHOUT_DASH,
+      Format.DATETIME_WITHOUT_DASH,
+      Format.DATETIME_HMS_WITHOUT_DASH)
 
     formats.find { _.matches(prepare(s)) }
   }
