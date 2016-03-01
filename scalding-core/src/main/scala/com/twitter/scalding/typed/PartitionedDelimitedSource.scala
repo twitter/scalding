@@ -30,7 +30,7 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
 /**
  * Scalding source to read or write partitioned delimited text.
  *
- * For writing it expects a pair of `(P, R)`, where `P` is the data used for partitioning and
+ * For writing it expects a pair of `(P, T)`, where `P` is the data used for partitioning and
  * `T` is the output to write out. Below is an example.
  * {{{
  * val data = List(
@@ -42,7 +42,7 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  *   .write(PartitionedDelimited[(String, String), (String, Int)](args("out"), "col1=%s/col2=%s"))
  * }}}
  *
- * For reading it produces a pair `(P, T` where `P` is the partition data and `T` is data in the
+ * For reading it produces a pair `(P, T)` where `P` is the partition data and `T` is data in the
  * files. Below is an example.
  * {{{
  * val in: TypedPipe[((String, String), (String, Int))] = PartitionedDelimited[(String, String), (String, Int)](args("in"), "col1=%s/col2=%s")
