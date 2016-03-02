@@ -24,6 +24,7 @@ import cascading.tuple.TupleEntryIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -144,8 +145,12 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
   @Override
   public void sinkConfInit(FlowProcess<JobConf> process, JobConf conf) {
-    if(quorumNames != null) {
+    if (quorumNames != null) {
       conf.set("hbase.zookeeper.quorum", quorumNames);
+    } else {
+      Configuration hbaseConfig = HBaseConfiguration.create(conf);
+      conf.set(HConstants.ZOOKEEPER_QUORUM, hbaseConfig.get(HConstants.ZOOKEEPER_QUORUM));
+      conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT, hbaseConfig.get(HConstants.ZOOKEEPER_ZNODE_PARENT));
     }
 
     LOG.debug("sinking to table: {}", tableName);
