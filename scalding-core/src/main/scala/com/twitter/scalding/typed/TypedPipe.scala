@@ -367,7 +367,7 @@ trait TypedPipe[+T] extends Serializable {
    * This is useful for experts who see some heuristic of the planner causing
    * slower performance.
    */
-  def forceToDisk: TypedPipe[T] = onRawSingle(_.forceToDisk)
+  def forceToDisk: TypedPipe[T] = ForcedToDiskTypedPipe[T](this)
 
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
@@ -553,6 +553,7 @@ trait TypedPipe[+T] extends Serializable {
   /**
    * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
    * you need to do something like: toPipe(fieldNames).write(dest)
+   *
    * @return a pipe equivalent to the current pipe.
    */
   def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
@@ -1128,6 +1129,28 @@ class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
   def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
   def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
   def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
+}
+
+/**
+ * This class is to enrich the forceToDisk operation on TypedPipes and allow
+ * us to potentially optimize these operations when they're chained together
+ * redundantly.
+ */
+case class ForcedToDiskTypedPipe[T](typedPipe: TypedPipe[T]) extends TypedPipe[T] {
+  import Dsl._
+
+  override def forceToDisk: TypedPipe[T] = this
+
+  override def asPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+    val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+    pipe.forceToDisk
+  }
+
+  override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
+    ForcedToDiskTypedPipe(typedPipe.cross(tiny))
+
+  override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
+    ForcedToDiskTypedPipe(typedPipe.flatMap(f))
 }
 
 /**

@@ -342,15 +342,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps should have size 1
+          steps should have size 2
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          val secondStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           val lines = List(147, 150, 154).map { i =>
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
           }
-          firstStep should include ("leftJoin")
-          firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
-          steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
+          secondStep should include ("leftJoin")
+          secondStep should include ("hashJoin")
+          lines.foreach { l => secondStep should include (l) }
+          info(secondStep)
         }
         .run
     }

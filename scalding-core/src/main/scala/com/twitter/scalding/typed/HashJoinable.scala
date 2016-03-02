@@ -15,7 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import cascading.pipe.HashJoin
+import cascading.flow.FlowDef
+import cascading.pipe.{ Pipe, HashJoin }
 import com.twitter.scalding._
 
 import com.twitter.scalding.TupleConverter.tuple2Converter
@@ -50,11 +51,24 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       val newPipe = new HashJoin(
         RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
         Field.singleOrdered("key")(keyOrdering),
-        mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter),
+        getMappedPipe(fd, mode),
         Field.singleOrdered("key1")(keyOrdering),
         WrappedJoiner(new HashJoiner(joinFunction, joiner)))
 
       //Construct the new TypedPipe
       TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
     })
+
+  /**
+   * Returns a Pipe for the mapped (rhs) pipe. If this hasn't been persisted to disk,
+   * we force a checkpoint. Currently this persistence check is trivial: if the pipe is
+   * a ForceToDiskTypedPipe we skip an additional checkpoint.
+   */
+  def getMappedPipe[R, V1](fd: FlowDef, mode: Mode): Pipe = {
+    val mappedPipe = mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter)
+    mapped match {
+      case ForcedToDiskTypedPipe(_) => mappedPipe
+      case _ => mappedPipe.forceToDisk
+    }
+  }
 }
