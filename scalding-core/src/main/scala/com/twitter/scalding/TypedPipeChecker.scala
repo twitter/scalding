@@ -30,7 +30,7 @@ object TypedPipeChecker {
       .get
       .toList
 
-  implicit class InMemoryToListEnrichment[T](pipe: TypedPipe[T]) extends AnyVal {
+  implicit class InMemoryToListEnrichment[T](val pipe: TypedPipe[T]) extends AnyVal {
     def inMemoryToList: List[T] = TypedPipeChecker.inMemoryToList(pipe)
   }
 }
