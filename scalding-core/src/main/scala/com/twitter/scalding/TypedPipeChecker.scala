@@ -29,4 +29,8 @@ object TypedPipeChecker {
       .waitFor(Config.unitTestDefault, Local(strictSources = true))
       .get
       .toList
+
+  implicit class InMemoryToListEnrichment[T](val pipe: TypedPipe[T]) extends AnyVal {
+    def inMemoryToList: List[T] = TypedPipeChecker.inMemoryToList(pipe)
+  }
 }
