@@ -78,11 +78,28 @@ struct TestTypes{
  9: required binary a_binary
 }
 
+struct TestOptionTypes{
+ 1: optional bool a_bool,
+ 2: optional byte a_byte,
+ 3: optional i16 a_i16,
+ 4: optional i32 a_i32,
+ 5: optional i64 a_i64,
+ 6: optional double a_double,
+ 7: optional string a_string,
+ 8: optional TestEnum a_enum,
+ 9: optional binary a_binary
+}
+
 union TestUnion{
  1:  list<i32> a_i32_list,
  2:  set<double> a_double_set,
  3:  TestStruct a_struct
 }
 
+struct A {
+  1: optional string _a
+  7: optional i64 g
+  8: optional i64 abcdEE
+}
 
 
