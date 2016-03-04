@@ -19,9 +19,9 @@ import java.io.{ OutputStream, InputStream, Serializable }
 import java.util.Random
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Each, Pipe }
+import cascading.pipe._
 import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
+import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
@@ -31,6 +31,7 @@ import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
+import scala.collection.TraversableOnce
 import scala.util.Try
 
 /**
@@ -367,7 +368,7 @@ trait TypedPipe[+T] extends Serializable {
    * This is useful for experts who see some heuristic of the planner causing
    * slower performance.
    */
-  def forceToDisk: TypedPipe[T] = ForcedToDiskTypedPipe[T](this)
+  def forceToDisk: TypedPipe[T] = ForceToDiskTypedPipe[T](this)
 
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
@@ -929,7 +930,7 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
 /**
  * This is an instance of a TypedPipe that wraps a cascading Pipe
  */
-class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
+class TypedPipeInst[T] private[scalding] (@transient val inpipe: Pipe,
   fields: Fields,
   @transient localFlowDef: FlowDef,
   @transient val mode: Mode,
@@ -1136,7 +1137,7 @@ class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
  * us to potentially optimize these operations when they're chained together
  * redundantly.
  */
-case class ForcedToDiskTypedPipe[T](typedPipe: TypedPipe[T]) extends TypedPipe[T] {
+case class ForceToDiskTypedPipe[T](typedPipe: TypedPipe[T]) extends TypedPipe[T] {
   import Dsl._
 
   override def forceToDisk: TypedPipe[T] = this
@@ -1147,10 +1148,29 @@ case class ForcedToDiskTypedPipe[T](typedPipe: TypedPipe[T]) extends TypedPipe[T
   }
 
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
-    ForcedToDiskTypedPipe(typedPipe.cross(tiny))
+    forceBefore(typedPipe).cross(tiny)
 
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    ForcedToDiskTypedPipe(typedPipe.flatMap(f))
+    forceBefore(typedPipe).flatMap(f)
+
+  private def forceBefore(pipe: TypedPipe[T]): TypedPipe[T] = pipe match {
+    case fToDiskPipe: ForceToDiskTypedPipe[_] => fToDiskPipe // can't move something the user did
+    case typedPipeInst: TypedPipeInst[_] =>
+      if (isMaterialized(typedPipeInst.inpipe))
+        typedPipeInst
+      else
+        physicalForceToDisk
+    case _ => physicalForceToDisk
+  }
+
+  private def isMaterialized(pipe: Pipe): Boolean = pipe match {
+    case _: Checkpoint => true
+    case _: CoGroup => true
+    case _: Every => true
+    case _ => false
+  }
+
+  private def physicalForceToDisk: TypedPipe[T] = onRawSingle(_.forceToDisk)
 }
 
 /**

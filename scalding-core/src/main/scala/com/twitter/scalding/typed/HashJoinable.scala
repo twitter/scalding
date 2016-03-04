@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Pipe, HashJoin }
+import cascading.pipe._
 import com.twitter.scalding._
 
 import com.twitter.scalding.TupleConverter.tuple2Converter
@@ -60,15 +60,44 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     })
 
   /**
-   * Returns a Pipe for the mapped (rhs) pipe. If this hasn't been persisted to disk,
-   * we force a checkpoint. Currently this persistence check is trivial: if the pipe is
-   * a ForceToDiskTypedPipe we skip an additional checkpoint.
+   * Returns a Pipe for the mapped (rhs) pipe with checkpointing applied if needed.
+   * Currently we skip checkpointing if:
+   * 1) If the pipe is a ForceToDiskTypedPipe (and thus the Cascading pipe is a Checkpoint)
+   * 2) If the Cascading pipe is a GroupBy / CoGroup
+   * 3) If while walking the pipe's parents we hit an Every before an Each
    */
-  def getMappedPipe[R, V1](fd: FlowDef, mode: Mode): Pipe = {
+  private def getMappedPipe(fd: FlowDef, mode: Mode): Pipe = {
     val mappedPipe = mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter)
-    mapped match {
-      case ForcedToDiskTypedPipe(_) => mappedPipe
-      case _ => mappedPipe.forceToDisk
+
+    mappedPipe match {
+      case _: Checkpoint => mappedPipe
+      case _: GroupBy => mappedPipe
+      case _: CoGroup => mappedPipe
+      case _ =>
+        val checkParents = checkEveryBeforeEach(mappedPipe)
+        checkParents match {
+          case Some(true) => mappedPipe
+          case _ => mappedPipe.forceToDisk
+        }
     }
+  }
+
+  /**
+   * Check if we encounter an Every before an Each while traversing parents of the pipe
+   */
+  private def checkEveryBeforeEach(pipe: Pipe): Option[Boolean] = {
+    Iterator
+      .iterate(Seq(pipe))(pipes => for (p <- pipes; prev <- p.getPrevious) yield prev)
+      .takeWhile(_.length > 0)
+      .flatten
+      .find {
+        case _: Each => true
+        case _: Every => true
+        case _ => false
+      }
+      .map {
+        case _: Each => false
+        case _: Every => true
+      }
   }
 }
