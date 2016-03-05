@@ -1348,11 +1348,49 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
     .write(TypedText.tsv[(Int, Int, Int)]("output-join"))
 }
 
+class OrderedSerializationTypedSketchJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+
+  import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+
+  zero
+    .sketch(args("reducers").toInt)
+    .join(one)
+    .map{ case (k, (v0, v1)) => (k, v0, v1) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .join(one.group)
+    .map{ case (k, (v0, v1)) => (k, v0, v1) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-join"))
+}
+
 class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
   implicit def serialize(k: Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .leftJoin(one)
+    .map{ case (k, (v0, v1)) => (k, v0, v1.getOrElse(-1)) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .leftJoin(one.group)
+    .map{ case (k, (v0, v1)) => (k, v0, v1.getOrElse(-1)) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-join"))
+}
+
+class OrderedSerializationTypedSketchLeftJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+
+  import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
   zero
     .sketch(args("reducers").toInt)
@@ -1428,6 +1466,33 @@ class TypedSketchJoinJobTest extends WordSpec with Matchers {
       sk shouldBe inner
     }
   }
+
+  "A TypedSketchJoinJob using OrderedSerialization" should {
+    "get the same result as an inner join" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchJoinJob(_), 10, x => 1)
+      sk shouldBe inner
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchJoinJob(_), 10, x => if (x < 50) 0 else 1)
+      sk shouldBe inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchJoinJob(_), 10, x => if (x == 50) 1000 else 1)
+      sk shouldBe inner
+    }
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchJoinJob(_), 1, x => 1)
+      sk shouldBe inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
+      sk shouldBe inner
+    }
+  }
 }
 
 class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
@@ -1457,6 +1522,33 @@ class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
 
     "still work with massive skew and only one reducer" in {
       val (sk, inner) = runJobWithArguments(new TypedSketchJoinJob(_), 1, x => if (x == 50) 1000 else 1)
+      sk shouldBe inner
+    }
+  }
+
+  "A OrderedSerialization TypedSketchLeftJoinJob" should {
+    "get the same result as a left join" in {
+      val (sk, left) = runJobWithArguments(new OrderedSerializationTypedSketchLeftJoinJob(_), 10, x => 1)
+      sk shouldBe left
+    }
+
+    "get the same result when half the left keys are missing" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchLeftJoinJob(_), 10, x => if (x < 50) 0 else 1)
+      sk shouldBe inner
+    }
+
+    "get the same result with a massive skew to one key" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchLeftJoinJob(_), 10, x => if (x == 50) 1000 else 1)
+      sk shouldBe inner
+    }
+
+    "still work with only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchLeftJoinJob(_), 1, x => 1)
+      sk shouldBe inner
+    }
+
+    "still work with massive skew and only one reducer" in {
+      val (sk, inner) = runJobWithArguments(new OrderedSerializationTypedSketchLeftJoinJob(_), 1, x => if (x == 50) 1000 else 1)
       sk shouldBe inner
     }
   }

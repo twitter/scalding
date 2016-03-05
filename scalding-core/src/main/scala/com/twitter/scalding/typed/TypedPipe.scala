@@ -26,7 +26,7 @@ import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.{ OrderedSerialization, Serialization }
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
@@ -38,7 +38,7 @@ import scala.util.Try
  * This object is here rather than in the typed package because a lot of code was written using
  * the functions in the object, which we do not see how to hide with package object tricks.
  */
-object TypedPipe extends Serializable {
+object TypedPipe extends Serializable with LowerPriorityTypedPipeImplicits {
   import Dsl.flowDefToRichFlowDef
 
   /**
@@ -119,6 +119,67 @@ object TypedPipe extends Serializable {
       override def hash(x: Int): Int = x
     }
   }
+  implicit class HigherPriorityTypedPipeMethods[T, K, V](val tp: TypedPipe[T])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
+    orderedSerialization: OrderedSerialization[K]) {
+    // scope the imports nice and local
+    import com.twitter.scalding.typed.Sketched
+    import com.twitter.scalding.serialization.{ OrderedSerialization, Serialization }
+    /**
+     * Enables joining when this TypedPipe has some keys with many many values and
+     * but many with very few values. For instance, a graph where some nodes have
+     * millions of neighbors, but most have only a few.
+     *
+     * We build a (count-min) sketch of each key's frequency, and we use that
+     * to shard the heavy keys across many reducers.
+     * This increases communication cost in order to reduce the maximum time needed
+     * to complete the join.
+     *
+     * {@code pipe.sketch(100).join(thatPipe) }
+     * will add an extra map/reduce job over a standard join to create the count-min-sketch.
+     * This will generally only be beneficial if you have really heavy skew, where without
+     * this you have 1 or 2 reducers taking hours longer than the rest.
+     */
+    def sketch(reducers: Int,
+      eps: Double = 1.0E-5, //272k width = 1MB per row
+      delta: Double = 0.01, //5 rows (= 5 hashes)
+      seed: Int = 12345): Sketched[K, V] =
+      Sketched(ev(tp), reducers, delta, eps, seed)(Serialization.toBytes[K](_), orderedSerialization)
+  }
+
+}
+
+private[scalding] trait LowerPriorityTypedPipeImplicits {
+  implicit def toLowerPriorityTypedPipeMethods[T](tp: TypedPipe[T]) =
+    new LowerPriorityTypedPipeMethods(tp)
+}
+private[scalding] class LowerPriorityTypedPipeMethods[T](val tp: TypedPipe[T]) extends AnyVal {
+  // scope the imports nice and local
+  import com.twitter.scalding.typed.Sketched
+  import com.twitter.scalding.serialization.{ OrderedSerialization, Serialization }
+
+  /**
+   * Enables joining when this TypedPipe has some keys with many many values and
+   * but many with very few values. For instance, a graph where some nodes have
+   * millions of neighbors, but most have only a few.
+   *
+   * We build a (count-min) sketch of each key's frequency, and we use that
+   * to shard the heavy keys across many reducers.
+   * This increases communication cost in order to reduce the maximum time needed
+   * to complete the join.
+   *
+   * {@code pipe.sketch(100).join(thatPipe) }
+   * will add an extra map/reduce job over a standard join to create the count-min-sketch.
+   * This will generally only be beneficial if you have really heavy skew, where without
+   * this you have 1 or 2 reducers taking hours longer than the rest.
+   */
+  def sketch[K, V](reducers: Int,
+    eps: Double = 1.0E-5, //272k width = 1MB per row
+    delta: Double = 0.01, //5 rows (= 5 hashes)
+    seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
+      serialization: K => Array[Byte],
+      ordering: Ordering[K]): Sketched[K, V] =
+    Sketched(ev(tp), reducers, delta, eps, seed)
+
 }
 
 /**
@@ -689,29 +750,6 @@ trait TypedPipe[+T] extends Serializable {
     map((_, ()))
       .hashLeftJoin(grouped)
       .map { case (t, (_, optV)) => (t, optV) }
-
-  /**
-   * Enables joining when this TypedPipe has some keys with many many values and
-   * but many with very few values. For instance, a graph where some nodes have
-   * millions of neighbors, but most have only a few.
-   *
-   * We build a (count-min) sketch of each key's frequency, and we use that
-   * to shard the heavy keys across many reducers.
-   * This increases communication cost in order to reduce the maximum time needed
-   * to complete the join.
-   *
-   * {@code pipe.sketch(100).join(thatPipe) }
-   * will add an extra map/reduce job over a standard join to create the count-min-sketch.
-   * This will generally only be beneficial if you have really heavy skew, where without
-   * this you have 1 or 2 reducers taking hours longer than the rest.
-   */
-  def sketch[K, V](reducers: Int,
-    eps: Double = 1.0E-5, //272k width = 1MB per row
-    delta: Double = 0.01, //5 rows (= 5 hashes)
-    seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
-      serialization: K => Array[Byte],
-      ordering: Ordering[K]): Sketched[K, V] =
-    Sketched(ev(this), reducers, delta, eps, seed)
 
   /**
    * If any errors happen below this line, but before a groupBy, write to a TypedSink
