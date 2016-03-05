@@ -1405,6 +1405,27 @@ class OrderedSerializationTypedSketchLeftJoinJob(args: Args) extends Job(args) {
     .write(TypedText.tsv[(Int, Int, Int)]("output-join"))
 }
 
+class BothAvailableSketchMethodsTypedSketchLeftJoinJob(args: Args) extends Job(args) {
+  val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
+  val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
+
+  import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+  implicit def serialize(k: Int) = k.toString.getBytes
+
+  zero
+    .sketch(args("reducers").toInt)
+    .leftJoin(one)
+    .map{ case (k, (v0, v1)) => (k, v0, v1.getOrElse(-1)) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-sketch"))
+
+  zero
+    .group
+    .leftJoin(one.group)
+    .map{ case (k, (v0, v1)) => (k, v0, v1.getOrElse(-1)) }
+    .write(TypedText.tsv[(Int, Int, Int)]("output-join"))
+}
+
+
 object TypedSketchJoinTestHelper {
   import Dsl._
 

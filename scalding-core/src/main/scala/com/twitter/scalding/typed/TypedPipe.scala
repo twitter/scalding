@@ -38,7 +38,7 @@ import scala.util.Try
  * This object is here rather than in the typed package because a lot of code was written using
  * the functions in the object, which we do not see how to hide with package object tricks.
  */
-object TypedPipe extends Serializable {
+object TypedPipe extends Serializable with LowerPriorityTypedPipeEnrichements {
   import Dsl.flowDefToRichFlowDef
 
   /**
@@ -143,15 +143,17 @@ object TypedPipe extends Serializable {
       Sketched(tp, reducers, delta, eps, seed)(Serialization.toBytes[K](_), orderedSerialization)
   }
 
-  implicit def toOrderingPlusFnSketchMethod[K, V](tp: TypedPipe[(K, V)])(implicit serialization: K => Array[Byte],
-    ordering: Ordering[K]) = new {
+}
+
+trait LowerPriorityTypedPipeEnrichements {
+  implicit def toOrderingPlusFnSketchMethod[K, V](tp: TypedPipe[(K, V)]) = new {
     def sketch(reducers: Int,
       eps: Double = 1.0E-5, //272k width = 1MB per row
       delta: Double = 0.01, //5 rows (= 5 hashes)
-      seed: Int = 12345): Sketched[K, V] =
+      seed: Int = 12345)(implicit serialization: K => Array[Byte],
+        ordering: Ordering[K]): Sketched[K, V] =
       Sketched(tp, reducers, delta, eps, seed)
   }
-
 }
 
 /**
