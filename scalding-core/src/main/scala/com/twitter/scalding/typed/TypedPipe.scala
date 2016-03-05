@@ -119,8 +119,7 @@ object TypedPipe extends Serializable with LowerPriorityTypedPipeImplicits {
       override def hash(x: Int): Int = x
     }
   }
-  implicit class HigherPriorityTypedPipeMethods[T, K, V](val tp: TypedPipe[T])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
-    orderedSerialization: OrderedSerialization[K]) {
+  implicit class HigherPriorityTypedPipeMethods[K, V](val tp: TypedPipe[(K, V)])(implicit orderedSerialization: OrderedSerialization[K]) {
     // scope the imports nice and local
     import com.twitter.scalding.typed.Sketched
     import com.twitter.scalding.serialization.{ OrderedSerialization, Serialization }
@@ -143,7 +142,7 @@ object TypedPipe extends Serializable with LowerPriorityTypedPipeImplicits {
       eps: Double = 1.0E-5, //272k width = 1MB per row
       delta: Double = 0.01, //5 rows (= 5 hashes)
       seed: Int = 12345): Sketched[K, V] =
-      Sketched(ev(tp), reducers, delta, eps, seed)(Serialization.toBytes[K](_), orderedSerialization)
+      Sketched(tp, reducers, delta, eps, seed)(Serialization.toBytes[K](_), orderedSerialization)
   }
 
 }
