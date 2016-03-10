@@ -359,6 +359,14 @@ trait Config extends Serializable {
   def setHRavenHistoryUserName: Config =
     this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
 
+  def setSkipForceHashJoinRHS(b: Boolean): Config =
+    this + (SkipForceHashJoinRHS -> (b.toString))
+
+  def getSkipForceHashJoinRHS: Boolean =
+    get(SkipForceHashJoinRHS)
+      .map(_.toBoolean)
+      .getOrElse(true)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -401,6 +409,14 @@ object Config {
   /** Manual description for use in .dot and MR step names set using a `withDescription`. */
   val PipeDescriptions = "scalding.pipe.descriptions"
   val StepDescriptions = "scalding.step.descriptions"
+
+  /**
+   * Parameter that can be used to determine behavior on the rhs of a hashJoin.
+   * If true, we skip force to disk on MapFn and FlatMapFn transforms as long as they're
+   * followed by a Pipe we think has been persisted (e.g. Checkpoint).
+   * Else we forceToDisk in those two scenarios (along with potentially others like FilterFn)
+   */
+  val SkipForceHashJoinRHS: String = "scalding.hashjoin.skipforceright"
 
   val empty: Config = Config(Map.empty)
 

@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
+import cascading.operation.Operation
 import cascading.pipe._
 import com.twitter.scalding._
 
@@ -60,44 +61,83 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     })
 
   /**
-   * Returns a Pipe for the mapped (rhs) pipe with checkpointing applied if needed.
-   * Currently we skip checkpointing if:
-   * 1) If the pipe is a ForceToDiskTypedPipe (and thus the Cascading pipe is a Checkpoint)
-   * 2) If the Cascading pipe is a GroupBy / CoGroup
-   * 3) If while walking the pipe's parents we hit an Every before an Each
+   * Returns a Pipe for the mapped (rhs) pipe with checkpointing (forceToDisk) applied if needed.
+   * Currently we skip checkpointing if we're confident that the underlying rhs Pipe is persisted
+   * (e.g. a source / Checkpoint / GroupBy / CoGroup / Every) and we have 0 or more Each operator Fns
+   * that are not doing any real work (e.g. Converter, CleanupIdentityFunction)
    */
   private def getMappedPipe(fd: FlowDef, mode: Mode): Pipe = {
     val mappedPipe = mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter)
 
-    mappedPipe match {
-      case _: Checkpoint => mappedPipe
-      case _: GroupBy => mappedPipe
-      case _: CoGroup => mappedPipe
-      case _ =>
-        val checkParents = checkEveryBeforeEach(mappedPipe)
-        checkParents match {
-          case Some(true) => mappedPipe
-          case _ => mappedPipe.forceToDisk
-        }
+    if (isSafeToSkipForceToDisk(mappedPipe, mode)) mappedPipe
+    else mappedPipe.forceToDisk
+  }
+
+  /**
+   * Computes if it is safe to skip a force to disk. If we know the pipe is persisted,
+   * we can safely skip. If the Pipe is an Each operator, we check if the function it holds
+   * can be skipped and we recurse to check its parent pipe.
+   * Recursion handles situations where we have a couple of Each ops in a row.
+   * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
+   */
+  private def isSafeToSkipForceToDisk(pipe: Pipe, mode: Mode): Boolean = {
+    pipe match {
+      case eachPipe: Each =>
+        if (canSkipEachOperation(eachPipe.getOperation, mode)) {
+          //need to recurse down to see if parent pipe is ok
+          getPreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe, mode))
+        } else false
+      case _: Checkpoint => true
+      case _: GroupBy => true
+      case _: CoGroup => true
+      case _: Every => true
+      case p if isSourcePipe(p) => true
+      case _ => false
     }
   }
 
   /**
-   * Check if we encounter an Every before an Each while traversing parents of the pipe
+   * Checks the transform to deduce if it is safe to skip the force to disk.
+   * If the FlatMapFunction is a converter / EmptyFn / IdentityFn then we can skip
+   * For FilteredFn we could potentially save substantially so we want to forceToDisk
+   * For map and flatMap we defer to the user config.
    */
-  private def checkEveryBeforeEach(pipe: Pipe): Option[Boolean] = {
-    Iterator
-      .iterate(Seq(pipe))(pipes => for (p <- pipes; prev <- p.getPrevious) yield prev)
-      .takeWhile(_.length > 0)
-      .flatten
-      .find {
-        case _: Each => true
-        case _: Every => true
-        case _ => false
-      }
-      .map {
-        case _: Each => false
-        case _: Every => true
-      }
+  private def canSkipEachOperation(eachOperation: Operation[_], mode: Mode): Boolean = {
+    eachOperation match {
+      case f: FlatMapFunction[_, _] =>
+        f.getFunction match {
+          case _: Converter[_] => true
+          case _: FilteredFn[_] => false //we'd like to forceToDisk after a filter
+          case _: MapFn[_, _] => getSkipForceHashJoinRHS(mode)
+          case _: FlatMappedFn[_, _] => getSkipForceHashJoinRHS(mode)
+          case _ => true // empty fn
+        }
+      case _: CleanupIdentityFunction => true
+      case _ => false
+    }
+  }
+
+  private def getSkipForceHashJoinRHS(mode: Mode): Boolean = {
+    mode match {
+      case h: HadoopMode =>
+        val config = Config.fromHadoop(h.jobConf)
+        config.getSkipForceHashJoinRHS
+      case _ => true //default to true
+    }
+  }
+
+  private def getPreviousPipe(p: Pipe): Option[Pipe] = {
+    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
+    else None
+  }
+
+  /**
+   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
+   * Splice.
+   */
+  private def isSourcePipe(pipe: Pipe): Boolean = {
+    pipe.getParent == null &&
+      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
+      (!pipe.isInstanceOf[Splice])
   }
 }
