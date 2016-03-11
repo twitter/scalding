@@ -50,7 +50,7 @@ class InvalidSourceException(message: String) extends RuntimeException(message)
  *
  * hdfsPaths represents user-supplied list that was detected as not containing any valid paths.
  */
-class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[Configuration, RecordReader[_, _]] {
+class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobConf, RecordReader[_, _]] {
 
   private final val randomId = UUID.randomUUID.toString
 
@@ -58,12 +58,12 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[Config
 
   override def hashCode: Int = randomId.hashCode
 
-  override def getModifiedTime(conf: Configuration): Long = 0L
+  override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[_ <: Configuration], input: RecordReader[_, _]): TupleEntryIterator =
+  override def openForRead(flow: FlowProcess[_ <: JobConf], input: RecordReader[_, _]): TupleEntryIterator =
     sys.error(s"InvalidSourceTap: No good paths in $hdfsPaths")
 
-  override def resourceExists(conf: Configuration): Boolean = false
+  override def resourceExists(conf: JobConf): Boolean = false
 
   override def getScheme = new NullScheme()
 
@@ -76,7 +76,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[Config
   // 4. source.validateTaps (throws InvalidSourceException)
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
-  override def sourceConfInit(flow: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
+  override def sourceConfInit(flow: FlowProcess[_ <: JobConf], conf: JobConf): Unit = {
     conf.setClass("mapred.input.format.class",
       classOf[cascading.tap.hadoop.io.MultiInputFormat],
       classOf[org.apache.hadoop.mapred.InputFormat[_, _]]);
@@ -97,13 +97,18 @@ case object Write extends AccessMode
 
 object HadoopSchemeInstance {
   def apply(scheme: Scheme[_, _, _, _, _]) =
+    scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+}
+
+object Hadoop2SchemeInstance {
+  def apply(scheme: Scheme[_, _, _, _, _]) =
     scheme.asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
 }
 
 object CastHfsTap {
   // The scala compiler has problems with the generics in Cascading
-  def apply(tap: Hfs): Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]] =
-    tap.asInstanceOf[Tap[Configuration, RecordReader[_, _], OutputCollector[_, _]]]
+  def apply(tap: Hfs): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
 }
 
 /**
@@ -272,7 +277,7 @@ trait BaseNullSource extends Source {
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")
       case Write => mode match {
-        case Hdfs(_, _) => new NullTap[Configuration, RecordReader[_, _], OutputCollector[_, _], Any, Any]
+        case Hdfs(_, _) => new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
         case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
         case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
       }

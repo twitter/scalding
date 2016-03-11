@@ -56,8 +56,8 @@ trait HfsConfPropertySetter extends HfsTapProvider {
   def tapConfig: Config = Config.empty
 
   override def createHfsTap(
-    scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _],
+    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
     sinkMode: SinkMode): Hfs =
-    new ConfPropertiesHfsTap(tapConfig, scheme, path, sinkMode)
+    new ConfPropertiesHfsTap(tapConfig, Hadoop2SchemeInstance(scheme), path, sinkMode)
 }

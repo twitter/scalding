@@ -45,20 +45,20 @@ object TestTapFactory extends Serializable {
     override def sourceFields: Fields = fields
     override def sinkFields: Fields = fields
   }
-  def apply[A, B](src: Source, scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
+  def apply[A, B](src: Source, scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
   def apply[A, B](src: Source,
-    scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
+    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
     new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
-class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
+class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable with HfsTapProvider {
   def sourceFields: Fields =
     hdfsScheme.map { _.getSourceFields }.getOrElse(sys.error("No sourceFields defined"))
 
   def sinkFields: Fields =
     hdfsScheme.map { _.getSinkFields }.getOrElse(sys.error("No sinkFields defined"))
 
-  def hdfsScheme: Option[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
+  def hdfsScheme: Option[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
 
   def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
@@ -92,14 +92,14 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
             if (bufOpt.isDefined) {
               val buffer = bufOpt.get
               val fields = sourceFields
-              (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[Configuration, _, _]]
+              (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf, _, _]]
             } else {
-              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
+              CastHfsTap(createHfsTap(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
             }
           }
           case Write => {
             val path = hdfsTest.getWritePathFor(src)
-            CastHfsTap(new Hfs(hdfsScheme.get, path, sinkMode))
+            CastHfsTap(createHfsTap(hdfsScheme.get, path, sinkMode))
           }
         }
       case _ => {

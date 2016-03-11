@@ -32,7 +32,7 @@ import com.twitter.scalding.commons.tap.VersionedTap.TapMode
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 import scala.collection.JavaConverters._
 
 /**
@@ -69,7 +69,7 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
 
   override def setter[U <: (K, V)] = TupleSetter.asSubSetter[(K, V), U](TupleSetter.of[(K, V)])
 
-  def hdfsScheme =
+  def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] =
     HadoopSchemeInstance(new KeyValueByteScheme(fields).asInstanceOf[Scheme[_, _, _, _, _]])
 
   @deprecated("This method is deprecated", "0.1.6")
@@ -77,7 +77,7 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
     this(path, sourceVersion, sinkVersion, maxFailures, VersionedKeyValSource.defaultVersionsToKeep)(codec)
 
   def getTap(mode: TapMode) = {
-    val tap = new VersionedTap(path, hdfsScheme, mode).setVersionsToKeep(versionsToKeep)
+    val tap = new VersionedTap(path, Hadoop2SchemeInstance(hdfsScheme), mode).setVersionsToKeep(versionsToKeep)
     if (mode == TapMode.SOURCE && sourceVersion.isDefined)
       tap.setVersion(sourceVersion.get)
     else if (mode == TapMode.SINK && sinkVersion.isDefined)
