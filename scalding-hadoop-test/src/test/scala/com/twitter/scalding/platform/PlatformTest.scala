@@ -142,6 +142,8 @@ class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
   val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
@@ -155,6 +157,8 @@ class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
@@ -167,6 +171,8 @@ class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithForceToDiskFilterJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
@@ -179,6 +185,8 @@ class TypedPipeHashJoinWithForceToDiskFilterJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithForceToDiskWithComplete(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
@@ -191,6 +199,8 @@ class TypedPipeHashJoinWithForceToDiskWithComplete(args: Args) extends Job(args)
 }
 
 class TypedPipeHashJoinWithForceToDiskMapJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
@@ -203,6 +213,8 @@ class TypedPipeHashJoinWithForceToDiskMapJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithGroupByJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(String, Int)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2))
 
@@ -215,6 +227,8 @@ class TypedPipeHashJoinWithGroupByJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val in0 = Tsv("input0").read.mapTo((0, 1) -> ('x0, 'a)) { input: (Int, Int) => input }
   val in1 = Tsv("input1").read.mapTo((0, 1) -> ('x1, 'b)) { input: (Int, Int) => input }
@@ -231,6 +245,8 @@ class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeHashJoinWithEveryJob(args: Args) extends Job(args) {
+  PlatformTest.setAutoForceRight(mode)
+
   val x = TypedPipe.from[(Int, String)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2)).groupBy('x2) {
     _.foldLeft('y2 -> 'y2)(0){ (b: Int, a: Int) => b + a}
@@ -356,6 +372,17 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
   }).toTypedPipe.write(TypedTsv[(String, String)]("output"))
 }
 
+object PlatformTest {
+  def setAutoForceRight(mode: Mode) {
+    mode match {
+      case h: HadoopMode =>
+        val config = h.jobConf
+        config.setBoolean(Config.HashJoinAutoForceRight, true)
+      case _ => Unit
+    }
+  }
+}
+
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
@@ -433,7 +460,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(147, 149, 150, 153, 154).map { i =>
+          val lines = List(149, 151, 152, 155, 156).map { i =>
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
           }
           firstStep should include ("leftJoin")

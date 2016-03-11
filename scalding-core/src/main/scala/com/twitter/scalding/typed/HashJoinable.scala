@@ -69,14 +69,17 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   private def getMappedPipe(fd: FlowDef, mode: Mode): Pipe = {
     val mappedPipe = mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter)
 
-    if (isSafeToSkipForceToDisk(mappedPipe, mode)) mappedPipe
+    // if the user has turned off auto force right, we fall back to the old behavior and
+    //just return the mapped pipe
+    if (!getHashJoinAutoForceRight(mode) || isSafeToSkipForceToDisk(mappedPipe, mode)) mappedPipe
     else mappedPipe.forceToDisk
   }
 
   /**
-   * Computes if it is safe to skip a force to disk. If we know the pipe is persisted,
-   * we can safely skip. If the Pipe is an Each operator, we check if the function it holds
-   * can be skipped and we recurse to check its parent pipe.
+   * Computes if it is safe to skip a force to disk (only if the user hasn't turned this off using
+   * Config.HashJoinAutoForceRight).
+   * If we know the pipe is persisted,we can safely skip. If the Pipe is an Each operator, we check
+   * if the function it holds can be skipped and we recurse to check its parent pipe.
    * Recursion handles situations where we have a couple of Each ops in a row.
    * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
    */
@@ -108,21 +111,21 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         f.getFunction match {
           case _: Converter[_] => true
           case _: FilteredFn[_] => false //we'd like to forceToDisk after a filter
-          case _: MapFn[_, _] => getSkipForceHashJoinRHS(mode)
-          case _: FlatMappedFn[_, _] => getSkipForceHashJoinRHS(mode)
-          case _ => true // empty fn
+          case _: MapFn[_, _] => false // todo: figure out what to do for this
+          case _: FlatMappedFn[_, _] => false // todo: figure out what to do for this
+          case _ => false // treat empty fn as a Filter all so forceToDisk
         }
       case _: CleanupIdentityFunction => true
       case _ => false
     }
   }
 
-  private def getSkipForceHashJoinRHS(mode: Mode): Boolean = {
+  private def getHashJoinAutoForceRight(mode: Mode): Boolean = {
     mode match {
       case h: HadoopMode =>
         val config = Config.fromHadoop(h.jobConf)
-        config.getSkipForceHashJoinRHS
-      case _ => true //default to true
+        config.getHashJoinAutoForceRight
+      case _ => false //default to false
     }
   }
 

@@ -359,13 +359,13 @@ trait Config extends Serializable {
   def setHRavenHistoryUserName: Config =
     this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
 
-  def setSkipForceHashJoinRHS(b: Boolean): Config =
-    this + (SkipForceHashJoinRHS -> (b.toString))
+  def setHashJoinAutoForceRight(b: Boolean): Config =
+    this + (HashJoinAutoForceRight -> (b.toString))
 
-  def getSkipForceHashJoinRHS: Boolean =
-    get(SkipForceHashJoinRHS)
+  def getHashJoinAutoForceRight: Boolean =
+    get(HashJoinAutoForceRight)
       .map(_.toBoolean)
-      .getOrElse(true)
+      .getOrElse(false)
 
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
@@ -412,11 +412,11 @@ object Config {
 
   /**
    * Parameter that can be used to determine behavior on the rhs of a hashJoin.
-   * If true, we skip force to disk on MapFn and FlatMapFn transforms as long as they're
-   * followed by a Pipe we think has been persisted (e.g. Checkpoint).
-   * Else we forceToDisk in those two scenarios (along with potentially others like FilterFn)
+   * If true, we try to guess when to auto force to disk before a hashJoin
+   * else (the default) we don't try to infer this and the behavior can be dictated by the user manually
+   * calling forceToDisk on the rhs or not as they wish.
    */
-  val SkipForceHashJoinRHS: String = "scalding.hashjoin.skipforceright"
+  val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
 
   val empty: Config = Config(Map.empty)
 
