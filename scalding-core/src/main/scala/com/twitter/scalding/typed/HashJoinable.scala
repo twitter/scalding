@@ -103,7 +103,8 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * Checks the transform to deduce if it is safe to skip the force to disk.
    * If the FlatMapFunction is a converter / EmptyFn / IdentityFn then we can skip
    * For FilteredFn we could potentially save substantially so we want to forceToDisk
-   * For map and flatMap we defer to the user config.
+   * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
+   * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
    */
   private def canSkipEachOperation(eachOperation: Operation[_], mode: Mode): Boolean = {
     eachOperation match {
@@ -111,8 +112,8 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         f.getFunction match {
           case _: Converter[_] => true
           case _: FilteredFn[_] => false //we'd like to forceToDisk after a filter
-          case _: MapFn[_, _] => false // todo: figure out what to do for this
-          case _: FlatMappedFn[_, _] => false // todo: figure out what to do for this
+          case _: MapFn[_, _] => false
+          case _: FlatMappedFn[_, _] => false
           case _ => false // treat empty fn as a Filter all so forceToDisk
         }
       case _: CleanupIdentityFunction => true
