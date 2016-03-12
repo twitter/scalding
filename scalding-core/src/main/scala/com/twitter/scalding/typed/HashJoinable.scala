@@ -52,7 +52,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       val newPipe = new HashJoin(
         RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
         Field.singleOrdered("key")(keyOrdering),
-        getMappedPipe(fd, mode),
+        getForceToDiskPipeIfNecessary(fd, mode),
         Field.singleOrdered("key1")(keyOrdering),
         WrappedJoiner(new HashJoiner(joinFunction, joiner)))
 
@@ -66,7 +66,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * (e.g. a source / Checkpoint / GroupBy / CoGroup / Every) and we have 0 or more Each operator Fns
    * that are not doing any real work (e.g. Converter, CleanupIdentityFunction)
    */
-  private def getMappedPipe(fd: FlowDef, mode: Mode): Pipe = {
+  private def getForceToDiskPipeIfNecessary(fd: FlowDef, mode: Mode): Pipe = {
     val mappedPipe = mapped.toPipe(('key1, 'value1))(fd, mode, tup2Setter)
 
     // if the user has turned off auto force right, we fall back to the old behavior and
