@@ -359,6 +359,14 @@ trait Config extends Serializable {
   def setHRavenHistoryUserName: Config =
     this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
 
+  def setHashJoinAutoForceRight(b: Boolean): Config =
+    this + (HashJoinAutoForceRight -> (b.toString))
+
+  def getHashJoinAutoForceRight: Boolean =
+    get(HashJoinAutoForceRight)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -401,6 +409,14 @@ object Config {
   /** Manual description for use in .dot and MR step names set using a `withDescription`. */
   val PipeDescriptions = "scalding.pipe.descriptions"
   val StepDescriptions = "scalding.step.descriptions"
+
+  /**
+   * Parameter that can be used to determine behavior on the rhs of a hashJoin.
+   * If true, we try to guess when to auto force to disk before a hashJoin
+   * else (the default) we don't try to infer this and the behavior can be dictated by the user manually
+   * calling forceToDisk on the rhs or not as they wish.
+   */
+  val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
 
   val empty: Config = Config(Map.empty)
 

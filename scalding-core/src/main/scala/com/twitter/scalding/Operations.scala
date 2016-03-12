@@ -38,6 +38,12 @@ package com.twitter.scalding {
     conv: TupleConverter[S], set: TupleSetter[T])
     extends BaseOperation[Any](fields) with Function[Any] with ScaldingPrepare[Any] {
     val lockedFn = Externalizer(fn)
+
+    /**
+     * Private helper to get at the function that this FlatMapFunction wraps
+     */
+    private[scalding] def getFunction = fn
+
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
       lockedFn.get(conv(functionCall.getArguments)).foreach { arg: T =>
         val this_tup = set(arg)
