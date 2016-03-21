@@ -57,7 +57,7 @@ class ConfigTest extends WordSpec with Matchers {
       assert(config.setArgs(args).getArgs === args)
     }
     "throw when Args has been manually modified" in {
-      val config = Config.empty + (Config.ScaldingJobArgs -> "  ")
+      val config = Config.empty + (Config.ScaldingJobArgsSerialized -> "  ")
       intercept[RuntimeException](config.getArgs)
     }
     "Default serialization should have tokens" in {
