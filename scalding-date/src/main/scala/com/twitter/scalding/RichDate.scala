@@ -96,6 +96,9 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
       case _ => false
     }
 
+  def before(that: RichDate): Boolean = compare(that) < 0
+  def after(that: RichDate): Boolean = compare(that) > 0
+
   /**
    * Use String.format to format the date, as opposed to toString, which uses SimpleDateFormat.
    */
