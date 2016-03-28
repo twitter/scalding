@@ -15,10 +15,13 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import cascading.flow.FlowException
 import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
+import cascading.tap.Tap
 import cascading.tuple.{Fields, Tuple}
 
 import com.twitter.scalding._
+import com.twitter.scalding.source._
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.util.{ Iterator => JIterator }
 import org.scalacheck.{ Arbitrary, Gen }
@@ -27,6 +30,9 @@ import org.slf4j.{ LoggerFactory, Logger }
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
 import scala.math.Ordering
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -384,6 +390,21 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
   }).toTypedPipe.write(TypedTsv[(String, String)]("output"))
 }
 
+case class BypassValidationSource(path: String) extends FixedTypedText[Int](TypedText.TAB, path) {
+  override def validateTaps(mode: Mode): Unit = {}
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
+    (mode, readOrWrite) match {
+      case (hdfsMode: Hdfs, Read) => new InvalidSourceTap(Seq(path))
+      case _ => super.createTap(readOrWrite)
+    }
+}
+
+class ReadPathJob(args: Args) extends Job(args) {
+  TypedPipe
+    .from(new BypassValidationSource(args.required("input")))
+    .write(NullSink)
+}
+
 object PlatformTest {
   def setAutoForceRight(mode: Mode, autoForce: Boolean) {
     mode match {
@@ -702,4 +723,21 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  "An InvalidSourceTap that gets past validation" should {
+    "throw an InvalidSourceException" in {
+      val result = Try {
+        HadoopPlatformJobTest(new ReadPathJob(_), cluster)
+          .arg("input", "/sploop/boop/doopity/doo/")
+          .run
+      }
+
+      result match {
+        case Failure(fe: FlowException) if Option(fe.getCause).forall(_.isInstanceOf[InvalidSourceException]) => ()
+        case Failure(t) =>
+          throw new RuntimeException("Expected InvalidSourceException wrapped it FlowException.", t)
+        case _ =>
+          throw new RuntimeException("Expected InvalidSourceException wrapped it FlowException, but the job succeeded")
+      }
+    }
+  }
 }
