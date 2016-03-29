@@ -18,10 +18,10 @@ package com.twitter.scalding.platform
 import cascading.flow.FlowException
 import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
 import cascading.tap.Tap
-import cascading.tuple.{Fields, Tuple}
+import cascading.tuple.{ Fields, Tuple }
 
 import com.twitter.scalding._
-import com.twitter.scalding.source._
+import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.util.{ Iterator => JIterator }
 import org.scalacheck.{ Arbitrary, Gen }
