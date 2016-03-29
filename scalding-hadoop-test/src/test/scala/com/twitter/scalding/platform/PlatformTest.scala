@@ -732,7 +732,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       }
 
       result match {
-        case Failure(fe: FlowException) if Option(fe.getCause).forall(_.isInstanceOf[InvalidSourceException]) => ()
+        case Failure(fe: FlowException) if Option(fe.getCause).exists(_.isInstanceOf[InvalidSourceException]) => ()
         case Failure(t) =>
           throw new RuntimeException("Expected InvalidSourceException wrapped in FlowException.", t)
         case _ =>
