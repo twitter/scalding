@@ -87,7 +87,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
  * Better error messaging for the occassion where an InvalidSourceTap does not
  * fail in validation.
  */
-class InvalidInputFormat extends InputFormat[Nothing, Nothing] {
+private[scalding] class InvalidInputFormat extends InputFormat[Nothing, Nothing] {
   override def getSplits(conf: JobConf, numSplits: Int): Nothing =
     throw new InvalidSourceException("getSplits called on InvalidInputFormat")
   override def getRecordReader(split: InputSplit, conf: JobConf, reporter: org.apache.hadoop.mapred.Reporter): Nothing =
