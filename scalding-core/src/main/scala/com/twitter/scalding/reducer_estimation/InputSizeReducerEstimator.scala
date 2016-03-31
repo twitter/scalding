@@ -63,8 +63,11 @@ object InputSizeReducerEstimator {
 
 }
 
-// TODO: can we delete this? Just make the object above extend ReducerEstimator?
-// TODO: Not binary compatible but, seems like it would make more sense.
+/**
+ * Estimator that uses the input size and a fixed "bytesPerReducer" target.
+ *
+ * Bytes per reducer can be configured with configuration parameter, defaults to 4 GB.
+ */
 class InputSizeReducerEstimator extends ReducerEstimator {
   import InputSizeReducerEstimator._
 
