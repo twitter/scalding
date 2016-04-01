@@ -1,8 +1,10 @@
 package com.twitter.scalding.reducer_estimation
 
+import cascading.flow.FlowException
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import org.scalatest.{ Matchers, WordSpec }
+
 import scala.collection.JavaConverters._
 
 object HipJob {
@@ -117,6 +119,19 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           conf.getNumReducers should contain (3)
         }
         .run
+    }
+
+    "throw when estimated reducers is above the configured max" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        // 1 reduer per byte, should give us a large number
+        (InputSizeReducerEstimator.BytesPerReducer -> 1.toString) +
+        (EstimatorConfig.maxEstimatedReducersKey -> 10.toString)
+
+      val e = intercept[FlowException] {
+        HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster).run
+      }
+
+      assert(e.getCause.getMessage === "Reducer estimator estimated 2496 reducers, which is more than the configured maximum of 10")
     }
   }
 

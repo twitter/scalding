@@ -23,6 +23,12 @@ object EstimatorConfig {
   /** Maximum number of history items to use for reducer estimation. */
   val maxHistoryKey = "scalding.reducer.estimator.max.history"
 
+  /** If we estimate more than this number of reducers, consider it a fatal error */
+  val maxEstimatedReducersKey = "scalding.reducer.estimator.max.estimated.reducers"
+
+  // TODO: what's a reasonable default? Int.maxValue? 5k? 100k?
+  val defaultMaxEstimatedReducers = 100 * 1000
+
   def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
 
 }
@@ -167,7 +173,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
-    Option(conf.get(Config.ReducerEstimators)).map { clsNames =>
+    Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
 
       val clsLoader = Thread.currentThread.getContextClassLoader
 
@@ -180,6 +186,13 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       // if still None, make it '-1' to make it simpler to log
       val numReducers = combinedEstimator.estimateReducers(info)
+
+      numReducers.foreach { n =>
+        val configuredMax = conf.getInt(EstimatorConfig.maxEstimatedReducersKey, EstimatorConfig.defaultMaxEstimatedReducers)
+        if (n > configuredMax) {
+          throw new IllegalArgumentException(s"Reducer estimator estimated $n reducers, which is more than the configured maximum of $configuredMax")
+        }
+      }
 
       // save the estimate in the JobConf which should be saved by hRaven
       conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
