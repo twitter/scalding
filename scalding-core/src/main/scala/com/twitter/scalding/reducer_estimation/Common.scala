@@ -191,14 +191,15 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 
-      // try to make estimate
       val info = FlowStrategyInfo(flow, preds.asScala, step)
 
-      // if still None, make it '-1' to make it simpler to log
+      // get estimate
       val estimatedNumReducers = combinedEstimator.estimateReducers(info)
 
+      // apply cap if needed
       val cappedNumReducers = estimatedNumReducers.map { n =>
         val configuredMax = conf.getInt(EstimatorConfig.maxEstimatedReducersKey, EstimatorConfig.defaultMaxEstimatedReducers)
+
         if (n > configuredMax) {
           LOG.warn(
             s"""
@@ -206,10 +207,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
                |Will use $configuredMax instead.
              """.stripMargin)
         }
+
         n.min(configuredMax)
       }
 
-      // save the estimate in the JobConf which should be saved by hRaven
+      // save the estimate and capped estimate in the JobConf which should be saved by hRaven
       conf.setInt(EstimatorConfig.estimatedNumReducers, estimatedNumReducers.getOrElse(-1))
       conf.setInt(EstimatorConfig.cappedEstimatedNumReducersKey, cappedNumReducers.getOrElse(-1))
 
