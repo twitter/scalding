@@ -28,7 +28,7 @@ object InputSizeReducerEstimator {
    * helpful for when less than 1 reducer is needed, but this fraction
    * will be multiplied by a scaling factor later.
    */
-  def estimateExactReducers(info: FlowStrategyInfo): Option[Double] = {
+  def estimateReducersWithoutRounding(info: FlowStrategyInfo): Option[Double] = {
     Common.inputSizes(info.step) match {
       case Nil =>
         LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
@@ -67,5 +67,5 @@ class InputSizeReducerEstimator extends ReducerEstimator {
   import InputSizeReducerEstimator._
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
-    estimateExactReducers(info).map { _.ceil.toInt.max(1) }
+    estimateReducersWithoutRounding(info).map { _.ceil.toInt.max(1) }
 }
