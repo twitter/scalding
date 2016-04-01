@@ -4,11 +4,6 @@ import cascading.tap.hadoop.Hfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
-/**
- * Estimator that uses the input size and a fixed "bytesPerReducer" target.
- *
- * Bytes per reducer can be configured with configuration parameter, defaults to 4 GB.
- */
 object InputSizeReducerEstimator {
   private[this] val LOG = LoggerFactory.getLogger(this.getClass)
 
