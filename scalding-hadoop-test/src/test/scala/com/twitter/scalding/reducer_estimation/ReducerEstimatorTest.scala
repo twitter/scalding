@@ -121,17 +121,25 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         .run
     }
 
-    "throw when estimated reducers is above the configured max" in {
+    "respect cap when estimated reducers is above the configured max" in {
       val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
-        // 1 reduer per byte, should give us a large number
+        (Config.ReducerEstimatorOverride -> "true") +
+        // 1 reducer per byte, should give us a large number
         (InputSizeReducerEstimator.BytesPerReducer -> 1.toString) +
         (EstimatorConfig.maxEstimatedReducersKey -> 10.toString)
 
-      val e = intercept[FlowException] {
-        HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster).run
-      }
+      HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
 
-      assert(e.getCause.getMessage === "Reducer estimator estimated 2496 reducers, which is more than the configured maximum of 10")
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.get(EstimatorConfig.estimatedNumReducers) should contain ("2496")
+          conf.get(EstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
+          conf.getNumReducers should contain (10)
+        }
+        .run
+
     }
   }
 
