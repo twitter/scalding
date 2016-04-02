@@ -5,7 +5,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ StringUtility, Config }
 import cascading.tap.{ Tap, CompositeTap }
 import cascading.tap.hadoop.Hfs
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.{ FileInputFormat, InputFormat, JobConf }
 import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
@@ -28,37 +28,14 @@ object EstimatorConfig {
 }
 
 object Common {
-  private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
-    taps.flatMap {
-      case multi: CompositeTap[_] =>
-        unrollTaps(multi.getChildTaps.asScala.toSeq)
-      case t => Seq(t)
-    }
-
-  def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
-    unrollTaps(step.getSources.asScala.toSeq)
-
   /**
-   * Get the total size of the file(s) specified by the Hfs, which may contain a glob
-   * pattern in its path, so we must be ready to handle that case.
+   * Get the total size of the file(s) specified in JobConf[FileInputFormat.INPUT_DIR].
    */
-  def size(f: Hfs, conf: JobConf): Long = {
-    val fs = f.getPath.getFileSystem(conf)
-    fs.globStatus(f.getPath)
-      .map{ s => fs.getContentSummary(s.getPath).getLength }
-      .sum
-  }
+  def inputSizes(conf: JobConf) =
+    FileInputFormat.getInputPaths(conf)
+      .map(path => (path -> path.getFileSystem(conf).getContentSummary(path).getLength))
 
-  def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
-    val conf = step.getConfig
-    unrollTaps(step).flatMap {
-      case tap: Hfs => Some(tap.toString -> size(tap, conf))
-      case _ => None
-    }
-  }
-
-  def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
-
+  def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step.getConfig).map(_._2).sum
 }
 
 case class FlowStrategyInfo(
