@@ -725,13 +725,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   "An InvalidSourceTap that gets past validation" should {
     "throw an InvalidSourceException" in {
-      val result: FlowException = intercept[FlowException]
+      val result: FlowException = intercept[FlowException] {
         HadoopPlatformJobTest(new ReadPathJob(_), cluster)
           .arg("input", "/sploop/boop/doopity/doo/")
           .run
       }
 
-      assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException])
+      assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException]))
     }
   }
 }
