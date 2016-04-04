@@ -206,9 +206,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
                |Reducer estimator estimated $n reducers, which is more than the configured maximum of $configuredMax.
                |Will use $configuredMax instead.
              """.stripMargin)
+          configuredMax
+        } else {
+          n
         }
-
-        n.min(configuredMax)
       }
 
       // save the estimate and capped estimate in the JobConf which should be saved by hRaven
