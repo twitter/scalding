@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import org.scalatest.WordSpec
 import java.util.Calendar
+import java.util.TimeZone
 
 class DateTest extends WordSpec {
   implicit val tz = DateOps.PACIFIC
@@ -96,6 +97,12 @@ class DateTest extends WordSpec {
       assert(rd2 >= rd1)
       assert(rd1 >= rd1)
       assert(rd2 >= rd2)
+    }
+    "be able to compare with before() and after() with TimeZone in context" in {
+      implicit val tz: TimeZone = TimeZone.getDefault
+      val rd1: RichDate = "2011-01-01"
+      val rd2: RichDate = "2012-01-01"
+      assert(rd1.before(rd2))
     }
     "implicitly convert from long" in {
       // This kind of implicit is not safe (what does the long mean?)

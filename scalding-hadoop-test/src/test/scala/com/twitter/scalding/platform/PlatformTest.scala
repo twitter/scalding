@@ -169,11 +169,11 @@ class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
   //trivial transform and forceToDisk on the rhs
-  val yMap = y.map( p => (p._1, p._2.toUpperCase)).forceToDisk
+  val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk
 
   x.hashJoin(yMap)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (Int, String))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (Int, String))]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskFilterJob(args: Args) extends Job(args) {
@@ -183,11 +183,11 @@ class TypedPipeHashJoinWithForceToDiskFilterJob(args: Args) extends Job(args) {
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
   //trivial transform and forceToDisk followed by filter on rhs
-  val yFilter = y.map( p => (p._1, p._2.toUpperCase)).forceToDisk.filter(p => p._1 == 1)
+  val yFilter = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.filter(p => p._1 == 1)
 
   x.hashJoin(yFilter)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (Int, String))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (Int, String))]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskWithComplete(args: Args) extends Job(args) {
@@ -197,11 +197,11 @@ class TypedPipeHashJoinWithForceToDiskWithComplete(args: Args) extends Job(args)
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
   //trivial transform and forceToDisk followed by WithComplete on rhs
-  val yComplete = y.map( p => (p._1, p._2.toUpperCase)).forceToDisk.onComplete(() => println("step complete"))
+  val yComplete = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.onComplete(() => println("step complete"))
 
   x.hashJoin(yComplete)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (Int, String))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (Int, String))]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskMapJob(args: Args) extends Job(args) {
@@ -210,11 +210,11 @@ class TypedPipeHashJoinWithForceToDiskMapJob(args: Args) extends Job(args) {
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
   //trivial transform and forceToDisk followed by map on rhs
-  val yMap = y.map( p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
+  val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
 
   x.hashJoin(yMap)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (Int, String))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (Int, String))]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob(args: Args) extends Job(args) {
@@ -223,7 +223,7 @@ class TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob(args: Args) extends Jo
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
   //trivial transform and forceToDisk followed by map on rhs
-  val yMap = y.map( p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
+  val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
 
   x.hashJoin(yMap)
     .withDescription("hashJoin")
@@ -236,12 +236,12 @@ class TypedPipeHashJoinWithGroupByJob(args: Args) extends Job(args) {
   val x = TypedPipe.from[(String, Int)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2))
 
-  val yGroup = y.groupBy('x2){p => p}
+  val yGroup = y.groupBy('x2){ p => p }
   val yTypedPipe = TypedPipe.from[(String, Int)](yGroup, Fields.ALL)
 
   x.hashJoin(yTypedPipe)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(String, (Int, Int))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(String, (Int, Int))]("output"))
 }
 
 class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
@@ -256,10 +256,10 @@ class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
   }
 
   val coGroupTypedPipe = TypedPipe.from[(Int, Int, Int)](coGroupPipe, Fields.ALL)
-  val coGroupTuplePipe = coGroupTypedPipe.map{ case(a,b,c) => (a, (b,c)) }
+  val coGroupTuplePipe = coGroupTypedPipe.map{ case (a, b, c) => (a, (b, c)) }
   x.hashJoin(coGroupTuplePipe)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (Int, (Int, Int)))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (Int, (Int, Int)))]("output"))
 }
 
 class TypedPipeHashJoinWithEveryJob(args: Args) extends Job(args) {
@@ -267,13 +267,13 @@ class TypedPipeHashJoinWithEveryJob(args: Args) extends Job(args) {
 
   val x = TypedPipe.from[(Int, String)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2)).groupBy('x2) {
-    _.foldLeft('y2 -> 'y2)(0){ (b: Int, a: Int) => b + a}
+    _.foldLeft('y2 -> 'y2)(0){ (b: Int, a: Int) => b + a }
   }
 
   val yTypedPipe = TypedPipe.from[(Int, Int)](y, Fields.ALL)
   x.hashJoin(yTypedPipe)
-   .withDescription("hashJoin")
-   .write(TypedTsv[(Int, (String, Int))]("output"))
+    .withDescription("hashJoin")
+    .write(TypedTsv[(Int, (String, Int))]("output"))
 }
 
 class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
@@ -509,13 +509,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "A TypedPipeHashJoinWithForceToDiskJob" should {
     "have a custom step name from withDescription and only one user provided forceToDisk on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskJob(_), cluster)
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val secondStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            secondStep should include ("hashJoin")
-          }
-          .run
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val secondStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          secondStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
@@ -523,13 +523,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "A TypedPipeHashJoinWithForceToDiskFilterJob" should {
     "have a custom step name from withDescription and an extra forceToDisk due to a filter operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskFilterJob(_), cluster)
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 3
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 3
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
@@ -537,13 +537,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "A TypedPipeHashJoinWithForceToDiskWithComplete" should {
     "have a custom step name from withDescription and no extra forceToDisk due to with complete operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskWithComplete(_), cluster)
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
@@ -551,13 +551,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "A TypedPipeHashJoinWithForceToDiskMapJob" should {
     "have a custom step name from withDescription and no extra forceToDisk due to map (autoForce = false) on forceToDisk operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskMapJob(_), cluster)
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
@@ -578,45 +578,45 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "A TypedPipeHashJoinWithGroupByJob" should {
     "have a custom step name from withDescription and no extra forceToDisk after groupBy on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithGroupByJob(_), cluster)
-          .source(TypedTsv[(String, Int)]("input1"), Seq(("first", 45)))
-          .source(TypedTsv[(String, Int)]("input2"), Seq(("first", 1), ("first", 2), ("first", 3), ("second", 1), ("second", 2)))
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .source(TypedTsv[(String, Int)]("input1"), Seq(("first", 45)))
+        .source(TypedTsv[(String, Int)]("input2"), Seq(("first", 1), ("first", 2), ("first", 3), ("second", 1), ("second", 2)))
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
   "A TypedPipeHashJoinWithCoGroupJob" should {
     "have a custom step name from withDescription and no extra forceToDisk after coGroup + map on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithCoGroupJob(_), cluster)
-          .source(TypedTsv[(Int, Int)]("input0"), List((0, 1), (1, 1), (2, 1), (3, 2)))
-          .source(TypedTsv[(Int, Int)]("input1"), List((0, 1), (2, 5), (3, 2)))
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .source(TypedTsv[(Int, Int)]("input0"), List((0, 1), (1, 1), (2, 1), (3, 2)))
+        .source(TypedTsv[(Int, Int)]("input1"), List((0, 1), (2, 5), (3, 2)))
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 
   "A TypedPipeHashJoinWithEveryJob" should {
     "have a custom step name from withDescription and no extra forceToDisk after an Every on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithEveryJob(_), cluster)
-          .source(TypedTsv[(Int, String)]("input1"), Seq((1, "foo")))
-          .source(TypedTsv[(Int, Int)]("input2"), Seq((1, 30), (1,10), (1,20), (2,20)))
-          .inspectCompletedFlow { flow =>
-            val steps = flow.getFlowSteps.asScala
-            steps should have size 2
-            val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-            lastStep should include ("hashJoin")
-          }
-          .run
+        .source(TypedTsv[(Int, String)]("input1"), Seq((1, "foo")))
+        .source(TypedTsv[(Int, Int)]("input2"), Seq((1, 30), (1, 10), (1, 20), (2, 20)))
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          lastStep should include ("hashJoin")
+        }
+        .run
     }
   }
 

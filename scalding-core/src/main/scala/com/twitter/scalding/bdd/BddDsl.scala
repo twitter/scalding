@@ -16,16 +16,10 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
     def withSchema(schema: Fields) = new TestSource(this, schema)
   }
 
-  class ProductTestSourceWithoutSchema(val data: Iterable[Product]) extends TestSourceWithoutSchema {
-    def addSourceToJob(jobTest: JobTest, source: Source): JobTest = jobTest.source(source, data)
-  }
-
   class SimpleTypeTestSourceWithoutSchema[T](val data: Iterable[T])(implicit setter: TupleSetter[T]) extends TestSourceWithoutSchema {
     def addSourceToJob(jobTest: JobTest, source: Source): JobTest =
       jobTest.source[T](source, data)(setter)
   }
-
-  implicit def fromProductDataToSourceWithoutSchema(data: Iterable[Product]) = new ProductTestSourceWithoutSchema(data)
 
   implicit def fromSimpleTypeDataToSourceWithoutSchema[T](data: Iterable[T])(implicit setter: TupleSetter[T]) =
     new SimpleTypeTestSourceWithoutSchema(data)(setter)

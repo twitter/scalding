@@ -198,13 +198,19 @@ trait Config extends Serializable {
     if (toMap.contains(ConfiguredInstantiator.KEY)) Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
     else None
 
-  def getArgs: Args = get(Config.ScaldingJobArgs) match {
+  def getArgs: Args = get(Config.ScaldingJobArgsSerialized) match {
     case None => new Args(Map.empty)
-    case Some(str) => Args(str)
+    case Some(str) => argsSerializer
+      .invert(str)
+      .map(new Args(_))
+      .getOrElse(throw new RuntimeException(
+        s"""Could not deserialize Args from Config. Maybe "$ScaldingJobArgsSerialized" was modified without using Config.setArgs?"""))
   }
 
   def setArgs(args: Args): Config =
-    this + (Config.ScaldingJobArgs -> args.toString)
+    this
+      .+(Config.ScaldingJobArgs -> args.toString)
+      .+(Config.ScaldingJobArgsSerialized -> argsSerializer(args.m))
 
   def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
@@ -384,6 +390,7 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingJobArgs: String = "scalding.job.args"
+  val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
@@ -561,4 +568,5 @@ object Config {
   @transient private[scalding] lazy val flowStepListenerSerializer = buildInj[(Mode, Config) => FlowStepListener]
   @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
   @transient private[scalding] lazy val flowStepStrategiesSerializer = buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
+  @transient private[scalding] lazy val argsSerializer = buildInj[Map[String, List[String]]]
 }
