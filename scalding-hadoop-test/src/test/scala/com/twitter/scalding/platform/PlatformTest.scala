@@ -725,19 +725,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   "An InvalidSourceTap that gets past validation" should {
     "throw an InvalidSourceException" in {
-      val result = Try {
+      val result: FlowException = intercept[FlowException]
         HadoopPlatformJobTest(new ReadPathJob(_), cluster)
           .arg("input", "/sploop/boop/doopity/doo/")
           .run
       }
 
-      result match {
-        case Failure(fe: FlowException) if Option(fe.getCause).exists(_.isInstanceOf[InvalidSourceException]) => ()
-        case Failure(t) =>
-          throw new RuntimeException("Expected InvalidSourceException wrapped in FlowException.", t)
-        case _ =>
-          throw new RuntimeException("Expected InvalidSourceException wrapped in FlowException, but the job succeeded")
-      }
+      assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException])
     }
   }
 }
