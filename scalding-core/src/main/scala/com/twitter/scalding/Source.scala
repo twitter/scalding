@@ -28,6 +28,8 @@ import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollecto
 
 import cascading.pipe.Pipe
 
+import org.apache.hadoop.mapred.InputFormat
+import org.apache.hadoop.mapred.InputSplit
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -76,9 +78,20 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
   override def sourceConfInit(flow: FlowProcess[JobConf], conf: JobConf): Unit = {
-    conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
+    conf.setInputFormat(classOf[InvalidInputFormat])
     super.sourceConfInit(flow, conf)
   }
+}
+
+/**
+ * Better error messaging for the occassion where an InvalidSourceTap does not
+ * fail in validation.
+ */
+private[scalding] class InvalidInputFormat extends InputFormat[Nothing, Nothing] {
+  override def getSplits(conf: JobConf, numSplits: Int): Nothing =
+    throw new InvalidSourceException("getSplits called on InvalidInputFormat")
+  override def getRecordReader(split: InputSplit, conf: JobConf, reporter: org.apache.hadoop.mapred.Reporter): Nothing =
+    throw new InvalidSourceException("getRecordReader called on InvalidInputFormat")
 }
 
 /*
