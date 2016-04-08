@@ -25,8 +25,9 @@ import com.twitter.elephantbird.mapreduce.input.combine.DelegateCombineFileInput
 import com.twitter.elephantbird.mapreduce.io.{ BinaryConverter, GenericWritable }
 import com.twitter.elephantbird.mapreduce.input.{ BinaryConverterProvider, MultiInputFormat }
 import com.twitter.elephantbird.mapreduce.output.LzoGenericBlockOutputFormat
+import com.twitter.elephantbird.mapred.output.DeprecatedOutputFormatWrapper
 
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, OutputFormat, RecordReader }
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 import org.apache.hadoop.conf.Configuration
 
 import cascading.tap.Tap
@@ -127,7 +128,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     MultiInputFormat.setClassConf(clazz, conf)
     MultiInputFormat.setGenericConverterClassConf(classOf[SourceConfigBinaryConverterProvider[_]], conf)
 
-    DelegateCombineFileInputFormat.setDelegateInputFormatHadoop2(conf, classOf[MultiInputFormat[_]])
+    DelegateCombineFileInputFormat.setDelegateInputFormat(conf, classOf[MultiInputFormat[_]])
   }
 
   override def sinkConfInit(fp: FlowProcess[_ <: Configuration],
@@ -136,7 +137,7 @@ class LzoGenericScheme[M](@transient conv: BinaryConverter[M], clazz: Class[M]) 
     LzoGenericScheme.setConverter(conv, conf, SinkConfigBinaryConverterProvider.ProviderConfKey)
     LzoGenericBlockOutputFormat.setClassConf(clazz, conf)
     LzoGenericBlockOutputFormat.setGenericConverterClassConf(classOf[SinkConfigBinaryConverterProvider[_]], conf)
-    conf.setClass("mapred.output.format.class", classOf[LzoGenericBlockOutputFormat[_]], classOf[OutputFormat[_, _]])
+    DeprecatedOutputFormatWrapper.setOutputFormat(classOf[LzoGenericBlockOutputFormat[_]], conf)
   }
 }
 
