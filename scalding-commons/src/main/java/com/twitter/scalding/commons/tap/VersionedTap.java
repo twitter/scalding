@@ -14,6 +14,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
 import cascading.flow.FlowProcess;
+import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.scheme.Scheme;
 import cascading.tap.hadoop.Hfs;
 
@@ -93,20 +94,21 @@ public class VersionedTap extends Hfs {
 
   @Override
   public void sourceConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
-    JobConf jobConf = new JobConf(conf);
-    super.sourceConfInit(process, jobConf);
-    FileInputFormat.setInputPaths(jobConf, getSourcePath(jobConf));
+    super.sourceConfInit(process, conf);
+    conf.unset("mapred.input.dir"); // need this to unset any paths set in super.sourceConfInit
+    Path fullyQualifiedPath = getFileSystem(conf).makeQualified(new Path(getSourcePath(conf)));
+    HadoopUtil.addInputPath(conf, fullyQualifiedPath);
   }
 
   @Override
   public void sinkConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
-    JobConf jobConf = new JobConf(conf);
-    super.sinkConfInit(process, jobConf);
+    super.sinkConfInit(process, conf);
 
     if (newVersionPath == null)
-      newVersionPath = getSinkPath(jobConf);
+      newVersionPath = getSinkPath(conf);
 
-    FileOutputFormat.setOutputPath(jobConf, new Path(newVersionPath));
+    Path fullyQualifiedPath = getFileSystem(conf).makeQualified(new Path(newVersionPath));
+    HadoopUtil.setOutputPath(conf, fullyQualifiedPath);
   }
 
   @Override

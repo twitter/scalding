@@ -12,12 +12,13 @@ import cascading.flow.FlowProcess;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.scheme.hadoop.WritableSequenceFile;
+import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 /**
- *
+ * Used in conjunction with VersionedKeyValSource.
  */
 public class KeyValueByteScheme extends WritableSequenceFile {
   public KeyValueByteScheme(Fields fields) {
@@ -26,6 +27,14 @@ public class KeyValueByteScheme extends WritableSequenceFile {
 
   public static byte[] getBytes(BytesWritable key) {
     return Arrays.copyOfRange(key.getBytes(), 0, key.getLength());
+  }
+
+  @Override
+  public void sourceConfInit(FlowProcess<? extends Configuration> flowProcess,
+      Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf) {
+    super.sourceConfInit(flowProcess, tap, conf);
+    conf.setClass("mapred.input.format.class", VersionedSequenceFileInputFormat.class,
+      org.apache.hadoop.mapred.InputFormat.class);
   }
 
   @Override
