@@ -15,19 +15,20 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.FlowProcess
+import cascading.scheme.Scheme
 import cascading.tap.hadoop.Hfs
 import cascading.tap.SinkMode
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
-import cascading.flow.FlowProcess
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
-import cascading.scheme.Scheme
 
 private[scalding] class ConfPropertiesHfsTap(config: Config,
-  scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
+  scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _],
   stringPath: String,
   sinkMode: SinkMode) extends Hfs(scheme, stringPath, sinkMode) {
-  override def sourceConfInit(process: FlowProcess[JobConf], conf: JobConf): Unit = {
+  override def sourceConfInit(process: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
     config.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
@@ -35,7 +36,7 @@ private[scalding] class ConfPropertiesHfsTap(config: Config,
     super.sourceConfInit(process, conf)
   }
 
-  override def sinkConfInit(process: FlowProcess[JobConf], conf: JobConf): Unit = {
+  override def sinkConfInit(process: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
     config.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
@@ -58,5 +59,5 @@ trait HfsConfPropertySetter extends HfsTapProvider {
     scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
     sinkMode: SinkMode): Hfs =
-    new ConfPropertiesHfsTap(tapConfig, scheme, path, sinkMode)
+    new ConfPropertiesHfsTap(tapConfig, Hadoop2SchemeInstance(scheme), path, sinkMode)
 }

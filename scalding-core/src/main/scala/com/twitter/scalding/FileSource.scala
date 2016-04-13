@@ -64,7 +64,9 @@ trait HfsTapProvider {
   def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
     sinkMode: SinkMode): Hfs =
-    new Hfs(scheme, path, sinkMode)
+    new Hfs(
+      Hadoop2SchemeInstance(scheme),
+      path, sinkMode)
 }
 
 private[scalding] object CastFileTap {
@@ -404,10 +406,7 @@ trait SuccessFileSource extends FileSource {
 trait LocalTapSource extends LocalSourceOverride {
   override def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
     val taps = localPaths.map { p =>
-      // temporary workaround. Remove when scalding-core is migrated to cascading3.
-      val scheme = hdfsScheme.asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
-      // end temporary workaround
-      new LocalTap(p, scheme, sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+      new LocalTap(p, Hadoop2SchemeInstance(hdfsScheme), sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
     }.toSeq
 
     taps match {

@@ -22,7 +22,7 @@ import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalize
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
 
-import cascading.pipe.assembly.AggregateBy
+import cascading.pipe.assembly.AggregateByProps
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
@@ -109,7 +109,7 @@ trait Config extends Serializable {
    * the best results
    */
   def setMapSideAggregationThreshold(count: Int): Config =
-    this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
+    this + (AggregateByProps.AGGREGATE_BY_CAPACITY -> count.toString)
 
   /**
    * Set this configuration option to require all grouping/cogrouping
@@ -369,6 +369,9 @@ trait Config extends Serializable {
 object Config {
   val CascadingAppName: String = "cascading.app.name"
   val CascadingAppId: String = "cascading.app.id"
+  // This is the old config AGGREGATE_BY_THRESHOLD which is no longer present in cascading3
+  // We maintain our own copy to provide backward compatibility
+  val CascadingAggregateByThreshold = "cascading.aggregateby.threshold"
   val CascadingSerializationTokens = "cascading.serialization.tokens"
   val IoSerializationsKey: String = "io.serializations"
   val ScaldingFlowClassName: String = "scalding.flow.class.name"

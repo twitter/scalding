@@ -140,14 +140,14 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
   type SourceCallType = SourceCall[Array[AnyRef], Reader]
   type SinkCallType = SinkCall[Array[AnyRef], Output]
 
-  override def sourceConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
+  override def sourceConfInit(flowProcess: FlowProcess[_ <: JobConf], tap: TapType, jobConf: JobConf): Unit = {
     fp.map(ParquetInputFormat.setFilterPredicate(jobConf, _))
     jobConf.setInputFormat(classOf[DeprecatedParquetInputFormat[T]])
     jobConf.set(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE, ParquetInputOutputFormat.injection(readSupport))
     ParquetInputFormat.setReadSupportClass(jobConf, classOf[ReadSupportInstanceProxy[_]])
   }
 
-  override def source(flowProcess: FlowProcess[JobConf], sc: SourceCallType): Boolean = {
+  override def source(flowProcess: FlowProcess[_ <: JobConf], sc: SourceCallType): Boolean = {
     val value: Container[T] = sc.getInput.createValue()
 
     val hasNext = sc.getInput.next(null, value)
@@ -161,12 +161,12 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
     }
   }
 
-  override def sinkConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
+  override def sinkConfInit(flowProcess: FlowProcess[_ <: JobConf], tap: TapType, jobConf: JobConf): Unit = {
     jobConf.setOutputFormat(classOf[InnerDeprecatedParquetOutputFormat[T]])
     jobConf.set(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE, ParquetInputOutputFormat.injection(writeSupport))
   }
 
-  override def sink(flowProcess: FlowProcess[JobConf], sinkCall: SinkCallType): Unit = {
+  override def sink(flowProcess: FlowProcess[_ <: JobConf], sinkCall: SinkCallType): Unit = {
     val tuple = sinkCall.getOutgoingEntry
     require(tuple.size == 1,
       "TypedParquetTupleScheme expects tuple with an arity of exactly 1, but found " + tuple.getFields)

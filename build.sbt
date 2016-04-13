@@ -25,7 +25,7 @@ val avroVersion = "1.7.4"
 val bijectionVersion = "0.8.1"
 val cascadingAvroVersion = "2.1.2"
 val chillVersion = "0.7.1"
-val elephantbirdVersion = "4.8"
+val elephantbirdVersion = "4.14-RC2"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
@@ -222,7 +222,9 @@ lazy val scalding = Project(
   scaldingCommons,
   scaldingAvro,
   scaldingParquet,
+  scaldingParquetCascading,
   scaldingParquetScrooge,
+  scaldingParquetScroogeCascading,
   scaldingHRaven,
   scaldingRepl,
   scaldingJson,
@@ -250,7 +252,9 @@ lazy val scaldingAssembly = Project(
   scaldingCommons,
   scaldingAvro,
   scaldingParquet,
+  scaldingParquetCascading,
   scaldingParquetScrooge,
+  scaldingParquetScroogeCascading,
   scaldingHRaven,
   scaldingRepl,
   scaldingJson,
@@ -292,11 +296,13 @@ lazy val scaldingArgs = module("args")
 lazy val scaldingDate = module("date")
 
 lazy val cascadingVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
+  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-52")
 
-// This is a temporary placeholder while we migrate to cascading3, a few subprojects at a time
-// and should eventually be folded into cascadingVersion when we merge to develop.
-val cascadingThreeVersion = "3.0.3"
+lazy val elephantbirdCascadingArtifact = cascadingVersion.split('.').head match {
+  case "2" => "elephant-bird-cascading2"
+  case "3" => "elephant-bird-cascading3"
+  case other => sys.error(s"Unsupported cascading major version: $other")
+}
 
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
@@ -340,7 +346,7 @@ lazy val scaldingCommons = module("commons").settings(
     "com.twitter" %% "bijection-core" % bijectionVersion,
     "com.twitter" %% "algebird-core" % algebirdVersion,
     "com.twitter" %% "chill" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
+    "com.twitter.elephantbird" % elephantbirdCascadingArtifact % elephantbirdVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
     "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
     // TODO: split this out into scalding-thrift
@@ -401,8 +407,8 @@ lazy val scaldingParquetCascading = module("parquet-cascading").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided",
+    "cascading" % "cascading-core" % cascadingVersion % "provided",
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided",
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
   )
 ).dependsOn(scaldingParquetFixtures % "test->test")
@@ -451,8 +457,8 @@ lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
   .settings(
     libraryDependencies ++= Seq(
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "cascading" % "cascading-core" % cascadingThreeVersion % "provided",
-      "cascading" % "cascading-hadoop" % cascadingThreeVersion % "test",
+      "cascading" % "cascading-core" % cascadingVersion % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion % "test",
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
@@ -602,7 +608,7 @@ lazy val maple = Project(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingThreeVersion % "provided"
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided"
   )
   }
 )
@@ -628,6 +634,7 @@ lazy val scaldingDb = module("db").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.scala-lang" % "scala-library" % scalaVersion,
     "org.scala-lang" % "scala-reflect" % scalaVersion,
+    "cascading" % "cascading-core" % cascadingVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
 },
