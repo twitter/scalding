@@ -416,8 +416,8 @@ trait LocalTapSource extends LocalSourceOverride {
 }
 
 abstract class FixedPathSource(path: String*) extends FileSource {
-  def localPaths = path.toList
-  def hdfsPaths = path.toList
+  override def localPaths: Iterable[String] = path.toList
+  override def hdfsPaths: Iterable[String] = path.toList
 
   // `toString` is used by equals in JobTest, which causes
   // problems due to unstable collection type of `path`
