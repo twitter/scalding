@@ -81,7 +81,7 @@ trait LocalSourceOverride extends SchemedSource {
   def localPaths: Iterable[String]
 
   // By default, we write to the last path for local paths
-  def localWritePath = localPaths.last
+  def localWritePath: String = localPaths.last
 
   /**
    * Creates a local tap.
@@ -202,7 +202,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
 
   def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
-  def hdfsWritePath = hdfsPaths.last
+  def hdfsWritePath: String = hdfsPaths.last
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
@@ -422,7 +422,7 @@ abstract class FixedPathSource(path: String*) extends FileSource {
   // `toString` is used by equals in JobTest, which causes
   // problems due to unstable collection type of `path`
   override def toString = getClass.getName + path.mkString("(", ",", ")")
-  override def hdfsWritePath = stripTrailing(super.hdfsWritePath)
+  override def hdfsWritePath: String = stripTrailing(super.hdfsWritePath)
 
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
