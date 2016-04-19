@@ -14,13 +14,14 @@ Hadoop is a distributed system for counting words. Here is how it's done in Scal
 package com.twitter.scalding.examples
 
 import com.twitter.scalding._
+import com.twitter.scalding.source.TypedText
 
 class WordCountJob(args: Args) extends Job(args) {
   TypedPipe.from(TextLine(args("input")))
     .flatMap { line => tokenize(line) }
     .groupBy { word => word } // use each word for a key
     .size // in each group, get the size
-    .write(TypedTsv[(String, Long)](args("output")))
+    .write(TypedText.tsv[(String, Long)](args("output")))
 
   // Split a piece of text into individual words.
   def tokenize(text: String): Array[String] = {
