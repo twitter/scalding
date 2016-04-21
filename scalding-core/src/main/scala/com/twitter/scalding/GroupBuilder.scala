@@ -322,15 +322,16 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
    */
   def sortBy(f: Fields): GroupBuilder = {
     reds = None
-    sortF = sortF match {
-      case None => Some(f)
+    val sort = sortF match {
+      case None => f
       case Some(sf) => {
         sf.append(f)
-        Some(sf)
+        sf
       }
     }
+    sortF = Some(sort)
     // Update projectFields
-    projectFields = projectFields.map { Fields.merge(_, sortF.get) }
+    projectFields = projectFields.map { Fields.merge(_, sort) }
     this
   }
 
@@ -379,6 +380,8 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
 class ScanLeftIterator[T, U](it: Iterator[T], init: U, fn: (U, T) => U) extends Iterator[U] with java.io.Serializable {
   protected var prev: Option[U] = None
   def hasNext: Boolean = { prev.isEmpty || it.hasNext }
+  // Don't use pattern matching in a performance-critical section
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def next = {
     prev = prev.map { fn(_, it.next) }
       .orElse(Some(init))

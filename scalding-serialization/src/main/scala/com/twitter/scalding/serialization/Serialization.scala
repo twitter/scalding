@@ -55,6 +55,12 @@ trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
   def dynamicSize(t: T): Option[Int]
 }
 
+/**
+ * In order to cache Serializations having equality and hashes can be useful.
+ * Extend this trait when those two properties can be satisfied
+ */
+trait EquivSerialization[T] extends Serialization[T]
+
 object Serialization {
   import JavaStreamEnrichments._
   /**

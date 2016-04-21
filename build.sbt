@@ -19,12 +19,12 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
 }
 def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-val algebirdVersion = "0.11.0"
+val algebirdVersion = "0.12.0"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
-val bijectionVersion = "0.8.1"
+val bijectionVersion = "0.9.1"
 val cascadingAvroVersion = "2.1.2"
-val chillVersion = "0.7.1"
+val chillVersion = "0.7.3"
 val elephantbirdVersion = "4.14-RC2"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
@@ -59,6 +59,8 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
   javacOptions in doc := Seq("-source", "1.6"),
+
+  wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
 
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",

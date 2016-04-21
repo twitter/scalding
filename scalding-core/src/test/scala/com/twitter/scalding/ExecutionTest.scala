@@ -26,10 +26,11 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Promise }
 import scala.util.Try
 
-import com.twitter.scalding.examples.KMeans
-
 // this is the scalding ExecutionContext
 import ExecutionContext._
+
+import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
@@ -68,6 +69,8 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
   }
 }
 
+case class MyCustomType(s: String)
+
 class ExecutionTest extends WordSpec with Matchers {
   "An Execution" should {
     "run" in {
@@ -79,6 +82,23 @@ class ExecutionTest extends WordSpec with Matchers {
         .waitFor(Config.default, Local(false)).get match {
           case (it1, it2) => (it1.head, it2.head)
         }) shouldBe ((0 until 100).sum, (100 until 200).sum)
+    }
+    "lift to try" in {
+      val res = ExecutionTestJobs
+        .wordCount2(TypedPipe.from(List("a", "b")))
+        .liftToTry
+        .waitFor(Config.default, Local(false)).get
+
+      assert(res.isSuccess)
+    }
+    "lift to try on exception" in {
+      val res = ExecutionTestJobs
+        .wordCount2(TypedPipe.from(List("a", "b")))
+        .map(_ => throw new RuntimeException("Something went wrong"))
+        .liftToTry
+        .waitFor(Config.default, Local(false)).get
+
+      assert(res.isFailure)
     }
     "merge fanouts without error" in {
       def unorderedEq[T](l: Iterable[T], r: Iterable[T]): Boolean =
@@ -107,40 +127,57 @@ class ExecutionTest extends WordSpec with Matchers {
         .zip(Execution.from("1"))
         .waitFor(Config.default, Local(true)).get shouldBe (1, "1")
     }
-  }
-  "Execution K-means" should {
-    "find the correct clusters for trivial cases" in {
-      val dim = 20
-      val k = 20
-      val rng = new java.util.Random
-      // if you are in cluster i, then position i == 100, else all the first k are 0.
-      // Then all the tail are random, but very small enough to never bridge the gap
-      def randVect(cluster: Int): Vector[Double] =
-        Vector.fill(k)(0.0).updated(cluster, 100.0) ++ Vector.fill(dim - k)(rng.nextDouble / (1e6 * dim))
 
-      // To have the seeds stay sane for kmeans k == vectorCount
-      val vectorCount = k
-      val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
-
-      val labels = KMeans(k, vectors).flatMap {
-        case (_, _, labeledPipe) =>
-          labeledPipe.toIterableExecution
+    "Config transformer will isolate Configs" in {
+      def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
+        if (cfg.get("test.cfg.variable").isDefined)
+          Execution.failed(new Exception(s"${message}\n: var: ${cfg.get("test.cfg.variable")}"))
+        else
+          Execution.from(())
       }
-        .waitFor(Config.default, Local(false)).get.toList
 
-      def clusterOf(v: Vector[Double]): Int = v.indexWhere(_ > 0.0)
-
-      val byCluster = labels.groupBy { case (id, v) => clusterOf(v) }
-
-      // The rule is this: if two vectors share the same prefix,
-      // the should be in the same cluster
-      byCluster.foreach {
-        case (clusterId, vs) =>
-          val id = vs.head._1
-          vs.foreach { case (thisId, _) => id shouldBe thisId }
+      val hasVariable = Execution.getConfig.flatMap { cfg =>
+        if (cfg.get("test.cfg.variable").isEmpty)
+          Execution.failed(new Exception("Should see variable inside of transform"))
+        else
+          Execution.from(())
       }
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      doesNotHaveVariable("Should not see variable before we've started transforming")
+        .flatMap{ _ => Execution.withConfig(hasVariable)(addOption) }
+        .flatMap(_ => doesNotHaveVariable("Should not see variable in flatMap's after the isolation"))
+        .map(_ => true)
+        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+    }
+
+    "Config transformer will interact correctly with the cache" in {
+      var incrementIfDefined = 0
+      var totalEvals = 0
+
+      val incrementor = Execution.getConfig.flatMap { cfg =>
+        totalEvals += 1
+        if (cfg.get("test.cfg.variable").isDefined)
+          incrementIfDefined += 1
+        Execution.from(())
+      }
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      // Here we run without the option, with the option, and finally without again.
+      incrementor
+        .flatMap{ _ => Execution.withConfig(incrementor)(addOption) }
+        .flatMap(_ => incrementor)
+        .map(_ => true)
+        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+
+      assert(incrementIfDefined === 1)
+      // We should evaluate once for the default config, and once for the modified config.
+      assert(totalEvals === 2)
     }
   }
+
   "ExecutionApp" should {
     val parser = new ExecutionApp { def job = Execution.from(()) }
     "parse hadoop args correctly" in {
@@ -185,6 +222,42 @@ class ExecutionTest extends WordSpec with Matchers {
       val res = e3.zip(e2)
       res.waitFor(Config.default, Local(true))
       assert((first, second, third) == (1, 1, 1))
+    }
+
+    "Running a large loop won't exhaust boxed instances" in {
+      var timesEvaluated = 0
+      import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+      // Attempt to use up 4 boxed classes for every execution
+      def baseExecution(idx: Int): Execution[Unit] = TypedPipe.from(0 until 1000).map(_.toShort).flatMap { i =>
+        timesEvaluated += 1
+        List((i, i), (i, i))
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toInt, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toLong, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (k.toString, v)
+      }.sumByKey.map {
+        case (k, v) =>
+          (MyCustomType(k), v)
+      }.sumByKey.writeExecution(TypedTsv(s"/tmp/asdf_${idx}"))
+
+      implicitly[OrderedSerialization[MyCustomType]] match {
+        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.typed.MyCustomType")
+        case _ => sys.error("Ordered serialization should have been the MacroEqualityOrderedSerialization for this test")
+      }
+      def executionLoop(idx: Int): Execution[Unit] = {
+        if (idx > 0)
+          baseExecution(idx).flatMap(_ => executionLoop(idx - 1))
+        else
+          Execution.unit
+      }
+
+      executionLoop(55).waitFor(Config.default, Local(true))
+      assert(timesEvaluated == 55 * 1000, "Should run the 55 execution loops for 1000 elements")
     }
 
     "evaluate shared portions just once, writeExecution" in {
@@ -236,6 +309,47 @@ class ExecutionTest extends WordSpec with Matchers {
 
       res.waitFor(Config.default, Local(true))
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
+    }
+
+    "handle failure" in {
+      val result = Execution.withParallelism(Seq(Execution.failed(new Exception("failed"))), 1)
+
+      assert(result.waitFor(Config.default, Local(true)).isFailure)
+    }
+
+    "handle an error running in parallel" in {
+      val executions = Execution.failed(new Exception("failed")) :: 0.to(10).map(i => Execution.from[Int](i)).toList
+
+      val result = Execution.withParallelism(executions, 3)
+
+      assert(result.waitFor(Config.default, Local(true)).isFailure)
+    }
+
+    "run in parallel" in {
+      val executions = 0.to(10).map(i => Execution.from[Int](i)).toList
+
+      val result = Execution.withParallelism(executions, 3)
+
+      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).toSeq)
+    }
+
+    "block correctly" in {
+      var seen = 0
+      def updateSeen(idx: Int) {
+        assert(seen === idx)
+        seen += 1
+      }
+
+      val executions = 0.to(10).map{ i =>
+        Execution
+          .from[Int](i)
+          .map{ i => Thread.sleep(10 - i); i }
+          .onComplete(t => updateSeen(t.get))
+      }.toList.reverse
+
+      val result = Execution.withParallelism(executions, 1)
+
+      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).reverse)
     }
   }
 }

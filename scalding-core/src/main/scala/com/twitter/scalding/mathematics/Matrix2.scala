@@ -626,6 +626,10 @@ object Matrix2 {
 
     val sharedMap = HashMap.empty[Matrix2[Any, Any, V], TypedPipe[(Any, Any, V)]]
 
+    /* The only case where `product` will be `None` is if the result is an
+     * intermediate matrix (like `OneC`).  This is not yet forbidden in the types.
+     */
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def generatePlan(i: Int, j: Int): Matrix2[Any, Any, V] = {
       if (i == j) p(i)
       else {

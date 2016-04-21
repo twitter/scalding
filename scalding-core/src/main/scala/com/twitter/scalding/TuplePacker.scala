@@ -64,10 +64,15 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   // Cut out "set" and lower case the first after
   def setterToFieldName(setter: Method) = lowerFirst(setter.getName.substring(3))
 
+  /* The `_.get` is safe because of the `_.isEmpty` check.  ScalaTest does not
+   * seem to support a more type safe way of doing this.
+   */
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def validate {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
     val missing = Dsl.asList(fields).find { f => !getSetters.contains(f.toString) }
+
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
   }
   validate

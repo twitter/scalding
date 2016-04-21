@@ -106,12 +106,18 @@ class JobTest(cons: (Args) => Job) {
   def source[T](s: Source, iTuple: Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
     sourceBuffer(s, iTuple)
 
+  // This use of `_.get` is probably safe, but difficult to prove correct
+  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   def sink[A](s: Source)(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
     if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
       source(s, new ListBuffer[Tuple])
     }
     val buffer = sourceMap(s).get
+    /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
+     * "keys" in the `sourceMap`.  Do not change the following line unless
+     * you also modify the `finalize` function accordingly.
+     */
     sinkSet += s
     callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
@@ -217,6 +223,10 @@ class JobTest(cons: (Args) => Job) {
       case None => {
         job.mode match {
           case hadoopTest @ HadoopTest(_, _) => {
+            /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
+             * "keys" in the `sourceMap`.  Do not change the following line unless
+             * you also modify the `finalize` function accordingly.
+             */
             // The sinks are written to disk, we need to clean them up:
             sinkSet.foreach{ hadoopTest.finalize(_) }
           }

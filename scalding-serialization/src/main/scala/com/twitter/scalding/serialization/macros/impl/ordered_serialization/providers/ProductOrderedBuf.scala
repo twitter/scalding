@@ -54,6 +54,9 @@ object ProductOrderedBuf {
       validTypes.find{ t => curType <:< t }.isDefined
     }
 
+    // The `_.get` is safe since it's always preceded by a matching
+    // `_.isDefined` check in `validType`
+    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
     def symbolFor(subType: Type): Type = {
       val superType = validTypes.find{ t => subType.erasure <:< t }.get
       subType.baseType(superType.typeSymbol)

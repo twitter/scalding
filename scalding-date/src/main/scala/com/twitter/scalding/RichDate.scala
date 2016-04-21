@@ -61,6 +61,10 @@ object RichDate {
   }
 
   def now: RichDate = RichDate(System.currentTimeMillis())
+
+  implicit def richDateOrdering: Ordering[RichDate] = new Ordering[RichDate] {
+    def compare(a: RichDate, b: RichDate) = java.lang.Long.compare(a.timestamp, b.timestamp)
+  }
 }
 
 /**

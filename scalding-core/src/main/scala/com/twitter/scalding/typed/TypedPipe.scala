@@ -581,7 +581,7 @@ trait TypedPipe[+T] extends Serializable {
    * If you want to writeThrough to a specific file if it doesn't already exist,
    * and otherwise just read from it going forward, use this.
    */
-  def make[U >: T](dest: FileSource with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+  def make[U >: T](dest: Source with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
     Execution.getMode.flatMap { mode =>
       try {
         dest.validateTaps(mode)
@@ -985,6 +985,25 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     checkMode(m)
     flowDef.mergeFrom(localFlowDef)
     RichPipe(inpipe).flatMapTo[TupleEntry, U](fields -> fieldNames)(flatMapFn)
+  }
+
+  override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] = {
+    import Dsl.{ fields => ofields, _ }
+    val destFields: Fields = ('key, 'value)
+    val selfKV = raiseTo[(K, V)]
+
+    TypedPipeFactory({ (fd, mode) =>
+      checkMode(mode)
+
+      val msr = new TypedMapsideReduce[K, V](
+        flatMapFn.asInstanceOf[FlatMapFn[(K, V)]],
+        sg,
+        fields,
+        'key,
+        'value,
+        None)(tup2Setter)
+      TypedPipe.from[(K, V)](inpipe.eachTo(fields -> destFields) { _ => msr }, destFields)(fd, mode, tuple2Converter)
+    })
   }
 
   override def toIterableExecution: Execution[Iterable[T]] =

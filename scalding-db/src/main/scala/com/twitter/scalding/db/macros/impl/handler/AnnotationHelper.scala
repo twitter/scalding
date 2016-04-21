@@ -31,7 +31,7 @@ private[handler] abstract class AnnotationHelper {
   import ctx.universe._
 
   def sizeAnnotation: scala.util.Try[(AnnotationHelper, SizeAnno)] =
-    consume[SizeAnno](typeOf[com.twitter.scalding.db.macros.size])(_.map(o => WithSize(o.get)).getOrElse(WithoutSize))
+    consume[SizeAnno](typeOf[com.twitter.scalding.db.macros.size])(_.flatten.map(o => WithSize(o)).getOrElse(WithoutSize))
 
   def textAnnotation: scala.util.Try[(AnnotationHelper, TextAnno)] =
     consume(typeOf[com.twitter.scalding.db.macros.text])(_.map(_ => WithText).getOrElse(WithoutText))
