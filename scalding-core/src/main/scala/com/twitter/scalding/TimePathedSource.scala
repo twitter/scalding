@@ -56,9 +56,9 @@ object TimePathedSource {
    * Gives the write path based on daterange end.
    */
   def writePathFor(pattern: String, dateRange: DateRange, tz: TimeZone): String = {
+    assert(pattern != "/*", "Pattern must not be /*")
     assert(pattern.takeRight(2) == "/*", "Pattern must end with /* " + pattern)
-    val lastSlashPos = pattern.lastIndexOf('/')
-    val stripped = pattern.slice(0, lastSlashPos)
+    val stripped = pattern.dropRight(2)
     toPath(stripped, dateRange.end, tz)
   }
 }

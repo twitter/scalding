@@ -83,7 +83,7 @@ trait LocalSourceOverride extends SchemedSource {
   def localPaths: Iterable[String]
 
   // By default, we write to the last path for local paths
-  def localWritePath = localPaths.last
+  def localWritePath: String = localPaths.last
 
   /**
    * Creates a local tap.
@@ -204,7 +204,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
 
   def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
-  def hdfsWritePath = hdfsPaths.last
+  def hdfsWritePath: String = hdfsPaths.last
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
@@ -418,12 +418,30 @@ trait LocalTapSource extends LocalSourceOverride {
 }
 
 abstract class FixedPathSource(path: String*) extends FileSource {
-  def localPaths = path.toList
-  def hdfsPaths = path.toList
+  override def localPaths: Iterable[String] = path.toList
+  override def hdfsPaths: Iterable[String] = path.toList
 
-  override def toString = getClass.getName + path
+  // `toString` is used by equals in JobTest, which causes
+  // problems due to unstable collection type of `path`
+  override def toString = getClass.getName + path.mkString("(", ",", ")")
+  override def hdfsWritePath: String = stripTrailing(super.hdfsWritePath)
+
   override def hashCode = toString.hashCode
   override def equals(that: Any): Boolean = (that != null) && (that.toString == toString)
+
+  /**
+   * Similar in behavior to {@link TimePathedSource.writePathFor}.
+   * Strip out the trailing slash star.
+   */
+  protected def stripTrailing(path: String): String = {
+    assert(path != "*", "Path must not be *")
+    assert(path != "/*", "Path must not be /*")
+    if (path.takeRight(2) == "/*") {
+      path.dropRight(2)
+    } else {
+      path
+    }
+  }
 }
 
 /**

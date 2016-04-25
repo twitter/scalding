@@ -39,6 +39,15 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
   }
 }
 
+class MultipleTextLineFilesJob(args: Args) extends Job(args) {
+  try {
+    MultipleTextLineFiles(args.list("input"): _*).write(Tsv("output0"))
+  } catch {
+    case e: Exception => e.printStackTrace()
+  }
+
+}
+
 class FileSourceTest extends WordSpec with Matchers {
   import Dsl._
 
@@ -80,6 +89,21 @@ class FileSourceTest extends WordSpec with Matchers {
       .run
       .finish
   }
+
+  "A MultipleTextLineFiles Source" should {
+    JobTest(new MultipleTextLineFilesJob(_))
+      .arg("input", List("input0", "input1"))
+      .source(MultipleTextLineFiles("input0", "input1"), List("foobar", "helloworld"))
+      .sink[String](Tsv("output0")) { outBuf =>
+        "take multiple text files as input sources" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List("foobar", "helloworld")
+        }
+      }
+      .run
+      .finish
+  }
+
   "TextLine.toIterator" should {
     "correctly read strings" in {
       TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList shouldBe List("Hello world", "Goodbye world")
@@ -224,6 +248,32 @@ class FileSourceTest extends WordSpec with Matchers {
       }
   }
 
+  "FixedPathSource.hdfsWritePath" should {
+    "crib if path == *" in {
+      intercept[AssertionError] { TestFixedPathSource("*").hdfsWritePath }
+    }
+
+    "crib if path == /*" in {
+      intercept[AssertionError] { TestFixedPathSource("/*").hdfsWritePath }
+    }
+
+    "remove /* from a path ending in /*" in {
+      TestFixedPathSource("test_data/2013/06/*").hdfsWritePath shouldBe "test_data/2013/06"
+    }
+
+    "leave path as-is when it ends in a directory name" in {
+      TestFixedPathSource("test_data/2013/06").hdfsWritePath shouldBe "test_data/2013/06"
+    }
+
+    "leave path as-is when it ends in a directory name/" in {
+      TestFixedPathSource("test_data/2013/06/").hdfsWritePath shouldBe "test_data/2013/06/"
+    }
+
+    "leave path as-is when it ends in * without a preceeding /" in {
+      TestFixedPathSource("test_data/2013/06*").hdfsWritePath shouldBe "test_data/2013/06*"
+    }
+  }
+
   "invalid source input" should {
     "Create an InvalidSourceTap an empty directory is given" in {
       TestInvalidFileSource.createHdfsReadTap shouldBe a[InvalidSourceTap]
@@ -280,3 +330,5 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
   val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
 }
+
+case class TestFixedPathSource(path: String*) extends FixedPathSource(path: _*)

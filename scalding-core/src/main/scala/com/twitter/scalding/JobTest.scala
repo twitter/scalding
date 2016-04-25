@@ -100,9 +100,6 @@ class JobTest(cons: (Args) => Job) {
   def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
-  def source(s: Source, iTuple: Iterable[Product]): JobTest =
-    source[Product](s, iTuple)(TupleSetter.ProductSetter)
-
   def source[T](s: Source, iTuple: Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
     sourceBuffer(s, iTuple)
 

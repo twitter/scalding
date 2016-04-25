@@ -51,9 +51,13 @@ object RichDate {
   def upperBound(s: String)(implicit tz: TimeZone, dp: DateParser) = {
     val end = apply(s)
     (DateOps.getFormatObject(s) match {
+      case Some(DateOps.Format.DATE_WITHOUT_DASH) => end + Days(1)
       case Some(DateOps.Format.DATE_WITH_DASH) => end + Days(1)
+      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH) => end + Hours(1)
       case Some(DateOps.Format.DATEHOUR_WITH_DASH) => end + Hours(1)
+      case Some(DateOps.Format.DATETIME_WITHOUT_DASH) => end + Minutes(1)
       case Some(DateOps.Format.DATETIME_WITH_DASH) => end + Minutes(1)
+      case Some(DateOps.Format.DATETIME_HMS_WITHOUT_DASH) => end + Seconds(1)
       case Some(DateOps.Format.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
       case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
       case None => Days(1).floorOf(end + Days(1))
@@ -91,6 +95,9 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
       case RichDate(ts) => ts == timestamp
       case _ => false
     }
+
+  def before(that: RichDate): Boolean = compare(that) < 0
+  def after(that: RichDate): Boolean = compare(that) > 0
 
   /**
    * Use String.format to format the date, as opposed to toString, which uses SimpleDateFormat.

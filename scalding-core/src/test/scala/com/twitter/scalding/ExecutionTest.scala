@@ -15,22 +15,25 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.scalatest.{ Matchers, WordSpec }
-
-import com.twitter.scalding._
 import com.twitter.algebird.monad.Reader
 
-// Need this to flatMap Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, Promise }
-import scala.util.Try
-
-// this is the scalding ExecutionContext
-import ExecutionContext._
-
-import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
+import com.twitter.scalding.serialization.OrderedSerialization
+
+import java.nio.file.FileSystems
+import java.nio.file.Path
+
+import org.scalatest.{ Matchers, WordSpec }
+
+import scala.collection.immutable.Range
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Await, Promise }
+import scala.util.Random
+import scala.util.{ Try, Success, Failure }
+
+import ExecutionContext._
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
@@ -72,6 +75,20 @@ class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
 case class MyCustomType(s: String)
 
 class ExecutionTest extends WordSpec with Matchers {
+  implicit class ExecutionTestHelper[T](ex: Execution[T]) {
+    def shouldSucceed(): T = {
+      val r = ex.waitFor(Config.default, Local(true))
+      r match {
+        case Success(s) => s
+        case Failure(e) => fail(s"Failed running execution, exception:\n$e")
+      }
+    }
+    def shouldFail(): Unit = {
+      val r = ex.waitFor(Config.default, Local(true))
+      assert(r.isFailure)
+    }
+  }
+
   "An Execution" should {
     "run" in {
       ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
@@ -79,7 +96,7 @@ class ExecutionTest extends WordSpec with Matchers {
     }
     "run with zip" in {
       (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
-        .waitFor(Config.default, Local(false)).get match {
+        .shouldSucceed() match {
           case (it1, it2) => (it1.head, it2.head)
         }) shouldBe ((0 until 100).sum, (100 until 200).sum)
     }
@@ -87,7 +104,7 @@ class ExecutionTest extends WordSpec with Matchers {
       val res = ExecutionTestJobs
         .wordCount2(TypedPipe.from(List("a", "b")))
         .liftToTry
-        .waitFor(Config.default, Local(false)).get
+        .shouldSucceed()
 
       assert(res.isSuccess)
     }
@@ -96,7 +113,7 @@ class ExecutionTest extends WordSpec with Matchers {
         .wordCount2(TypedPipe.from(List("a", "b")))
         .map(_ => throw new RuntimeException("Something went wrong"))
         .liftToTry
-        .waitFor(Config.default, Local(false)).get
+        .shouldSucceed()
 
       assert(res.isFailure)
     }
@@ -117,15 +134,15 @@ class ExecutionTest extends WordSpec with Matchers {
       val neverHappens = Promise[Int]().future
       Execution.fromFuture { _ => neverHappens }
         .zip(Execution.failed(new Exception("oh no")))
-        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+        .shouldFail()
 
       Execution.failed(new Exception("oh no"))
         .zip(Execution.fromFuture { _ => neverHappens })
-        .waitFor(Config.default, Local(false)).isFailure shouldBe true
+        .shouldFail()
       // If both are good, we succeed:
       Execution.from(1)
         .zip(Execution.from("1"))
-        .waitFor(Config.default, Local(true)).get shouldBe (1, "1")
+        .shouldSucceed() shouldBe (1, "1")
     }
 
     "Config transformer will isolate Configs" in {
@@ -149,7 +166,7 @@ class ExecutionTest extends WordSpec with Matchers {
         .flatMap{ _ => Execution.withConfig(hasVariable)(addOption) }
         .flatMap(_ => doesNotHaveVariable("Should not see variable in flatMap's after the isolation"))
         .map(_ => true)
-        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+        .shouldSucceed() shouldBe true
     }
 
     "Config transformer will interact correctly with the cache" in {
@@ -170,11 +187,42 @@ class ExecutionTest extends WordSpec with Matchers {
         .flatMap{ _ => Execution.withConfig(incrementor)(addOption) }
         .flatMap(_ => incrementor)
         .map(_ => true)
-        .waitFor(Config.default, Local(false)) shouldBe scala.util.Success(true)
+        .shouldSucceed() shouldBe true
 
       assert(incrementIfDefined === 1)
       // We should evaluate once for the default config, and once for the modified config.
       assert(totalEvals === 2)
+    }
+
+    "Config transformer will interact correctly with the cache when writing" in {
+      import java.io._
+      val srcF = File.createTempFile("tmpoutputLocation", ".tmp").getAbsolutePath
+      val sinkF = File.createTempFile("tmpoutputLocation2", ".tmp").getAbsolutePath
+
+      def writeNums(nums: List[Int]): Unit = {
+        val pw = new PrintWriter(new File(srcF))
+        pw.write(nums.mkString("\n"))
+        pw.close
+      }
+
+      writeNums(List(1, 2, 3))
+
+      val sink = TypedTsv[Int](sinkF)
+      val src = TypedTsv[Int](srcF)
+      val operationTP = (TypedPipe.from(src) ++ TypedPipe.from((1 until 100).toList)).writeExecution(sink).getCounters.map(_._2.toMap)
+
+      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+
+      // Here we run without the option, with the option, and finally without again.
+      val (oldCounters, newCounters) = operationTP
+        .flatMap{ oc =>
+          writeNums(List(1, 2, 3, 4, 5, 6, 7))
+          Execution.withConfig(operationTP)(addOption).map { nc => (oc, nc) }
+        }
+        .shouldSucceed()
+
+      assert(oldCounters != newCounters, "With new configs given the source changed we shouldn't cache so the counters should be different")
+
     }
   }
 
@@ -220,7 +268,7 @@ class ExecutionTest extends WordSpec with Matchers {
        * Notice both e3 and e2 need to evaluate e1.
        */
       val res = e3.zip(e2)
-      res.waitFor(Config.default, Local(true))
+      res.shouldSucceed()
       assert((first, second, third) == (1, 1, 1))
     }
 
@@ -256,7 +304,7 @@ class ExecutionTest extends WordSpec with Matchers {
           Execution.unit
       }
 
-      executionLoop(55).waitFor(Config.default, Local(true))
+      executionLoop(55).shouldSucceed()
       assert(timesEvaluated == 55 * 1000, "Should run the 55 execution loops for 1000 elements")
     }
 
@@ -273,7 +321,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2)
 
-      res.waitFor(Config.default, Local(true))
+      res.shouldSucceed()
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
     }
 
@@ -290,7 +338,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2)
 
-      res.waitFor(Config.default, Local(true))
+      res.shouldSucceed()
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
     }
 
@@ -307,10 +355,28 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val res = fde1.zip(fde2).flatMap{ _ => fde1 }.flatMap(_.toIterableExecution)
 
-      res.waitFor(Config.default, Local(true))
+      res.shouldSucceed()
       assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
     }
 
+    "Ability to do isolated caches so we don't exhaust memory" in {
+
+      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] = Execution.withNewCache(Execution.from(id).flatMap{ idx =>
+        Execution.from(Array.fill(4000000)(idx.toLong))
+      })
+
+      def writeAll(numExecutions: Int): Execution[Unit] = {
+        if (numExecutions > 0) {
+          memoryWastingExecutionGenerator(numExecutions).flatMap { _ =>
+            writeAll(numExecutions - 1)
+          }
+        } else {
+          Execution.from(())
+        }
+      }
+
+      writeAll(400).shouldSucceed()
+    }
     "handle failure" in {
       val result = Execution.withParallelism(Seq(Execution.failed(new Exception("failed"))), 1)
 
@@ -330,7 +396,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val result = Execution.withParallelism(executions, 3)
 
-      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).toSeq)
+      assert(result.shouldSucceed() == 0.to(10).toSeq)
     }
 
     "block correctly" in {

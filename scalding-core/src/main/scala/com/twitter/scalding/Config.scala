@@ -198,13 +198,19 @@ trait Config extends Serializable {
     if (toMap.contains(ConfiguredInstantiator.KEY)) Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
     else None
 
-  def getArgs: Args = get(Config.ScaldingJobArgs) match {
+  def getArgs: Args = get(Config.ScaldingJobArgsSerialized) match {
     case None => new Args(Map.empty)
-    case Some(str) => Args(str)
+    case Some(str) => argsSerializer
+      .invert(str)
+      .map(new Args(_))
+      .getOrElse(throw new RuntimeException(
+        s"""Could not deserialize Args from Config. Maybe "$ScaldingJobArgsSerialized" was modified without using Config.setArgs?"""))
   }
 
   def setArgs(args: Args): Config =
-    this + (Config.ScaldingJobArgs -> args.toString)
+    this
+      .+(Config.ScaldingJobArgs -> args.toString)
+      .+(Config.ScaldingJobArgsSerialized -> argsSerializer(args.m))
 
   def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
@@ -359,6 +365,14 @@ trait Config extends Serializable {
   def setHRavenHistoryUserName: Config =
     this + (Config.HRavenHistoryUserName -> System.getProperty("user.name"))
 
+  def setHashJoinAutoForceRight(b: Boolean): Config =
+    this + (HashJoinAutoForceRight -> (b.toString))
+
+  def getHashJoinAutoForceRight: Boolean =
+    get(HashJoinAutoForceRight)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -379,6 +393,7 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingJobArgs: String = "scalding.job.args"
+  val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
@@ -404,6 +419,14 @@ object Config {
   /** Manual description for use in .dot and MR step names set using a `withDescription`. */
   val PipeDescriptions = "scalding.pipe.descriptions"
   val StepDescriptions = "scalding.step.descriptions"
+
+  /**
+   * Parameter that can be used to determine behavior on the rhs of a hashJoin.
+   * If true, we try to guess when to auto force to disk before a hashJoin
+   * else (the default) we don't try to infer this and the behavior can be dictated by the user manually
+   * calling forceToDisk on the rhs or not as they wish.
+   */
+  val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
 
   val empty: Config = Config(Map.empty)
 
@@ -548,4 +571,5 @@ object Config {
   @transient private[scalding] lazy val flowStepListenerSerializer = buildInj[(Mode, Config) => FlowStepListener]
   @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
   @transient private[scalding] lazy val flowStepStrategiesSerializer = buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
+  @transient private[scalding] lazy val argsSerializer = buildInj[Map[String, List[String]]]
 }

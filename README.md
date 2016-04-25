@@ -14,13 +14,14 @@ Hadoop is a distributed system for counting words. Here is how it's done in Scal
 package com.twitter.scalding.examples
 
 import com.twitter.scalding._
+import com.twitter.scalding.source.TypedText
 
 class WordCountJob(args: Args) extends Job(args) {
   TypedPipe.from(TextLine(args("input")))
     .flatMap { line => tokenize(line) }
     .groupBy { word => word } // use each word for a key
     .size // in each group, get the size
-    .write(TypedTsv[(String, Long)](args("output")))
+    .write(TypedText.tsv[(String, Long)](args("output")))
 
   // Split a piece of text into individual words.
   def tokenize(text: String): Array[String] = {
@@ -32,7 +33,7 @@ class WordCountJob(args: Args) extends Job(args) {
 
 Notice that the `tokenize` function, which is standard Scala, integrates naturally with the rest of the MapReduce job. This is a very powerful feature of Scalding. (Compare it to the use of UDFs in Pig.)
 
-You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/scalding-core/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see our [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which has several MapReduce tasks in Scalding and other frameworks (e.g., Pig and Hadoop Streaming).
+You can find more example code under [examples/](https://github.com/twitter/scalding/tree/master/scalding-commons/src/main/scala/com/twitter/scalding/examples). If you're interested in comparing Scalding to other languages, see our [Rosetta Code page](https://github.com/twitter/scalding/wiki/Rosetta-Code), which has several MapReduce tasks in Scalding and other frameworks (e.g., Pig and Hadoop Streaming).
 
 ## Documentation and Getting Started
 

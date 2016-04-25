@@ -21,7 +21,7 @@ import java.util.Random
 import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
+import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
