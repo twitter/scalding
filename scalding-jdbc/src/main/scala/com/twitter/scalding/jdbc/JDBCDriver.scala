@@ -10,7 +10,7 @@ trait JdbcDriver {
     tableName: TableName,
     columnNames: Array[ColumnName],
     columnDefinitions: Array[Definition]) =
-    new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
+    new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null)
   def getJDBCScheme(
     columnNames: Array[ColumnName],
     filterCondition: Option[String],
@@ -37,8 +37,7 @@ trait MysqlDriver extends JdbcDriver with MysqlTableCreationImplicits {
       tableName.get,
       columnNames.map(_.get),
       columnDefinitions.map(_.get),
-      null,
-      "SHOW TABLES LIKE '%s'")
+      null)
   override def getJDBCScheme(
     columnNames: Array[ColumnName],
     filterCondition: Option[String],
