@@ -307,7 +307,7 @@ lazy val elephantbirdCascadingArtifact = cascadingVersion.split('.').head match 
 }
 
 lazy val cascadingJDBCVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
+  System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-127")
 
 lazy val scaldingBenchmarks = module("benchmarks").settings(
   libraryDependencies ++= Seq(
