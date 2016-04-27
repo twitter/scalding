@@ -101,6 +101,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (2)
+          conf.get(EstimatorConfig.originalNumReducers) should be (None)
         }
         .run
     }
@@ -117,6 +118,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (3)
+          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
         }
         .run
     }

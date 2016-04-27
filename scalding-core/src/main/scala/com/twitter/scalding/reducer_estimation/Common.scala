@@ -172,17 +172,22 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-    val stepNumReducers = conf.get(Config.HadoopNumReducers)
-
     // whether the reducers have been set explicitly with `withReducers`
     val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)
-
-    // log in JobConf what was explicitly set by 'withReducers'
-    if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
-
     // whether we should override explicitly-specified numReducers
     val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
 
+    if (setExplicitly && !overrideExplicit) {
+      LOG.info(
+        s"""
+            |Flow step ${step.getName} was configured with reducers
+            |set explicitly (${setExplicitly}) and estimator explicit override
+            |(${overrideExplicit}). Skipping reducer estimation.
+         """.stripMargin)
+      return
+    }
+
+    val stepNumReducers = conf.get(Config.HadoopNumReducers)
     Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
 
       val clsLoader = Thread.currentThread.getContextClassLoader
@@ -215,11 +220,10 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       // save the estimate and capped estimate in the JobConf which should be saved by hRaven
       conf.setInt(EstimatorConfig.estimatedNumReducers, estimatedNumReducers.getOrElse(-1))
       conf.setInt(EstimatorConfig.cappedEstimatedNumReducersKey, cappedNumReducers.getOrElse(-1))
-
       // set number of reducers
-      if (!setExplicitly || overrideExplicit) {
-        cappedNumReducers.foreach(conf.setNumReduceTasks)
-      }
+      cappedNumReducers.foreach(conf.setNumReduceTasks)
+      // log in JobConf what was explicitly set by 'withReducers'
+      if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
     }
   }
 }
