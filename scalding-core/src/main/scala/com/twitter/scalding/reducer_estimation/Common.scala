@@ -164,28 +164,36 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     // so we check that to determine if this is a map-only step.
     conf.getNumReduceTasks match {
       case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
-      case _ => estimate(flow, preds, step)
+      case _ =>
+        if (skipReducerEstimation(step)) {
+          LOG.info(
+            s"""
+               |Flow step ${step.getName} was configured with reducers
+               |set explicitly (${Config.WithReducersSetExplicitly}=true) and the estimator
+               |explicit override turned off (${Config.ReducerEstimatorOverride}=false). Skipping
+               |reducer estimation.
+             """.stripMargin)
+        } else {
+          estimate(flow, preds, step)
+        }
     }
   }
+
+  // whether the reducers have been set explicitly with `withReducers`
+  private def reducersSetExplicitly(step: FlowStep[JobConf]) =
+    step.getConfig.getBoolean(Config.WithReducersSetExplicitly, false)
+
+  // whether we should override explicitly-specified numReducers
+  private def overrideExplicitReducers(step: FlowStep[JobConf]) =
+    step.getConfig.getBoolean(Config.ReducerEstimatorOverride, false)
+
+  private def skipReducerEstimation(step: FlowStep[JobConf]) =
+    reducersSetExplicitly(step) && !overrideExplicitReducers(step)
 
   private def estimate(flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-    // whether the reducers have been set explicitly with `withReducers`
-    val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)
-    // whether we should override explicitly-specified numReducers
-    val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
-
-    if (setExplicitly && !overrideExplicit) {
-      LOG.info(
-        s"""
-            |Flow step ${step.getName} was configured with reducers
-            |set explicitly (${setExplicitly}) and estimator explicit override
-            |(${overrideExplicit}). Skipping reducer estimation.
-         """.stripMargin)
-      return
-    }
 
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
     Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
@@ -223,7 +231,9 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       // set number of reducers
       cappedNumReducers.foreach(conf.setNumReduceTasks)
       // log in JobConf what was explicitly set by 'withReducers'
-      if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
+      if (reducersSetExplicitly(step)) {
+        conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
+      }
     }
   }
 }
