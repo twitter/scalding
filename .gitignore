@@ -3,7 +3,7 @@
 .settings
 .classpath
 *.swp
-BUILD
+bazel-*
 target/
 lib_managed/
 project/boot/
