@@ -1,5 +1,158 @@
 # Scalding #
 
+### Version 0.16.0 ###
+
+* Add tests around hashcode collisions : #1299
+* Fix performance bug in TypedPipeDiff : #1300
+* make serialization modules build on travis  : #1301
+* Improve TypedParquetTuple  : #1303
+* Add UnitOrderedSerialization  : #1304
+* Revert "Add UnitOrderedSerialization"  : #1306
+* Change groupRandomly & groupAll to use OrderedSerialization  : #1307
+* Make test of Kmeans very very unlikely to fail  : #1310
+* make LongThrift sources TypedSink  : #1313
+* Fix testing VersionedKeyValSource#toIterator for non-Array[Byte] types  : #1314
+* Make SketchJoin ordered serialization aware  : #1316
+* Added a sealed trait ordered serializer. When it works its great. Not as reliable as we'd like. But hopefully restrictions on it will do the job  : #1320
+* Add secondary sorting using ordered serialization  : #1321
+* Bails out from the length calculation if we don't succeed often : #1322
+* increased number of box instances to 250  : #1323
+* Apply merge strategy for pom.properties files  : #1325
+* Apply merge strategy for pom.xml files  : #1327
+* Add a OrderedSerialization.viaTransform with no dependencies, and a BijectedOrderedSerialization in scalding core  : #1329
+* Precompute int hashes  : #1330
+* Hide the deprecated string error for getting ASCII bytes.  : #1332
+* Change defaults for Scalding reducer estimator  : #1333
+* Execution id code  : #1334
+* Add line numbers at .group and .toPipe boundaries  : #1335
+* Ordered Serialization macros for thrift  : #1338
+* make some repl components extensible  : #1342
+* Remove the bootstrap section  : #1346
+* Fix the execution test : #1347
+* Implement flatMapValues method  : #1348
+* Consistent style in homepage example  : #1349
+* Serialization folding  : #1351
+* Collapses scalding-db packages  : #1353
+* Merge scalding-macros into scalding-core  : #1355
+* Migrate typedtext  : #1356
+* Runtime reducer estimator  : #1358
+* Update Build.scala  : #1361
+* Allow overriding of hadoop configuration options for a single source/sink  : #1362
+* Missing an extends Serializable, causes issues if capture Config's anywhere : #1365
+* Fix TypedPipe.limit to be correct, if slighly slower  : #1366
+* Fix scala.Function2 showing up in line numbers : #1367
+* Drop with MacroGenerated from Fields macros  : #1370
+* Fix deprecation warnings in TypedDelimited  : #1371
+* Ianoc/revert changes around making file systems  : #1372
+* Revert typed tsv behavior  : #1373
+* A serialization error we were seeing in repl usage : #1376
+* Add NullSink and test  : #1378
+* Add monoid and semigroup for Execution  : #1379
+* Upgrade parquet to 1.8.1  : #1380
+* Upgrade sbt launcher script (sbt-extras)  : #1381
+* Just move whitespace, add comments, simplify a few methods  : #1383
+* Don't publish maple when doing 2.11 so we only publish it once -- needed for cross publishing to maven repo's  : #1386
+* Support nesting Options in TypeDescriptor  : #1387
+* Enable Scalding-REPL for Scala 2.11  : #1388
+* Updates for some upstream fixes/changes  : #1390
+* Remove use of hadoop version in estimators  : #1391
+* Set hadoop version to dummy value  : #1392
+* Handle no history case in RatioBasedEstimator  : #1393
+* Inline parquet-scrooge  : #1395
+* RatioBasedEstimator - fix threshold edge case, add tests  : #1397
+* Fixes the scrooge generator tasks not to generate code in the compile target, we were publishing these  : #1399
+* Ianoc/configure set converter  : #1400
+* Change hash function in GroupRandomly  : #1401
+* Improve logging in runtime reducer estimators  : #1402
+* Add the type in ScroogeReadSupport  : #1403
+* Adds a function to test if a sink exists at the version we created  : #1404
+* add .groupWith method to TypedPipe  : #1406
+* Add some return types  : #1407
+* add counter verification logic  : #1409
+* Runtime reducer estimator fixes  : #1411
+* Make sure Execution.zip fails fast  : #1412
+* When using WriteExecution and forceToDisk we can share the same flow def closer in construction  : #1414
+* Cache the zipped up write executions  : #1415
+* Fix DateOps "match may not be exhaustive" warning  : #1416
+* Factor out repeated code into FutureCache  : #1417
+* Fix lack of Externalizer in joins.  : #1421
+* Adds much more line number information through the NoStackAndThen class  : #1423
+* Requires a DateRange's "end" to be after its "start"  : #1425
+* Scalding viz options  : #1426
+* Fixes map-only jobs to accommodate both an lzo source and sink binary converter  : #1431
+* Fix Readme travis link  : #1432
+* Fixes docs wording  : #1433
+* Don't squash the exception in history service when there's a failure  : #1434
+* Log the exception in RatioBasedEstimator when there's a failure  : #1435
+* make getBytesPerReducer support human readable values like 128m and 1g  : #1436
+* Fixes minor KeyedList docs wording  : #1437
+* Fix `readPathsFor` to use the `tz` argument  : #1439
+* Scalding viz options  : #1440
+* call Job.validate when running tests under JobTest  : #1441
+* opt-in to calling Job.validate in JobTest  : #1444
+* Fix bug with sketch joins and single keys  : #1451
+* Fix incorrect usage of `percent'.  : #1455
+* Add OrderedSerialization2 support in Matrix2.  : #1457
+* Add InvalidSourceTap to catch all cases for no good path.  : #1458
+* Cluster info and fs shell in repl  : #1462
+* Update Scala version to 2.10.6  : #1463
+* Fix median estimation  : #1464
+* Makes the config transient in the KryoHadoop instanciator  : #1466
+* Moves the default to 2.11  : #1467
+* Adds Error Message to REPL when Current Directory Not Readable  : #1468
+* SuccessFileSource: correctness for multi-dir globs  : #1470
+* Limit task history fields consumed from hraven  : #1472
+* Remove dependency on dfs-datastores  : #1473
+* ScaldingILoop should enable one to pass in in/out  : #1475
+* Switch Chat to Gitter  : #1477
+* Add two functions that assist in testing a TypedPipe  : #1478
+* Makes permission failures non-fatal when looking for .scalding_repl files  : #1479
+* Update TypeDescriptor to explain that Option[String] is not supported  : #1480
+* Remove a type parameter that doesn't seem to do anything  : #1481
+* Utility for expanding libjars  : #1483
+* Shouldn't skip hidden files, user can decide such things with their glob  : #1485
+* Fix FileSystem.get issue  : #1487
+* Remove dependency on parquet-cascading  : #1488
+* Add withConfig api to allow running an execution with a transformed config  : #1489
+* Call validateTaps in toIterator codepath  : #1490
+* Update the build  : #1491
+* Arg Descriptions/Help for Execution Apps  : #1492
+* Fix issue #1429  : #1493
+* Cache counters for stat updates  : #1495
+* Pulls the core ExecutionTests back into scalding-core  : #1498
+* Add a liftToTry function to Execution  : #1499
+* Small improvements to the `Boxed.scala` module  : #1500
+* Cache boxed classes  : #1501
+* Fix unnecessary use of `.get` in `Globifier.scala`  : #1502
+* Replace unintentional use of `Unit` with `()`  : #1503
+* Fix unnecessary uses of `Option.get`  : #1506
+* Utility methods for running Executions in parallel  : #1507
+* Typed Mapside Reduce  : #1508
+* Use `wartremover` to guard against careless use of `_.get`  : #1509
+* Add in an API around cache isolation  : #1511
+* Add implicit Ordering[RichDate]  : #1512
+* Fix MultipleTextLineFiles source in JobTest  : #1513
+* [cascading3] Move parquet cascading schemes to subprojects  : #1515
+* [cascading3] Migrate parquet schemes  : #1516
+* Add's support for sealed abstract classes  : #1518
+* [cascading3] Migrate maple  : #1519
+* Update FixedPathSource to strip out '*' in paths ending with '/*' for writes  : #1520
+* [cascading3] Migrate core, commons and related  : #1521
+* support for more formats to work with RichDate  : #1522
+* WIP: Add forceToDisk parameter to hashJoin in TypedPipe  : #1529
+* Fixing comments on partitioned delimited source  : #1530
+* Remove weakly typed Source  : #1531
+* Maple fix for HBaseTap  : #1532
+* Add an enrichment for TypedPipe.inMemoryToList and use it in TypedPipeDiff test  : #1533
+* Because, because... fun, the scala compiler has special naming rules it appears when there are leading underscores  : #1534
+* Fix README examples link  : #1536
+* Fixes Config to accommodate spaces in argument values  : #1537
+* Add before() and after() to RichDate  : #1538
+* Adds late tap validation for cases where race conditions cause it to fail  : #1540
+* Fix Rounding Bug in RatioBasedEstimator  : #1542
+* Make types of localPath & hdfsPaths explicit  : #1545
+* Update the WordCountJob example to use TypedText.tsv  : #1546
+
 ### Version 0.15.0 ###
 * Move OrderedSerialization into zero-dep scalding-serialization module #1289
 * bump elephantbird to 4.8 #1292
