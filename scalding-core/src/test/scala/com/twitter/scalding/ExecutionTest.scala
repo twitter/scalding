@@ -13,11 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding.typed
+package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
 
-import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization
 
@@ -26,10 +25,8 @@ import java.nio.file.Path
 
 import org.scalatest.{ Matchers, WordSpec }
 
-import scala.collection.immutable.Range
-import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Await, Promise }
+import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.Random
 import scala.util.{ Try, Success, Failure }
 
@@ -294,7 +291,7 @@ class ExecutionTest extends WordSpec with Matchers {
       }.sumByKey.writeExecution(TypedTsv(s"/tmp/asdf_${idx}"))
 
       implicitly[OrderedSerialization[MyCustomType]] match {
-        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.typed.MyCustomType")
+        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.MyCustomType")
         case _ => sys.error("Ordered serialization should have been the MacroEqualityOrderedSerialization for this test")
       }
       def executionLoop(idx: Int): Execution[Unit] = {
@@ -380,7 +377,7 @@ class ExecutionTest extends WordSpec with Matchers {
     "handle failure" in {
       val result = Execution.withParallelism(Seq(Execution.failed(new Exception("failed"))), 1)
 
-      assert(result.waitFor(Config.default, Local(true)).isFailure)
+      result.shouldFail()
     }
 
     "handle an error running in parallel" in {
@@ -388,7 +385,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val result = Execution.withParallelism(executions, 3)
 
-      assert(result.waitFor(Config.default, Local(true)).isFailure)
+      result.shouldFail()
     }
 
     "run in parallel" in {
@@ -415,7 +412,207 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val result = Execution.withParallelism(executions, 1)
 
-      assert(result.waitFor(Config.default, Local(true)).get == 0.to(10).reverse)
+      assert(result.shouldSucceed() == 0.to(10).reverse)
+    }
+
+    "can hashCode, compare, and run a long sequence" in {
+      val execution = Execution.sequence((1 to 100000).toList.map(Execution.from(_)))
+      assert(execution.hashCode == execution.hashCode)
+
+      assert(execution == execution)
+
+      assert(execution.shouldSucceed() == (1 to 100000).toList)
+    }
+
+    "caches a withId Execution computation" in {
+      var called = false
+      val execution = Execution.withId { id =>
+        assert(!called)
+        called = true
+        Execution.from("foobar")
+      }
+
+      val doubleExecution = execution.zip(execution)
+
+      assert(doubleExecution.shouldSucceed() == ("foobar", "foobar"))
+      assert(called)
+    }
+
+    "maintains equality and hashCode after reconstruction" when {
+      // Make two copies of these.  Comparison by reference
+      // won't match between the two.
+      val futureF = { _: ConcurrentExecutionContext => Future.successful(10) }
+      val futureF2 = { _: ConcurrentExecutionContext => Future.successful(10) }
+      val fnF = { (_: Config, _: Mode) => null }
+      val fnF2 = { (_: Config, _: Mode) => null }
+      val withIdF = { _: UniqueID => Execution.unit }
+      val withIdF2 = { _: UniqueID => Execution.unit }
+      val mapF = { _: Int => 12 }
+      val mapF2 = { _: Int => 12 }
+
+      def reconstructibleLaws[T](ex: => Execution[T], ex2: Execution[T]): Unit = {
+        assert(ex == ex)
+        assert(ex.hashCode == ex.hashCode)
+        assert(ex != ex2)
+      }
+
+      "Execution.fromFuture" in {
+        reconstructibleLaws(Execution.fromFuture(futureF), Execution.fromFuture(futureF2))
+      }
+
+      "Execution.fromFn" in {
+        reconstructibleLaws(Execution.fromFn(fnF), Execution.fromFn(fnF2))
+      }
+
+      "Execution.withId" in {
+        reconstructibleLaws(Execution.withId(withIdF), Execution.withId(withIdF2))
+      }
+
+      "Execution#map" in {
+        reconstructibleLaws(
+          Execution.fromFuture(futureF).map(mapF),
+          Execution.fromFuture(futureF).map(mapF2))
+      }
+
+      "Execution.zip" in {
+        reconstructibleLaws(
+          Execution.zip(Execution.fromFuture(futureF2), Execution.withId(withIdF)),
+          Execution.zip(Execution.fromFuture(futureF2), Execution.withId(withIdF2)))
+      }
+
+      "Execution.sequence" in {
+        reconstructibleLaws(
+          Execution.sequence(Seq(
+            Execution.fromFuture(futureF),
+            Execution.withId(withIdF),
+            Execution.fromFuture(futureF2).map(mapF))),
+          Execution.sequence(Seq(
+            Execution.fromFuture(futureF),
+            Execution.withId(withIdF),
+            Execution.fromFn(fnF))))
+      }
+    }
+
+    "Has consistent hashCode and equality for mutable" when {
+      // These cases are a bit convoluted, but we still
+      // want equality to be consistent
+      trait MutableX[T] {
+        protected var x: Int
+        def setX(newX: Int): Unit = { x = newX }
+        def makeExecution: Execution[T]
+      }
+
+      case class FromFutureMutable(var x: Int = 0) extends Function1[ConcurrentExecutionContext, Future[Int]] with MutableX[Int] {
+        def apply(context: ConcurrentExecutionContext) = Future.successful(x)
+        def makeExecution = Execution.fromFuture(this)
+      }
+      case class FromFnMutable(var x: Int = 0) extends Function2[Config, Mode, Null] with MutableX[Unit] {
+        def apply(config: Config, mode: Mode) = null
+        def makeExecution = Execution.fromFn(this)
+      }
+      case class WithIdMutable(var x: Int = 0) extends Function1[UniqueID, Execution[Int]] with MutableX[Int] {
+        def apply(id: UniqueID) = Execution.fromFuture(FromFutureMutable(x))
+        def makeExecution = Execution.withId(this)
+      }
+      val mapFunction = { x: Int => x * x }
+      case class MapMutable(var x: Int = 0) extends MutableX[Int] {
+        val m = FromFutureMutable(x)
+        override def setX(newX: Int) = {
+          x = newX
+          m.setX(x)
+        }
+        def makeExecution = m.makeExecution.map(mapFunction)
+      }
+      case class ZipMutable(var x: Int = 0) extends MutableX[(Int, Int)] {
+        val m1 = FromFutureMutable(x)
+        val m2 = WithIdMutable(x)
+        override def setX(newX: Int) = {
+          x = newX
+          m1.setX(x)
+          m2.setX(x + 20)
+        }
+        def makeExecution = m1.makeExecution.zip(m2.makeExecution)
+      }
+      case class SequenceMutable(var x: Int = 0) extends MutableX[Seq[Int]] {
+        val m1 = FromFutureMutable(x)
+        val m2 = WithIdMutable(x)
+        override def setX(newX: Int) = {
+          x = newX
+          m1.setX(x)
+          m2.setX(x * 3)
+        }
+        def makeExecution = Execution.sequence(Seq(m1.makeExecution, m2.makeExecution))
+      }
+
+      def mutableLaws[T, U <: MutableX[T]](
+        mutableGen: => U,
+        expectedOpt: Option[Int => T] = None): Unit = {
+        expectedOpt.foreach { expected =>
+          require(expected(10) != expected(20))
+        }
+        def validate(ex: Execution[T], seed: Int): Unit = {
+          expectedOpt.foreach { expected =>
+            assert(ex.shouldSucceed() == expected(seed))
+          }
+        }
+
+        val mutable1 = mutableGen
+        mutable1.setX(10)
+        val ex1 = mutable1.makeExecution
+
+        val mutable2 = mutableGen
+        mutable2.setX(10)
+        val ex2 = mutable2.makeExecution
+
+        assert(ex1 == ex2)
+        assert(ex1.hashCode == ex2.hashCode)
+
+        validate(ex1, 10)
+        validate(ex2, 10)
+
+        mutable2.setX(20)
+        // We may have the same hashCode still, but we don't need to
+        assert(ex1 != ex2)
+        validate(ex2, 20)
+
+        val mutable3 = mutableGen
+        mutable3.setX(20)
+        val ex3 = mutable3.makeExecution
+
+        assert(ex1 != ex3)
+        validate(ex3, 20)
+
+        mutable3.setX(10)
+        if (ex1 == ex3) {
+          // If they are made equal again, the hashCodes must match
+          assert(ex1.hashCode == ex3.hashCode)
+        }
+        validate(ex3, 10)
+      }
+
+      "Execution.fromFuture" in {
+        mutableLaws(FromFutureMutable(), Some({ x: Int => x }))
+      }
+
+      "Execution.fromFn" in {
+        mutableLaws(FromFnMutable(), Option.empty[Int => Unit])
+      }
+
+      "Execution.withId" in {
+        mutableLaws(WithIdMutable(), Some({ x: Int => x }))
+      }
+
+      "Execution#map" in {
+        mutableLaws(MapMutable(), Some({ x: Int => x * x }))
+      }
+
+      "Execution#zip" in {
+        mutableLaws(ZipMutable(), Some({ x: Int => (x, x + 20) }))
+      }
+
+      "Execution.sequence" in {
+        mutableLaws(SequenceMutable(), Some({ x: Int => Seq(x, x * 3) }))
+      }
     }
   }
 }
