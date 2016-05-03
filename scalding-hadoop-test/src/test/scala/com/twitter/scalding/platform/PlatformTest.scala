@@ -506,8 +506,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  "A TypedPipeJoinWithDescriptionPipe" should {
-    "A limit should not fan out into consumers" in {
+  "A limit" should {
+    "not fan out into consumers" in {
       // This covers a case where limit was being swept into a typed pipe factory
       // so each consumer was re-running the limit independently
       // which makes it usage unstable too.
