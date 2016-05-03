@@ -91,7 +91,7 @@
 * call Job.validate when running tests under JobTest  : #1441
 * opt-in to calling Job.validate in JobTest  : #1444
 * Fix bug with sketch joins and single keys  : #1451
-* Fix incorrect usage of `percent'.  : #1455
+* Fix incorrect usage of `percent`.  : #1455
 * Add OrderedSerialization2 support in Matrix2.  : #1457
 * Add InvalidSourceTap to catch all cases for no good path.  : #1458
 * Cluster info and fs shell in repl  : #1462
@@ -132,12 +132,8 @@
 * Add in an API around cache isolation  : #1511
 * Add implicit Ordering[RichDate]  : #1512
 * Fix MultipleTextLineFiles source in JobTest  : #1513
-* [cascading3] Move parquet cascading schemes to subprojects  : #1515
-* [cascading3] Migrate parquet schemes  : #1516
 * Add's support for sealed abstract classes  : #1518
-* [cascading3] Migrate maple  : #1519
 * Update FixedPathSource to strip out '*' in paths ending with '/*' for writes  : #1520
-* [cascading3] Migrate core, commons and related  : #1521
 * support for more formats to work with RichDate  : #1522
 * WIP: Add forceToDisk parameter to hashJoin in TypedPipe  : #1529
 * Fixing comments on partitioned delimited source  : #1530
