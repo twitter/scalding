@@ -146,8 +146,6 @@
 * Add before() and after() to RichDate  : #1538
 * Adds late tap validation for cases where race conditions cause it to fail  : #1540
 * Fix Rounding Bug in RatioBasedEstimator  : #1542
-* Make types of localPath & hdfsPaths explicit  : #1545
-* Update the WordCountJob example to use TypedText.tsv  : #1546
 
 ### Version 0.15.0 ###
 * Move OrderedSerialization into zero-dep scalding-serialization module #1289
