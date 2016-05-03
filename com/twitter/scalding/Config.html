@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>Config - com.twitter.scalding.Config</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="Config$.html" title="Go to companion"><img src="../../../lib/trait_to_object_big.png" /></a>
+        <a href="Config$.html" title="See companion object"><img alt="Trait/Object" src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1><a href="Config$.html" title="Go to companion">Config</a></h1>
+        <h1><a href="Config$.html" title="See companion object">Config</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="Config$.html" title="See companion object">object Config</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,14 +47,14 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">Config</span><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+        <span class="name">Config</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>This is a wrapper class on top of Map[String, String]
 </p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Config.scala" target="_blank">Config.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -60,7 +72,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.Config"><span>Config</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.Config"><span>Config</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -68,7 +80,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -95,7 +106,11 @@
       <span class="symbol">
         <span class="name">toMap</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@toMap:Map[String,String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -103,19 +118,6 @@
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -126,8 +128,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -139,7 +145,11 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Config#+" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="+(kv:(String,String)):com.twitter.scalding.Config"></a>
@@ -152,7 +162,11 @@
       <span class="symbol">
         <span title="gt4s: $plus" class="name">+</span><span class="params">(<span name="kv">kv: (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@+(kv:(String,String)):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#++" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="++(that:com.twitter.scalding.Config):com.twitter.scalding.Config"></a>
@@ -165,7 +179,11 @@
       <span class="symbol">
         <span title="gt4s: $plus$plus" class="name">++</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@++(that:com.twitter.scalding.Config):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#-" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="-(k:String):com.twitter.scalding.Config"></a>
@@ -178,22 +196,13 @@
       <span class="symbol">
         <span title="gt4s: $minus" class="name">-</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@-(k:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -204,8 +213,86 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Config#addCascadingClassSerializationTokens" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addCascadingClassSerializationTokens(clazzes:Set[Class[_]]):com.twitter.scalding.Config"></a>
+      <a id="addCascadingClassSerializationTokens(Set[Class[_]]):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addCascadingClassSerializationTokens</span><span class="params">(<span name="clazzes">clazzes: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addCascadingClassSerializationTokens(clazzes:Set[Class[_]]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The serialization of your data will be smaller if any classes passed between tasks in your job
+are listed here.</p><div class="fullcomment"><div class="comment cmt"><p>The serialization of your data will be smaller if any classes passed between tasks in your job
+are listed here. Without this, strings are used to write the types IN EACH RECORD, which
+compression probably takes care of, but compression acts AFTER the data is serialized into
+buffers and spilling has been triggered.
+</p></div></div>
+    </li><li name="com.twitter.scalding.Config#addFlowListener" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addFlowListener(flowListenerProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowListener):com.twitter.scalding.Config"></a>
+      <a id="addFlowListener((Mode,Config)⇒FlowListener):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addFlowListener</span><span class="params">(<span name="flowListenerProvider">flowListenerProvider: (<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowListener">FlowListener</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addFlowListener(flowListenerProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowListener):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">configure flow listeneres for observability
+</p>
+    </li><li name="com.twitter.scalding.Config#addFlowStepListener" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addFlowStepListener(flowListenerProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepListener):com.twitter.scalding.Config"></a>
+      <a id="addFlowStepListener((Mode,Config)⇒FlowStepListener):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addFlowStepListener</span><span class="params">(<span name="flowListenerProvider">flowListenerProvider: (<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowStepListener">FlowStepListener</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addFlowStepListener(flowListenerProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepListener):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Config#addFlowStepStrategy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addFlowStepStrategy(flowStrategyProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepStrategy[org.apache.hadoop.mapred.JobConf]):com.twitter.scalding.Config"></a>
+      <a id="addFlowStepStrategy((Mode,Config)⇒FlowStepStrategy[JobConf]):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addFlowStepStrategy</span><span class="params">(<span name="flowStrategyProvider">flowStrategyProvider: (<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowStepStrategy">FlowStepStrategy</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addFlowStepStrategy(flowStrategyProvider:(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepStrategy[org.apache.hadoop.mapred.JobConf]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="com.twitter.scalding.Config#addReducerEstimator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="addReducerEstimator(clsName:String):com.twitter.scalding.Config"></a>
       <a id="addReducerEstimator(String):Config"></a>
@@ -217,7 +304,11 @@
       <span class="symbol">
         <span class="name">addReducerEstimator</span><span class="params">(<span name="clsName">clsName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addReducerEstimator(clsName:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Prepend an estimator so it will be tried first.</p><div class="fullcomment"><div class="comment cmt"><p>Prepend an estimator so it will be tried first. If it returns None,
 the previously-set estimators will be tried in order.
 </p></div></div>
@@ -232,7 +323,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">addReducerEstimator</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="cls">cls: <span class="extype" name="scala.Predef.Class">Class</span>[<span class="extype" name="com.twitter.scalding.Config.addReducerEstimator.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addReducerEstimator[T](cls:Class[T]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Prepend an estimator so it will be tried first.</p><div class="fullcomment"><div class="comment cmt"><p>Prepend an estimator so it will be tried first. If it returns None,
 the previously-set estimators will be tried in order.
 </p></div></div>
@@ -247,7 +342,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">addUniqueId</span><span class="params">(<span name="u">u: <a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@addUniqueId(u:com.twitter.scalding.UniqueID):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -260,8 +359,29 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Config#clearFlowStepStrategies" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="clearFlowStepStrategies:com.twitter.scalding.Config"></a>
+      <a id="clearFlowStepStrategies:Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clearFlowStepStrategies</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@clearFlowStepStrategies:com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -273,7 +393,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -292,7 +416,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">ensureUniqueId</span><span class="result">: (<a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@ensureUniqueId:(com.twitter.scalding.UniqueID,com.twitter.scalding.Config)" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Allocate a new UniqueID if there is not one present
 </p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -306,7 +434,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Config#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(that:Any):Boolean"></a>
@@ -319,7 +451,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="that">that: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@equals(that:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Config">Config</a> → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -332,7 +468,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -351,7 +491,11 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">get</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@get(key:String):Option[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#getArgs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getArgs:com.twitter.scalding.Args"></a>
@@ -364,9 +508,13 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">getArgs</span><span class="result">: <a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getArgs:com.twitter.scalding.Args" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.Config#getCascadingAppJar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.twitter.scalding.Config#getCascadingAppJar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getCascadingAppJar:Option[scala.util.Try[Class[_]]]"></a>
       <a id="getCascadingAppJar:Option[Try[Class[_]]]"></a>
       <h4 class="signature">
@@ -377,11 +525,14 @@ the previously-set estimators will be tried in order.
       <span class="symbol">
         <span class="name">getCascadingAppJar</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getCascadingAppJar:Option[scala.util.Try[Class[_]]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Returns None if not set, otherwise reflection
-is used to create the Class.</p><div class="fullcomment"><div class="comment cmt"><p>Returns None if not set, otherwise reflection
 is used to create the Class.forName
-</p></div></div>
+</p>
     </li><li name="com.twitter.scalding.Config#getCascadingAppName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getCascadingAppName:Option[String]"></a>
       <a id="getCascadingAppName:Option[String]"></a>
@@ -393,7 +544,29 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getCascadingAppName</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getCascadingAppName:Option[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is a name that if present is passed to flow.setName,
+which should appear in the job tracker.</p>
+    </li><li name="com.twitter.scalding.Config#getCascadingSerializationTokens" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getCascadingSerializationTokens:Map[Int,String]"></a>
+      <a id="getCascadingSerializationTokens:Map[Int,String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getCascadingSerializationTokens</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getCascadingSerializationTokens:Map[Int,String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -406,8 +579,80 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Config#getFlowListeners" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFlowListeners:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowListener]]"></a>
+      <a id="getFlowListeners:List[Try[(Mode,Config)⇒FlowListener]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFlowListeners</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.util.Try">Try</span>[(<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowListener">FlowListener</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getFlowListeners:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowListener]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Config#getFlowStepListeners" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFlowStepListeners:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepListener]]"></a>
+      <a id="getFlowStepListeners:List[Try[(Mode,Config)⇒FlowStepListener]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFlowStepListeners</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.util.Try">Try</span>[(<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowStepListener">FlowStepListener</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getFlowStepListeners:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepListener]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Config#getFlowStepStrategies" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFlowStepStrategies:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepStrategy[org.apache.hadoop.mapred.JobConf]]]"></a>
+      <a id="getFlowStepStrategies:List[Try[(Mode,Config)⇒FlowStepStrategy[JobConf]]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFlowStepStrategies</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.util.Try">Try</span>[(<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <span class="extype" name="cascading.flow.FlowStepStrategy">FlowStepStrategy</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getFlowStepStrategies:List[scala.util.Try[(com.twitter.scalding.Mode,com.twitter.scalding.Config)=&gt;cascading.flow.FlowStepStrategy[org.apache.hadoop.mapred.JobConf]]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Config#getHashJoinAutoForceRight" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getHashJoinAutoForceRight:Boolean"></a>
+      <a id="getHashJoinAutoForceRight:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getHashJoinAutoForceRight</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getHashJoinAutoForceRight:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="com.twitter.scalding.Config#getKryo" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getKryo:Option[com.twitter.chill.KryoInstantiator]"></a>
       <a id="getKryo:Option[KryoInstantiator]"></a>
@@ -419,8 +664,32 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getKryo</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.chill.KryoInstantiator">KryoInstantiator</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getKryo:Option[com.twitter.chill.KryoInstantiator]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
+    </li><li name="com.twitter.scalding.Config#getKryoRegisteredClasses" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getKryoRegisteredClasses:Set[Class[_]]"></a>
+      <a id="getKryoRegisteredClasses:Set[Class[_]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getKryoRegisteredClasses</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getKryoRegisteredClasses:Set[Class[_]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This function gets the set of classes that have been registered to Kryo.</p><div class="fullcomment"><div class="comment cmt"><p>This function gets the set of classes that have been registered to Kryo.
+They may or may not be used in this job, but Cascading might want to be made aware
+that these classes exist
+</p></div></div>
     </li><li name="com.twitter.scalding.Config#getNumReducers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getNumReducers:Option[Int]"></a>
       <a id="getNumReducers:Option[Int]"></a>
@@ -432,8 +701,46 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getNumReducers</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getNumReducers:Option[Int]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Get the number of reducers (this is the parameter Hadoop will use)</p>
+    </li><li name="com.twitter.scalding.Config#getRequireOrderedSerialization" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getRequireOrderedSerialization:Boolean"></a>
+      <a id="getRequireOrderedSerialization:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getRequireOrderedSerialization</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getRequireOrderedSerialization:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Config#getScaldingExecutionId" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getScaldingExecutionId:Option[String]"></a>
+      <a id="getScaldingExecutionId:Option[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getScaldingExecutionId</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getScaldingExecutionId:Option[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="com.twitter.scalding.Config#getScaldingVersion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getScaldingVersion:Option[String]"></a>
       <a id="getScaldingVersion:Option[String]"></a>
@@ -445,7 +752,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getScaldingVersion</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getScaldingVersion:Option[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#getSubmittedTimestamp" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getSubmittedTimestamp:Option[com.twitter.scalding.RichDate]"></a>
@@ -458,20 +769,28 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">getSubmittedTimestamp</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="RichDate.html" class="extype" name="com.twitter.scalding.RichDate">RichDate</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getSubmittedTimestamp:Option[com.twitter.scalding.RichDate]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.Config#getUniqueId" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getUniqueId:Option[com.twitter.scalding.UniqueID]"></a>
-      <a id="getUniqueId:Option[UniqueID]"></a>
+    </li><li name="com.twitter.scalding.Config#getUniqueIds" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getUniqueIds:Set[com.twitter.scalding.UniqueID]"></a>
+      <a id="getUniqueIds:Set[UniqueID]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getUniqueId</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a>]</span>
+        <span class="name">getUniqueIds</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@getUniqueIds:Set[com.twitter.scalding.UniqueID]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -484,7 +803,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Config">Config</a> → AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -497,7 +820,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Config#maybeSetSubmittedTimestamp" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="maybeSetSubmittedTimestamp(date:com.twitter.scalding.RichDate):(Option[com.twitter.scalding.RichDate],com.twitter.scalding.Config)"></a>
@@ -510,7 +837,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">maybeSetSubmittedTimestamp</span><span class="params">(<span name="date">date: <a href="RichDate.html" class="extype" name="com.twitter.scalding.RichDate">RichDate</a> = <span class="symbol"><span class="name"><a href="RichDate$.html">RichDate.now</a></span></span></span>)</span><span class="result">: (<span class="extype" name="scala.Option">Option</span>[<a href="RichDate.html" class="extype" name="com.twitter.scalding.RichDate">RichDate</a>], <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@maybeSetSubmittedTimestamp(date:com.twitter.scalding.RichDate):(Option[com.twitter.scalding.RichDate],com.twitter.scalding.Config)" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -523,7 +854,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -536,7 +871,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -549,7 +888,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Config#setArgs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setArgs(args:com.twitter.scalding.Args):com.twitter.scalding.Config"></a>
@@ -562,7 +905,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">setArgs</span><span class="params">(<span name="args">args: <a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setArgs(args:com.twitter.scalding.Args):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setCascadingAppId" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setCascadingAppId(id:String):com.twitter.scalding.Config"></a>
@@ -575,7 +922,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">setCascadingAppId</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setCascadingAppId(id:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setCascadingAppJar" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setCascadingAppJar(clazz:Class[_]):com.twitter.scalding.Config"></a>
@@ -588,7 +939,11 @@ is used to create the Class.forName
       <span class="symbol">
         <span class="name">setCascadingAppJar</span><span class="params">(<span name="clazz">clazz: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setCascadingAppJar(clazz:Class[_]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Non-fat-jar use cases require this, BUT using it
 with fat jars can cause problems.</p><div class="fullcomment"><div class="comment cmt"><p>Non-fat-jar use cases require this, BUT using it
 with fat jars can cause problems. It is not
@@ -608,7 +963,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setCascadingAppName</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setCascadingAppName(name:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setDefaultComparator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setDefaultComparator(clazz:Class[_&lt;:java.util.Comparator[_]]):com.twitter.scalding.Config"></a>
@@ -621,9 +980,13 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setDefaultComparator</span><span class="params">(<span name="clazz">clazz: <span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="java.util.Comparator">Comparator</span>[_]]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setDefaultComparator(clazz:Class[_&lt;:java.util.Comparator[_]]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.Config#setHRavenHistoryUserName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.twitter.scalding.Config#setHRavenHistoryUserName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setHRavenHistoryUserName:com.twitter.scalding.Config"></a>
       <a id="setHRavenHistoryUserName:Config"></a>
       <h4 class="signature">
@@ -634,8 +997,29 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setHRavenHistoryUserName</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Set username from System.</p><div class="fullcomment"><div class="comment cmt"><p>Set username from System.used for querying hRaven.</p></div></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setHRavenHistoryUserName:com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Set username from System.used for querying hRaven.</p>
+    </li><li name="com.twitter.scalding.Config#setHashJoinAutoForceRight" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setHashJoinAutoForceRight(b:Boolean):com.twitter.scalding.Config"></a>
+      <a id="setHashJoinAutoForceRight(Boolean):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setHashJoinAutoForceRight</span><span class="params">(<span name="b">b: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setHashJoinAutoForceRight(b:Boolean):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="com.twitter.scalding.Config#setListSpillThreshold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setListSpillThreshold(count:Int):com.twitter.scalding.Config"></a>
       <a id="setListSpillThreshold(Int):Config"></a>
@@ -647,7 +1031,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setListSpillThreshold</span><span class="params">(<span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setListSpillThreshold(count:Int):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setMapSideAggregationThreshold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setMapSideAggregationThreshold(count:Int):com.twitter.scalding.Config"></a>
@@ -660,7 +1048,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setMapSideAggregationThreshold</span><span class="params">(<span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setMapSideAggregationThreshold(count:Int):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setMapSpillThreshold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setMapSpillThreshold(count:Int):com.twitter.scalding.Config"></a>
@@ -673,7 +1065,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setMapSpillThreshold</span><span class="params">(<span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setMapSpillThreshold(count:Int):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setNumReducers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setNumReducers(n:Int):com.twitter.scalding.Config"></a>
@@ -686,7 +1082,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setNumReducers</span><span class="params">(<span name="n">n: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setNumReducers(n:Int):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setReducerEstimators" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setReducerEstimators(clsList:String):com.twitter.scalding.Config"></a>
@@ -699,8 +1099,49 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setReducerEstimators</span><span class="params">(<span name="clsList">clsList: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setReducerEstimators(clsList:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Set the entire list of reducer estimators (overriding the existing list)</p>
+    </li><li name="com.twitter.scalding.Config#setRequireOrderedSerialization" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setRequireOrderedSerialization(b:Boolean):com.twitter.scalding.Config"></a>
+      <a id="setRequireOrderedSerialization(Boolean):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setRequireOrderedSerialization</span><span class="params">(<span name="b">b: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setRequireOrderedSerialization(b:Boolean):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Set this configuration option to require all grouping/cogrouping
+to use OrderedSerialization
+</p>
+    </li><li name="com.twitter.scalding.Config#setScaldingExecutionId" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setScaldingExecutionId(id:String):com.twitter.scalding.Config"></a>
+      <a id="setScaldingExecutionId(String):Config"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setScaldingExecutionId</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setScaldingExecutionId(id:String):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Set an ID to be shared across this usage of run for Execution
+</p>
     </li><li name="com.twitter.scalding.Config#setScaldingFlowClass" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setScaldingFlowClass(clazz:Class[_]):com.twitter.scalding.Config"></a>
       <a id="setScaldingFlowClass(Class[_]):Config"></a>
@@ -712,7 +1153,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setScaldingFlowClass</span><span class="params">(<span name="clazz">clazz: <span class="extype" name="scala.Predef.Class">Class</span>[_]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setScaldingFlowClass(clazz:Class[_]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setScaldingVersion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setScaldingVersion:com.twitter.scalding.Config"></a>
@@ -725,7 +1170,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setScaldingVersion</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setScaldingVersion:com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Config#setSerialization" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="setSerialization(kryo:Either[(Class[_&lt;:com.twitter.chill.KryoInstantiator],com.twitter.chill.KryoInstantiator),Class[_&lt;:com.twitter.chill.KryoInstantiator]],userHadoop:Seq[Class[_&lt;:org.apache.hadoop.io.serializer.Serialization[_]]]):com.twitter.scalding.Config"></a>
@@ -738,7 +1187,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">setSerialization</span><span class="params">(<span name="kryo">kryo: <a href="../../../scala/package.html#Either[+A,+B]=scala.util.Either[A,B]" class="extmbr" name="scala.Either">Either</a>[(<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="com.twitter.chill.KryoInstantiator">KryoInstantiator</span>], <span class="extype" name="com.twitter.chill.KryoInstantiator">KryoInstantiator</span>), <span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="com.twitter.chill.KryoInstantiator">KryoInstantiator</span>]]</span>, <span name="userHadoop">userHadoop: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="org.apache.hadoop.io.serializer.Serialization">Serialization</span>[_]]] = <span class="symbol">Nil</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@setSerialization(kryo:Either[(Class[_&lt;:com.twitter.chill.KryoInstantiator],com.twitter.chill.KryoInstantiator),Class[_&lt;:com.twitter.chill.KryoInstantiator]],userHadoop:Seq[Class[_&lt;:org.apache.hadoop.io.serializer.Serialization[_]]]):com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -751,7 +1204,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -764,7 +1221,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Config#update" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="update[R](k:String)(fn:Option[String]=&gt;(Option[String],R)):(R,com.twitter.scalding.Config)"></a>
@@ -777,7 +1238,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">update</span><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]) ⇒ (<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>], <span class="extype" name="com.twitter.scalding.Config.update.R">R</span>)</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Config.update.R">R</span>, <a href="" class="extype" name="com.twitter.scalding.Config">Config</a>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@update[R](k:String)(fn:Option[String]=&gt;(Option[String],R)):(R,com.twitter.scalding.Config)" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -790,7 +1255,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -809,7 +1278,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -828,7 +1301,11 @@ setScaldingFlowClass
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Config@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -845,7 +1322,11 @@ setScaldingFlowClass
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
@@ -865,6 +1346,7 @@ setScaldingFlowClass
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

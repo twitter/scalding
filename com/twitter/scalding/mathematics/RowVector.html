@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>RowVector - com.twitter.scalding.mathematics.RowVector</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../lib/class_big.png" />
+        <img alt="Class" src="../../../../lib/class_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.mathematics">mathematics</a></p>
-        <h1>RowVector</h1>
+        <h1>RowVector</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.mathematics">package mathematics</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -67,7 +77,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -88,9 +97,13 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">RowVector</span><span class="params">(<span name="colS">colS: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="valS">valS: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="inPipe">inPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="sizeH">sizeH: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> = <span class="defval" name="FiniteHint.apply(math.this.BigInt.long2bigInt(1L), math.this.BigInt.long2bigInt(-1L))">...</span></span>)</span>
+        <span class="name">RowVector</span><span class="params">(<span name="colS">colS: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="valS">valS: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="inPipe">inPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="sizeH">sizeH: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> = <span class="symbol">FiniteHint(1L, -1L)</span></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@&lt;init&gt;(colS:Symbol,valS:Symbol,inPipe:cascading.pipe.Pipe,sizeH:com.twitter.scalding.mathematics.SizeHint):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -102,19 +115,6 @@
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -125,8 +125,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -138,7 +142,11 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#*" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="*[That,Res](that:That)(implicitprod:com.twitter.scalding.mathematics.MatrixProduct[com.twitter.scalding.mathematics.RowVector[ColT,ValT],That,Res]):Res"></a>
@@ -151,7 +159,11 @@
       <span class="symbol">
         <span title="gt4s: $times" class="name">*</span><span class="tparams">[<span name="That">That</span>, <span name="Res">Res</span>]</span><span class="params">(<span name="that">that: <span class="extype" name="com.twitter.scalding.mathematics.RowVector.*.That">That</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="prod">prod: <a href="MatrixProduct.html" class="extype" name="com.twitter.scalding.mathematics.MatrixProduct">MatrixProduct</a>[<a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>], <span class="extype" name="com.twitter.scalding.mathematics.RowVector.*.That">That</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.*.Res">Res</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.mathematics.RowVector.*.Res">Res</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@*[That,Res](that:That)(implicitprod:com.twitter.scalding.mathematics.MatrixProduct[com.twitter.scalding.mathematics.RowVector[ColT,ValT],That,Res]):Res" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#+" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="+(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -164,7 +176,11 @@
       <span class="symbol">
         <span title="gt4s: $plus" class="name">+</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@+(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#-" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="-(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitgroup:com.twitter.algebird.Group[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -177,22 +193,13 @@
       <span class="symbol">
         <span title="gt4s: $minus" class="name">-</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="group">group: <span class="extype" name="com.twitter.algebird.Group">Group</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@-(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitgroup:com.twitter.algebird.Group[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -203,8 +210,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#L0Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="L0Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
       <a id="L0Normalize(=:=[ValT,Double]):RowVector[ColT,ValT]"></a>
@@ -216,7 +227,11 @@
       <span class="symbol">
         <span class="name">L0Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@L0Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#L1Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="L1Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -229,7 +244,11 @@
       <span class="symbol">
         <span class="name">L1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>, <span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@L1Normalize(implicitev:=:=[ValT,Double]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -242,7 +261,11 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -255,7 +278,11 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -274,7 +301,11 @@
       <span class="symbol">
         <span class="name">colS</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@colS:Symbol" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#diag" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="diag:com.twitter.scalding.mathematics.DiagonalMatrix[ColT,ValT]"></a>
@@ -287,7 +318,11 @@
       <span class="symbol">
         <span class="name">diag</span><span class="result">: <a href="DiagonalMatrix.html" class="extype" name="com.twitter.scalding.mathematics.DiagonalMatrix">DiagonalMatrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@diag:com.twitter.scalding.mathematics.DiagonalMatrix[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -300,7 +335,11 @@
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -313,7 +352,11 @@
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields:cascading.tuple.Fields"></a>
@@ -326,7 +369,11 @@
       <span class="symbol">
         <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@fields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a> → <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -339,7 +386,11 @@
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -358,7 +409,11 @@
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#hProd" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="hProd(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitring:com.twitter.algebird.Ring[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -371,7 +426,11 @@
       <span class="symbol">
         <span class="name">hProd</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@hProd(that:com.twitter.scalding.mathematics.RowVector[ColT,ValT])(implicitring:com.twitter.algebird.Ring[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -384,7 +443,11 @@
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -397,7 +460,11 @@
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#mapValues" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="mapValues[ValU](fn:ValT=&gt;ValU)(implicitmon:com.twitter.algebird.Monoid[ValU]):com.twitter.scalding.mathematics.RowVector[ColT,ValU]"></a>
@@ -410,7 +477,11 @@
       <span class="symbol">
         <span class="name">mapValues</span><span class="tparams">[<span name="ValU">ValU</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapValues.ValU">ValU</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapValues.ValU">ValU</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapValues.ValU">ValU</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@mapValues[ValU](fn:ValT=&gt;ValU)(implicitmon:com.twitter.algebird.Monoid[ValU]):com.twitter.scalding.mathematics.RowVector[ColT,ValU]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#mapWithIndex" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapWithIndex[ValNew](fn:(ValT,ColT)=&gt;ValNew)(implicitmon:com.twitter.algebird.Monoid[ValNew]):com.twitter.scalding.mathematics.RowVector[ColT,ValNew]"></a>
@@ -423,8 +494,12 @@
       <span class="symbol">
         <span class="name">mapWithIndex</span><span class="tparams">[<span name="ValNew">ValNew</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>) ⇒ <span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapWithIndex.ValNew">ValNew</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapWithIndex.ValNew">ValNew</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.mapWithIndex.ValNew">ValNew</span>]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">like zipWithIndex.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@mapWithIndex[ValNew](fn:(ValT,ColT)=&gt;ValNew)(implicitmon:com.twitter.algebird.Monoid[ValNew]):com.twitter.scalding.mathematics.RowVector[ColT,ValNew]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.</p><div class="fullcomment"><div class="comment cmt"><p>like zipWithIndex.map but ONLY CHANGES THE VALUE not the index.
 Note you will only see non-zero elements on the vector. This does not enumerate the zeros
 </p></div></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -438,7 +513,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -451,7 +530,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -464,7 +547,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#pipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="pipe:cascading.pipe.Pipe"></a>
@@ -477,9 +564,13 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">pipe</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@pipe:cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a> → <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.mathematics.RowVector#propagate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.RowVector#propagate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="propagate[MatColT](mat:com.twitter.scalding.mathematics.Matrix[ColT,MatColT,Boolean])(implicitmonT:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[MatColT,ValT]"></a>
       <a id="propagate[MatColT](Matrix[ColT,MatColT,Boolean])(Monoid[ValT]):RowVector[MatColT,ValT]"></a>
       <h4 class="signature">
@@ -490,9 +581,13 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">propagate</span><span class="tparams">[<span name="MatColT">MatColT</span>]</span><span class="params">(<span name="mat">mat: <a href="Matrix.html" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.propagate.MatColT">MatColT</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="monT">monT: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.propagate.MatColT">MatColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Do a right-propogation of a row, transpose of Matrix.</p><div class="fullcomment"><div class="comment cmt"><p>Do a right-propogation of a row, transpose of Matrix.propagate
-</p></div></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@propagate[MatColT](mat:com.twitter.scalding.mathematics.Matrix[ColT,MatColT,Boolean])(implicitmonT:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.RowVector[MatColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Do a right-propogation of a row, transpose of Matrix.propagate
+</p>
     </li><li name="com.twitter.scalding.mathematics.RowVector#sizeH" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sizeH:com.twitter.scalding.mathematics.SizeHint"></a>
       <a id="sizeH:SizeHint"></a>
@@ -504,7 +599,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">sizeH</span><span class="result">: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@sizeH:com.twitter.scalding.mathematics.SizeHint" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sum(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Scalar[ValT]"></a>
@@ -517,7 +616,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">sum</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="Scalar.html" class="extype" name="com.twitter.scalding.mathematics.Scalar">Scalar</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@sum(implicitmon:com.twitter.algebird.Monoid[ValT]):com.twitter.scalding.mathematics.Scalar[ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -530,7 +633,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#toMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="toMatrix[RowT](rowId:RowT):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]"></a>
@@ -543,7 +650,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">toMatrix</span><span class="tparams">[<span name="RowT">RowT</span>]</span><span class="params">(<span name="rowId">rowId: <span class="extype" name="com.twitter.scalding.mathematics.RowVector.toMatrix.RowT">RowT</span></span>)</span><span class="result">: <a href="Matrix.html" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.toMatrix.RowT">RowT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@toMatrix[RowT](rowId:RowT):com.twitter.scalding.mathematics.Matrix[RowT,ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -556,7 +667,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#topElems" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="topElems(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -569,7 +684,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">topElems</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@topElems(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#topWithTiny" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="topWithTiny(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -582,7 +701,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">topWithTiny</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@topWithTiny(k:Int)(implicitord:Ordering[ValT]):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector#transpose" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="transpose:com.twitter.scalding.mathematics.ColVector[ColT,ValT]"></a>
@@ -595,7 +718,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">transpose</span><span class="result">: <a href="ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@transpose:com.twitter.scalding.mathematics.ColVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#valS" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="valS:Symbol"></a>
@@ -608,7 +735,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">valS</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@valS:Symbol" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -621,7 +752,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -640,7 +775,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -659,7 +798,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -678,7 +821,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">withColsHint</span><span class="params">(<span name="cols">cols: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@withColsHint(cols:Long):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.RowVector#write" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="write(src:com.twitter.scalding.Source,outFields:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.mathematics.RowVector[ColT,ValT]"></a>
@@ -691,7 +838,11 @@ Note you will only see non-zero elements on the vector. This does not enumerate 
       <span class="symbol">
         <span class="name">write</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="outFields">outFields: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">Fields.NONE</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.RowVector">RowVector</a>[<span class="extype" name="com.twitter.scalding.mathematics.RowVector.ColT">ColT</span>, <span class="extype" name="com.twitter.scalding.mathematics.RowVector.ValT">ValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@write(src:com.twitter.scalding.Source,outFields:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.mathematics.RowVector[ColT,ValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Write optionally renaming val fields to the given fields
 then return this.</p>
     </li><li name="com.twitter.scalding.mathematics.WrappedPipe#writePipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -705,7 +856,11 @@ then return this.</p>
       <span class="symbol">
         <span class="name">writePipe</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="outFields">outFields: <span class="extype" name="cascading.tuple.Fields">Fields</span> = <span class="symbol">Fields.NONE</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.RowVector@writePipe(src:com.twitter.scalding.Source,outFields:cascading.tuple.Fields)(implicitfd:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></dd></dl></div>
     </li></ol>
             </div>
@@ -740,6 +895,7 @@ then return this.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

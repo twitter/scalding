@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>TimePathedLongThriftSequenceFile - com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../../lib/class_big.png" />
+        <img alt="Class" src="../../../../../lib/class_big.png" />
         <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.commons">commons</a>.<a href="package.html" class="extype" name="com.twitter.scalding.commons.source">source</a></p>
-        <h1>TimePathedLongThriftSequenceFile</h1>
+        <h1>TimePathedLongThriftSequenceFile</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.commons.source">package source</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,17 +45,17 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">TimePathedLongThriftSequenceFile</span><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> with <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a> with <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)] with <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</span>
+        <span class="name">TimePathedLongThriftSequenceFile</span><span class="tparams">[<span name="V">V &lt;: <span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]</span>]</span><span class="result"> extends <a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> with <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a> with <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)] with <a href="../../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)] with <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</span>
       </span>
       </h4>
       
           <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-commons/src/main/scala/com/twitter/scalding/commons/source/DailySources.scala" target="_blank">DailySources.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>], <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)], <a href="../../typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">typed.TypedSource</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)], <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a>, <a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a>, <a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a>, <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a>, <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>], <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)], <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)], <a href="../../typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">typed.TypedSource</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)], <a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a>, <a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a>, <a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a>, <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a>, <a href="../../HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a>, <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -62,7 +72,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile"><span>TimePathedLongThriftSequenceFile</span></li><li class="in" name="com.twitter.scalding.commons.source.LongThriftTransformer"><span>LongThriftTransformer</span></li><li class="in" name="com.twitter.scalding.Mappable"><span>Mappable</span></li><li class="in" name="com.twitter.scalding.typed.TypedSource"><span>TypedSource</span></li><li class="in" name="com.twitter.scalding.WritableSequenceFileScheme"><span>WritableSequenceFileScheme</span></li><li class="in" name="com.twitter.scalding.TimePathedSource"><span>TimePathedSource</span></li><li class="in" name="com.twitter.scalding.TimeSeqPathedSource"><span>TimeSeqPathedSource</span></li><li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile"><span>TimePathedLongThriftSequenceFile</span></li><li class="in" name="com.twitter.scalding.commons.source.LongThriftTransformer"><span>LongThriftTransformer</span></li><li class="in" name="com.twitter.scalding.typed.TypedSink"><span>TypedSink</span></li><li class="in" name="com.twitter.scalding.Mappable"><span>Mappable</span></li><li class="in" name="com.twitter.scalding.typed.TypedSource"><span>TypedSource</span></li><li class="in" name="com.twitter.scalding.WritableSequenceFileScheme"><span>WritableSequenceFileScheme</span></li><li class="in" name="com.twitter.scalding.TimePathedSource"><span>TimePathedSource</span></li><li class="in" name="com.twitter.scalding.TimeSeqPathedSource"><span>TimeSeqPathedSource</span></li><li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.HfsTapProvider"><span>HfsTapProvider</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -70,7 +80,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -93,7 +102,11 @@
       <span class="symbol">
         <span class="name">TimePathedLongThriftSequenceFile</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="dateFormat">dateFormat: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="dateRange">dateRange: <a href="../../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@&lt;init&gt;(f:cascading.tuple.Fields,prefix:String,dateFormat:String,dateRange:com.twitter.scalding.DateRange)(implicitevidence$5:Manifest[V]):com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile[V]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -105,19 +118,6 @@
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -128,8 +128,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -141,22 +145,13 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -167,8 +162,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#allPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="allPaths:Iterable[String]"></a>
       <a id="allPaths:Iterable[String]"></a>
@@ -180,7 +179,11 @@
       <span class="symbol">
         <span class="name">allPaths</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@allPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">These are all the paths we will read for this data completely enumerated</p><div class="fullcomment"><div class="comment cmt"><p>These are all the paths we will read for this data completely enumerated</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#allPathsFor" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="allPathsFor(pattern:String):Iterable[String]"></a>
@@ -193,7 +196,11 @@
       <span class="symbol">
         <span class="name">allPathsFor</span><span class="params">(<span name="pattern">pattern: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@allPathsFor(pattern:String):Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedSource#andThen" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="andThen[U](fn:T=&gt;U):com.twitter.scalding.typed.TypedSource[U]"></a>
@@ -206,7 +213,11 @@
       <span class="symbol">
         <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: ((<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedSource.andThen.U">U</span></span>)</span><span class="result">: <a href="../../typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">typed.TypedSource</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSource.andThen.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@andThen[U](fn:T=&gt;U):com.twitter.scalding.typed.TypedSource[U]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Transform this TypedSource into another by mapping after.</p><div class="fullcomment"><div class="comment cmt"><p>Transform this TypedSource into another by mapping after.
 We don't call this map because of conflicts with Mappable, unfortunately
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a></dd></dl></div>
@@ -221,7 +232,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
@@ -234,7 +249,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -247,7 +266,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -255,6 +278,25 @@ We don't call this map because of conflicts with Mappable, unfortunately
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.TypedSink#contraMap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="contraMap[U](fn:U=&gt;T):com.twitter.scalding.typed.TypedSink[U]"></a>
+      <a id="contraMap[U]((U)⇒(Long,V)):typed.TypedSink[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contraMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>) ⇒ (<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)</span>)</span><span class="result">: <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@contraMap[U](fn:U=&gt;T):com.twitter.scalding.typed.TypedSink[U]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transform this sink into another type by applying a function first
+</p><div class="fullcomment"><div class="comment cmt"><p>Transform this sink into another type by applying a function first
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile#converter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="converter[U&gt;:(Long,V)]:com.twitter.scalding.TupleConverter[U]"></a>
       <a id="converter[U&gt;:(Long,V)]:TupleConverter[U]"></a>
@@ -266,7 +308,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">converter</span><span class="tparams">[<span name="U">U &gt;: (<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)</span>]</span><span class="result">: <a href="../../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.converter.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@converter[U&gt;:(Long,V)]:com.twitter.scalding.TupleConverter[U]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Because TupleConverter cannot be covariant, we need to jump through this hoop.</p><div class="fullcomment"><div class="comment cmt"><p>Because TupleConverter cannot be covariant, we need to jump through this hoop.
 A typical implementation might be:
 (implicit conv: TupleConverter[T])
@@ -283,20 +329,45 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="../../Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@createHdfsReadTap(hdfsMode:com.twitter.scalding.Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[_,_,_]"></a>
-      <a id="createLocalTap(SinkMode):Tap[_,_,_]"></a>
+    </li><li name="com.twitter.scalding.HfsTapProvider#createHfsTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs"></a>
+      <a id="createHfsTap(Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_],String,SinkMode):Hfs"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
+        <span class="name">createHfsTap</span><span class="params">(<span name="scheme">scheme: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createLocalTap(SinkMode):Tap[JobConf,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
 </p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#createTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -310,10 +381,31 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="../../AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
 making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.TimeSeqPathedSource#dateRange" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dateRange:com.twitter.scalding.DateRange"></a>
+      <a id="dateRange:DateRange"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dateRange</span><span class="result">: <a href="../../DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@dateRange:com.twitter.scalding.DateRange" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#defaultDurationFor" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defaultDurationFor(pattern:String):Option[com.twitter.scalding.Duration]"></a>
       <a id="defaultDurationFor(String):Option[Duration]"></a>
@@ -325,7 +417,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">defaultDurationFor</span><span class="params">(<span name="pattern">pattern: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="../../Duration.html" class="extype" name="com.twitter.scalding.Duration">Duration</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@defaultDurationFor(pattern:String):Option[com.twitter.scalding.Duration]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override this if you have for instance an hourly pattern but want to run every 6 hours.</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you have for instance an hourly pattern but want to run every 6 hours.
 By default, we call TimePathedSource.stepSize(pattern, tz)
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
@@ -340,7 +436,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(that:Any):Boolean"></a>
@@ -353,7 +453,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="that">that: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@equals(that:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields:cascading.tuple.Fields"></a>
@@ -366,9 +470,16 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@fields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">There are three allowed cases:
-fields.</p><div class="fullcomment"><div class="comment cmt"><p>There are three allowed cases:
+fields.size == 1 and keyType == null
+fields.size == 1 and valueType == null
+fields.size == 2 and keyType != null and valueType != null
+</p><div class="fullcomment"><div class="comment cmt"><p>There are three allowed cases:
 fields.size == 1 and keyType == null
 fields.size == 1 and valueType == null
 fields.size == 2 and keyType != null and valueType != null
@@ -384,7 +495,11 @@ fields.size == 2 and keyType != null and valueType != null
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -403,7 +518,11 @@ fields.size == 2 and keyType != null and valueType != null
       <span class="symbol">
         <span class="name">flatMapTo</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="out">out: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="mf">mf: ((<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)) ⇒ <a href="../../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.Mappable.flatMapTo.U">U</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="setter">setter: <a href="../../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Mappable.flatMapTo.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@flatMapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;TraversableOnce[U])(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">If you want to filter, you should use this and output a 0 or 1 length Iterable.</p><div class="fullcomment"><div class="comment cmt"><p>If you want to filter, you should use this and output a 0 or 1 length Iterable.
 Filter does not change column names, and we generally expect to change columns here
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
@@ -418,7 +537,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#getPathStatuses" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getPathStatuses(conf:org.apache.hadoop.conf.Configuration):Iterable[(String,Boolean)]"></a>
@@ -431,7 +554,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">getPathStatuses</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Boolean">Boolean</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@getPathStatuses(conf:org.apache.hadoop.conf.Configuration):Iterable[(String,Boolean)]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Get path statuses based on daterange.</p><div class="fullcomment"><div class="comment cmt"><p>Get path statuses based on daterange. This tests each path with pathIsGood
 (which by default checks that there is at least on file in that directory)
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
@@ -446,7 +573,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="../../Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@goodHdfsPaths(hdfsMode:com.twitter.scalding.Hdfs):Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -459,7 +590,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hdfsPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsPaths:Iterable[String]"></a>
@@ -472,7 +607,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hdfsPaths</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@hdfsPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hdfsReadPathsAreGood" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
@@ -485,7 +624,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.WritableSequenceFileScheme#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
@@ -498,7 +641,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../WritableSequenceFileScheme.html" class="extype" name="com.twitter.scalding.WritableSequenceFileScheme">WritableSequenceFileScheme</a> → <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimePathedSource#hdfsWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsWritePath:String"></a>
@@ -511,7 +658,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hdfsWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@hdfsWritePath:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> → <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -524,7 +675,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.LongThriftTransformer#keyType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="keyType:Class[org.apache.hadoop.io.LongWritable]"></a>
@@ -537,20 +692,28 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">keyType</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[<span class="extype" name="org.apache.hadoop.io.LongWritable">LongWritable</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@keyType:Class[org.apache.hadoop.io.LongWritable]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.TimePathedSource#localPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="localPath:String"></a>
-      <a id="localPath:String"></a>
+    </li><li name="com.twitter.scalding.TimePathedSource#localPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localPaths:Iterable[String]"></a>
+      <a id="localPaths:Iterable[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">localPath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">localPaths</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@localPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> → <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]"></a>
@@ -563,8 +726,29 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="java.util.Properties">Properties</span>, <span class="extype" name="java.io.InputStream">InputStream</span>, <span class="extype" name="java.io.OutputStream">OutputStream</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localWritePath:String"></a>
+      <a id="localWritePath:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@localWritePath:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Mappable#mapTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;U)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe"></a>
       <a id="mapTo[U](Fields)(((Long,V))⇒U)(FlowDef,Mode,TupleSetter[U]):Pipe"></a>
@@ -576,7 +760,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">mapTo</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="out">out: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="mf">mf: ((<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)) ⇒ <span class="extype" name="com.twitter.scalding.Mappable.mapTo.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="setter">setter: <a href="../../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Mappable.mapTo.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@mapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;U)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile#mt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mt:Manifest[V]"></a>
@@ -589,7 +777,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">mt</span><span class="result">: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@mt:Manifest[V]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a> → <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -602,7 +794,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -615,7 +811,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -628,7 +828,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#pathIsGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="pathIsGood(p:String,conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
@@ -641,7 +845,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">pathIsGood</span><span class="params">(<span name="p">p: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@pathIsGood(p:String,conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Determines if a path is 'valid' for this source.</p><div class="fullcomment"><div class="comment cmt"><p>Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
 In non-strict mode, all invalid paths will be filtered out.</p><p>Subclasses can override this to validate paths.</p><p>The default implementation is a quick sanity check to look for missing or empty directories.
 It is necessary but not sufficient -- there are cases where this will return true but there is
@@ -659,7 +867,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">pattern</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@pattern:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#patterns" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="patterns:Seq[String]"></a>
@@ -672,7 +884,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">patterns</span><span class="result">: <a href="../../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@patterns:Seq[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -685,8 +901,46 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile#setter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setter[U&lt;:(Long,V)]:com.twitter.scalding.TupleSetter[U]"></a>
+      <a id="setter[U&lt;:(Long,V)]:TupleSetter[U]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setter</span><span class="tparams">[<span name="U">U &lt;: (<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)</span>]</span><span class="result">: <a href="../../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.setter.U">U</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@setter[U&lt;:(Long,V)]:com.twitter.scalding.TupleSetter[U]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a> → <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile#sinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sinkFields:cascading.tuple.Fields"></a>
+      <a id="sinkFields:Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@sinkFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a> → <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkMode:cascading.tap.SinkMode"></a>
       <a id="sinkMode:SinkMode"></a>
@@ -698,7 +952,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedSource#sourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceFields:cascading.tuple.Fields"></a>
@@ -711,7 +969,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">sourceFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@sourceFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceId:String"></a>
@@ -724,9 +986,15 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
-(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
 (put another way, if s1.sourceId == s2.sourceId, the job should
 work the same if one is replaced with the other
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -741,7 +1009,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Mappable#toIterator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toIterator(implicitconfig:com.twitter.scalding.Config,implicitmode:com.twitter.scalding.Mode):Iterator[T]"></a>
@@ -754,7 +1026,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">toIterator</span><span class="params">(<span class="implicit">implicit </span><span name="config">config: <a href="../../Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="../../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@toIterator(implicitconfig:com.twitter.scalding.Config,implicitmode:com.twitter.scalding.Mode):Iterator[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.</p><div class="fullcomment"><div class="comment cmt"><p>Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
 Typical use might be to read in Job.next to determine if another job is needed
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
@@ -769,7 +1045,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.LongThriftTransformer#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -782,7 +1062,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a> → <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.LongThriftTransformer#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -795,7 +1079,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a> → <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformInTest:Boolean"></a>
@@ -808,8 +1096,13 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
 as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
@@ -826,7 +1119,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">typeRef</span><span class="result">: <span class="extype" name="com.twitter.elephantbird.util.TypeRef">TypeRef</span>[<span class="extype" name="org.apache.thrift.TBase">TBase</span>[_, _]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@typeRef:com.twitter.elephantbird.util.TypeRef[org.apache.thrift.TBase[_,_]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#tz" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="tz:java.util.TimeZone"></a>
@@ -839,7 +1136,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">tz</span><span class="result">: <span class="extype" name="java.util.TimeZone">TimeZone</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@tz:java.util.TimeZone" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
@@ -852,7 +1153,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.LongThriftTransformer#valueType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="valueType:Class[org.apache.hadoop.io.Writable]"></a>
@@ -865,7 +1170,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">valueType</span><span class="result">: <span class="extype" name="scala.Predef.Class">Class</span>[<span class="extype" name="org.apache.hadoop.io.Writable">Writable</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@valueType:Class[org.apache.hadoop.io.Writable]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -878,7 +1187,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -897,7 +1210,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -916,7 +1233,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -935,7 +1256,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
@@ -959,7 +1284,11 @@ the next operation
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="../../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -971,6 +1300,8 @@ the next operation
         <div id="inheritedMembers">
         <div class="parent" name="com.twitter.scalding.commons.source.LongThriftTransformer">
               <h3>Inherited from <a href="LongThriftTransformer.html" class="extype" name="com.twitter.scalding.commons.source.LongThriftTransformer">LongThriftTransformer</a>[<span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>]</h3>
+            </div><div class="parent" name="com.twitter.scalding.typed.TypedSink">
+              <h3>Inherited from <a href="../../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)]</h3>
             </div><div class="parent" name="com.twitter.scalding.Mappable">
               <h3>Inherited from <a href="../../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile.V">V</span>)]</h3>
             </div><div class="parent" name="com.twitter.scalding.typed.TypedSource">
@@ -983,6 +1314,8 @@ the next operation
               <h3>Inherited from <a href="../../TimeSeqPathedSource.html" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a></h3>
             </div><div class="parent" name="com.twitter.scalding.FileSource">
               <h3>Inherited from <a href="../../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.HfsTapProvider">
+              <h3>Inherited from <a href="../../HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></h3>
             </div><div class="parent" name="com.twitter.scalding.LocalSourceOverride">
               <h3>Inherited from <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></h3>
             </div><div class="parent" name="com.twitter.scalding.SchemedSource">
@@ -1011,6 +1344,7 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
+
+
     </body>
       </html>

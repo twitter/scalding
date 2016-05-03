@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>HBaseTap - com.twitter.maple.hbase.HBaseTap</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../lib/class_big.png" />
+        <img alt="Class" src="../../../../lib/class_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.maple">maple</a>.<a href="package.html" class="extype" name="com.twitter.maple.hbase">hbase</a></p>
-        <h1>HBaseTap</h1>
+        <h1>HBaseTap</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.maple.hbase">package hbase</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -41,7 +51,7 @@
       
           <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/maple/src/main/java/com/twitter/maple/hbase/HBaseTap.java.scala" target="_blank">HBaseTap.java</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>], <span class="extype" name="cascading.flow.FlowElement">FlowElement</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>], <span class="extype" name="cascading.util.Traceable">Traceable</span>, <span class="extype" name="cascading.flow.FlowElement">FlowElement</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -59,7 +69,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.maple.hbase.HBaseTap"><span>HBaseTap</span></li><li class="in" name="cascading.tap.Tap"><span>Tap</span></li><li class="in" name="cascading.flow.FlowElement"><span>FlowElement</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.maple.hbase.HBaseTap"><span>HBaseTap</span></li><li class="in" name="cascading.tap.Tap"><span>Tap</span></li><li class="in" name="cascading.util.Traceable"><span>Traceable</span></li><li class="in" name="cascading.flow.FlowElement"><span>FlowElement</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -67,7 +77,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -90,7 +99,11 @@
       <span class="symbol">
         <span class="name">HBaseTap</span><span class="params">(<span name="quorumNames">quorumNames: <span class="extype" name="java.lang.String">String</span></span>, <span name="tableName">tableName: <span class="extype" name="java.lang.String">String</span></span>, <span name="HBaseFullScheme">HBaseFullScheme: <a href="HBaseScheme.html" class="extype" name="com.twitter.maple.hbase.HBaseScheme">HBaseScheme</a></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@&lt;init&gt;(quorumNames:String,tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme,sinkMode:cascading.tap.SinkMode):com.twitter.maple.hbase.HBaseTap" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.maple.hbase.HBaseTap#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="&lt;init&gt;(quorumNames:String,tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme):com.twitter.maple.hbase.HBaseTap"></a>
@@ -103,7 +116,11 @@
       <span class="symbol">
         <span class="name">HBaseTap</span><span class="params">(<span name="quorumNames">quorumNames: <span class="extype" name="java.lang.String">String</span></span>, <span name="tableName">tableName: <span class="extype" name="java.lang.String">String</span></span>, <span name="HBaseFullScheme">HBaseFullScheme: <a href="HBaseScheme.html" class="extype" name="com.twitter.maple.hbase.HBaseScheme">HBaseScheme</a></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@&lt;init&gt;(quorumNames:String,tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme):com.twitter.maple.hbase.HBaseTap" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.maple.hbase.HBaseTap#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="&lt;init&gt;(tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme,sinkMode:cascading.tap.SinkMode):com.twitter.maple.hbase.HBaseTap"></a>
@@ -116,7 +133,11 @@
       <span class="symbol">
         <span class="name">HBaseTap</span><span class="params">(<span name="tableName">tableName: <span class="extype" name="java.lang.String">String</span></span>, <span name="HBaseFullScheme">HBaseFullScheme: <a href="HBaseScheme.html" class="extype" name="com.twitter.maple.hbase.HBaseScheme">HBaseScheme</a></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@&lt;init&gt;(tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme,sinkMode:cascading.tap.SinkMode):com.twitter.maple.hbase.HBaseTap" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.maple.hbase.HBaseTap#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="&lt;init&gt;(tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme):com.twitter.maple.hbase.HBaseTap"></a>
@@ -129,7 +150,11 @@
       <span class="symbol">
         <span class="name">HBaseTap</span><span class="params">(<span name="tableName">tableName: <span class="extype" name="java.lang.String">String</span></span>, <span name="HBaseFullScheme">HBaseFullScheme: <a href="HBaseScheme.html" class="extype" name="com.twitter.maple.hbase.HBaseScheme">HBaseScheme</a></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@&lt;init&gt;(tableName:String,HBaseFullScheme:com.twitter.maple.hbase.HBaseScheme):com.twitter.maple.hbase.HBaseTap" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -141,19 +166,6 @@
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -164,8 +176,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -177,22 +193,13 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -203,8 +210,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -216,7 +227,11 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -229,7 +244,11 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -248,7 +267,11 @@
       <span class="symbol">
         <span class="name">commitResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@commitResource(x$1:Config):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -267,7 +290,11 @@
       <span class="symbol">
         <span class="name">createResource</span><span class="params">(<span name="jobConf">jobConf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@createResource(jobConf:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#createResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="createResource(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
@@ -280,7 +307,11 @@
       <span class="symbol">
         <span class="name">createResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@createResource(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -299,7 +330,11 @@
       <span class="symbol">
         <span class="name">deleteResource</span><span class="params">(<span name="jobConf">jobConf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@deleteResource(jobConf:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#deleteResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="deleteResource(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
@@ -312,7 +347,11 @@
       <span class="symbol">
         <span class="name">deleteResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@deleteResource(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -331,7 +370,11 @@
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(object:Any):Boolean"></a>
@@ -344,7 +387,11 @@
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="object">object: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@equals(object:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -357,7 +404,11 @@
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -376,7 +427,11 @@
       <span class="symbol">
         <span class="name">flowConfInit</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@flowConfInit(x$1:cascading.flow.Flow[Config]):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -389,7 +444,11 @@
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="cascading.tap.Tap#getConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getConfigDef():cascading.property.ConfigDef"></a>
@@ -402,7 +461,11 @@
       <span class="symbol">
         <span class="name">getConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="cascading.tap.Tap#getFullIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getFullIdentifier(x$1:Config):String"></a>
@@ -415,7 +478,11 @@
       <span class="symbol">
         <span class="name">getFullIdentifier</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getFullIdentifier(x$1:Config):String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getFullIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getFullIdentifier(x$1:cascading.flow.FlowProcess[Config]):String"></a>
@@ -428,7 +495,11 @@
       <span class="symbol">
         <span class="name">getFullIdentifier</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getFullIdentifier(x$1:cascading.flow.FlowProcess[Config]):String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#getHBaseAdmin" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getHBaseAdmin(conf:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.hbase.client.HBaseAdmin"></a>
@@ -441,7 +512,11 @@
       <span class="symbol">
         <span class="name">getHBaseAdmin</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="org.apache.hadoop.hbase.client.HBaseAdmin">HBaseAdmin</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getHBaseAdmin(conf:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.hbase.client.HBaseAdmin" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="package.html" class="extype" name="com.twitter.maple.hbase">com.twitter.maple.hbase</a>] </dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#getIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getIdentifier():String"></a>
@@ -454,7 +529,11 @@
       <span class="symbol">
         <span class="name">getIdentifier</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getIdentifier():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#getModifiedTime" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getModifiedTime(jobConf:org.apache.hadoop.mapred.JobConf):Long"></a>
@@ -467,7 +546,11 @@
       <span class="symbol">
         <span class="name">getModifiedTime</span><span class="params">(<span name="jobConf">jobConf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getModifiedTime(jobConf:org.apache.hadoop.mapred.JobConf):Long" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getModifiedTime" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getModifiedTime(x$1:cascading.flow.FlowProcess[Config]):Long"></a>
@@ -480,7 +563,11 @@
       <span class="symbol">
         <span class="name">getModifiedTime</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getModifiedTime(x$1:cascading.flow.FlowProcess[Config]):Long" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -499,7 +586,11 @@
       <span class="symbol">
         <span class="name">getPath</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.hadoop.fs.Path">Path</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getPath():org.apache.hadoop.fs.Path" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="cascading.tap.Tap#getScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getScheme():cascading.scheme.Scheme[Config,Input,Output,_,_]"></a>
@@ -512,7 +603,11 @@
       <span class="symbol">
         <span class="name">getScheme</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getScheme():cascading.scheme.Scheme[Config,Input,Output,_,_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getSinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getSinkFields():cascading.tuple.Fields"></a>
@@ -525,7 +620,11 @@
       <span class="symbol">
         <span class="name">getSinkFields</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getSinkFields():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getSinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getSinkMode():cascading.tap.SinkMode"></a>
@@ -538,7 +637,11 @@
       <span class="symbol">
         <span class="name">getSinkMode</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getSinkMode():cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getSourceFields():cascading.tuple.Fields"></a>
@@ -551,7 +654,11 @@
       <span class="symbol">
         <span class="name">getSourceFields</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getSourceFields():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#getStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getStepConfigDef():cascading.property.ConfigDef"></a>
@@ -564,7 +671,11 @@
       <span class="symbol">
         <span class="name">getStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getStepConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#getTableName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getTableName():String"></a>
@@ -577,7 +688,11 @@
       <span class="symbol">
         <span class="name">getTableName</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getTableName():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="cascading.tap.Tap#getTrace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getTrace():String"></a>
@@ -590,8 +705,12 @@
       <span class="symbol">
         <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@getTrace():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → Traceable</dd></dl></div>
     </li><li name="cascading.tap.Tap#hasConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasConfigDef():Boolean"></a>
       <a id="hasConfigDef():Boolean"></a>
@@ -603,7 +722,11 @@
       <span class="symbol">
         <span class="name">hasConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@hasConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="cascading.tap.Tap#hasStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasStepConfigDef():Boolean"></a>
@@ -616,7 +739,11 @@
       <span class="symbol">
         <span class="name">hasStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@hasStepConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -629,7 +756,11 @@
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap → AnyRef → Any</dd></dl></div>
     </li><li name="cascading.tap.Tap#isEquivalentTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean"></a>
@@ -642,7 +773,11 @@
       <span class="symbol">
         <span class="name">isEquivalentTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -655,7 +790,11 @@
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="cascading.tap.Tap#isKeep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isKeep():Boolean"></a>
@@ -668,7 +807,11 @@
       <span class="symbol">
         <span class="name">isKeep</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isKeep():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#isReplace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isReplace():Boolean"></a>
@@ -681,7 +824,11 @@
       <span class="symbol">
         <span class="name">isReplace</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isReplace():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#isSink" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isSink():Boolean"></a>
@@ -694,7 +841,11 @@
       <span class="symbol">
         <span class="name">isSink</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isSink():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#isSource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isSource():Boolean"></a>
@@ -707,7 +858,11 @@
       <span class="symbol">
         <span class="name">isSource</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isSource():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#isTemporary" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isTemporary():Boolean"></a>
@@ -720,7 +875,11 @@
       <span class="symbol">
         <span class="name">isTemporary</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isTemporary():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#isUpdate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isUpdate():Boolean"></a>
@@ -733,7 +892,11 @@
       <span class="symbol">
         <span class="name">isUpdate</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@isUpdate():Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -746,7 +909,11 @@
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -759,7 +926,11 @@
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -772,7 +943,11 @@
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#openForRead" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="openForRead(jobConfFlowProcess:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],recordReader:org.apache.hadoop.mapred.RecordReader):cascading.tuple.TupleEntryIterator"></a>
@@ -785,7 +960,11 @@
       <span class="symbol">
         <span class="name">openForRead</span><span class="params">(<span name="jobConfFlowProcess">jobConfFlowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="recordReader">recordReader: <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryIterator">TupleEntryIterator</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@openForRead(jobConfFlowProcess:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],recordReader:org.apache.hadoop.mapred.RecordReader):cascading.tuple.TupleEntryIterator" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#openForRead" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="openForRead(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryIterator"></a>
@@ -798,7 +977,11 @@
       <span class="symbol">
         <span class="name">openForRead</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryIterator">TupleEntryIterator</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@openForRead(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryIterator" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -817,7 +1000,11 @@
       <span class="symbol">
         <span class="name">openForWrite</span><span class="params">(<span name="jobConfFlowProcess">jobConfFlowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="outputCollector">outputCollector: <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryCollector">TupleEntryCollector</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@openForWrite(jobConfFlowProcess:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],outputCollector:org.apache.hadoop.mapred.OutputCollector):cascading.tuple.TupleEntryCollector" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#openForWrite" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="openForWrite(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryCollector"></a>
@@ -830,7 +1017,11 @@
       <span class="symbol">
         <span class="name">openForWrite</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryCollector">TupleEntryCollector</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@openForWrite(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryCollector" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -849,7 +1040,11 @@
       <span class="symbol">
         <span class="name">outgoingScopeFor</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.util.Set">Set</span>[<span class="extype" name="cascading.flow.planner.Scope">Scope</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@outgoingScopeFor(x$1:java.util.Set[cascading.flow.planner.Scope]):cascading.flow.planner.Scope" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="cascading.tap.Tap#presentSinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="presentSinkFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit"></a>
@@ -862,7 +1057,11 @@
       <span class="symbol">
         <span class="name">presentSinkFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@presentSinkFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#presentSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="presentSourceFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit"></a>
@@ -875,7 +1074,11 @@
       <span class="symbol">
         <span class="name">presentSourceFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@presentSourceFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#resolveIncomingOperationArgumentFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
@@ -888,7 +1091,11 @@
       <span class="symbol">
         <span class="name">resolveIncomingOperationArgumentFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="cascading.tap.Tap#resolveIncomingOperationPassThroughFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
@@ -901,7 +1108,11 @@
       <span class="symbol">
         <span class="name">resolveIncomingOperationPassThroughFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#resourceExists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resourceExists(jobConf:org.apache.hadoop.mapred.JobConf):Boolean"></a>
@@ -914,7 +1125,11 @@
       <span class="symbol">
         <span class="name">resourceExists</span><span class="params">(<span name="jobConf">jobConf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@resourceExists(jobConf:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#resourceExists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resourceExists(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
@@ -927,7 +1142,11 @@
       <span class="symbol">
         <span class="name">resourceExists</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@resourceExists(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -946,7 +1165,11 @@
       <span class="symbol">
         <span class="name">retrieveSinkFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@retrieveSinkFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#retrieveSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="retrieveSourceFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields"></a>
@@ -959,7 +1182,11 @@
       <span class="symbol">
         <span class="name">retrieveSourceFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@retrieveSourceFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="cascading.tap.Tap#rollbackResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="rollbackResource(x$1:Config):Boolean"></a>
@@ -972,7 +1199,11 @@
       <span class="symbol">
         <span class="name">rollbackResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@rollbackResource(x$1:Config):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -991,7 +1222,11 @@
       <span class="symbol">
         <span class="name">setScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>, _, _]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@setScheme(x$1:cascading.scheme.Scheme[Config,Input,Output,_,_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../cascading$tap.html" class="extype" name="cascading.tap">cascading.tap</a>] </dd><dt>Definition Classes</dt><dd>Tap</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#sinkConfInit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit"></a>
@@ -1004,7 +1239,11 @@
       <span class="symbol">
         <span class="name">sinkConfInit</span><span class="params">(<span name="process">process: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@sinkConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="com.twitter.maple.hbase.HBaseTap#sourceConfInit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit"></a>
@@ -1017,7 +1256,11 @@
       <span class="symbol">
         <span class="name">sourceConfInit</span><span class="params">(<span name="process">process: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@sourceConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.maple.hbase.HBaseTap">HBaseTap</a> → Tap</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -1030,7 +1273,11 @@
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.tap.Tap#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -1043,7 +1290,11 @@
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -1056,7 +1307,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1075,7 +1330,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1094,7 +1353,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.maple.hbase.HBaseTap@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1113,6 +1376,8 @@
         <div id="inheritedMembers">
         <div class="parent" name="cascading.tap.Tap">
               <h3>Inherited from <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>]</h3>
+            </div><div class="parent" name="cascading.util.Traceable">
+              <h3>Inherited from <span class="extype" name="cascading.util.Traceable">Traceable</span></h3>
             </div><div class="parent" name="cascading.flow.FlowElement">
               <h3>Inherited from <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></h3>
             </div><div class="parent" name="java.io.Serializable">
@@ -1137,6 +1402,7 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

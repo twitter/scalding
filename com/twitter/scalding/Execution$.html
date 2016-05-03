@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>Execution - com.twitter.scalding.Execution</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="value">
       <div id="definition">
-        <a href="Execution.html" title="Go to companion"><img src="../../../lib/object_to_trait_big.png" /></a>
+        <a href="Execution.html" title="See companion trait"><img alt="Object/Trait" src="../../../lib/object_to_trait_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1><a href="Execution.html" title="Go to companion">Execution</a></h1>
+        <h1><a href="Execution.html" title="See companion trait">Execution</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="Execution.html" title="See companion trait">trait Execution</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -69,7 +81,6 @@ are the preferred way to compose computations in scalding libraries.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -81,42 +92,13 @@ are the preferred way to compose computations in scalding libraries.
         <div id="allMembers">
         
 
-        <div id="types" class="types members">
-              <h3>Type Members</h3>
-              <ol><li name="com.twitter.scalding.Execution.EvalCache" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="EvalCacheextendsAnyRef"></a>
-      <a id="EvalCache:EvalCache"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a href="Execution$$EvalCache.html"><span class="name">EvalCache</span></a><span class="result"> extends <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
+        
 
         
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -127,8 +109,12 @@ are the preferred way to compose computations in scalding libraries.
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -140,22 +126,13 @@ are the preferred way to compose computations in scalding libraries.
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -166,8 +143,12 @@ are the preferred way to compose computations in scalding libraries.
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution.ExecutionMonad" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ExecutionMonad"></a>
       <a id="ExecutionMonad:ExecutionMonad"></a>
@@ -179,8 +160,12 @@ are the preferred way to compose computations in scalding libraries.
       <span class="symbol">
         <a href="Execution$$ExecutionMonad$.html"><span class="name">ExecutionMonad</span></a><span class="result"> extends <span class="extype" name="com.twitter.algebird.Monad">Monad</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is an instance of Monad for execution so it can be used
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@ExecutionMonad" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is an instance of Monad for execution so it can be used
 in functions that apply to all Monads
 </p>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -194,7 +179,11 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -207,7 +196,11 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -226,7 +219,11 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -239,8 +236,65 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#failFastSequence" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="failFastSequence[T](t:Iterable[scala.concurrent.Future[T]])(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[List[T]]"></a>
+      <a id="failFastSequence[T](Iterable[Future[T]])(scala.concurrent.ExecutionContext):Future[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failFastSequence</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="t">t: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.failFastSequence.T">T</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="com.twitter.scalding.Execution.failFastSequence.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@failFastSequence[T](t:Iterable[scala.concurrent.Future[T]])(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[List[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Use our internal faster failing zip function rather than the standard one due to waiting
+</p>
+    </li><li name="com.twitter.scalding.Execution#failFastZip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="failFastZip[T,U](ft:scala.concurrent.Future[T],fu:scala.concurrent.Future[U])(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,U)]"></a>
+      <a id="failFastZip[T,U](Future[T],Future[U])(scala.concurrent.ExecutionContext):Future[(T,U)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failFastZip</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="ft">ft: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.failFastZip.T">T</span>]</span>, <span name="fu">fu: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.failFastZip.U">U</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[(<span class="extype" name="com.twitter.scalding.Execution.failFastZip.T">T</span>, <span class="extype" name="com.twitter.scalding.Execution.failFastZip.U">U</span>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@failFastZip[T,U](ft:scala.concurrent.Future[T],fu:scala.concurrent.Future[U])(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,U)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Standard scala zip waits forever on the left side, even if the right side fails
+</p>
+    </li><li name="com.twitter.scalding.Execution#failed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="failed(t:Throwable):com.twitter.scalding.Execution[Nothing]"></a>
+      <a id="failed(Throwable):Execution[Nothing]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">failed</span><span class="params">(<span name="t">t: <a href="../../../scala/package.html#Throwable=Throwable" class="extmbr" name="scala.Throwable">Throwable</a></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.Nothing">Nothing</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@failed(t:Throwable):com.twitter.scalding.Execution[Nothing]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This creates a definitely failed Execution.</p>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -252,7 +306,11 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -271,26 +329,33 @@ in functions that apply to all Monads
       <span class="symbol">
         <span class="name">from</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="t">t: ⇒ <span class="extype" name="com.twitter.scalding.Execution.from.T">T</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.from.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@from[T](t:=&gt;T):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This makes a constant execution that runs no job.</p><div class="fullcomment"><div class="comment cmt"><p>This makes a constant execution that runs no job.
 Note this is a lazy parameter that is evaluated every
 time run is called.
 </p></div></div>
     </li><li name="com.twitter.scalding.Execution#fromFn" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="fromFn[T](fn:(com.twitter.scalding.Config,com.twitter.scalding.Mode)=&gt;(cascading.flow.FlowDef,com.twitter.scalding.JobStats=&gt;scala.concurrent.Future[T])):com.twitter.scalding.Execution[T]"></a>
-      <a id="fromFn[T]((Config,Mode)⇒(FlowDef,(JobStats)⇒Future[T])):Execution[T]"></a>
+      <a id="fromFn(fn:(com.twitter.scalding.Config,com.twitter.scalding.Mode)=&gt;cascading.flow.FlowDef):com.twitter.scalding.Execution[Unit]"></a>
+      <a id="fromFn((Config,Mode)⇒FlowDef):Execution[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">fromFn</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>, <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>) ⇒ (<span class="extype" name="cascading.flow.FlowDef">FlowDef</span>, (<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>) ⇒ <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.fromFn.T">T</span>])</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.fromFn.T">T</span>]</span>
+        <span class="name">fromFn</span><span class="params">(<span name="fn">fn: (<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>, <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>) ⇒ <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@fromFn(fn:(com.twitter.scalding.Config,com.twitter.scalding.Mode)=&gt;cascading.flow.FlowDef):com.twitter.scalding.Execution[Unit]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This converts a function into an Execution monad.</p><div class="fullcomment"><div class="comment cmt"><p>This converts a function into an Execution monad. The flowDef returned
-is never mutated. The returned callback funcion is called after the flow
-is run and succeeds.
+is never mutated.
 </p></div></div>
     </li><li name="com.twitter.scalding.Execution#fromFuture" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fromFuture[T](fn:scala.concurrent.ExecutionContext=&gt;scala.concurrent.Future[T]):com.twitter.scalding.Execution[T]"></a>
@@ -303,13 +368,52 @@ is run and succeeds.
       <span class="symbol">
         <span class="name">fromFuture</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span>) ⇒ <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.fromFuture.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.fromFuture.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@fromFuture[T](fn:scala.concurrent.ExecutionContext=&gt;scala.concurrent.Future[T]):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The call to fn will happen when the run method on the result is called.</p><div class="fullcomment"><div class="comment cmt"><p>The call to fn will happen when the run method on the result is called.
 The ConcurrentExecutionContext will be the same one used on run.
 This is intended for cases where you need to make asynchronous calls
 in the middle or end of execution. Presumably this is used with flatMap
 either before or after
 </p></div></div>
+    </li><li name="com.twitter.scalding.Execution#fromTry" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="fromTry[T](t:=&gt;scala.util.Try[T]):com.twitter.scalding.Execution[T]"></a>
+      <a id="fromTry[T](⇒Try[T]):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fromTry</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="t">t: ⇒ <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="com.twitter.scalding.Execution.fromTry.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.fromTry.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@fromTry[T](t:=&gt;scala.util.Try[T]):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Execution#getArgs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getArgs:com.twitter.scalding.Execution[com.twitter.scalding.Args]"></a>
+      <a id="getArgs:Execution[Args]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getArgs</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@getArgs:com.twitter.scalding.Execution[com.twitter.scalding.Args]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Convenience method to get the Args
+</p>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -321,7 +425,11 @@ either before or after
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#getConfig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getConfig:com.twitter.scalding.Execution[com.twitter.scalding.Config]"></a>
@@ -334,7 +442,11 @@ either before or after
       <span class="symbol">
         <span class="name">getConfig</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@getConfig:com.twitter.scalding.Execution[com.twitter.scalding.Config]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this to read the configuration, which may contain Args or options
 which describe input on which to run
 </p>
@@ -349,7 +461,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">getConfigMode</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>, <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@getConfigMode:com.twitter.scalding.Execution[(com.twitter.scalding.Config,com.twitter.scalding.Mode)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this to get the config and mode.</p>
     </li><li name="com.twitter.scalding.Execution#getMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getMode:com.twitter.scalding.Execution[com.twitter.scalding.Mode]"></a>
@@ -362,7 +478,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">getMode</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@getMode:com.twitter.scalding.Execution[com.twitter.scalding.Mode]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this to get the mode, which may contain the job conf</p>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -375,7 +495,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -388,8 +512,33 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#monoid" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="monoid[T](implicitevidence$2:com.twitter.algebird.Monoid[T]):com.twitter.algebird.Monoid[com.twitter.scalding.Execution[T]]"></a>
+      <a id="monoid[T](Monoid[T]):Monoid[Execution[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">monoid</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.Execution.monoid.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.monoid.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@monoid[T](implicitevidence$2:com.twitter.algebird.Monoid[T]):com.twitter.algebird.Monoid[com.twitter.scalding.Execution[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is the standard monoid on an Applicative (zip, then inside the Execution do plus)
+useful to combine unit Executions:
+Monoid.sum(ex1, ex2, ex3, ex4): Execution[Unit]
+where each are exi are Execution[Unit]
+</p>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -401,7 +550,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -414,7 +567,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -427,7 +584,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#run" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="run[C](flow:cascading.flow.Flow[C]):scala.concurrent.Future[com.twitter.scalding.JobStats]"></a>
@@ -440,8 +601,30 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">run</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="com.twitter.scalding.Execution.run.C">C</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@run[C](flow:cascading.flow.Flow[C]):scala.concurrent.Future[com.twitter.scalding.JobStats]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
+    </li><li name="com.twitter.scalding.Execution#semigroup" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="semigroup[T](implicitevidence$1:com.twitter.algebird.Semigroup[T]):com.twitter.algebird.Semigroup[com.twitter.scalding.Execution[T]]"></a>
+      <a id="semigroup[T](Semigroup[T]):Semigroup[Execution[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">semigroup</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.Execution.semigroup.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.semigroup.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@semigroup[T](implicitevidence$1:com.twitter.algebird.Semigroup[T]):com.twitter.algebird.Semigroup[com.twitter.scalding.Execution[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is the standard semigroup on an Applicative (zip, then inside the Execution do plus)
+</p>
     </li><li name="com.twitter.scalding.Execution#sequence" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sequence[T](exs:Seq[com.twitter.scalding.Execution[T]]):com.twitter.scalding.Execution[Seq[T]]"></a>
       <a id="sequence[T](Seq[Execution[T]]):Execution[Seq[T]]"></a>
@@ -453,7 +636,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">sequence</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="exs">exs: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.sequence.T">T</span>]]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.Execution.sequence.T">T</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@sequence[T](exs:Seq[com.twitter.scalding.Execution[T]]):com.twitter.scalding.Execution[Seq[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -466,7 +653,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -479,8 +670,29 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#unit" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="unit:com.twitter.scalding.Execution[Unit]"></a>
+      <a id="unit:Execution[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unit</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@unit:com.twitter.scalding.Execution[Unit]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a constant Execution[Unit]</p>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -492,7 +704,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -511,7 +727,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -530,7 +750,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -549,7 +773,47 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">waitFor</span><span class="tparams">[<span name="C">C</span>]</span><span class="params">(<span name="flow">flow: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="com.twitter.scalding.Execution.waitFor.C">C</span>]</span>)</span><span class="result">: <span class="extype" name="scala.util.Try">Try</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@waitFor[C](flow:cascading.flow.Flow[C]):scala.util.Try[com.twitter.scalding.JobStats]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.Execution#withArgs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withArgs[T](fn:com.twitter.scalding.Args=&gt;com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]"></a>
+      <a id="withArgs[T]((Args)⇒Execution[T]):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withArgs</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>) ⇒ <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withArgs.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withArgs.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@withArgs[T](fn:com.twitter.scalding.Args=&gt;com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is convenience method only here to make it slightly cleaner
+to get Args, which are in the Config
+</p>
+    </li><li name="com.twitter.scalding.Execution#withConfig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withConfig[T](ex:com.twitter.scalding.Execution[T])(c:com.twitter.scalding.Config=&gt;com.twitter.scalding.Config):com.twitter.scalding.Execution[T]"></a>
+      <a id="withConfig[T](Execution[T])((Config)⇒Config):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withConfig</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ex">ex: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withConfig.T">T</span>]</span>)</span><span class="params">(<span name="c">c: (<a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a>) ⇒ <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withConfig.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@withConfig[T](ex:com.twitter.scalding.Execution[T])(c:com.twitter.scalding.Config=&gt;com.twitter.scalding.Config):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Execution#withId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="withId[T](fn:com.twitter.scalding.UniqueID=&gt;com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]"></a>
@@ -562,7 +826,11 @@ which describe input on which to run
       <span class="symbol">
         <span class="name">withId</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="UniqueID.html" class="extype" name="com.twitter.scalding.UniqueID">UniqueID</a>) ⇒ <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withId.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withId.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@withId[T](fn:com.twitter.scalding.UniqueID=&gt;com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this to use counters/stats with Execution.</p><div class="fullcomment"><div class="comment cmt"><p>Use this to use counters/stats with Execution. You do this:
 Execution.withId { implicit uid =&gt;
   val myStat = Stat(&quot;myStat&quot;) // uid is implicitly pulled in
@@ -573,7 +841,49 @@ Execution.withId { implicit uid =&gt;
   .writeExecution(mySink)
 }
 </p></div></div>
-    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.twitter.scalding.Execution#withNewCache" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="withNewCache[T](ex:com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]"></a>
+      <a id="withNewCache[T](Execution[T]):Execution[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withNewCache</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ex">ex: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withNewCache.T">T</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withNewCache.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@withNewCache[T](ex:com.twitter.scalding.Execution[T]):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This function allows running the passed execution with its own cache.</p><div class="fullcomment"><div class="comment cmt"><p>This function allows running the passed execution with its own cache.
+This will mean anything inside won't benefit from Execution's global attempts to avoid
+repeated executions.</p><p>The main use case here is when generating a lot of Execution results which are large.
+Executions caching in this case can lead to out of memory errors as the cache keeps
+references to many heap objects.</p><p>Ex. (0 until 1000).map { _ =&gt; Execution.withNewCache(myLargeObjectProducingExecution)}
+</p></div></div>
+    </li><li name="com.twitter.scalding.Execution#withParallelism" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="withParallelism[T](executions:Seq[com.twitter.scalding.Execution[T]],parallelism:Int):com.twitter.scalding.Execution[Seq[T]]"></a>
+      <a id="withParallelism[T](Seq[Execution[T]],Int):Execution[Seq[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withParallelism</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="executions">executions: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.withParallelism.T">T</span>]]</span>, <span name="parallelism">parallelism: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.Execution.withParallelism.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@withParallelism[T](executions:Seq[com.twitter.scalding.Execution[T]],parallelism:Int):com.twitter.scalding.Execution[Seq[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Run a sequence of executions but only permitting parallelism amount to run at the
+same time.</p><div class="fullcomment"><div class="comment cmt"><p>Run a sequence of executions but only permitting parallelism amount to run at the
+same time.
+</p></div><dl class="paramcmts block"><dt class="param">executions</dt><dd class="cmt"><p>List of executions to run</p></dd><dt class="param">parallelism</dt><dd class="cmt"><p>Number to run in parallel</p></dd><dt>returns</dt><dd class="cmt"><p>Execution Seq</p></dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="zip[A,B,C,D,E](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D],ex:com.twitter.scalding.Execution[E]):com.twitter.scalding.Execution[(A,B,C,D,E)]"></a>
       <a id="zip[A,B,C,D,E](Execution[A],Execution[B],Execution[C],Execution[D],Execution[E]):Execution[(A,B,C,D,E)]"></a>
       <h4 class="signature">
@@ -584,10 +894,14 @@ Execution.withId { implicit uid =&gt;
       <span class="symbol">
         <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>, <span name="dx">dx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>]</span>, <span name="ex">ex: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.E">E</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.E">E</span>)]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
-</p></div></div>
-    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@zip[A,B,C,D,E](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D],ex:com.twitter.scalding.Execution[E]):com.twitter.scalding.Execution[(A,B,C,D,E)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .run is called
+</p>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="zip[A,B,C,D](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D]):com.twitter.scalding.Execution[(A,B,C,D)]"></a>
       <a id="zip[A,B,C,D](Execution[A],Execution[B],Execution[C],Execution[D]):Execution[(A,B,C,D)]"></a>
       <h4 class="signature">
@@ -598,10 +912,14 @@ Execution.withId { implicit uid =&gt;
       <span class="symbol">
         <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>, <span name="dx">dx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.D">D</span>)]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
-</p></div></div>
-    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@zip[A,B,C,D](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C],dx:com.twitter.scalding.Execution[D]):com.twitter.scalding.Execution[(A,B,C,D)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .run is called
+</p>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="zip[A,B,C](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C]):com.twitter.scalding.Execution[(A,B,C)]"></a>
       <a id="zip[A,B,C](Execution[A],Execution[B],Execution[C]):Execution[(A,B,C)]"></a>
       <h4 class="signature">
@@ -612,10 +930,14 @@ Execution.withId { implicit uid =&gt;
       <span class="symbol">
         <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>, <span name="cx">cx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.C">C</span>)]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
-</p></div></div>
-    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@zip[A,B,C](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B],cx:com.twitter.scalding.Execution[C]):com.twitter.scalding.Execution[(A,B,C)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .run is called
+</p>
+    </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="zip[A,B](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B]):com.twitter.scalding.Execution[(A,B)]"></a>
       <a id="zip[A,B](Execution[A],Execution[B]):Execution[(A,B)]"></a>
       <h4 class="signature">
@@ -626,86 +948,19 @@ Execution.withId { implicit uid =&gt;
       <span class="symbol">
         <span class="name">zip</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="ax">ax: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>]</span>, <span name="bx">bx: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>]</span>)</span><span class="result">: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.zip.A">A</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.B">B</span>)]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">combine several executions and run them in parallel when .</p><div class="fullcomment"><div class="comment cmt"><p>combine several executions and run them in parallel when .run is called
-</p></div></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution$@zip[A,B](ax:com.twitter.scalding.Execution[A],bx:com.twitter.scalding.Execution[B]):com.twitter.scalding.Execution[(A,B)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">combine several executions and run them in parallel when .run is called
+</p>
     </li></ol>
             </div>
 
         
 
-        <div id="values" class="values members">
-              <h3>Deprecated Value Members</h3>
-              <ol><li name="com.twitter.scalding.Execution#buildFlow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="buildFlow[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.util.Try[cascading.flow.Flow[_]])"></a>
-      <a id="buildFlow[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Try[Flow[_]])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T]">buildFlow</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.buildFlow.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.buildFlow.T">T</span>, <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="cascading.flow.Flow">Flow</span>[_]])</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">This creates a new ExecutionContext, passes to the reader, builds the flow
-and cleans up the state of the FlowDef
-</p><div class="fullcomment"><div class="comment cmt"><p>This creates a new ExecutionContext, passes to the reader, builds the flow
-and cleans up the state of the FlowDef
-</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T]</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.Execution#run" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="run[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.concurrent.Future[com.twitter.scalding.JobStats])"></a>
-      <a id="run[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Future[JobStats])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">run</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.run.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.run.T">T</span>, <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>])</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.Execution#validateSources" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="validateSources:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,scala.util.Try[Unit]]"></a>
-      <a id="validateSources:Reader[ExecutionContext,Try[Unit]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">validateSources</span><span class="result">: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="scala.Unit">Unit</span>]]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.Execution#waitFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="waitFor[T](conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(op:com.twitter.algebird.monad.Reader[com.twitter.scalding.ExecutionContext,T]):(T,scala.util.Try[com.twitter.scalding.JobStats])"></a>
-      <a id="waitFor[T](Config,Mode)(Reader[ExecutionContext,T]):(T,Try[JobStats])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 2014-07-29) Use Execution[T].run">waitFor</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span name="op">op: <span class="extype" name="com.twitter.algebird.monad.Reader">Reader</span>[<a href="ExecutionContext.html" class="extype" name="com.twitter.scalding.ExecutionContext">ExecutionContext</a>, <span class="extype" name="com.twitter.scalding.Execution.waitFor.T">T</span>]</span>)</span><span class="result">: (<span class="extype" name="com.twitter.scalding.Execution.waitFor.T">T</span>, <span class="extype" name="scala.util.Try">Try</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>])</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2014-07-29)</i> Use Execution[T].run</p></dd></dl></div>
-    </li></ol>
-            </div>
+        
         </div>
 
         <div id="inheritedMembers">
@@ -733,6 +988,7 @@ and cleans up the state of the FlowDef
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

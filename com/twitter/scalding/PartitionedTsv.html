@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>PartitionedTsv - com.twitter.scalding.PartitionedTsv</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="PartitionedTsv$.html" title="Go to companion"><img src="../../../lib/class_to_object_big.png" /></a>
+        <a href="PartitionedTsv$.html" title="See companion object"><img alt="Class/Object" src="../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1><a href="PartitionedTsv$.html" title="Go to companion">PartitionedTsv</a></h1>
+        <h1><a href="PartitionedTsv$.html" title="See companion object">PartitionedTsv</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="PartitionedTsv$.html" title="See companion object">object PartitionedTsv</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -40,10 +52,9 @@
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An implementation of TSV output, split over a partition tap.
-</p></div><dl class="paramcmts block"><dt class="param">basePath</dt><dd class="cmt"><p>The root path for the output.</p></dd><dt class="param">partition</dt><dd class="cmt"><p>The partitioning strategy to use.</p></dd><dt class="param">writeHeader</dt><dd class="cmt"><p>Flag to indicate that the header should be written to the file.</p></dd><dt class="param">sinkMode</dt><dd class="cmt"><p>How to handle conflicts with existing output.
-</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/PartitionSource.scala" target="_blank">PartitionSource.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="paramcmts block"><dt class="param">basePath</dt><dd class="cmt"><p>The root path for the output.</p></dd><dt class="param">partition</dt><dd class="cmt"><p>The partitioning strategy to use.</p></dd><dt class="param">writeHeader</dt><dd class="cmt"><p>Flag to indicate that the header should be written to the file.</p></dd><dt class="param">sinkMode</dt><dd class="cmt"><p>How to handle conflicts with existing output.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/PartitionSource.scala" target="_blank">PartitionSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a>, <a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a>, <a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a>, <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -61,7 +72,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.PartitionedTsv"><span>PartitionedTsv</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.twitter.scalding.DelimitedScheme"><span>DelimitedScheme</span></li><li class="in" name="com.twitter.scalding.PartitionSource"><span>PartitionSource</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.PartitionedTsv"><span>PartitionedTsv</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="com.twitter.scalding.DelimitedScheme"><span>DelimitedScheme</span></li><li class="in" name="com.twitter.scalding.PartitionSource"><span>PartitionSource</span></li><li class="in" name="com.twitter.scalding.HfsTapProvider"><span>HfsTapProvider</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -69,7 +80,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -92,9 +102,12 @@
       <span class="symbol">
         <span class="name">PartitionedTsv</span><span class="params">(<span name="basePath">basePath: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="partition">partition: <span class="extype" name="cascading.tap.partition.Partition">Partition</span></span>, <span name="writeHeader">writeHeader: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="tsvFields">tsvFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">basePath</dt><dd class="cmt"><p>The root path for the output.</p></dd><dt class="param">partition</dt><dd class="cmt"><p>The partitioning strategy to use.</p></dd><dt class="param">writeHeader</dt><dd class="cmt"><p>Flag to indicate that the header should be written to the file.</p></dd><dt class="param">sinkMode</dt><dd class="cmt"><p>How to handle conflicts with existing output.
-</p></dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@&lt;init&gt;(basePath:String,partition:cascading.tap.partition.Partition,writeHeader:Boolean,tsvFields:cascading.tuple.Fields,sinkMode:cascading.tap.SinkMode):com.twitter.scalding.PartitionedTsv" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">basePath</dt><dd class="cmt"><p>The root path for the output.</p></dd><dt class="param">partition</dt><dd class="cmt"><p>The partitioning strategy to use.</p></dd><dt class="param">writeHeader</dt><dd class="cmt"><p>Flag to indicate that the header should be written to the file.</p></dd><dt class="param">sinkMode</dt><dd class="cmt"><p>How to handle conflicts with existing output.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -105,19 +118,6 @@
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -128,8 +128,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -141,22 +145,13 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -167,8 +162,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -180,7 +179,11 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionedTsv#basePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="basePath:String"></a>
@@ -193,7 +196,11 @@
       <span class="symbol">
         <span class="name">basePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@basePath:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The root path for the output.</p><div class="fullcomment"><div class="comment cmt"><p>The root path for the output.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
@@ -206,7 +213,11 @@
       <span class="symbol">
         <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -219,7 +230,11 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -227,6 +242,23 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.twitter.scalding.HfsTapProvider#createHfsTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs"></a>
+      <a id="createHfsTap(Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_],String,SinkMode):Hfs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createHfsTap</span><span class="params">(<span name="scheme">scheme: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionSource#createTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]"></a>
       <a id="createTap(AccessMode)(Mode):Tap[_,_,_]"></a>
@@ -238,10 +270,13 @@
       <span class="symbol">
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Creates the partition tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates the partition tap.
-</p></div><dl class="paramcmts block"><dt class="param">readOrWrite</dt><dd class="cmt"><p>Describes if this source is being read from or written to.</p></dd><dt class="param">mode</dt><dd class="cmt"><p>The mode of the job. (implicit)
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">readOrWrite</dt><dd class="cmt"><p>Describes if this source is being read from or written to.</p></dd><dt class="param">mode</dt><dd class="cmt"><p>The mode of the job. (implicit)</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -253,7 +288,11 @@
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionedTsv#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields:cascading.tuple.Fields"></a>
@@ -266,7 +305,11 @@
       <span class="symbol">
         <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@fields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -279,7 +322,11 @@
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -298,7 +345,11 @@
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
@@ -311,7 +362,11 @@
       <span class="symbol">
         <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -324,7 +379,11 @@
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="localScheme:cascading.scheme.local.TextDelimited"></a>
@@ -337,7 +396,11 @@
       <span class="symbol">
         <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.local.TextDelimited">TextDelimited</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@localScheme:cascading.scheme.local.TextDelimited" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -350,7 +413,11 @@
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -363,7 +430,11 @@
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -376,7 +447,11 @@
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionSource#openWritesThreshold" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="openWritesThreshold:Option[Int]"></a>
@@ -389,7 +464,11 @@
       <span class="symbol">
         <span class="name">openWritesThreshold</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@openWritesThreshold:Option[Int]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionedTsv#partition" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="partition:cascading.tap.partition.Partition"></a>
@@ -402,7 +481,11 @@
       <span class="symbol">
         <span class="name">partition</span><span class="result">: <span class="extype" name="cascading.tap.partition.Partition">Partition</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@partition:cascading.tap.partition.Partition" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The partitioning strategy to use.</p><div class="fullcomment"><div class="comment cmt"><p>The partitioning strategy to use.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#quote" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="quote:String"></a>
@@ -415,7 +498,11 @@
       <span class="symbol">
         <span class="name">quote</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@quote:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -428,7 +515,11 @@
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#safe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="safe:Boolean"></a>
@@ -441,7 +532,11 @@
       <span class="symbol">
         <span class="name">safe</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@safe:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#separator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="separator:String"></a>
@@ -454,7 +549,11 @@
       <span class="symbol">
         <span class="name">separator</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@separator:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionedTsv#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkMode:cascading.tap.SinkMode"></a>
@@ -467,9 +566,12 @@
       <span class="symbol">
         <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">How to handle conflicts with existing output.</p><div class="fullcomment"><div class="comment cmt"><p>How to handle conflicts with existing output.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">How to handle conflicts with existing output.</p><div class="fullcomment"><div class="comment cmt"><p>How to handle conflicts with existing output.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#skipHeader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="skipHeader:Boolean"></a>
       <a id="skipHeader:Boolean"></a>
@@ -481,7 +583,11 @@
       <span class="symbol">
         <span class="name">skipHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@skipHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceId:String"></a>
@@ -494,9 +600,15 @@
       <span class="symbol">
         <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
-(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
 (put another way, if s1.sourceId == s2.sourceId, the job should
 work the same if one is replaced with the other
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -511,7 +623,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">strict</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@strict:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -524,7 +640,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -537,7 +657,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -550,7 +674,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformInTest:Boolean"></a>
@@ -563,8 +691,13 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
 as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
@@ -581,7 +714,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">tsvFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@tsvFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.DelimitedScheme#types" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="types:Array[Class[_]]"></a>
@@ -594,7 +731,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">types</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@types:Array[Class[_]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.PartitionSource#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
@@ -607,10 +748,13 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Validates the taps, makes sure there are no nulls in the path.</p><div class="fullcomment"><div class="comment cmt"><p>Validates the taps, makes sure there are no nulls in the path.
-</p></div><dl class="paramcmts block"><dt class="param">mode</dt><dd class="cmt"><p>The mode of the job.
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">mode</dt><dd class="cmt"><p>The mode of the job.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -622,7 +766,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -641,7 +789,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -660,7 +812,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -679,7 +835,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
@@ -696,7 +856,11 @@ the next operation
       <span class="symbol">
         <span class="name">writeHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@writeHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Flag to indicate that the header should be written to the file.</p><div class="fullcomment"><div class="comment cmt"><p>Flag to indicate that the header should be written to the file.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.PartitionedTsv">PartitionedTsv</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li></ol>
             </div>
@@ -716,7 +880,11 @@ the next operation
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.PartitionedTsv@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -736,6 +904,8 @@ the next operation
               <h3>Inherited from <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></h3>
             </div><div class="parent" name="com.twitter.scalding.PartitionSource">
               <h3>Inherited from <a href="PartitionSource.html" class="extype" name="com.twitter.scalding.PartitionSource">PartitionSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.HfsTapProvider">
+              <h3>Inherited from <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></h3>
             </div><div class="parent" name="com.twitter.scalding.SchemedSource">
               <h3>Inherited from <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></h3>
             </div><div class="parent" name="com.twitter.scalding.Source">
@@ -762,6 +932,7 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

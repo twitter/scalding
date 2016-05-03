@@ -1,0 +1,312 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>impl - com.twitter.scalding.macros.impl</title>
+          <meta name="description" content="impl - com.twitter.scalding.macros.impl" />
+          <meta name="keywords" content="impl com.twitter.scalding.macros.impl" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.macros.impl.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.macros">macros</a></p>
+        <h1>impl</h1><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">impl</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.twitter.scalding.macros.impl.CaseClassFieldSetter" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="CaseClassFieldSetterextendsAnyRef"></a>
+      <a id="CaseClassFieldSetter:CaseClassFieldSetter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="CaseClassFieldSetter.html"><span class="name">CaseClassFieldSetter</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@CaseClassFieldSetterextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Helper to set fields from a case class to other &quot;container&quot; types
+E.g.</p><div class="fullcomment"><div class="comment cmt"><p>Helper to set fields from a case class to other &quot;container&quot; types
+E.g. cascading Tuple, jdbc PreparedStatement
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.NamingScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="NamingSchemeextendsAnyRef"></a>
+      <a id="NamingScheme:NamingScheme"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="NamingScheme.html"><span class="name">NamingScheme</span></a><span class="result"> extends <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@NamingSchemeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Naming scheme for cascading Tuple fields used by FieldsProviderImpl macro.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.twitter.scalding.macros.impl.CaseClassBasedSetterImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="CaseClassBasedSetterImpl"></a>
+      <a id="CaseClassBasedSetterImpl:CaseClassBasedSetterImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="CaseClassBasedSetterImpl$.html"><span class="name">CaseClassBasedSetterImpl</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@CaseClassBasedSetterImpl" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Helper class for generating setters from case class to
+other types.</p><div class="fullcomment"><div class="comment cmt"><p>Helper class for generating setters from case class to
+other types. E.g. cascading Tuple, jdbc PreparedStatement
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.FieldsProviderImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FieldsProviderImpl"></a>
+      <a id="FieldsProviderImpl:FieldsProviderImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FieldsProviderImpl$.html"><span class="name">FieldsProviderImpl</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@FieldsProviderImpl" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class contains the core macro implementations.</p><div class="fullcomment"><div class="comment cmt"><p>This class contains the core macro implementations. This is in a separate module to allow it to be in
+a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.Indexed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Indexed"></a>
+      <a id="Indexed:Indexed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Indexed$.html"><span class="name">Indexed</span></a><span class="result"> extends <a href="NamingScheme.html" class="extype" name="com.twitter.scalding.macros.impl.NamingScheme">NamingScheme</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@Indexed" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Uses zero-based indexes for field names.</p>
+    </li><li name="com.twitter.scalding.macros.impl.NamedNoPrefix" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NamedNoPrefix"></a>
+      <a id="NamedNoPrefix:NamedNoPrefix"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NamedNoPrefix$.html"><span class="name">NamedNoPrefix</span></a><span class="result"> extends <a href="NamingScheme.html" class="extype" name="com.twitter.scalding.macros.impl.NamingScheme">NamingScheme</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@NamedNoPrefix" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">No prefixes for naming nested fields.</p><div class="fullcomment"><div class="comment cmt"><p>No prefixes for naming nested fields.
+For e.g. for the following nested case class:</p><pre><span class="kw">case</span> <span class="kw">class</span> Outer(id: <span class="std">Long</span>, name: <span class="std">String</span>, details: Inner)
+<span class="kw">case</span> <span class="kw">class</span> Inner(phone: <span class="std">Int</span>)</pre><p>the nested field's name will remain &quot;phone&quot;.</p><p>Useful esp. for flattening nested case classes to SQL table columns.
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.NamedWithPrefix" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NamedWithPrefix"></a>
+      <a id="NamedWithPrefix:NamedWithPrefix"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NamedWithPrefix$.html"><span class="name">NamedWithPrefix</span></a><span class="result"> extends <a href="NamingScheme.html" class="extype" name="com.twitter.scalding.macros.impl.NamingScheme">NamingScheme</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@NamedWithPrefix" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Uses prefixes for naming nested fields.</p><div class="fullcomment"><div class="comment cmt"><p>Uses prefixes for naming nested fields.
+For e.g. for the following nested case class:</p><pre><span class="kw">case</span> <span class="kw">class</span> Outer(id: <span class="std">Long</span>, name: <span class="std">String</span>, details: Inner)
+<span class="kw">case</span> <span class="kw">class</span> Inner(phone: <span class="std">Int</span>)</pre><p>the nested field's name will be &quot;details.phone&quot;.
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.TupleConverterImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TupleConverterImpl"></a>
+      <a id="TupleConverterImpl:TupleConverterImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleConverterImpl$.html"><span class="name">TupleConverterImpl</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@TupleConverterImpl" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class contains the core macro implementations.</p><div class="fullcomment"><div class="comment cmt"><p>This class contains the core macro implementations. This is in a separate module to allow it to be in
+a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.TupleFieldSetter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TupleFieldSetter"></a>
+      <a id="TupleFieldSetter:TupleFieldSetter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleFieldSetter$.html"><span class="name">TupleFieldSetter</span></a><span class="result"> extends <a href="CaseClassFieldSetter.html" class="extype" name="com.twitter.scalding.macros.impl.CaseClassFieldSetter">CaseClassFieldSetter</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@TupleFieldSetter" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Helper class for setting case class fields in cascading Tuple
+</p>
+    </li><li name="com.twitter.scalding.macros.impl.TupleSetterImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TupleSetterImpl"></a>
+      <a id="TupleSetterImpl:TupleSetterImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TupleSetterImpl$.html"><span class="name">TupleSetterImpl</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@TupleSetterImpl" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class contains the core macro implementations.</p><div class="fullcomment"><div class="comment cmt"><p>This class contains the core macro implementations. This is in a separate module to allow it to be in
+a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+</p></div></div>
+    </li><li name="com.twitter.scalding.macros.impl.TypeDescriptorProviderImpl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TypeDescriptorProviderImpl"></a>
+      <a id="TypeDescriptorProviderImpl:TypeDescriptorProviderImpl"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeDescriptorProviderImpl$.html"><span class="name">TypeDescriptorProviderImpl</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.macros.impl.package@TypeDescriptorProviderImpl" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class contains the core macro implementations.</p><div class="fullcomment"><div class="comment cmt"><p>This class contains the core macro implementations. This is in a separate module to allow it to be in
+a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

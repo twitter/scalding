@@ -1,0 +1,724 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>Parquet346StructTypeRepairer - com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer</title>
+          <meta name="description" content="Parquet346StructTypeRepairer - com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer" />
+          <meta name="keywords" content="Parquet346StructTypeRepairer com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Object" src="../../../../../lib/object_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.parquet">parquet</a>.<a href="package.html" class="extype" name="com.twitter.scalding.parquet.thrift">thrift</a></p>
+        <h1>Parquet346StructTypeRepairer</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.parquet.thrift">package thrift</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Parquet346StructTypeRepairer</span><span class="result"> extends <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StateVisitor">StateVisitor</span>[<span class="extype" name="org.apache.parquet.thrift.struct.ThriftType">ThriftType</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Takes a ThriftType with potentially missing structOrUnionType metadata,
+and makes a copy that sets all StructOrUnionType metadata to UNION
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-parquet/src/main/scala/com/twitter/scalding/parquet/thrift/Parquet346TBaseScheme.scala" target="_blank">Parquet346TBaseScheme.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StateVisitor">StateVisitor</span>[<span class="extype" name="org.apache.parquet.thrift.struct.ThriftType">ThriftType</span>, <span class="extype" name="scala.Unit">Unit</span>], <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer"><span>Parquet346StructTypeRepairer</span></li><li class="in" name="org.apache.parquet.thrift.struct.ThriftType.StateVisitor"><span>StateVisitor</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#copyRecurse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="copyRecurse(field:org.apache.parquet.thrift.struct.ThriftField):org.apache.parquet.thrift.struct.ThriftField"></a>
+      <a id="copyRecurse(ThriftField):ThriftField"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">copyRecurse</span><span class="params">(<span name="field">field: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftField">ThriftField</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftField">ThriftField</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@copyRecurse(field:org.apache.parquet.thrift.struct.ThriftField):org.apache.parquet.thrift.struct.ThriftField" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#repair" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="repair(fromMetadata:org.apache.parquet.thrift.struct.ThriftType.StructType):org.apache.parquet.thrift.struct.ThriftType.StructType"></a>
+      <a id="repair(StructType):StructType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">repair</span><span class="params">(<span name="fromMetadata">fromMetadata: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StructType">StructType</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StructType">StructType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@repair(fromMetadata:org.apache.parquet.thrift.struct.ThriftType.StructType):org.apache.parquet.thrift.struct.ThriftType.StructType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(stringType:org.apache.parquet.thrift.struct.ThriftType.StringType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.StringType"></a>
+      <a id="visit(StringType,Unit):StringType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="stringType">stringType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StringType">StringType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StringType">StringType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(stringType:org.apache.parquet.thrift.struct.ThriftType.StringType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.StringType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(i64Type:org.apache.parquet.thrift.struct.ThriftType.I64Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I64Type"></a>
+      <a id="visit(I64Type,Unit):I64Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="i64Type">i64Type: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I64Type">I64Type</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I64Type">I64Type</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(i64Type:org.apache.parquet.thrift.struct.ThriftType.I64Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I64Type" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(i32Type:org.apache.parquet.thrift.struct.ThriftType.I32Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I32Type"></a>
+      <a id="visit(I32Type,Unit):I32Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="i32Type">i32Type: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I32Type">I32Type</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I32Type">I32Type</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(i32Type:org.apache.parquet.thrift.struct.ThriftType.I32Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I32Type" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(i16Type:org.apache.parquet.thrift.struct.ThriftType.I16Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I16Type"></a>
+      <a id="visit(I16Type,Unit):I16Type"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="i16Type">i16Type: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I16Type">I16Type</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.I16Type">I16Type</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(i16Type:org.apache.parquet.thrift.struct.ThriftType.I16Type,state:Unit):org.apache.parquet.thrift.struct.ThriftType.I16Type" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(doubleType:org.apache.parquet.thrift.struct.ThriftType.DoubleType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.DoubleType"></a>
+      <a id="visit(DoubleType,Unit):DoubleType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="doubleType">doubleType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.DoubleType">DoubleType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.DoubleType">DoubleType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(doubleType:org.apache.parquet.thrift.struct.ThriftType.DoubleType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.DoubleType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(byteType:org.apache.parquet.thrift.struct.ThriftType.ByteType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.ByteType"></a>
+      <a id="visit(ByteType,Unit):ByteType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="byteType">byteType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.ByteType">ByteType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.ByteType">ByteType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(byteType:org.apache.parquet.thrift.struct.ThriftType.ByteType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.ByteType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(boolType:org.apache.parquet.thrift.struct.ThriftType.BoolType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.BoolType"></a>
+      <a id="visit(BoolType,Unit):BoolType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="boolType">boolType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.BoolType">BoolType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.BoolType">BoolType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(boolType:org.apache.parquet.thrift.struct.ThriftType.BoolType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.BoolType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(enumType:org.apache.parquet.thrift.struct.ThriftType.EnumType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.EnumType"></a>
+      <a id="visit(EnumType,Unit):EnumType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="enumType">enumType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.EnumType">EnumType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.EnumType">EnumType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(enumType:org.apache.parquet.thrift.struct.ThriftType.EnumType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.EnumType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(listType:org.apache.parquet.thrift.struct.ThriftType.ListType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.ListType"></a>
+      <a id="visit(ListType,Unit):ListType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="listType">listType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.ListType">ListType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.ListType">ListType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(listType:org.apache.parquet.thrift.struct.ThriftType.ListType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.ListType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(setType:org.apache.parquet.thrift.struct.ThriftType.SetType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.SetType"></a>
+      <a id="visit(SetType,Unit):SetType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="setType">setType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.SetType">SetType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.SetType">SetType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(setType:org.apache.parquet.thrift.struct.ThriftType.SetType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.SetType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(mapType:org.apache.parquet.thrift.struct.ThriftType.MapType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.MapType"></a>
+      <a id="visit(MapType,Unit):MapType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="mapType">mapType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.MapType">MapType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.MapType">MapType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(mapType:org.apache.parquet.thrift.struct.ThriftType.MapType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.MapType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer#visit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="visit(structType:org.apache.parquet.thrift.struct.ThriftType.StructType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.StructType"></a>
+      <a id="visit(StructType,Unit):StructType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">visit</span><span class="params">(<span name="structType">structType: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StructType">StructType</span></span>, <span name="state">state: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StructType">StructType</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@visit(structType:org.apache.parquet.thrift.struct.ThriftType.StructType,state:Unit):org.apache.parquet.thrift.struct.ThriftType.StructType" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer">Parquet346StructTypeRepairer</a> → StateVisitor</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.parquet.thrift.Parquet346StructTypeRepairer$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="org.apache.parquet.thrift.struct.ThriftType.StateVisitor">
+              <h3>Inherited from <span class="extype" name="org.apache.parquet.thrift.struct.ThriftType.StateVisitor">StateVisitor</span>[<span class="extype" name="org.apache.parquet.thrift.struct.ThriftType">ThriftType</span>, <span class="extype" name="scala.Unit">Unit</span>]</h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

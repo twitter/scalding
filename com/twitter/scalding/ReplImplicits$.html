@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>ReplImplicits - com.twitter.scalding.ReplImplicits</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../lib/object_big.png" />
+        <img alt="Object" src="../../../lib/object_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>ReplImplicits</h1>
+        <h1>ReplImplicits</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -39,9 +49,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object containing various implicit conversions required to create Scalding flows in the REPL.
-Most of these conversions come from the <a href="Job.html" class="extype" name="com.twitter.scalding.Job">com.twitter.scalding.Job</a> class.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-repl/src/main/scala/com/twitter/scalding/ReplImplicits.scala" target="_blank">ReplImplicits.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-repl/src/main/scala/com/twitter/scalding/ReplImplicits.scala" target="_blank">ReplImplicits.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a>, <a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -69,7 +77,6 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -88,19 +95,6 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -111,8 +105,12 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -124,22 +122,13 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -150,8 +139,12 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.LowPriorityFieldConversions#anyToFieldArg" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="anyToFieldArg(f:Any):Comparable[_]"></a>
       <a id="anyToFieldArg(Any):Comparable[_]"></a>
@@ -163,7 +156,11 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span class="name">anyToFieldArg</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@anyToFieldArg(f:Any):Comparable[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -176,7 +173,11 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#asList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asList(f:cascading.tuple.Fields):List[Comparable[_]]"></a>
@@ -189,7 +190,11 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span class="name">asList</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@asList(f:cascading.tuple.Fields):List[Comparable[_]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#asSet" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asSet(f:cascading.tuple.Fields):Set[Comparable[_]]"></a>
@@ -202,21 +207,12 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span class="name">asSet</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@asSet(f:cascading.tuple.Fields):Set[Comparable[_]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#asyncExecute" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="asyncExecute[T](execution:com.twitter.scalding.Execution[T])(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[T]"></a>
-      <a id="asyncExecute[T](Execution[T])(scala.concurrent.ExecutionContext):Future[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">asyncExecute</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="execution">execution: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.asyncExecute.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.ReplImplicits.asyncExecute.T">T</span>]</span>
-      </span>
-      </h4>
-      
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -228,7 +224,11 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -236,47 +236,6 @@ Most of these conversions come from the <a href="Job.html" class="extype" name="
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#config" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="config:com.twitter.scalding.Config"></a>
-      <a id="config:Config"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">config</span><span class="result">: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>
-      </span>
-      </h4>
-      
-    </li><li name="com.twitter.scalding.ReplImplicits#config_=" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="config_=(c:com.twitter.scalding.Config):Unit"></a>
-      <a id="config_=(Config):Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: config_$eq" class="name">config_=</span><span class="params">(<span name="c">c: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      </h4>
-      
-    </li><li name="com.twitter.scalding.ReplImplicits#customConfig" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="customConfig:com.twitter.scalding.Config"></a>
-      <a id="customConfig:Config"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">var</span>
-      </span>
-      <span class="symbol">
-        <span class="name">customConfig</span><span class="result">: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Configuration to use for REPL executions.</p><div class="fullcomment"><div class="comment cmt"><p>Configuration to use for REPL executions.</p><p>To make changes, don't forget to assign back to this var:
-config += &quot;mapred.reduce.tasks&quot; -&gt; 2
-</p></div></div>
     </li><li name="com.twitter.scalding.FieldConversions#defaultMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defaultMode(fromFields:cascading.tuple.Fields,toFields:cascading.tuple.Fields):cascading.tuple.Fields"></a>
       <a id="defaultMode(Fields,Fields):Fields"></a>
@@ -288,10 +247,14 @@ config += &quot;mapred.reduce.tasks&quot; -&gt; 2
       <span class="symbol">
         <span class="name">defaultMode</span><span class="params">(<span name="fromFields">fromFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="toFields">toFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@defaultMode(fromFields:cascading.tuple.Fields,toFields:cascading.tuple.Fields):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Rather than give the full power of cascading's selectors, we have
 a simpler set of rules encoded below:
-1) if the input is non-definite (ALL, GROUP, ARGS, etc.</p><div class="fullcomment"><div class="comment cmt"><p>Rather than give the full power of cascading's selectors, we have
+1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.</p><div class="fullcomment"><div class="comment cmt"><p>Rather than give the full power of cascading's selectors, we have
 a simpler set of rules encoded below:
 1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.
      Perhaps only fromFields=ALL will make sense
@@ -310,7 +273,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">ensureUniqueFields</span><span class="params">(<span name="left">left: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="right">right: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="rightPipe">rightPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@ensureUniqueFields(left:cascading.tuple.Fields,right:cascading.tuple.Fields,rightPipe:cascading.pipe.Pipe):(cascading.tuple.Fields,cascading.pipe.Pipe)" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#enumValueToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="enumValueToFields(x:Enumeration#Value):cascading.tuple.Fields"></a>
@@ -323,7 +290,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">enumValueToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Enumeration.Value">Value</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@enumValueToFields(x:Enumeration#Value):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -336,7 +307,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -349,21 +324,12 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#execute" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="execute[T](execution:com.twitter.scalding.Execution[T]):T"></a>
-      <a id="execute[T](Execution[T]):T"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">execute</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="execution">execution: <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.execute.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.ReplImplicits.execute.T">T</span></span>
-      </span>
-      </h4>
-      
     </li><li name="com.twitter.scalding.FieldConversions#fieldFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldFields[T&lt;:TraversableOnce[com.twitter.scalding.Field[_]]](f:T):com.twitter.scalding.RichFields"></a>
       <a id="fieldFields[T&lt;:TraversableOnce[Field[_]]](T):RichFields"></a>
@@ -375,7 +341,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">fieldFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fieldFields.T">T</span></span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@fieldFields[T&lt;:TraversableOnce[com.twitter.scalding.Field[_]]](f:T):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fieldToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldToFields(f:com.twitter.scalding.Field[_]):com.twitter.scalding.RichFields"></a>
@@ -388,7 +358,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">fieldToFields</span><span class="params">(<span name="f">f: <a href="Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]</span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@fieldToFields(f:com.twitter.scalding.Field[_]):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields[T&lt;:TraversableOnce[Symbol]](f:T):cascading.tuple.Fields"></a>
@@ -401,7 +375,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">fields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@fields[T&lt;:TraversableOnce[Symbol]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fieldsToRichFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldsToRichFields(fields:cascading.tuple.Fields):com.twitter.scalding.RichFields"></a>
@@ -414,7 +392,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">fieldsToRichFields</span><span class="params">(<span name="fields">fields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@fieldsToRichFields(fields:cascading.tuple.Fields):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">We can't set the field Manifests because cascading doesn't (yet) expose field type information
 in the Fields API.</p><div class="fullcomment"><div class="comment cmt"><p>We can't set the field Manifests because cascading doesn't (yet) expose field type information
 in the Fields API.
@@ -430,7 +412,11 @@ in the Fields API.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -438,19 +424,6 @@ in the Fields API.
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#flowDef" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="flowDef:cascading.flow.FlowDef"></a>
-      <a id="flowDef:FlowDef"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">var</span>
-      </span>
-      <span class="symbol">
-        <span class="name">flowDef</span><span class="result">: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Implicit flowDef for this Scalding shell session.</p>
     </li><li name="com.twitter.scalding.FieldConversions#fromEnum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fromEnum[T&lt;:Enumeration](enumeration:T):cascading.tuple.Fields"></a>
       <a id="fromEnum[T&lt;:Enumeration](T):Fields"></a>
@@ -462,7 +435,11 @@ in the Fields API.
       <span class="symbol">
         <span class="name">fromEnum</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.Enumeration">Enumeration</span></span>]</span><span class="params">(<span name="enumeration">enumeration: <span class="extype" name="com.twitter.scalding.FieldConversions.fromEnum.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@fromEnum[T&lt;:Enumeration](enumeration:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Multi-entry fields.</p><div class="fullcomment"><div class="comment cmt"><p>Multi-entry fields.  This are higher priority than Product conversions so
 that List will not conflict with Product.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
@@ -477,23 +454,12 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#getEmptyFlowDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="getEmptyFlowDef:cascading.flow.FlowDef"></a>
-      <a id="getEmptyFlowDef:FlowDef"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getEmptyFlowDef</span><span class="result">: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Gets a new, empty, flow definition.</p><div class="fullcomment"><div class="comment cmt"><p>Gets a new, empty, flow definition.
-</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a new, empty flow definition.
-</p></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#getField" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getField(f:cascading.tuple.Fields,idx:Int):cascading.tuple.Fields"></a>
       <a id="getField(Fields,Int):Fields"></a>
@@ -505,7 +471,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">getField</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@getField(f:cascading.tuple.Fields,idx:Int):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#hasInts" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasInts(f:cascading.tuple.Fields):Boolean"></a>
@@ -518,7 +488,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">hasInts</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@hasInts(f:cascading.tuple.Fields):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -531,7 +505,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#intFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="intFields[T&lt;:TraversableOnce[Int]](f:T):cascading.tuple.Fields"></a>
@@ -544,7 +522,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">intFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Int">Int</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.intFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@intFields[T&lt;:TraversableOnce[Int]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#intToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="intToFields(x:Int):cascading.tuple.Fields"></a>
@@ -557,7 +539,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">intToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@intToFields(x:Int):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#integerToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="integerToFields(x:Integer):cascading.tuple.Fields"></a>
@@ -570,7 +556,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">integerToFields</span><span class="params">(<span name="x">x: <span class="extype" name="java.lang.Integer">Integer</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@integerToFields(x:Integer):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -583,10 +573,14 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#iterableToPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="iterableToPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitfd:cascading.flow.FlowDef,implicitmd:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
+      <a id="iterableToPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
       <a id="iterableToPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T],FlowDef,Mode):Pipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -594,14 +588,17 @@ that List will not conflict with Product.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterableToPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>, <span name="converter">converter: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>, <span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="md">md: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+        <span class="name">iterableToPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>, <span name="converter">converter: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToPipe.T">T</span>]</span>, <span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@iterableToPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts an iterable into a Pipe with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a Pipe with index (int-based) fields.
-</p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Pipe.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a Pipe backed by the specified iterable.
-</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Pipe.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a Pipe backed by the specified iterable.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#iterableToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="iterableToRichPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitfd:cascading.flow.FlowDef,implicitmd:com.twitter.scalding.Mode):com.twitter.scalding.RichPipe"></a>
+      <a id="iterableToRichPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.RichPipe"></a>
       <a id="iterableToRichPipe[T](Iterable[T])(TupleSetter[T],TupleConverter[T],FlowDef,Mode):RichPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -609,13 +606,16 @@ that List will not conflict with Product.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>, <span name="converter">converter: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>, <span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="md">md: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
+        <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>, <span name="converter">converter: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToRichPipe.T">T</span>]</span>, <span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@iterableToRichPipe[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T],implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts an iterable into a RichPipe with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a RichPipe with index (int-based) fields.
 </p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a RichPipe.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a RichPipe.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a
-    RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe backed by the specified iterable.
-</p></dd></dl></div>
+    RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe backed by the specified iterable.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#iterableToSource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="iterableToSource[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.Source"></a>
       <a id="iterableToSource[T](Iterable[T])(TupleSetter[T],TupleConverter[T]):Source"></a>
@@ -627,39 +627,33 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">iterableToSource</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToSource.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToSource.T">T</span>]</span>, <span name="converter">converter: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.iterableToSource.T">T</span>]</span>)</span><span class="result">: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@iterableToSource[T](iterable:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconverter:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.Source" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts an iterable into a Source with index (int-based) fields.</p><div class="fullcomment"><div class="comment cmt"><p>Converts an iterable into a Source with index (int-based) fields.
-</p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Source.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt>returns</dt><dd class="cmt"><p>a Source backed by the specified iterable.
-</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">iterable</dt><dd class="cmt"><p>to convert into a Source.</p></dd><dt class="param">setter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt class="param">converter</dt><dd class="cmt"><p>implicitly retrieved and used to convert the specified iterable into a Source.</p></dd><dt>returns</dt><dd class="cmt"><p>a Source backed by the specified iterable.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#keyedListLikeToShellTypedPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="keyedListLikeToShellTypedPipe[K,V,T[K,+V]&lt;:com.twitter.scalding.typed.KeyedListLike[K,V,T]](kll:com.twitter.scalding.typed.KeyedListLike[K,V,T]):com.twitter.scalding.ShellTypedPipe[(K,V)]"></a>
-      <a id="keyedListLikeToShellTypedPipe[K,V,T[K,+V]&lt;:KeyedListLike[K,V,T]](KeyedListLike[K,V,T]):ShellTypedPipe[(K,V)]"></a>
+      <a id="keyedListLikeToShellTypedPipe[K,V,T[K,+V]&lt;:com.twitter.scalding.typed.KeyedListLike[K,V,T]](kll:com.twitter.scalding.typed.KeyedListLike[K,V,T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellTypedPipe[(K,V)]"></a>
+      <a id="keyedListLikeToShellTypedPipe[K,V,T[K,+V]&lt;:KeyedListLike[K,V,T]](KeyedListLike[K,V,T])(BaseReplState):ShellTypedPipe[(K,V)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">keyedListLikeToShellTypedPipe</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="T">T<span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span> &lt;: <a href="typed/KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T.V">V</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T">T</span>]</span>]</span><span class="params">(<span name="kll">kll: <a href="typed/KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.V">V</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T">T</span>]</span>)</span><span class="result">: <a href="ShellTypedPipe.html" class="extype" name="com.twitter.scalding.ShellTypedPipe">ShellTypedPipe</a>[(<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.V">V</span>)]</span>
+        <span class="name">keyedListLikeToShellTypedPipe</span><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="T">T<span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span> &lt;: <a href="typed/KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T.V">V</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T">T</span>]</span>]</span><span class="params">(<span name="kll">kll: <a href="typed/KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.V">V</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="state">state: <a href="BaseReplState.html" class="extype" name="com.twitter.scalding.BaseReplState">BaseReplState</a></span>)</span><span class="result">: <a href="ShellTypedPipe.html" class="extype" name="com.twitter.scalding.ShellTypedPipe">ShellTypedPipe</a>[(<span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.K">K</span>, <span class="extype" name="com.twitter.scalding.ReplImplicits.keyedListLikeToShellTypedPipe.V">V</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@keyedListLikeToShellTypedPipe[K,V,T[K,+V]&lt;:com.twitter.scalding.typed.KeyedListLike[K,V,T]](kll:com.twitter.scalding.typed.KeyedListLike[K,V,T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellTypedPipe[(K,V)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert KeyedListLike to enriched ShellTypedPipe
-(e.</p><div class="fullcomment"><div class="comment cmt"><p>Convert KeyedListLike to enriched ShellTypedPipe
+(e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Convert KeyedListLike to enriched ShellTypedPipe
 (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
 </p></div></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#mode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mode:com.twitter.scalding.Mode"></a>
-      <a id="mode:Mode"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">var</span>
-      </span>
-      <span class="symbol">
-        <span class="name">mode</span><span class="result">: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Defaults to running in local mode if no mode is specified.</p>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -671,7 +665,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#newSymbol" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="newSymbol(avoid:Set[Symbol],guess:Symbol,trial:Int):Symbol"></a>
@@ -684,7 +682,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">newSymbol</span><span class="params">(<span name="avoid">avoid: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>, <span name="guess">guess: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="trial">trial: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">0</span></span>)</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@newSymbol(avoid:Set[Symbol],guess:Symbol,trial:Int):Symbol" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@tailrec</span><span class="args">()</span>
               
@@ -700,7 +702,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -713,7 +719,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#parseAnySeqToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="parseAnySeqToFields[T&lt;:TraversableOnce[Any]](anyf:T):cascading.tuple.Fields"></a>
@@ -726,7 +736,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">parseAnySeqToFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Any">Any</span>]</span>]</span><span class="params">(<span name="anyf">anyf: <span class="extype" name="com.twitter.scalding.FieldConversions.parseAnySeqToFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@parseAnySeqToFields[T&lt;:TraversableOnce[Any]](anyf:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Useful to convert f : Any* to Fields.</p><div class="fullcomment"><div class="comment cmt"><p>Useful to convert f : Any* to Fields.  This handles mixed cases (&quot;hey&quot;, 'you).
 Not sure we should be this flexible, but given that Cascading will throw an
 exception before scheduling the job, I guess this is okay.
@@ -742,11 +756,14 @@ exception before scheduling the job, I guess this is okay.
       <span class="symbol">
         <span class="name">pipeToRichPipe</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@pipeToRichPipe(pipe:cascading.pipe.Pipe):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts a Cascading Pipe to a Scalding RichPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Converts a Cascading Pipe to a Scalding RichPipe. This method permits implicit conversions from
 Pipe to RichPipe.
-</p></div><dl class="paramcmts block"><dt class="param">pipe</dt><dd class="cmt"><p>to convert to a RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe wrapping the specified Pipe.
-</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">pipe</dt><dd class="cmt"><p>to convert to a RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe wrapping the specified Pipe.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="productToFields(f:Product):cascading.tuple.Fields"></a>
       <a id="productToFields(Product):Fields"></a>
@@ -758,7 +775,11 @@ Pipe to RichPipe.
       <span class="symbol">
         <span class="name">productToFields</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Product">Product</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@productToFields(f:Product):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Handles treating any TupleN as a Fields object.</p><div class="fullcomment"><div class="comment cmt"><p>Handles treating any TupleN as a Fields object.
 This is low priority because List is also a Product, but this method
 will not work for List (because List is Product2(head, tail) and so
@@ -766,19 +787,6 @@ productIterator won't work as expected.
 Lists are handled by an implicit in FieldConversions, which have
 higher priority.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#resetFlowDef" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="resetFlowDef():Unit"></a>
-      <a id="resetFlowDef():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">resetFlowDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Sets the flow definition in implicit scope to an empty flow definition.</p>
     </li><li name="com.twitter.scalding.ReplImplicits#richPipeToPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="richPipeToPipe(richPipe:com.twitter.scalding.RichPipe):cascading.pipe.Pipe"></a>
       <a id="richPipeToPipe(RichPipe):Pipe"></a>
@@ -790,56 +798,33 @@ higher priority.
       <span class="symbol">
         <span class="name">richPipeToPipe</span><span class="params">(<span name="richPipe">richPipe: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@richPipeToPipe(richPipe:com.twitter.scalding.RichPipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts a Scalding RichPipe to a Cascading Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Converts a Scalding RichPipe to a Cascading Pipe. This method permits implicit conversions from
 RichPipe to Pipe.
-</p></div><dl class="paramcmts block"><dt class="param">richPipe</dt><dd class="cmt"><p>to convert to a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>the Pipe wrapped by the specified RichPipe.
-</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#run" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="run(implicitfd:cascading.flow.FlowDef,implicitmd:com.twitter.scalding.Mode):Option[com.twitter.scalding.JobStats]"></a>
-      <a id="run(FlowDef,Mode):Option[JobStats]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">run</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="md">md: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="JobStats.html" class="extype" name="com.twitter.scalding.JobStats">JobStats</a>]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Runs this pipe as a Scalding job.</p><div class="fullcomment"><div class="comment cmt"><p>Runs this pipe as a Scalding job.</p><p>Automatically cleans up the flowDef to include only sources upstream from tails.
-</p></div></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#sourceToPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="sourceToPipe(source:com.twitter.scalding.Source):cascading.pipe.Pipe"></a>
-      <a id="sourceToPipe(Source):Pipe"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">sourceToPipe</span><span class="params">(<span name="source">source: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Converts a Source to a Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>Converts a Source to a Pipe. This method permits implicit conversions from Source to Pipe.
-</p></div><dl class="paramcmts block"><dt class="param">source</dt><dd class="cmt"><p>to convert to a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a Pipe that is the result of reading the specified Source.
-</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">richPipe</dt><dd class="cmt"><p>to convert to a Pipe.</p></dd><dt>returns</dt><dd class="cmt"><p>the Pipe wrapped by the specified RichPipe.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#sourceToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="sourceToRichPipe(source:com.twitter.scalding.Source):com.twitter.scalding.RichPipe"></a>
-      <a id="sourceToRichPipe(Source):RichPipe"></a>
+      <a id="sourceToRichPipe(source:com.twitter.scalding.Source)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.RichPipe"></a>
+      <a id="sourceToRichPipe(Source)(FlowDef,Mode):RichPipe"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sourceToRichPipe</span><span class="params">(<span name="source">source: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
+        <span class="name">sourceToRichPipe</span><span class="params">(<span name="source">source: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@sourceToRichPipe(source:com.twitter.scalding.Source)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Converts a Source to a RichPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Converts a Source to a RichPipe. This method permits implicit conversions from Source to
 RichPipe.
-</p></div><dl class="paramcmts block"><dt class="param">source</dt><dd class="cmt"><p>to convert to a RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe wrapping the result of reading the specified Source.
-</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">source</dt><dd class="cmt"><p>to convert to a RichPipe.</p></dd><dt>returns</dt><dd class="cmt"><p>a RichPipe wrapping the result of reading the specified Source.</p></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#strFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="strFields[T&lt;:TraversableOnce[String]](f:T):cascading.tuple.Fields"></a>
       <a id="strFields[T&lt;:TraversableOnce[String]](T):Fields"></a>
@@ -851,7 +836,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">strFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.strFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@strFields[T&lt;:TraversableOnce[String]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#stringToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stringToFields(x:String):cascading.tuple.Fields"></a>
@@ -864,7 +853,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">stringToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@stringToFields(x:String):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#symbolToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="symbolToFields(x:Symbol):cascading.tuple.Fields"></a>
@@ -877,8 +870,13 @@ RichPipe.
       <span class="symbol">
         <span class="name">symbolToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">'* means Fields.</p><div class="fullcomment"><div class="comment cmt"><p>'* means Fields.ALL, otherwise we take the .name
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@symbolToFields(x:Symbol):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">'* means Fields.ALL, otherwise we take the .name
+</p><div class="fullcomment"><div class="comment cmt"><p>'* means Fields.ALL, otherwise we take the .name
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -891,7 +889,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -904,7 +906,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#tuple2ToFieldsPair" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="tuple2ToFieldsPair[T,U](pair:(T,U))(implicittf:T=&gt;cascading.tuple.Fields,implicituf:U=&gt;cascading.tuple.Fields):(cascading.tuple.Fields,cascading.tuple.Fields)"></a>
@@ -917,22 +923,30 @@ RichPipe.
       <span class="symbol">
         <span class="name">tuple2ToFieldsPair</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pair">pair: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>, <span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tf">tf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="uf">uf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@tuple2ToFieldsPair[T,U](pair:(T,U))(implicittf:T=&gt;cascading.tuple.Fields,implicituf:U=&gt;cascading.tuple.Fields):(cascading.tuple.Fields,cascading.tuple.Fields)" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReplImplicits#typedPipeToShellTypedPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="typedPipeToShellTypedPipe[T](pipe:com.twitter.scalding.TypedPipe[T]):com.twitter.scalding.ShellTypedPipe[T]"></a>
-      <a id="typedPipeToShellTypedPipe[T](TypedPipe[T]):ShellTypedPipe[T]"></a>
+      <a id="typedPipeToShellTypedPipe[T](pipe:com.twitter.scalding.TypedPipe[T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellTypedPipe[T]"></a>
+      <a id="typedPipeToShellTypedPipe[T](TypedPipe[T])(BaseReplState):ShellTypedPipe[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">typedPipeToShellTypedPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.typedPipeToShellTypedPipe.T">T</span>]</span>)</span><span class="result">: <a href="ShellTypedPipe.html" class="extype" name="com.twitter.scalding.ShellTypedPipe">ShellTypedPipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.typedPipeToShellTypedPipe.T">T</span>]</span>
+        <span class="name">typedPipeToShellTypedPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.typedPipeToShellTypedPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="state">state: <a href="BaseReplState.html" class="extype" name="com.twitter.scalding.BaseReplState">BaseReplState</a></span>)</span><span class="result">: <a href="ShellTypedPipe.html" class="extype" name="com.twitter.scalding.ShellTypedPipe">ShellTypedPipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.typedPipeToShellTypedPipe.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@typedPipeToShellTypedPipe[T](pipe:com.twitter.scalding.TypedPipe[T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellTypedPipe[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Enrich TypedPipe for the shell
-(e.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich TypedPipe for the shell
+(e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich TypedPipe for the shell
 (e.g. allows .snapshot to be called on it)
 </p></div></div>
     </li><li name="com.twitter.scalding.FieldConversions#unitToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -946,61 +960,30 @@ RichPipe.
       <span class="symbol">
         <span class="name">unitToFields</span><span class="params">(<span name="u">u: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@unitToFields(u:Unit):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReplImplicits#useHdfsMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="useHdfsMode():Unit"></a>
-      <a id="useHdfsMode():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">useHdfsMode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Switch to Hdfs mode</p>
-    </li><li name="com.twitter.scalding.ReplImplicits#useLocalMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="useLocalMode():Unit"></a>
-      <a id="useLocalMode():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">useLocalMode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Switch to Local mode</p>
-    </li><li name="com.twitter.scalding.ReplImplicits#useStrictLocalMode" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="useStrictLocalMode():Unit"></a>
-      <a id="useStrictLocalMode():Unit"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">useStrictLocalMode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      </h4>
-      
     </li><li name="com.twitter.scalding.ReplImplicits#valuePipeToShellValuePipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="valuePipeToShellValuePipe[T](pipe:com.twitter.scalding.ValuePipe[T]):com.twitter.scalding.ShellValuePipe[T]"></a>
-      <a id="valuePipeToShellValuePipe[T](ValuePipe[T]):ShellValuePipe[T]"></a>
+      <a id="valuePipeToShellValuePipe[T](pipe:com.twitter.scalding.ValuePipe[T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellValuePipe[T]"></a>
+      <a id="valuePipeToShellValuePipe[T](ValuePipe[T])(BaseReplState):ShellValuePipe[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">valuePipeToShellValuePipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="package.html#ValuePipe[+T]=com.twitter.scalding.typed.ValuePipe[T]" class="extmbr" name="com.twitter.scalding.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.valuePipeToShellValuePipe.T">T</span>]</span>)</span><span class="result">: <a href="ShellValuePipe.html" class="extype" name="com.twitter.scalding.ShellValuePipe">ShellValuePipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.valuePipeToShellValuePipe.T">T</span>]</span>
+        <span class="name">valuePipeToShellValuePipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="package.html#ValuePipe[+T]=com.twitter.scalding.typed.ValuePipe[T]" class="extmbr" name="com.twitter.scalding.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.valuePipeToShellValuePipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="state">state: <a href="BaseReplState.html" class="extype" name="com.twitter.scalding.BaseReplState">BaseReplState</a></span>)</span><span class="result">: <a href="ShellValuePipe.html" class="extype" name="com.twitter.scalding.ShellValuePipe">ShellValuePipe</a>[<span class="extype" name="com.twitter.scalding.ReplImplicits.valuePipeToShellValuePipe.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@valuePipeToShellValuePipe[T](pipe:com.twitter.scalding.ValuePipe[T])(implicitstate:com.twitter.scalding.BaseReplState):com.twitter.scalding.ShellValuePipe[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Enrich ValuePipe for the shell
-(e.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich ValuePipe for the shell
+(e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Enrich ValuePipe for the shell
 (e.g. allows .toOption to be called on it)
 </p></div></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1014,7 +997,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1033,7 +1020,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1052,7 +1043,11 @@ RichPipe.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.ReplImplicits$@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1093,6 +1088,7 @@ RichPipe.
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>Matrix2 - com.twitter.scalding.mathematics.Matrix2</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="Matrix2$.html" title="Go to companion"><img src="../../../../lib/trait_to_object_big.png" /></a>
+        <a href="Matrix2$.html" title="See companion object"><img alt="Trait/Object" src="../../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.mathematics">mathematics</a></p>
-        <h1><a href="Matrix2$.html" title="Go to companion">Matrix2</a></h1>
+        <h1><a href="Matrix2$.html" title="See companion object">Matrix2</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="Matrix2$.html" title="See companion object">object Matrix2</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding.mathematics">package mathematics</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -51,9 +63,9 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="HadamardProduct.html" class="extype" name="com.twitter.scalding.mathematics.HadamardProduct">HadamardProduct</a>, <a href="MatrixLiteral.html" class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral">MatrixLiteral</a>, <a href="OneC.html" class="extype" name="com.twitter.scalding.mathematics.OneC">OneC</a>, <a href="OneR.html" class="extype" name="com.twitter.scalding.mathematics.OneR">OneR</a>, <a href="Product.html" class="extype" name="com.twitter.scalding.mathematics.Product">Product</a>, <a href="Sum.html" class="extype" name="com.twitter.scalding.mathematics.Sum">Sum</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="HadamardProduct.html" class="extype" name="com.twitter.scalding.mathematics.HadamardProduct">HadamardProduct</a>, <a href="MatrixLiteral.html" class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral">MatrixLiteral</a>, <a href="OneC.html" class="extype" name="com.twitter.scalding.mathematics.OneC">OneC</a>, <a href="OneR.html" class="extype" name="com.twitter.scalding.mathematics.OneR">OneR</a>, <a href="Product.html" class="extype" name="com.twitter.scalding.mathematics.Product">Product</a>, <a href="Sum.html" class="extype" name="com.twitter.scalding.mathematics.Sum">Sum</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -78,7 +90,6 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -105,7 +116,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">colOrd</span><span class="result">: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@colOrd:Ordering[C]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#negate" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="negate(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -118,7 +133,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">negate</span><span class="params">(<span class="implicit">implicit </span><span name="g">g: <span class="extype" name="com.twitter.algebird.Group">Group</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@negate(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#rowOrd" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="rowOrd:Ordering[R]"></a>
@@ -131,7 +150,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">rowOrd</span><span class="result">: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@rowOrd:Ordering[R]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#toTypedPipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="toTypedPipe:com.twitter.scalding.TypedPipe[(R,C,V)]"></a>
@@ -144,7 +167,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">toTypedPipe</span><span class="result">: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@toTypedPipe:com.twitter.scalding.TypedPipe[(R,C,V)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert the current Matrix to a TypedPipe
 </p>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#transpose" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
@@ -158,7 +185,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">transpose</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@transpose:com.twitter.scalding.mathematics.Matrix2[C,R,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -166,19 +197,6 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -189,8 +207,12 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -202,7 +224,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2##*#" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="#*#(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitring:com.twitter.algebird.Ring[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -215,7 +241,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $hash$times$hash" class="name">#*#</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@#*#(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitring:com.twitter.algebird.Ring[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Represents the pointwise, or Hadamard, product of two matrices.</p>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#*" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="*(that:com.twitter.scalding.mathematics.Scalar2[V])(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -228,7 +258,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $times" class="name">*</span><span class="params">(<span name="that">that: <a href="Scalar2.html" class="extype" name="com.twitter.scalding.mathematics.Scalar2">Scalar2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@*(that:com.twitter.scalding.mathematics.Scalar2[V])(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#*" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="*[C2](that:com.twitter.scalding.mathematics.Matrix2[C,C2,V])(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C2,V]"></a>
@@ -241,7 +275,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $times" class="name">*</span><span class="tparams">[<span name="C2">C2</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.*.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.*.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@*[C2](that:com.twitter.scalding.mathematics.Matrix2[C,C2,V])(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C2,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#+" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="+(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitmon:com.twitter.algebird.Monoid[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -254,7 +292,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $plus" class="name">+</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@+(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitmon:com.twitter.algebird.Monoid[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#-" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="-(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -267,7 +309,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $minus" class="name">-</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="g">g: <span class="extype" name="com.twitter.algebird.Group">Group</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@-(that:com.twitter.scalding.mathematics.Matrix2[R,C,V])(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#/" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="/(that:com.twitter.scalding.mathematics.Scalar2[V])(implicitfield:com.twitter.algebird.Field[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -280,22 +326,13 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $div" class="name">/</span><span class="params">(<span name="that">that: <a href="Scalar2.html" class="extype" name="com.twitter.scalding.mathematics.Scalar2">Scalar2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="field">field: <span class="extype" name="com.twitter.algebird.Field">algebird.Field</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@/(that:com.twitter.scalding.mathematics.Scalar2[V])(implicitfield:com.twitter.algebird.Field[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -306,8 +343,12 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#^" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="^(power:Int)(implicitev:=:=[R,C],implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,R,V]"></a>
       <a id="^(Int)(=:=[R,C],Ring[V],MatrixJoiner2):Matrix2[R,R,V]"></a>
@@ -319,7 +360,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span title="gt4s: $up" class="name">^</span><span class="params">(<span name="power">power: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@^(power:Int)(implicitev:=:=[R,C],implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,R,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">equivalent to multiplying this matrix by itself, power times</p>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#asCol" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="asCol[C2](c2:C2)(implicitev:=:=[C,Unit],implicitcolOrd:Ordering[C2]):com.twitter.scalding.mathematics.Matrix2[R,C2,V]"></a>
@@ -332,7 +377,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">asCol</span><span class="tparams">[<span name="C2">C2</span>]</span><span class="params">(<span name="c2">c2: <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asCol.C2">C2</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>, <span name="colOrd">colOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asCol.C2">C2</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asCol.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@asCol[C2](c2:C2)(implicitev:=:=[C,Unit],implicitcolOrd:Ordering[C2]):com.twitter.scalding.mathematics.Matrix2[R,C2,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -345,7 +394,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#asRow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asRow[R2](r2:R2)(implicitev:=:=[R,Unit],implicitrowOrd:Ordering[R2]):com.twitter.scalding.mathematics.Matrix2[R2,C,V]"></a>
@@ -358,7 +411,11 @@ a TypedPipe (call toTypedPipe) or the result may not be correct.
       <span class="symbol">
         <span class="name">asRow</span><span class="tparams">[<span name="R2">R2</span>]</span><span class="params">(<span name="r2">r2: <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asRow.R2">R2</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>, <span name="rowOrd">rowOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asRow.R2">R2</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.asRow.R2">R2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@asRow[R2](r2:R2)(implicitev:=:=[R,Unit],implicitrowOrd:Ordering[R2]):com.twitter.scalding.mathematics.Matrix2[R2,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Consider this Matrix as the r2 row of a matrix.</p><div class="fullcomment"><div class="comment cmt"><p>Consider this Matrix as the r2 row of a matrix. The current matrix must be a row,
 which is to say, its row type must be Unit.
 </p></div></div>
@@ -373,7 +430,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">binarizeAs</span><span class="tparams">[<span name="NewValT">NewValT</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.binarizeAs.NewValT">NewValT</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.binarizeAs.NewValT">NewValT</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@binarizeAs[NewValT](implicitmon:com.twitter.algebird.Monoid[V],implicitring:com.twitter.algebird.Ring[NewValT]):com.twitter.scalding.mathematics.Matrix2[R,C,NewValT]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -386,7 +447,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -405,7 +470,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -418,7 +487,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -431,7 +504,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -450,7 +527,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#getColumn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getColumn(index:C):com.twitter.scalding.mathematics.Matrix2[R,Unit,V]"></a>
@@ -463,7 +544,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">getColumn</span><span class="params">(<span name="index">index: <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@getColumn(index:C):com.twitter.scalding.mathematics.Matrix2[R,Unit,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#getRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="getRow(index:R):com.twitter.scalding.mathematics.Matrix2[Unit,C,V]"></a>
@@ -476,7 +561,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">getRow</span><span class="params">(<span name="index">index: <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@getRow(index:R):com.twitter.scalding.mathematics.Matrix2[Unit,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -489,7 +578,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -502,7 +595,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -515,7 +612,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -528,7 +629,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -541,7 +646,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#optimizedSelf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="optimizedSelf:com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -554,7 +663,11 @@ which is to say, its row type must be Unit.
       <span class="symbol">
         <span class="name">optimizedSelf</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@optimizedSelf:com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Users should never need this.</p><div class="fullcomment"><div class="comment cmt"><p>Users should never need this. This is the current Matrix2, but in most optimized
 form. Usually, you will just do matrix operations until you eventually call write
 or toTypedPipe
@@ -570,7 +683,11 @@ or toTypedPipe
       <span class="symbol">
         <span class="name">propagate</span><span class="tparams">[<span name="C2">C2</span>, <span name="VecV">VecV</span>]</span><span class="params">(<span name="vec">vec: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagate.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagate.VecV">VecV</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>, <span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagate.VecV">VecV</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagate.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagate.VecV">VecV</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@propagate[C2,VecV](vec:com.twitter.scalding.mathematics.Matrix2[C,C2,VecV])(implicitev:=:=[V,Boolean],implicitmon:com.twitter.algebird.Monoid[VecV],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C2,VecV]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">the result is the same as considering everything on the this to be like a 1 value
 so we just sum, using only a monoid on VecV, where this Matrix has the value true.</p><div class="fullcomment"><div class="comment cmt"><p>the result is the same as considering everything on the this to be like a 1 value
 so we just sum, using only a monoid on VecV, where this Matrix has the value true.
@@ -589,21 +706,47 @@ TODO This is a special kind of product that could be optimized like Product is
       <span class="symbol">
         <span class="name">propagateRow</span><span class="tparams">[<span name="C2">C2</span>]</span><span class="params">(<span name="mat">mat: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagateRow.C2">C2</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>, <span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.propagateRow.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@propagateRow[C2](mat:com.twitter.scalding.mathematics.Matrix2[C,C2,Boolean])(implicitev:=:=[R,Unit],implicitmon:com.twitter.algebird.Monoid[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[Unit,C2,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.Matrix2#rowL2Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="rowL2Normalize(implicitev:=:=[V,Double],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,Double]"></a>
-      <a id="rowL2Normalize(=:=[V,Double],MatrixJoiner2):Matrix2[R,C,Double]"></a>
+    </li><li name="com.twitter.scalding.mathematics.Matrix2#rowL1Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowL1Normalize(implicitnum:Numeric[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,Double]"></a>
+      <a id="rowL1Normalize(Numeric[V],MatrixJoiner2):Matrix2[R,C,Double]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">rowL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>, <span class="extype" name="scala.Double">Double</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="scala.Double">Double</span>]</span>
+        <span class="name">rowL1Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="num">num: <a href="../../../../scala/package.html#Numeric[T]=scala.math.Numeric[T]" class="extmbr" name="scala.Numeric">Numeric</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Row L2 normalization (can only be called for Double)
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@rowL1Normalize(implicitnum:Numeric[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Row L1 normalization
+After this operation, the sum(|x|) alone each row will be 1.</p>
+    </li><li name="com.twitter.scalding.mathematics.Matrix2#rowL2Normalize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="rowL2Normalize(implicitnum:Numeric[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,Double]"></a>
+      <a id="rowL2Normalize(Numeric[V],MatrixJoiner2):Matrix2[R,C,Double]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rowL2Normalize</span><span class="params">(<span class="implicit">implicit </span><span name="num">num: <a href="../../../../scala/package.html#Numeric[T]=scala.math.Numeric[T]" class="extmbr" name="scala.Numeric">Numeric</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="scala.Double">Double</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@rowL2Normalize(implicitnum:Numeric[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,C,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Row L2 normalization
 After this operation, the sum(|x|^2) along each row will be 1.
 </p>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#sizeHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
@@ -617,7 +760,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">sizeHint</span><span class="result">: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@sizeHint:com.twitter.scalding.mathematics.SizeHint" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#sumColVectors" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sumColVectors(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,Unit,V]"></a>
@@ -630,7 +777,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">sumColVectors</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="mj">mj: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@sumColVectors(implicitring:com.twitter.algebird.Ring[V],implicitmj:com.twitter.scalding.mathematics.MatrixJoiner2):com.twitter.scalding.mathematics.Matrix2[R,Unit,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -643,7 +794,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -656,7 +811,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.Matrix2#trace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="trace(implicitmon:com.twitter.algebird.Monoid[V],implicitev:=:=[R,C]):com.twitter.scalding.mathematics.Scalar2[V]"></a>
@@ -669,7 +828,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">trace</span><span class="params">(<span class="implicit">implicit </span><span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>, <span name="ev">ev: <span class="extype" name="scala.Predef.=:=">=:=</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>]</span>)</span><span class="result">: <a href="Scalar2.html" class="extype" name="com.twitter.scalding.mathematics.Scalar2">Scalar2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@trace(implicitmon:com.twitter.algebird.Monoid[V],implicitev:=:=[R,C]):com.twitter.scalding.mathematics.Scalar2[V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2#unary_-" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="unary_-(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]"></a>
@@ -682,7 +845,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span title="gt4s: unary_$minus" class="name">unary_-</span><span class="params">(<span class="implicit">implicit </span><span name="g">g: <span class="extype" name="com.twitter.algebird.Group">Group</span>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@unary_-(implicitg:com.twitter.algebird.Group[V]):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -695,7 +862,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -714,7 +885,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -733,7 +908,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -752,7 +931,11 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <span class="symbol">
         <span class="name">write</span><span class="params">(<span name="sink">sink: <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="fd">fd: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="m">m: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Matrix2.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Matrix2.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.Matrix2@write(sink:com.twitter.scalding.TypedSink[(R,C,V)])(implicitfd:cascading.flow.FlowDef,implicitm:com.twitter.scalding.Mode):com.twitter.scalding.mathematics.Matrix2[R,C,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -785,6 +968,7 @@ After this operation, the sum(|x|^2) along each row will be 1.
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

@@ -1,0 +1,1794 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>VersionedTap - com.twitter.scalding.commons.tap.VersionedTap</title>
+          <meta name="description" content="VersionedTap - com.twitter.scalding.commons.tap.VersionedTap" />
+          <meta name="keywords" content="VersionedTap com.twitter.scalding.commons.tap.VersionedTap" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'com.twitter.scalding.commons.tap.VersionedTap';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../../../../lib/class_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.commons">commons</a>.<a href="package.html" class="extype" name="com.twitter.scalding.commons.tap">tap</a></p>
+        <h1>VersionedTap</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.commons.tap">package tap</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">VersionedTap</span><span class="result"> extends <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-commons/src/main/java/com/twitter/scalding/commons/tap/VersionedTap.java.scala" target="_blank">VersionedTap.java</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span>, <span class="extype" name="cascading.tap.type.FileType">FileType</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>], <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _]], <span class="extype" name="cascading.util.Traceable">Traceable</span>, <span class="extype" name="cascading.flow.FlowElement">FlowElement</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.commons.tap.VersionedTap"><span>VersionedTap</span></li><li class="in" name="cascading.tap.hadoop.Hfs"><span>Hfs</span></li><li class="in" name="cascading.tap.type.FileType"><span>FileType</span></li><li class="in" name="cascading.tap.Tap"><span>Tap</span></li><li class="in" name="cascading.util.Traceable"><span>Traceable</span></li><li class="in" name="cascading.flow.FlowElement"><span>FlowElement</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="com.twitter.scalding.commons.tap.VersionedTap#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(dir:String,scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],mode:com.twitter.scalding.commons.tap.VersionedTap.TapMode):com.twitter.scalding.commons.tap.VersionedTap"></a>
+      <a id="&lt;init&gt;:VersionedTap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">VersionedTap</span><span class="params">(<span name="dir">dir: <span class="extype" name="java.lang.String">String</span></span>, <span name="scheme">scheme: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>, <span name="mode">mode: <span class="extype" name="com.twitter.scalding.commons.tap.VersionedTap.TapMode">TapMode</span></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@&lt;init&gt;(dir:String,scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],mode:com.twitter.scalding.commons.tap.VersionedTap.TapMode):com.twitter.scalding.commons.tap.VersionedTap" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#applySourceConfInitIdentifiers" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="applySourceConfInitIdentifiers(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.JobConf,x$3:String*):Unit"></a>
+      <a id="applySourceConfInitIdentifiers(FlowProcess[JobConf],JobConf,&lt;repeated...&gt;[String]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">applySourceConfInitIdentifiers</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@applySourceConfInitIdentifiers(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.JobConf,x$3:String*):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#commitResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="commitResource(conf:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="commitResource(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">commitResource</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@commitResource(conf:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#createResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createResource(jc:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="createResource(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createResource</span><span class="params">(<span name="jc">jc: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@createResource(jc:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#createResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createResource(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
+      <a id="createResource(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@createResource(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#deleteChildResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteChildResource(x$1:org.apache.hadoop.mapred.JobConf,x$2:String):Boolean"></a>
+      <a id="deleteChildResource(JobConf,String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteChildResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@deleteChildResource(x$1:org.apache.hadoop.mapred.JobConf,x$2:String):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#deleteResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteResource(jc:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="deleteResource(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteResource</span><span class="params">(<span name="jc">jc: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@deleteResource(jc:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#deleteResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteResource(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
+      <a id="deleteResource(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteResource</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@deleteResource(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="cascading.tap.Tap#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#flowConfInit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flowConfInit(x$1:cascading.flow.Flow[Config]):Unit"></a>
+      <a id="flowConfInit(Flow[JobConf]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flowConfInit</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.Flow">Flow</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@flowConfInit(x$1:cascading.flow.Flow[Config]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getBlockSize" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getBlockSize(x$1:org.apache.hadoop.mapred.JobConf):Long"></a>
+      <a id="getBlockSize(JobConf):Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getBlockSize</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getBlockSize(x$1:org.apache.hadoop.mapred.JobConf):Long" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getChildIdentifiers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getChildIdentifiers(x$1:org.apache.hadoop.mapred.JobConf,x$2:Int,x$3:Boolean):Array[String]"></a>
+      <a id="getChildIdentifiers(JobConf,Int,Boolean):Array[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getChildIdentifiers</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getChildIdentifiers(x$1:org.apache.hadoop.mapred.JobConf,x$2:Int,x$3:Boolean):Array[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → FileType</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getChildIdentifiers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getChildIdentifiers(x$1:org.apache.hadoop.mapred.JobConf):Array[String]"></a>
+      <a id="getChildIdentifiers(JobConf):Array[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getChildIdentifiers</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getChildIdentifiers(x$1:org.apache.hadoop.mapred.JobConf):Array[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → FileType</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="cascading.tap.Tap#getConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getConfigDef():cascading.property.ConfigDef"></a>
+      <a id="getConfigDef():ConfigDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getDefaultFileSystem" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDefaultFileSystem(x$1:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.fs.FileSystem"></a>
+      <a id="getDefaultFileSystem(JobConf):FileSystem"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDefaultFileSystem</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="org.apache.hadoop.fs.FileSystem">FileSystem</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getDefaultFileSystem(x$1:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.fs.FileSystem" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getDefaultFileSystemURIScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDefaultFileSystemURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI"></a>
+      <a id="getDefaultFileSystemURIScheme(JobConf):URI"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDefaultFileSystemURIScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.net.URI">URI</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getDefaultFileSystemURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getFileSystem" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getFileSystem(x$1:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.fs.FileSystem"></a>
+      <a id="getFileSystem(JobConf):FileSystem"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFileSystem</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="org.apache.hadoop.fs.FileSystem">FileSystem</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getFileSystem(x$1:org.apache.hadoop.mapred.JobConf):org.apache.hadoop.fs.FileSystem" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getFullIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getFullIdentifier(x$1:org.apache.hadoop.mapred.JobConf):String"></a>
+      <a id="getFullIdentifier(JobConf):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFullIdentifier</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getFullIdentifier(x$1:org.apache.hadoop.mapred.JobConf):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#getFullIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getFullIdentifier(x$1:cascading.flow.FlowProcess[Config]):String"></a>
+      <a id="getFullIdentifier(FlowProcess[JobConf]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFullIdentifier</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getFullIdentifier(x$1:cascading.flow.FlowProcess[Config]):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getIdentifier" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getIdentifier():String"></a>
+      <a id="getIdentifier():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getIdentifier</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getIdentifier():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getModifiedTime" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getModifiedTime(conf:org.apache.hadoop.mapred.JobConf):Long"></a>
+      <a id="getModifiedTime(JobConf):Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getModifiedTime</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getModifiedTime(conf:org.apache.hadoop.mapred.JobConf):Long" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#getModifiedTime" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getModifiedTime(x$1:cascading.flow.FlowProcess[Config]):Long"></a>
+      <a id="getModifiedTime(FlowProcess[JobConf]):Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getModifiedTime</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getModifiedTime(x$1:cascading.flow.FlowProcess[Config]):Long" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getOutputDirectory" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getOutputDirectory():String"></a>
+      <a id="getOutputDirectory():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getOutputDirectory</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getOutputDirectory():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="cascading.tap.hadoop.Hfs#getPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getPath():org.apache.hadoop.fs.Path"></a>
+      <a id="getPath():Path"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getPath</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.hadoop.fs.Path">Path</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getPath():org.apache.hadoop.fs.Path" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getReplication" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getReplication(x$1:org.apache.hadoop.mapred.JobConf):Int"></a>
+      <a id="getReplication(JobConf):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getReplication</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getReplication(x$1:org.apache.hadoop.mapred.JobConf):Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#getScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getScheme():cascading.scheme.Scheme[Config,Input,Output,_,_]"></a>
+      <a id="getScheme():Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getScheme</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getScheme():cascading.scheme.Scheme[Config,Input,Output,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#getSinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getSinkFields():cascading.tuple.Fields"></a>
+      <a id="getSinkFields():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSinkFields</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSinkFields():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#getSinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getSinkMode():cascading.tap.SinkMode"></a>
+      <a id="getSinkMode():SinkMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSinkMode</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSinkMode():cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getSinkPath" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getSinkPath(conf:org.apache.hadoop.mapred.JobConf):String"></a>
+      <a id="getSinkPath(JobConf):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSinkPath</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSinkPath(conf:org.apache.hadoop.mapred.JobConf):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="cascading.tap.hadoop.Hfs#getSize" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getSize(x$1:org.apache.hadoop.mapred.JobConf):Long"></a>
+      <a id="getSize(JobConf):Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSize</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSize(x$1:org.apache.hadoop.mapred.JobConf):Long" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → FileType</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#getSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getSourceFields():cascading.tuple.Fields"></a>
+      <a id="getSourceFields():Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSourceFields</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSourceFields():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getSourcePath" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getSourcePath(conf:org.apache.hadoop.mapred.JobConf):String"></a>
+      <a id="getSourcePath(JobConf):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getSourcePath</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getSourcePath(conf:org.apache.hadoop.mapred.JobConf):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="cascading.tap.Tap#getStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getStepConfigDef():cascading.property.ConfigDef"></a>
+      <a id="getStepConfigDef():ConfigDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getStepConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getStore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getStore(conf:org.apache.hadoop.mapred.JobConf):com.twitter.scalding.commons.datastores.VersionedStore"></a>
+      <a id="getStore(JobConf):VersionedStore"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getStore</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <a href="../datastores/VersionedStore.html" class="extype" name="com.twitter.scalding.commons.datastores.VersionedStore">VersionedStore</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getStore(conf:org.apache.hadoop.mapred.JobConf):com.twitter.scalding.commons.datastores.VersionedStore" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="cascading.tap.Tap#getTrace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTrace():String"></a>
+      <a id="getTrace():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getTrace():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → Traceable</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#getURIScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI"></a>
+      <a id="getURIScheme(JobConf):URI"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getURIScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.net.URI">URI</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#getVersionsToKeep" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getVersionsToKeep():Int"></a>
+      <a id="getVersionsToKeep():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getVersionsToKeep</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@getVersionsToKeep():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="cascading.tap.Tap#hasConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasConfigDef():Boolean"></a>
+      <a id="hasConfigDef():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@hasConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="cascading.tap.Tap#hasStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hasStepConfigDef():Boolean"></a>
+      <a id="hasStepConfigDef():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hasStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@hasStepConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="cascading.tap.Tap#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → AnyRef → Any</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#isDirectory" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isDirectory(x$1:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="isDirectory(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isDirectory</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isDirectory(x$1:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → FileType</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#isEquivalentTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean"></a>
+      <a id="isEquivalentTo(FlowElement):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isEquivalentTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isKeep" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isKeep():Boolean"></a>
+      <a id="isKeep():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isKeep</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isKeep():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isReplace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isReplace():Boolean"></a>
+      <a id="isReplace():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isReplace</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isReplace():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isSink" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isSink():Boolean"></a>
+      <a id="isSink():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSink</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isSink():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isSource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isSource():Boolean"></a>
+      <a id="isSource():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isSource</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isSource():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isTemporary" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isTemporary():Boolean"></a>
+      <a id="isTemporary():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isTemporary</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isTemporary():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#isUpdate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isUpdate():Boolean"></a>
+      <a id="isUpdate():Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isUpdate</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@isUpdate():Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#makeTemporaryPathDirString" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="makeTemporaryPathDirString(x$1:String):String"></a>
+      <a id="makeTemporaryPathDirString(String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">makeTemporaryPathDirString</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@makeTemporaryPathDirString(x$1:String):String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#makeURIScheme" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="makeURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI"></a>
+      <a id="makeURIScheme(JobConf):URI"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">makeURIScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="java.net.URI">URI</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@makeURIScheme(x$1:org.apache.hadoop.mapred.JobConf):java.net.URI" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#openForRead" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="openForRead(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.RecordReader[_,_]):cascading.tuple.TupleEntryIterator"></a>
+      <a id="openForRead(FlowProcess[JobConf],RecordReader[_,_]):TupleEntryIterator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">openForRead</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryIterator">TupleEntryIterator</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@openForRead(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.RecordReader[_,_]):cascading.tuple.TupleEntryIterator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#openForRead" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="openForRead(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryIterator"></a>
+      <a id="openForRead(FlowProcess[JobConf]):TupleEntryIterator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">openForRead</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryIterator">TupleEntryIterator</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@openForRead(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryIterator" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#openForWrite" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="openForWrite(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.OutputCollector[_,_]):cascading.tuple.TupleEntryCollector"></a>
+      <a id="openForWrite(FlowProcess[JobConf],OutputCollector[_,_]):TupleEntryCollector"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">openForWrite</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryCollector">TupleEntryCollector</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@openForWrite(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.OutputCollector[_,_]):cascading.tuple.TupleEntryCollector" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Hfs → Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#openForWrite" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="openForWrite(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryCollector"></a>
+      <a id="openForWrite(FlowProcess[JobConf]):TupleEntryCollector"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">openForWrite</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.TupleEntryCollector">TupleEntryCollector</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@openForWrite(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.TupleEntryCollector" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#outgoingScopeFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="outgoingScopeFor(x$1:java.util.Set[cascading.flow.planner.Scope]):cascading.flow.planner.Scope"></a>
+      <a id="outgoingScopeFor(Set[Scope]):Scope"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">outgoingScopeFor</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.util.Set">Set</span>[<span class="extype" name="cascading.flow.planner.Scope">Scope</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@outgoingScopeFor(x$1:java.util.Set[cascading.flow.planner.Scope]):cascading.flow.planner.Scope" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="cascading.tap.Tap#presentSinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="presentSinkFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit"></a>
+      <a id="presentSinkFields(FlowProcess[JobConf],Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSinkFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@presentSinkFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#presentSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="presentSourceFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit"></a>
+      <a id="presentSourceFields(FlowProcess[JobConf],Fields):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">presentSourceFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@presentSourceFields(x$1:cascading.flow.FlowProcess[Config],x$2:cascading.tuple.Fields):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#resolveIncomingOperationArgumentFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
+      <a id="resolveIncomingOperationArgumentFields(Scope):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resolveIncomingOperationArgumentFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="cascading.tap.Tap#resolveIncomingOperationPassThroughFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
+      <a id="resolveIncomingOperationPassThroughFields(Scope):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resolveIncomingOperationPassThroughFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → FlowElement</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#resourceExists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resourceExists(jc:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="resourceExists(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resourceExists</span><span class="params">(<span name="jc">jc: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@resourceExists(jc:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#resourceExists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="resourceExists(x$1:cascading.flow.FlowProcess[Config]):Boolean"></a>
+      <a id="resourceExists(FlowProcess[JobConf]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resourceExists</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@resourceExists(x$1:cascading.flow.FlowProcess[Config]):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.io.IOException]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="cascading.tap.Tap#retrieveSinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="retrieveSinkFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields"></a>
+      <a id="retrieveSinkFields(FlowProcess[JobConf]):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">retrieveSinkFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@retrieveSinkFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#retrieveSourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="retrieveSourceFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields"></a>
+      <a id="retrieveSourceFields(FlowProcess[JobConf]):Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">retrieveSourceFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@retrieveSourceFields(x$1:cascading.flow.FlowProcess[Config]):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#rollbackResource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rollbackResource(conf:org.apache.hadoop.mapred.JobConf):Boolean"></a>
+      <a id="rollbackResource(JobConf):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rollbackResource</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@rollbackResource(conf:org.apache.hadoop.mapred.JobConf):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Tap</dd></dl></div>
+    </li><li name="cascading.tap.Tap#setScheme" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setScheme(x$1:cascading.scheme.Scheme[Config,Input,Output,_,_]):Unit"></a>
+      <a id="setScheme(Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@setScheme(x$1:cascading.scheme.Scheme[Config,Input,Output,_,_]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap.html" class="extype" name="cascading.tap">cascading.tap</a>] </dd><dt>Definition Classes</dt><dd>Tap</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#setStringPath" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setStringPath(x$1:String):Unit"></a>
+      <a id="setStringPath(String):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setStringPath</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@setStringPath(x$1:String):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#setUriScheme" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setUriScheme(x$1:java.net.URI):Unit"></a>
+      <a id="setUriScheme(URI):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setUriScheme</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.net.URI">URI</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@setUriScheme(x$1:java.net.URI):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#setVersion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setVersion(version:Long):com.twitter.scalding.commons.tap.VersionedTap"></a>
+      <a id="setVersion(Long):VersionedTap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setVersion</span><span class="params">(<span name="version">version: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@setVersion(version:Long):com.twitter.scalding.commons.tap.VersionedTap" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#setVersionsToKeep" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="setVersionsToKeep(versionsToKeep:Int):com.twitter.scalding.commons.tap.VersionedTap"></a>
+      <a id="setVersionsToKeep(Int):VersionedTap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setVersionsToKeep</span><span class="params">(<span name="versionsToKeep">versionsToKeep: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@setVersionsToKeep(versionsToKeep:Int):com.twitter.scalding.commons.tap.VersionedTap" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#sinkConfInit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sinkConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit"></a>
+      <a id="sinkConfInit(FlowProcess[JobConf],JobConf):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkConfInit</span><span class="params">(<span name="process">process: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@sinkConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="com.twitter.scalding.commons.tap.VersionedTap#sourceConfInit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit"></a>
+      <a id="sourceConfInit(FlowProcess[JobConf],JobConf):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceConfInit</span><span class="params">(<span name="process">process: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@sourceConfInit(process:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],conf:org.apache.hadoop.mapred.JobConf):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.tap.VersionedTap">VersionedTap</a> → Hfs → Tap</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#sourceConfInitAddInputPath" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceConfInitAddInputPath(x$1:org.apache.hadoop.mapred.JobConf,x$2:org.apache.hadoop.fs.Path):Unit"></a>
+      <a id="sourceConfInitAddInputPath(JobConf,Path):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceConfInitAddInputPath</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.hadoop.fs.Path">Path</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@sourceConfInitAddInputPath(x$1:org.apache.hadoop.mapred.JobConf,x$2:org.apache.hadoop.fs.Path):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="cascading.tap.hadoop.Hfs#sourceConfInitComplete" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceConfInitComplete(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.JobConf):Unit"></a>
+      <a id="sourceConfInitComplete(FlowProcess[JobConf],JobConf):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceConfInitComplete</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</span>, <span name="arg1">arg1: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@sourceConfInitComplete(x$1:cascading.flow.FlowProcess[org.apache.hadoop.mapred.JobConf],x$2:org.apache.hadoop.mapred.JobConf):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../cascading$tap$hadoop.html" class="extype" name="cascading.tap.hadoop">cascading.tap.hadoop</a>] </dd><dt>Definition Classes</dt><dd>Hfs</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="cascading.tap.Tap#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Tap → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.tap.VersionedTap@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="cascading.tap.hadoop.Hfs">
+              <h3>Inherited from <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></h3>
+            </div><div class="parent" name="cascading.tap.type.FileType">
+              <h3>Inherited from <span class="extype" name="cascading.tap.type.FileType">FileType</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>]</h3>
+            </div><div class="parent" name="cascading.tap.Tap">
+              <h3>Inherited from <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _]]</h3>
+            </div><div class="parent" name="cascading.util.Traceable">
+              <h3>Inherited from <span class="extype" name="cascading.util.Traceable">Traceable</span></h3>
+            </div><div class="parent" name="cascading.flow.FlowElement">
+              <h3>Inherited from <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

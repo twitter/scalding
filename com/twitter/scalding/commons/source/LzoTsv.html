@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>LzoTsv - com.twitter.scalding.commons.source.LzoTsv</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../../lib/trait_big.png" />
+        <img alt="Trait" src="../../../../../lib/trait_big.png" />
         <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.commons">commons</a>.<a href="package.html" class="extype" name="com.twitter.scalding.commons.source">source</a></p>
-        <h1>LzoTsv</h1>
+        <h1>LzoTsv</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.commons.source">package source</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -43,9 +53,9 @@
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a>, <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a>, <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="DailyPrefixSuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv">DailyPrefixSuffixLzoTsv</a>, <a href="DailySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv">DailySuffixLzoTsv</a>, <a href="HourlySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv">HourlySuffixLzoTsv</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="DailyPrefixSuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv">DailyPrefixSuffixLzoTsv</a>, <a href="DailySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv">DailySuffixLzoTsv</a>, <a href="HourlySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv">HourlySuffixLzoTsv</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -70,7 +80,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -97,22 +106,30 @@
       <span class="symbol">
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="../../AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
 making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.LocalSourceOverride#localPath" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="localPath:String"></a>
-      <a id="localPath:String"></a>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localPaths" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="localPaths:Iterable[String]"></a>
+      <a id="localPaths:Iterable[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">localPath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">localPaths</span><span class="result">: <a href="../../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@localPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li></ol>
             </div>
@@ -120,19 +137,6 @@ making Taps suitable for testing.
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -143,8 +147,12 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -156,22 +164,13 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -182,8 +181,12 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -195,7 +198,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
@@ -208,7 +215,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -221,7 +232,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -230,17 +245,21 @@ making Taps suitable for testing.
               
         </dd></dl></div>
     </li><li name="com.twitter.scalding.LocalTapSource#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[_,_,_]"></a>
-      <a id="createLocalTap(SinkMode):Tap[_,_,_]"></a>
+      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createLocalTap(SinkMode):Tap[JobConf,_,_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
+        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
 </p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a> → <a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -254,7 +273,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -267,7 +290,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields:cascading.tuple.Fields"></a>
@@ -280,7 +307,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@fields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -293,7 +324,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -312,7 +347,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -325,7 +364,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.commons.source.LzoTsv#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
@@ -338,7 +381,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.commons.source.LzoTsv">LzoTsv</a> → <a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -351,7 +398,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="localScheme:cascading.scheme.local.TextDelimited"></a>
@@ -364,8 +415,29 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.local.TextDelimited">TextDelimited</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@localScheme:cascading.scheme.local.TextDelimited" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localWritePath:String"></a>
+      <a id="localWritePath:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@localWritePath:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -377,7 +449,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -390,7 +466,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -403,7 +483,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#quote" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="quote:String"></a>
@@ -416,7 +500,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">quote</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@quote:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -429,7 +517,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#safe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="safe:Boolean"></a>
@@ -442,7 +534,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">safe</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@safe:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#separator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="separator:String"></a>
@@ -455,7 +551,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">separator</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@separator:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkMode:cascading.tap.SinkMode"></a>
@@ -468,7 +568,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#skipHeader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="skipHeader:Boolean"></a>
@@ -481,7 +585,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">skipHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@skipHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceId:String"></a>
@@ -494,9 +602,15 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
-(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
 (put another way, if s1.sourceId == s2.sourceId, the job should
 work the same if one is replaced with the other
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -511,7 +625,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">strict</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@strict:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -524,7 +642,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -537,7 +659,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -550,7 +676,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -563,7 +693,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformInTest:Boolean"></a>
@@ -576,8 +710,13 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
 as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
@@ -594,7 +733,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">types</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@types:Array[Class[_]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
@@ -607,7 +750,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -620,7 +767,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -639,7 +790,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -658,7 +813,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -677,7 +836,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
@@ -694,7 +857,11 @@ the next operation
       <span class="symbol">
         <span class="name">writeHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@writeHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li></ol>
             </div>
@@ -714,7 +881,11 @@ the next operation
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="../../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="../../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.source.LzoTsv@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -756,6 +927,7 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
+
+
     </body>
       </html>

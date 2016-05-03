@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>CoGroupBuilder - com.twitter.scalding.CoGroupBuilder</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <img alt="Class" src="../../../lib/class_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>CoGroupBuilder</h1>
+        <h1>CoGroupBuilder</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -68,7 +78,6 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -91,7 +100,11 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span class="name">CoGroupBuilder</span><span class="params">(<span name="groupFields">groupFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="joinMode">joinMode: <a href="JoinMode.html" class="extype" name="com.twitter.scalding.JoinMode">JoinMode</a></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@&lt;init&gt;(groupFields:cascading.tuple.Fields,joinMode:com.twitter.scalding.JoinMode):com.twitter.scalding.CoGroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -103,19 +116,6 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -126,8 +126,12 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -139,22 +143,13 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -165,8 +160,12 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#aggregate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aggregate[A,B,C](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(ag:com.twitter.algebird.Aggregator[A,B,C])(implicitstartConv:com.twitter.scalding.TupleConverter[A],implicitmiddleSetter:com.twitter.scalding.TupleSetter[B],implicitmiddleConv:com.twitter.scalding.TupleConverter[B],implicitendSetter:com.twitter.scalding.TupleSetter[C]):Self"></a>
       <a id="aggregate[A,B,C]((Fields,Fields))(Aggregator[A,B,C])(TupleConverter[A],TupleSetter[B],TupleConverter[B],TupleSetter[C]):GroupBuilder"></a>
@@ -178,7 +177,11 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span class="name">aggregate</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="ag">ag: <span class="extype" name="com.twitter.algebird.Aggregator">Aggregator</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.A">A</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.C">C</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.A">A</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.C">C</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@aggregate[A,B,C](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(ag:com.twitter.algebird.Aggregator[A,B,C])(implicitstartConv:com.twitter.scalding.TupleConverter[A],implicitmiddleSetter:com.twitter.scalding.TupleSetter[B],implicitmiddleConv:com.twitter.scalding.TupleConverter[B],implicitendSetter:com.twitter.scalding.TupleSetter[C]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p><div class="fullcomment"><div class="comment cmt"><p>Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#approximateUniqueCount" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="approximateUniqueCount[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$1:T=&gt;Array[Byte],implicitevidence$2:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -191,7 +194,11 @@ Can also be used for more generalized joins, e.g., star joins.</p></div><dl clas
       <span class="symbol">
         <span class="name">approximateUniqueCount</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="com.twitter.scalding.ReduceOperations.approximateUniqueCount.T">T</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="arg1">arg1: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.approximateUniqueCount.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@approximateUniqueCount[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$1:T=&gt;Array[Byte],implicitevidence$2:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Approximate number of unique values
 We use about m = (104/errPercent)^2 bytes of memory per key
 Uses <code>.toString.getBytes</code> to serialize the data so you MUST
@@ -217,7 +224,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#average" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="average(f:Symbol):Self"></a>
@@ -230,7 +241,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">average</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@average(f:Symbol):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#average" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="average(f:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -243,7 +258,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">average</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@average(f:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">uses a more stable online algorithm which should
 be suitable for large numbers of records</p><div class="fullcomment"><div class="comment cmt"><p>uses a more stable online algorithm which should
 be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
@@ -259,7 +278,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">buffer</span><span class="params">(<span name="args">args: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="b">b: <span class="extype" name="cascading.operation.Buffer">Buffer</span>[_]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@buffer(args:cascading.tuple.Fields)(b:cascading.operation.Buffer[_]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This may significantly reduce performance of your job.</p><div class="fullcomment"><div class="comment cmt"><h4> Warning </h4><p>This may significantly reduce performance of your job.
 It kills the ability to do map-side aggregation.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
@@ -274,7 +297,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -293,7 +320,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">coGroup</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="p">p: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="j">j: <a href="JoinMode.html" class="extype" name="com.twitter.scalding.JoinMode">JoinMode</a> = <span class="symbol"><span class="name"><a href="InnerJoinMode$.html">InnerJoinMode</a></span></span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.CoGroupBuilder">CoGroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@coGroup(f:cascading.tuple.Fields,p:cascading.pipe.Pipe,j:com.twitter.scalding.JoinMode):com.twitter.scalding.CoGroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.CoGroupBuilder#coGroups" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="coGroups:List[(cascading.tuple.Fields,cascading.pipe.Pipe,com.twitter.scalding.JoinMode)]"></a>
@@ -306,7 +337,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">coGroups</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[(<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>, <a href="JoinMode.html" class="extype" name="com.twitter.scalding.JoinMode">JoinMode</a>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@coGroups:List[(cascading.tuple.Fields,cascading.pipe.Pipe,com.twitter.scalding.JoinMode)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#count" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="count[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:T=&gt;Boolean)(implicitevidence$8:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -319,7 +354,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">count</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.count.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.count.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@count[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:T=&gt;Boolean)(implicitevidence$8:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is count with a predicate: only counts the tuples for which
 <code>fn(tuple)</code> is true
 </p><div class="fullcomment"><div class="comment cmt"><p>This is count with a predicate: only counts the tuples for which
@@ -336,7 +375,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">dot</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="left">left: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="right">right: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="result">result: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ttconv">ttconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[(<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>)]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@dot[T](left:cascading.tuple.Fields,right:cascading.tuple.Fields,result:cascading.tuple.Fields)(implicitttconv:com.twitter.scalding.TupleConverter[(T,T)],implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><div class="fullcomment"><div class="comment cmt"><p>First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><h4> Example </h4><pre>groupBy('x) { _.dot(<span class="lit">'y,'</span>z, 'ydotz) }</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.StreamOperations#drop" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="drop(cnt:Int):Self"></a>
@@ -349,7 +392,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">drop</span><span class="params">(<span name="cnt">cnt: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@drop(cnt:Int):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Remove the first cnt elements
 </p><div class="fullcomment"><div class="comment cmt"><p>Remove the first cnt elements
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="StreamOperations.html" class="extype" name="com.twitter.scalding.StreamOperations">StreamOperations</a></dd></dl></div>
@@ -364,7 +411,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">dropWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.StreamOperations.dropWhile.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.StreamOperations.dropWhile.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@dropWhile[T](f:cascading.tuple.Fields)(fn:T=&gt;Boolean)(implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Drop while the predicate is true, starting at the first false, output all
 </p><div class="fullcomment"><div class="comment cmt"><p>Drop while the predicate is true, starting at the first false, output all
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="StreamOperations.html" class="extype" name="com.twitter.scalding.StreamOperations">StreamOperations</a></dd></dl></div>
@@ -379,7 +430,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -392,7 +447,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#every" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="every(ev:cascading.pipe.Pipe=&gt;cascading.pipe.Every):com.twitter.scalding.GroupBuilder"></a>
@@ -405,7 +464,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">every</span><span class="params">(<span name="ev">ev: (<span class="extype" name="cascading.pipe.Pipe">Pipe</span>) ⇒ <span class="extype" name="cascading.pipe.Every">Every</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@every(ev:cascading.pipe.Pipe=&gt;cascading.pipe.Every):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Prefer aggregateBy operations!
 </p><div class="fullcomment"><div class="comment cmt"><p>Prefer aggregateBy operations!
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
@@ -420,7 +483,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">evs</span><span class="result">: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[(<span class="extype" name="cascading.pipe.Pipe">Pipe</span>) ⇒ <span class="extype" name="cascading.pipe.Every">Every</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@evs:List[cascading.pipe.Pipe=&gt;cascading.pipe.Every]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is the description of this Grouping in terms of a sequence of Every operations
 </p><div class="fullcomment"><div class="comment cmt"><p>This is the description of this Grouping in terms of a sequence of Every operations
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
@@ -435,7 +502,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -454,7 +525,11 @@ It kills the ability to do map-side aggregation.
       <span class="symbol">
         <span class="name">foldLeft</span><span class="tparams">[<span name="X">X</span>, <span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="init">init: <span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.X">X</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.X">X</span>, <span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.X">X</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.X">X</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.foldLeft.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@foldLeft[X,T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(init:X)(fn:(X,T)=&gt;X)(implicitsetter:com.twitter.scalding.TupleSetter[X],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Prefer reduce or mapReduceMap.</p><div class="fullcomment"><div class="comment cmt"><p>Prefer reduce or mapReduceMap. foldLeft will force all work to be
 done on the reducers.  If your function is not associative and
 commutative, foldLeft may be required.</p><h4> Best Practice </h4><p>Make sure init is an immutable object.</p><h4> Note </h4><p>Init needs to be serializable with Kryo (because we copy it for each
@@ -471,7 +546,11 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">forall</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.forall.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.forall.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@forall[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:T=&gt;Boolean)(implicitevidence$9:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#forceToReducers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="forceToReducers:com.twitter.scalding.GroupBuilder"></a>
@@ -484,7 +563,11 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">forceToReducers</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@forceToReducers:com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This cancels map side aggregation
 and forces everything to the reducers
 </p><div class="fullcomment"><div class="comment cmt"><p>This cancels map side aggregation
@@ -501,8 +584,29 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.GroupBuilder#groupFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupFields:cascading.tuple.Fields"></a>
+      <a id="groupFields:Fields"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@groupFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#groupMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="groupMode:com.twitter.scalding.GroupMode"></a>
       <a id="groupMode:GroupMode"></a>
@@ -514,7 +618,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">groupMode</span><span class="result">: <span class="extype" name="com.twitter.scalding.GroupMode">GroupMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@groupMode:com.twitter.scalding.GroupMode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#groupedPipeOf" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="groupedPipeOf(name:String,in:cascading.pipe.Pipe):cascading.pipe.GroupBy"></a>
@@ -527,7 +635,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">groupedPipeOf</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="in">in: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.GroupBy">GroupBy</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@groupedPipeOf(name:String,in:cascading.pipe.Pipe):cascading.pipe.GroupBy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -540,7 +652,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#head" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="head(f:Symbol*):Self"></a>
@@ -553,7 +669,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">head</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@head(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#head" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="head(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -566,7 +686,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">head</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@head(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Return the first, useful probably only for sorted case.</p><div class="fullcomment"><div class="comment cmt"><p>Return the first, useful probably only for sorted case.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#histogram" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -580,7 +704,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">histogram</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="binWidth">binWidth: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@histogram(f:(cascading.tuple.Fields,cascading.tuple.Fields),binWidth:Double):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#hyperLogLog" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hyperLogLog[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$3:T=&gt;Array[Byte],implicitevidence$4:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -593,7 +721,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">hyperLogLog</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="com.twitter.scalding.ReduceOperations.hyperLogLog.T">T</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="arg1">arg1: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.hyperLogLog.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@hyperLogLog[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$3:T=&gt;Array[Byte],implicitevidence$4:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -606,7 +738,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#isReversed" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isReversed:Boolean"></a>
@@ -619,7 +755,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">isReversed</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@isReversed:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#last" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="last(f:Symbol*):Self"></a>
@@ -632,7 +772,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">last</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@last(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#last" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="last(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -645,7 +789,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">last</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@last(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FoldOperations#mapList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapList[T,R](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:List[T]=&gt;R)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[R]):Self"></a>
@@ -658,7 +806,11 @@ and forces everything to the reducers
       <span class="symbol">
         <span class="name">mapList</span><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.T">T</span>]) ⇒ <span class="extype" name="com.twitter.scalding.FoldOperations.mapList.R">R</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.T">T</span>]</span>, <span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.R">R</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mapList[T,R](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:List[T]=&gt;R)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[R]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Collect all the values into a List[T] and then operate on that
 list.</p><div class="fullcomment"><div class="comment cmt"><p>Collect all the values into a List[T] and then operate on that
 list. This fundamentally uses as much memory as it takes to store the list.
@@ -676,7 +828,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mapPlusMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span></span>)</span><span class="params">(<span name="mapfn2">mapfn2: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.T">T</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.U">U</span>]</span>, <span name="sgX">sgX: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mapPlusMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U],implicitsgX:com.twitter.algebird.Semigroup[X]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#mapReduceMap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapReduceMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(redfn:(X,X)=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U]):com.twitter.scalding.GroupBuilder"></a>
@@ -689,7 +845,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mapReduceMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span></span>)</span><span class="params">(<span name="redfn">redfn: (<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span>, <span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span></span>)</span><span class="params">(<span name="mapfn2">mapfn2: (<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.T">T</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.X">X</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapReduceMap.U">U</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mapReduceMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(redfn:(X,X)=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Type <code>T</code> is the type of the input field <code>(input to map, T =&gt; X)</code></p><div class="fullcomment"><div class="comment cmt"><p>Type <code>T</code> is the type of the input field <code>(input to map, T =&gt; X)</code></p><p>Type <code>X</code> is the intermediate type, which your reduce function operates on
 <code>(reduce is (X,X) =&gt; X)</code></p><p>Type <code>U</code> is the final result type, <code>(final map is: X =&gt; U)</code></p><p>The previous output goes into the reduce function on the left, like foldLeft,
 so if your operation is faster for the accumulator to be on one side, be aware.
@@ -705,9 +865,13 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">mapStream</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (<a href="../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapStream.T">T</span>]) ⇒ <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapStream.X">X</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapStream.T">T</span>]</span>, <span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.mapStream.X">X</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mapStream[T,X](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:Iterator[T]=&gt;TraversableOnce[X])(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[X]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Corresponds to a Cascading Buffer
-which allows you to stream through the data, keeping some, dropping, scanning, etc.</p><div class="fullcomment"><div class="comment cmt"><p>Corresponds to a Cascading Buffer
+which allows you to stream through the data, keeping some, dropping, scanning, etc...</p><div class="fullcomment"><div class="comment cmt"><p>Corresponds to a Cascading Buffer
 which allows you to stream through the data, keeping some, dropping, scanning, etc...
 The iterator you are passed is lazy, and mapping will not trigger the
 entire evaluation.  If you convert to a list (i.e. to reverse), you need to be aware
@@ -729,7 +893,11 @@ state captured)
       <span class="symbol">
         <span class="name">max</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@max(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#max" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="max(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -742,7 +910,11 @@ state captured)
       <span class="symbol">
         <span class="name">max</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@max(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#min" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="min(f:Symbol*):Self"></a>
@@ -755,7 +927,11 @@ state captured)
       <span class="symbol">
         <span class="name">min</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@min(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#min" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="min(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -768,7 +944,11 @@ state captured)
       <span class="symbol">
         <span class="name">min</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@min(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol):Self"></a>
@@ -781,7 +961,11 @@ state captured)
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:Symbol):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol,sep:String):Self"></a>
@@ -794,7 +978,11 @@ state captured)
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:Symbol,sep:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol,start:String,sep:String,end:String):Self"></a>
@@ -807,7 +995,11 @@ state captured)
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="start">start: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="end">end: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:Symbol,start:String,sep:String,end:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">these will only be called if a tuple is not passed, meaning just one
 column
 </p><div class="fullcomment"><div class="comment cmt"><p>these will only be called if a tuple is not passed, meaning just one
@@ -824,7 +1016,11 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),sep:String):Self"></a>
@@ -837,7 +1033,11 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),sep:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),start:String,sep:String,end:String):Self"></a>
@@ -850,8 +1050,14 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="start">start: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="end">end: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Similar to the scala.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to the scala.collection.Iterable.mkString
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),start:String,sep:String,end:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Similar to the scala.collection.Iterable.mkString
+takes the source and destination fieldname, which should be a single
+field.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to the scala.collection.Iterable.mkString
 takes the source and destination fieldname, which should be a single
 field. The result will be start, each item.toString separated by sep,
 followed by end for convenience there several common variants below
@@ -867,7 +1073,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -880,7 +1090,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -893,8 +1107,29 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.GroupBuilder#overrideDescription" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="overrideDescription(p:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
+      <a id="overrideDescription(Pipe):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">overrideDescription</span><span class="params">(<span name="p">p: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@overrideDescription(p:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#overrideReducers" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="overrideReducers(p:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
       <a id="overrideReducers(Pipe):Pipe"></a>
@@ -906,7 +1141,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">overrideReducers</span><span class="params">(<span name="p">p: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@overrideReducers(p:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#pass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="pass:com.twitter.scalding.GroupBuilder"></a>
@@ -919,7 +1158,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">pass</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@pass:com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">An identity function that keeps all the tuples.</p><div class="fullcomment"><div class="comment cmt"><p>An identity function that keeps all the tuples. A hack to implement
 groupAll and groupRandomly.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
@@ -934,14 +1177,18 @@ groupAll and groupRandomly.
       <span class="symbol">
         <span class="name">pivot</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="defaultVal">defaultVal: <span class="extype" name="scala.Any">Any</span> = <span class="symbol">null</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Opposite of RichPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@pivot(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),defaultVal:Any):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Opposite of RichPipe.unpivot.</p><div class="fullcomment"><div class="comment cmt"><p>Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
 converts a row-wise representation into a column-wise one.</p><h4> Example </h4><pre>pivot(('feature, 'value) -&gt; ('clicks, 'impressions, 'requests))</pre><p>it will find the feature named &quot;clicks&quot;, and put the value in the column with the field named
 clicks.</p><p>Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.</p><h4> Note </h4><p>Duplicated fields will result in an error.</p><h4> Hint </h4><p>if you want more precision, first do a</p><pre>map('value -&gt; value) { x : <span class="std">AnyRef</span> <span class="kw">=&gt;</span> <span class="std">Option</span>(x) }</pre><p>and you will have non-nulls for all present values, and Nones for values that were present
 but previously null.  All nulls in the final output will be those truly missing.
 Similarly, if you want to check if there are any items present that shouldn't be:</p><pre>map('feature -&gt; 'feature) { fname : <span class="std">String</span> <span class="kw">=&gt;</span>
-<span class="kw">if</span> (!goodFeatures(fname)) { <span class="kw">throw</span> <span class="kw">new</span> Exception(<span class="lit">"ohnoes"</span>) }
-<span class="kw">else</span> fname
+  <span class="kw">if</span> (!goodFeatures(fname)) { <span class="kw">throw</span> <span class="kw">new</span> Exception(<span class="lit">"ohnoes"</span>) }
+  <span class="kw">else</span> fname
 }</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#reduce" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reduce[T](fieldDef:Symbol*)(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -954,7 +1201,11 @@ Similarly, if you want to check if there are any items present that shouldn't be
       <span class="symbol">
         <span class="name">reduce</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@reduce[T](fieldDef:Symbol*)(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#reduce" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reduce[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -967,9 +1218,13 @@ Similarly, if you want to check if there are any items present that shouldn't be
       <span class="symbol">
         <span class="name">reduce</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@reduce[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Apply an associative/commutative operation on the left field.</p><div class="fullcomment"><div class="comment cmt"><p>Apply an associative/commutative operation on the left field.</p><h4> Example </h4><pre>reduce((<span class="lit">'mass,'</span>allids)-&gt;('totalMass, 'idset)) { (left:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>]),right:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>])) <span class="kw">=&gt;</span>
-(left._1 + right._1, left._2 ++ right._2)
+  (left._1 + right._1, left._2 ++ right._2)
 }</pre><p>Equivalent to a mapReduceMap with trivial (identity) map functions.</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers</p><p>The previous output goes into the reduce function on the left, like foldLeft,
 so if your operation is faster for the accumulator to be on one side, be aware.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -984,7 +1239,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">reducers</span><span class="params">(<span name="r">r: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@reducers(r:Int):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override the number of reducers used in the groupBy.</p><div class="fullcomment"><div class="comment cmt"><p>Override the number of reducers used in the groupBy.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#reverse" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -998,7 +1257,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">reverse</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@reverse:com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#scanLeft" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="scanLeft[X,T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(init:X)(fn:(X,T)=&gt;X)(implicitsetter:com.twitter.scalding.TupleSetter[X],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.GroupBuilder"></a>
@@ -1011,8 +1274,14 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">scanLeft</span><span class="tparams">[<span name="X">X</span>, <span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="init">init: <span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.X">X</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.X">X</span>, <span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.X">X</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.X">X</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.GroupBuilder.scanLeft.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Analog of standard scanLeft (@see scala.</p><div class="fullcomment"><div class="comment cmt"><p>Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@scanLeft[X,T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(init:X)(fn:(X,T)=&gt;X)(implicitsetter:com.twitter.scalding.TupleSetter[X],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
+This invalidates map-side aggregation, forces all data to be transferred
+to reducers.</p><div class="fullcomment"><div class="comment cmt"><p>Analog of standard scanLeft (@see scala.collection.Iterable.scanLeft )
 This invalidates map-side aggregation, forces all data to be transferred
 to reducers.  Use only if you REALLY have to.</p><h4> Best Practice </h4><p>Make sure init is an immutable object.</p><h4> Note </h4><p>init needs to be serializable with Kryo (because we copy it for each
 grouping to avoid possible errors using a mutable init object).
@@ -1030,8 +1299,30 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">schedule</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@schedule(name:String,pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.CoGroupBuilder">CoGroupBuilder</a> → <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.GroupBuilder#setDescriptions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setDescriptions(newDescriptions:Seq[String]):com.twitter.scalding.GroupBuilder"></a>
+      <a id="setDescriptions(Seq[String]):GroupBuilder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setDescriptions</span><span class="params">(<span name="newDescriptions">newDescriptions: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@setDescriptions(newDescriptions:Seq[String]):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Override the description to be used in .dot and MR step names.</p><div class="fullcomment"><div class="comment cmt"><p>Override the description to be used in .dot and MR step names.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#size" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="size(thisF:cascading.tuple.Fields):Self"></a>
       <a id="size(Fields):GroupBuilder"></a>
@@ -1043,7 +1334,11 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">size</span><span class="params">(<span name="thisF">thisF: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@size(thisF:cascading.tuple.Fields):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#size" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="size:Self"></a>
@@ -1056,7 +1351,11 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">size</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@size:Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">How many values are there for this key
 </p><div class="fullcomment"><div class="comment cmt"><p>How many values are there for this key
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -1071,9 +1370,14 @@ grouping to avoid possible errors using a mutable init object).
       <span class="symbol">
         <span class="name">sizeAveStdev</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sizeAveStdev(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Compute the count, ave and standard deviation in one pass
-example: g.</p><div class="fullcomment"><div class="comment cmt"><p>Compute the count, ave and standard deviation in one pass
+example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
+</p><div class="fullcomment"><div class="comment cmt"><p>Compute the count, ave and standard deviation in one pass
 example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#sortBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1087,7 +1391,11 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
       <span class="symbol">
         <span class="name">sortBy</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sortBy(f:cascading.tuple.Fields):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This invalidates aggregateBy!
 </p><div class="fullcomment"><div class="comment cmt"><p>This invalidates aggregateBy!
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a> → <a href="Sortable.html" class="extype" name="com.twitter.scalding.Sortable">Sortable</a></dd></dl></div>
@@ -1102,7 +1410,11 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
       <span class="symbol">
         <span class="name">sortF</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sortF:Option[cascading.tuple.Fields]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortWithTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sortWithTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(lt:(T,T)=&gt;Boolean)(implicitevidence$10:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -1115,12 +1427,16 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
       <span class="symbol">
         <span class="name">sortWithTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span name="lt">lt: (<span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sortWithTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(lt:(T,T)=&gt;Boolean)(implicitevidence$10:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Equivalent to sorting by a comparison function
 then take-ing k items.</p><div class="fullcomment"><div class="comment cmt"><p>Equivalent to sorting by a comparison function
 then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
 since these bounded sorts are done on the mapper, so only a sort of size k is needed.</p><h4> Example </h4><pre>sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
-fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<span class="std">Long</span>,<span class="std">Long</span>) <span class="kw">=&gt;</span> t0._1 &lt; t1._1 }</pre><p>topClicks will be a List[(Long,Long)]
+  fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<span class="std">Long</span>,<span class="std">Long</span>) <span class="kw">=&gt;</span> t0._1 &lt; t1._1 }</pre><p>topClicks will be a List[(Long,Long)]
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortedReverseTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sortedReverseTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self"></a>
@@ -1133,7 +1449,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sortedReverseTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedReverseTake.T">T</span>]</span>, <span name="ord">ord: <a href="../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedReverseTake.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sortedReverseTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Reverse of above when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Reverse of above when the implicit ordering makes sense.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortedTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1147,7 +1467,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sortedTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedTake.T">T</span>]</span>, <span name="ord">ord: <a href="../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedTake.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sortedTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Same as above but useful when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Same as above but useful when the implicit ordering makes sense.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#sorting" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1161,7 +1485,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sorting</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sorting:Option[cascading.tuple.Fields]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a> → <a href="Sortable.html" class="extype" name="com.twitter.scalding.Sortable">Sortable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#spillThreshold" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="spillThreshold(t:Int):com.twitter.scalding.GroupBuilder"></a>
@@ -1174,7 +1502,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">spillThreshold</span><span class="params">(<span name="t">t: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@spillThreshold(t:Int):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override the spill threshold on AggregateBy
 </p><div class="fullcomment"><div class="comment cmt"><p>Override the spill threshold on AggregateBy
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
@@ -1189,7 +1521,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sum[T](fs:Symbol*)(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The same as <code>sum(fs -&gt; fs)</code>
 Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>sum(fs -&gt; fs)</code>
 Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
@@ -1205,7 +1541,11 @@ Assumed to be a commutative operation.  If you don't want that, use .forceToRedu
       <span class="symbol">
         <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@sum[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use <code>Semigroup.plus</code> to compute a sum.</p><div class="fullcomment"><div class="comment cmt"><p>Use <code>Semigroup.plus</code> to compute a sum.  Not called sum to avoid conflicting with standard sum
 Your <code>Semigroup[T]</code> should be associated and commutative, else this doesn't make sense</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -1220,7 +1560,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.StreamOperations#take" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="take(cnt:Int):Self"></a>
@@ -1233,7 +1577,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">take</span><span class="params">(<span name="cnt">cnt: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@take(cnt:Int):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Only keep the first cnt elements
 </p><div class="fullcomment"><div class="comment cmt"><p>Only keep the first cnt elements
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="StreamOperations.html" class="extype" name="com.twitter.scalding.StreamOperations">StreamOperations</a></dd></dl></div>
@@ -1248,7 +1596,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">takeWhile</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.StreamOperations.takeWhile.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.StreamOperations.takeWhile.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@takeWhile[T](f:cascading.tuple.Fields)(fn:T=&gt;Boolean)(implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Take while the predicate is true, stopping at the
 first false.</p><div class="fullcomment"><div class="comment cmt"><p>Take while the predicate is true, stopping at the
 first false. Output all taken elements.
@@ -1264,7 +1616,11 @@ first false. Output all taken elements.
       <span class="symbol">
         <span class="name">thenDo</span><span class="params">(<span name="fn">fn: (<a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a>) ⇒ <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@thenDo(fn:com.twitter.scalding.GroupBuilder=&gt;com.twitter.scalding.GroupBuilder):com.twitter.scalding.GroupBuilder" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is convenience method to allow plugging in blocks
 of group operations similar to <code>RichPipe.thenDo</code>
 </p><div class="fullcomment"><div class="comment cmt"><p>This is convenience method to allow plugging in blocks
@@ -1281,7 +1637,11 @@ of group operations similar to <code>RichPipe.thenDo</code>
       <span class="symbol">
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@times[T](fs:Symbol*)(implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The same as <code>times(fs -&gt; fs)</code>
 </p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>times(fs -&gt; fs)</code>
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -1296,7 +1656,11 @@ of group operations similar to <code>RichPipe.thenDo</code>
       <span class="symbol">
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@times[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Returns the product of all the items in this grouping
 </p><div class="fullcomment"><div class="comment cmt"><p>Returns the product of all the items in this grouping
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -1311,7 +1675,11 @@ of group operations similar to <code>RichPipe.thenDo</code>
       <span class="symbol">
         <span class="name">toList</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.toList.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@toList[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert a subset of fields into a list of Tuples.</p><div class="fullcomment"><div class="comment cmt"><p>Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1325,7 +1693,11 @@ of group operations similar to <code>RichPipe.thenDo</code>
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.GroupBuilder#using" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="using[C&lt;:AnyRef{defrelease():Unit}](bf:=&gt;C):AnyRef{defmapStream[T,X](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:(C,Iterator[T])=&gt;TraversableOnce[X])(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[X]):com.twitter.scalding.GroupBuilder}"></a>
@@ -1338,8 +1710,12 @@ of group operations similar to <code>RichPipe.thenDo</code>
       <span class="symbol">
         <span class="name">using</span><span class="tparams">[<span name="C">C &lt;: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a> { def release(): Unit }</span>]</span><span class="params">(<span name="bf">bf: ⇒ <span class="extype" name="com.twitter.scalding.GroupBuilder.using.C">C</span></span>)</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a> { def mapStream[T, X](fieldDef: (cascading.tuple.Fields, cascading.tuple.Fields))(mapfn: (C, Iterator[T]) =&gt; TraversableOnce[X])(implicit conv: com.twitter.scalding.TupleConverter[T],implicit setter: com.twitter.scalding.TupleSetter[X]): com.twitter.scalding.GroupBuilder }</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">begining of block with access to expensive nonserializable state.</p><div class="fullcomment"><div class="comment cmt"><p>begining of block with access to expensive nonserializable state. The state object should
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@using[C&lt;:AnyRef{defrelease():Unit}](bf:=&gt;C):AnyRef{defmapStream[T,X](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:(C,Iterator[T])=&gt;TraversableOnce[X])(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[X]):com.twitter.scalding.GroupBuilder}" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">beginning of block with access to expensive nonserializable state.</p><div class="fullcomment"><div class="comment cmt"><p>beginning of block with access to expensive nonserializable state. The state object should
 contain a function release() for resource management purpose.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1353,7 +1729,11 @@ contain a function release() for resource management purpose.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1372,7 +1752,11 @@ contain a function release() for resource management purpose.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1391,7 +1775,11 @@ contain a function release() for resource management purpose.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.CoGroupBuilder@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1404,61 +1792,7 @@ contain a function release() for resource management purpose.
 
         
 
-        <div id="values" class="values members">
-              <h3>Deprecated Value Members</h3>
-              <ol><li name="com.twitter.scalding.ReduceOperations#approxUniques" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="approxUniques(f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double):Self"></a>
-      <a id="approxUniques((Fields,Fields),Double):GroupBuilder"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.8.3) use of approximateUniqueCount is preferred.">approxUniques</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.8.3)</i> use of approximateUniqueCount is preferred.</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReduceOperations#plus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="plus[T](fs:Symbol*)(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self"></a>
-      <a id="plus[T](Symbol*)(Semigroup[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReduceOperations#plus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="plus[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self"></a>
-      <a id="plus[T]((Fields,Fields))(Semigroup[T],TupleConverter[T],TupleSetter[T]):GroupBuilder"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>)</span><span class="result">: <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
-    </li></ol>
-            </div>
+        
         </div>
 
         <div id="inheritedMembers">
@@ -1494,6 +1828,7 @@ Assumed to be a commutative operation.  If you don't want that, use .forceToRedu
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

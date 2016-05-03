@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>Execution - com.twitter.scalding.Execution</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="Execution$.html" title="Go to companion"><img src="../../../lib/trait_to_object_big.png" /></a>
+        <a href="Execution$.html" title="See companion object"><img alt="Trait/Object" src="../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1><a href="Execution$.html" title="Go to companion">Execution</a></h1>
+        <h1><a href="Execution$.html" title="See companion object">Execution</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="Execution$.html" title="See companion object">object Execution</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -78,7 +90,6 @@ zip to flatMap if you want to run two Executions in parallel.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -95,17 +106,21 @@ zip to flatMap if you want to run two Executions in parallel.
         <div id="values" class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="com.twitter.scalding.Execution#runStats" visbl="prt" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):(com.twitter.scalding.Execution.EvalCache,scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters,com.twitter.scalding.Execution.EvalCache)])"></a>
-      <a id="runStats(Config,Mode,EvalCache)(scala.concurrent.ExecutionContext):(EvalCache,Future[(T,ExecutionCounters,EvalCache)])"></a>
+      <a id="runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]"></a>
+      <a id="runStats(Config,Mode,EvalCache)(scala.concurrent.ExecutionContext):Future[(T,ExecutionCounters)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runStats</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="cache">cache: <a href="Execution$$EvalCache.html" class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: (<a href="Execution$$EvalCache.html" class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</a>, <span class="extype" name="scala.concurrent.Future">Future</span>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>, <a href="Execution$$EvalCache.html" class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</a>)])</span>
+        <span class="name">runStats</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="cache">cache: <span class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is the internal method that must be implemented
 Given a config, mode, and cache of evaluations for this config and mode,
 return the new cache with as much evaluation as possible before the future
@@ -123,19 +138,6 @@ is complete
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -146,8 +148,12 @@ is complete
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -159,22 +165,13 @@ is complete
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -185,8 +182,12 @@ is complete
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -198,7 +199,11 @@ is complete
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -211,7 +216,11 @@ is complete
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -230,7 +239,11 @@ is complete
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -243,7 +256,11 @@ is complete
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#filter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="filter(pred:T=&gt;Boolean):com.twitter.scalding.Execution[T]"></a>
@@ -256,7 +273,11 @@ is complete
       <span class="symbol">
         <span class="name">filter</span><span class="params">(<span name="pred">pred: (<span class="extype" name="com.twitter.scalding.Execution.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@filter(pred:T=&gt;Boolean):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Scala uses the filter method in for syntax for pattern matches that can fail.</p><div class="fullcomment"><div class="comment cmt"><p>Scala uses the filter method in for syntax for pattern matches that can fail.
 If this filter is false, the result of run will be an exception in the future
 </p></div></div>
@@ -271,7 +292,11 @@ If this filter is false, the result of run will be an exception in the future
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -290,7 +315,11 @@ If this filter is false, the result of run will be an exception in the future
       <span class="symbol">
         <span class="name">flatMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.Execution.T">T</span>) ⇒ <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.flatMap.U">U</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.flatMap.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@flatMap[U](fn:T=&gt;com.twitter.scalding.Execution[U]):com.twitter.scalding.Execution[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">First run this Execution, then move to the result
 of the function
 </p>
@@ -305,7 +334,11 @@ of the function
       <span class="symbol">
         <span class="name">flatten</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.flatten.U">U</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.flatten.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@flatten[U](implicitev:&lt;:&lt;[T,com.twitter.scalding.Execution[U]]):com.twitter.scalding.Execution[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is the same as flatMap(identity)
 </p>
     </li><li name="com.twitter.scalding.Execution#getAndResetCounters" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -319,7 +352,11 @@ of the function
       <span class="symbol">
         <span class="name">getAndResetCounters</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@getAndResetCounters:com.twitter.scalding.Execution[(T,com.twitter.scalding.ExecutionCounters)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Reads the counters and resets them to zero.</p><div class="fullcomment"><div class="comment cmt"><p>Reads the counters and resets them to zero. Probably what
 you want in a loop that is using counters to check for
 convergence.
@@ -335,7 +372,11 @@ convergence.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#getCounters" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getCounters:com.twitter.scalding.Execution[(T,com.twitter.scalding.ExecutionCounters)]"></a>
@@ -348,7 +389,11 @@ convergence.
       <span class="symbol">
         <span class="name">getCounters</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@getCounters:com.twitter.scalding.Execution[(T,com.twitter.scalding.ExecutionCounters)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Reads the counters into the value, but does not reset them.</p><div class="fullcomment"><div class="comment cmt"><p>Reads the counters into the value, but does not reset them.
 You may want .getAndResetCounters.
 </p></div></div>
@@ -363,7 +408,11 @@ You may want .getAndResetCounters.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -376,8 +425,31 @@ You may want .getAndResetCounters.
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Execution#liftToTry" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="liftToTry:com.twitter.scalding.Execution[scala.util.Try[T]]"></a>
+      <a id="liftToTry:Execution[Try[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">liftToTry</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@liftToTry:com.twitter.scalding.Execution[scala.util.Try[T]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lift an Execution into a Try</p><div class="fullcomment"><div class="comment cmt"><p>Lift an Execution into a Try</p><p>When this function is called the Execution should never be failed
+instead only the Try.
+</p></div></div>
     </li><li name="com.twitter.scalding.Execution#map" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="map[U](fn:T=&gt;U):com.twitter.scalding.Execution[U]"></a>
       <a id="map[U]((T)⇒U):Execution[U]"></a>
@@ -389,7 +461,11 @@ You may want .getAndResetCounters.
       <span class="symbol">
         <span class="name">map</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.Execution.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.Execution.map.U">U</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.map.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@map[U](fn:T=&gt;U):com.twitter.scalding.Execution[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Apply a pure function to the result.</p><div class="fullcomment"><div class="comment cmt"><p>Apply a pure function to the result. This may not
 be called if subsequently the result is discarded with .unit
 For side effects see onComplete.
@@ -405,7 +481,11 @@ For side effects see onComplete.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -418,7 +498,11 @@ For side effects see onComplete.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -431,7 +515,11 @@ For side effects see onComplete.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#onComplete" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="onComplete(fn:scala.util.Try[T]=&gt;Unit):com.twitter.scalding.Execution[T]"></a>
@@ -444,13 +532,18 @@ For side effects see onComplete.
       <span class="symbol">
         <span class="name">onComplete</span><span class="params">(<span name="fn">fn: (<span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@onComplete(fn:scala.util.Try[T]=&gt;Unit):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This function is called when the current run is completed.</p><div class="fullcomment"><div class="comment cmt"><p>This function is called when the current run is completed. This is
-a only a side effect (see unit return).
-Note, this is the only way to force a side effect. Map and FlatMap
-are not safe for side effects. ALSO You must run the result. If
+only a side effect (see unit return).</p><p>ALSO You must .run the result. If
 you throw away the result of this call, your fn will never be
-called.
+called. When you run the result, the Future you get will not
+be complete unless fn has completed running. If fn throws, it
+will be handled be the scala.concurrent.ExecutionContext.reportFailure
+NOT by returning a Failure in the Future.
 </p></div></div>
     </li><li name="com.twitter.scalding.Execution#recoverWith" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="recoverWith[U&gt;:T](rec:PartialFunction[Throwable,com.twitter.scalding.Execution[U]]):com.twitter.scalding.Execution[U]"></a>
@@ -463,7 +556,11 @@ called.
       <span class="symbol">
         <span class="name">recoverWith</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.Execution.T">T</span></span>]</span><span class="params">(<span name="rec">rec: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<a href="../../../scala/package.html#Throwable=Throwable" class="extmbr" name="scala.Throwable">Throwable</a>, <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.recoverWith.U">U</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.recoverWith.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@recoverWith[U&gt;:T](rec:PartialFunction[Throwable,com.twitter.scalding.Execution[U]]):com.twitter.scalding.Execution[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This allows you to handle a failure by giving a replacement execution
 in some cases.</p><div class="fullcomment"><div class="comment cmt"><p>This allows you to handle a failure by giving a replacement execution
 in some cases. This execution may be a retry if you know that your
@@ -483,7 +580,11 @@ when there is some real problem with your job logic.
       <span class="symbol">
         <span class="name">resetCounters</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@resetCounters:com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Resets the counters back to zero.</p><div class="fullcomment"><div class="comment cmt"><p>Resets the counters back to zero. This is useful if
 you want to reset before a zip or a call to flatMap
 </p></div></div>
@@ -492,13 +593,17 @@ you want to reset before a zip or a call to flatMap
       <a id="run(Config,Mode)(scala.concurrent.ExecutionContext):Future[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
         <span class="name">run</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@run(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode)(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This causes the Execution to occur.</p><div class="fullcomment"><div class="comment cmt"><p>This causes the Execution to occur. The result is not cached, so each call
 to run will result in the computation being re-run. Avoid calling this
 until the last possible moment by using flatMap, zip and recoverWith.</p><p>Seriously: pro-style is for this to be called only once in a program.
@@ -514,7 +619,11 @@ until the last possible moment by using flatMap, zip and recoverWith.</p><p>Seri
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -527,7 +636,11 @@ until the last possible moment by using flatMap, zip and recoverWith.</p><p>Seri
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#unit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="unit:com.twitter.scalding.Execution[Unit]"></a>
@@ -540,11 +653,13 @@ until the last possible moment by using flatMap, zip and recoverWith.</p><p>Seri
       <span class="symbol">
         <span class="name">unit</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@unit:com.twitter.scalding.Execution[Unit]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is convenience for when we don't care about the result.</p><div class="fullcomment"><div class="comment cmt"><p>This is convenience for when we don't care about the result.
 like .map(_ =&gt; ())
-Note: When called after a map, the map never happens. Use onComplete
-to attach side effects.</p><p>.map(fn).unit == .unit
 </p></div></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -557,7 +672,11 @@ to attach side effects.</p><p>.map(fn).unit == .unit
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -576,7 +695,11 @@ to attach side effects.</p><p>.map(fn).unit == .unit
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -595,7 +718,11 @@ to attach side effects.</p><p>.map(fn).unit == .unit
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -614,7 +741,11 @@ to attach side effects.</p><p>.map(fn).unit == .unit
       <span class="symbol">
         <span class="name">waitFor</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.util.Try">Try</span>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@waitFor(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode):scala.util.Try[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This waits synchronously on run, using the global execution context
 Avoid calling this if possible, prefering run or just Execution
 composition.</p><div class="fullcomment"><div class="comment cmt"><p>This waits synchronously on run, using the global execution context
@@ -633,9 +764,13 @@ always code smell. Very seldom should you need to wait on a future.
       <span class="symbol">
         <span class="name">withFilter</span><span class="params">(<span name="p">p: (<span class="extype" name="com.twitter.scalding.Execution.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@withFilter(p:T=&gt;Boolean):com.twitter.scalding.Execution[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is here to silence warnings in for comprehensions, but is
-identical to .</p><div class="fullcomment"><div class="comment cmt"><p>This is here to silence warnings in for comprehensions, but is
+identical to .filter.</p><div class="fullcomment"><div class="comment cmt"><p>This is here to silence warnings in for comprehensions, but is
 identical to .filter.</p><p>Users should never directly call this method, call .filter
 </p></div></div>
     </li><li name="com.twitter.scalding.Execution#zip" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
@@ -649,7 +784,11 @@ identical to .filter.</p><p>Users should never directly call this method, call .
       <span class="symbol">
         <span class="name">zip</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.zip.U">U</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <span class="extype" name="com.twitter.scalding.Execution.zip.U">U</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.Execution@zip[U](that:com.twitter.scalding.Execution[U]):com.twitter.scalding.Execution[(T,U)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -682,6 +821,7 @@ identical to .filter.</p><p>Users should never directly call this method, call .
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

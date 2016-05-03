@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>source - com.twitter.scalding.source</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>source</h1>
+        <h1>source</h1><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -69,8 +77,12 @@
       <span class="symbol">
         <a href="CheckedInversion.html"><span class="name">CheckedInversion</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Handles the error checking for Injection inversion
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@CheckedInversion[T,U]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Handles the error checking for Injection inversion
 if check fails, it will throw an unrecoverable exception stopping the job
 TODO: probably belongs in Bijection
 </p>
@@ -85,7 +97,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="CodecSource.html"><span class="name">CodecSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.source.CodecSource.T">T</span>] with <a href="../LocalTapSource.html" class="extype" name="com.twitter.scalding.LocalTapSource">LocalTapSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@CodecSource[T]extendsFileSourcewithMappable[T]withLocalTapSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="DailyPrefixSuffixMostRecentSourceextendsMostRecentGoodSource"></a>
@@ -98,7 +114,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailyPrefixSuffixMostRecentSource.html"><span class="name">DailyPrefixSuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailyPrefixSuffixMostRecentSourceextendsMostRecentGoodSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailyPrefixSuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="DailyPrefixSuffixSourceextendsTimePathedSource"></a>
@@ -111,7 +131,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailyPrefixSuffixSource.html"><span class="name">DailyPrefixSuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailyPrefixSuffixSourceextendsTimePathedSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixCsvextendsDailySuffixSourcewithDelimitedScheme"></a>
@@ -124,7 +148,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixCsv.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixCsvextendsDailySuffixSourcewithDelimitedScheme" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixMostRecentCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixMostRecentCsvextendsDailySuffixMostRecentSourcewithDelimitedScheme"></a>
@@ -137,7 +165,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixMostRecentCsv.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends <a href="DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixMostRecentCsvextendsDailySuffixMostRecentSourcewithDelimitedScheme" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="DailySuffixMostRecentSourceextendsMostRecentGoodSource"></a>
@@ -150,7 +182,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixMostRecentSource.html"><span class="name">DailySuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixMostRecentSourceextendsMostRecentGoodSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="DailySuffixSourceextendsTimePathedSource"></a>
@@ -163,7 +199,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixSource.html"><span class="name">DailySuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixSourceextendsTimePathedSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixTsvextendsDailySuffixSourcewithDelimitedScheme"></a>
@@ -176,7 +216,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixTsv.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixTsvextendsDailySuffixSourcewithDelimitedScheme" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixTypedTsv[T]extendsDailySuffixSourcewithTypedDelimited[T]"></a>
@@ -189,7 +233,28 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="DailySuffixTypedTsv.html"><span class="name">DailySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a> with <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>[<span class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixTypedTsv[T]extendsDailySuffixSourcewithTypedDelimited[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.source.FixedTypedText" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FixedTypedText[T]extendsFixedPathSourcewithTypedTextDelimited[T]"></a>
+      <a id="FixedTypedText[T]:FixedTypedText[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FixedTypedText.html"><span class="name">FixedTypedText</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="TypedTextDelimited.html" class="extype" name="com.twitter.scalding.source.TypedTextDelimited">TypedTextDelimited</a>[<span class="extype" name="com.twitter.scalding.source.FixedTypedText.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@FixedTypedText[T]extendsFixedPathSourcewithTypedTextDelimited[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixCsvextendsHourlySuffixSourcewithDelimitedScheme"></a>
@@ -202,7 +267,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="HourlySuffixCsv.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixCsvextendsHourlySuffixSourcewithDelimitedScheme" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixMostRecentSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixMostRecentSourceextendsMostRecentGoodSource"></a>
@@ -215,7 +284,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="HourlySuffixMostRecentSource.html"><span class="name">HourlySuffixMostRecentSource</span></a><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixMostRecentSourceextendsMostRecentGoodSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixSourceextendsTimePathedSource"></a>
@@ -228,7 +301,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="HourlySuffixSource.html"><span class="name">HourlySuffixSource</span></a><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixSourceextendsTimePathedSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixTsvextendsHourlySuffixSourcewithDelimitedScheme"></a>
@@ -241,7 +318,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="HourlySuffixTsv.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixTsvextendsHourlySuffixSourcewithDelimitedScheme" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixTypedTsv[T]extendsHourlySuffixSourcewithTypedDelimited[T]"></a>
@@ -254,7 +335,11 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="HourlySuffixTypedTsv.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a> with <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>[<span class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixTypedTsv[T]extendsHourlySuffixSourcewithTypedDelimited[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.MaxFailuresCheck" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MaxFailuresCheck[T,U]extendsCheckedInversion[T,U]"></a>
@@ -267,9 +352,65 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="MaxFailuresCheck.html"><span class="name">MaxFailuresCheck</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <a href="CheckedInversion.html" class="extype" name="com.twitter.scalding.source.CheckedInversion">CheckedInversion</a>[<span class="extype" name="com.twitter.scalding.source.MaxFailuresCheck.T">T</span>, <span class="extype" name="com.twitter.scalding.source.MaxFailuresCheck.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@MaxFailuresCheck[T,U]extendsCheckedInversion[T,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.source.TypedSequenceFile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.source.MostRecentTypedText" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MostRecentTypedText[T]extendsMostRecentGoodSourcewithTypedTextDelimited[T]"></a>
+      <a id="MostRecentTypedText[T]:MostRecentTypedText[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MostRecentTypedText.html"><span class="name">MostRecentTypedText</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a> with <a href="TypedTextDelimited.html" class="extype" name="com.twitter.scalding.source.TypedTextDelimited">TypedTextDelimited</a>[<span class="extype" name="com.twitter.scalding.source.MostRecentTypedText.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@MostRecentTypedText[T]extendsMostRecentGoodSourcewithTypedTextDelimited[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.source.TimePathTypedText" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TimePathTypedText[T]extendsTimePathedSourcewithTypedTextDelimited[T]"></a>
+      <a id="TimePathTypedText[T]:TimePathTypedText[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TimePathTypedText.html"><span class="name">TimePathTypedText</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> with <a href="TypedTextDelimited.html" class="extype" name="com.twitter.scalding.source.TypedTextDelimited">TypedTextDelimited</a>[<span class="extype" name="com.twitter.scalding.source.TimePathTypedText.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TimePathTypedText[T]extendsTimePathedSourcewithTypedTextDelimited[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.source.TypedSep" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedSepextendsAnyValwithProductwithSerializable"></a>
+      <a id="TypedSep:TypedSep"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedSep.html"><span class="name">TypedSep</span></a><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TypedSepextendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This object gives you easy access to text formats (possibly LZO compressed) by
+using a case class to describe the field names and types.</p>
+    </li><li name="com.twitter.scalding.source.TypedSequenceFile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TypedSequenceFile[T]extendsSequenceFilewithMappable[T]withcom.twitter.scalding.TypedSink[T]"></a>
       <a id="TypedSequenceFile[T]:TypedSequenceFile[T]"></a>
       <h4 class="signature">
@@ -280,8 +421,32 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="TypedSequenceFile.html"><span class="name">TypedSequenceFile</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../SequenceFile.html" class="extype" name="com.twitter.scalding.SequenceFile">SequenceFile</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.source.TypedSequenceFile.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.source.TypedSequenceFile.T">T</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">SequenceFile with explicit types.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TypedSequenceFile[T]extendsSequenceFilewithMappable[T]withcom.twitter.scalding.TypedSink[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">SequenceFile with explicit types.</p><div class="fullcomment"><div class="comment cmt"><p>SequenceFile with explicit types. Useful for debugging flows using the Typed API.
+Not to be used for permanent storage: uses Kryo serialization which may not be
+consistent across JVM instances. Use Thrift sources instead.
+</p></div></div>
+    </li><li name="com.twitter.scalding.source.TypedTextDelimited" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TypedTextDelimited[T]extendsSchemedSourcewithMappable[T]withTypedSink[T]"></a>
+      <a id="TypedTextDelimited[T]:TypedTextDelimited[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedTextDelimited.html"><span class="name">TypedTextDelimited</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.source.TypedTextDelimited.T">T</span>] with <a href="../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.source.TypedTextDelimited.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TypedTextDelimited[T]extendsSchemedSourcewithMappable[T]withTypedSink[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li></ol>
             </div>
 
@@ -300,8 +465,12 @@ TODO: probably belongs in Bijection
       <span class="symbol">
         <a href="BytesWritableCodec$.html"><span class="name">BytesWritableCodec</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Source used to write some type T into a WritableSequenceFile using a codec on T
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@BytesWritableCodec" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Source used to write some type T into a WritableSequenceFile using a codec on T
 for serialization.</p>
     </li><li name="com.twitter.scalding.source.CodecSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CodecSource"></a>
@@ -314,7 +483,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="CodecSource$.html"><span class="name">CodecSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@CodecSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixCsv"></a>
@@ -327,7 +500,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="DailySuffixCsv$.html"><span class="name">DailySuffixCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixCsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixMostRecentCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixMostRecentCsv"></a>
@@ -340,7 +517,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="DailySuffixMostRecentCsv$.html"><span class="name">DailySuffixMostRecentCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixMostRecentCsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixTsv"></a>
@@ -353,7 +534,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="DailySuffixTsv$.html"><span class="name">DailySuffixTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixTsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.DailySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DailySuffixTypedTsv"></a>
@@ -366,7 +551,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="DailySuffixTypedTsv$.html"><span class="name">DailySuffixTypedTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@DailySuffixTypedTsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixCsv"></a>
@@ -379,7 +568,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="HourlySuffixCsv$.html"><span class="name">HourlySuffixCsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixCsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixTsv"></a>
@@ -392,7 +585,11 @@ for serialization.</p>
       <span class="symbol">
         <a href="HourlySuffixTsv$.html"><span class="name">HourlySuffixTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixTsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.source.HourlySuffixTypedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HourlySuffixTypedTsv"></a>
@@ -405,8 +602,33 @@ for serialization.</p>
       <span class="symbol">
         <a href="HourlySuffixTypedTsv$.html"><span class="name">HourlySuffixTypedTsv</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@HourlySuffixTypedTsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
+    </li><li name="com.twitter.scalding.source.NullSink" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="NullSink"></a>
+      <a id="NullSink:NullSink"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="NullSink$.html"><span class="name">NullSink</span></a><span class="result"> extends <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="../BaseNullSource.html" class="extype" name="com.twitter.scalding.BaseNullSource">BaseNullSource</a> with <a href="../typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="scala.Any">Any</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@NullSink" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This can be used to cause cascading to run a flow, but discard
+the output.</p><div class="fullcomment"><div class="comment cmt"><p>This can be used to cause cascading to run a flow, but discard
+the output. The only place this is likely of use is to do some (non-recommended,
+but sometimes the most expediant way to accomplish some task).
+</p></div></div>
     </li><li name="com.twitter.scalding.source.TypedSequenceFile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedSequenceFile"></a>
       <a id="TypedSequenceFile:TypedSequenceFile"></a>
@@ -418,7 +640,28 @@ for serialization.</p>
       <span class="symbol">
         <a href="TypedSequenceFile$.html"><span class="name">TypedSequenceFile</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TypedSequenceFile" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.source.TypedText" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TypedText"></a>
+      <a id="TypedText:TypedText"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedText$.html"><span class="name">TypedText</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.source.package@TypedText" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -445,6 +688,7 @@ for serialization.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>TypedDelimited - com.twitter.scalding.TypedDelimited</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/trait_big.png" />
+        <img alt="Trait" src="../../../lib/trait_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>TypedDelimited</h1>
+        <h1>TypedDelimited</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,20 +45,23 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">TypedDelimited</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> with <a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>] with <a href="package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
+        <span class="name deprecated" title="Deprecated: (Since version 2015-07) Use TypedTextDelimited instead">TypedDelimited</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> with <a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>] with <a href="package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
       </span>
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Allows you to set the types, prefer this:
 If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
 e.g. TypedTsv[Tuple1[List[Int]]]
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala" target="_blank">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2015-07)</i> Use TypedTextDelimited instead</p></dd><dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TypedDelimited.scala" target="_blank">TypedDelimited.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>], <a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>], <a href="typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">typed.TypedSource</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>], <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -73,7 +86,6 @@ e.g. TypedTsv[Tuple1[List[Int]]]
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -100,7 +112,11 @@ e.g. TypedTsv[Tuple1[List[Int]]]
       <span class="symbol">
         <span class="name">conv</span><span class="result">: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@conv:com.twitter.scalding.TupleConverter[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Source#createTap" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]"></a>
@@ -113,7 +129,11 @@ e.g. TypedTsv[Tuple1[List[Int]]]
       <span class="symbol">
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
 making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -128,7 +148,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">mf</span><span class="result">: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@mf:Manifest[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.TypedDelimited#tset" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="tset:com.twitter.scalding.TupleSetter[T]"></a>
@@ -141,7 +165,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">tset</span><span class="result">: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@tset:com.twitter.scalding.TupleSetter[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -149,19 +177,6 @@ making Taps suitable for testing.
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -172,8 +187,12 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -185,22 +204,13 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -211,8 +221,12 @@ making Taps suitable for testing.
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#addTypes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="addTypes(sel:Array[Comparable[_]]):cascading.tuple.Fields"></a>
       <a id="addTypes(Array[Comparable[_]]):Fields"></a>
@@ -224,7 +238,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">addTypes</span><span class="params">(<span name="sel">sel: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@addTypes(sel:Array[Comparable[_]]):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.TypedSource#andThen" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="andThen[U](fn:T=&gt;U):com.twitter.scalding.typed.TypedSource[U]"></a>
@@ -237,7 +255,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">andThen</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedSource.andThen.U">U</span></span>)</span><span class="result">: <a href="typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">typed.TypedSource</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSource.andThen.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@andThen[U](fn:T=&gt;U):com.twitter.scalding.typed.TypedSource[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Transform this TypedSource into another by mapping after.</p><div class="fullcomment"><div class="comment cmt"><p>Transform this TypedSource into another by mapping after.
 We don't call this map because of conflicts with Mappable, unfortunately
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a></dd></dl></div>
@@ -252,7 +274,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
@@ -265,7 +291,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -278,7 +308,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -297,7 +331,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">contraMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>) ⇒ <span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span></span>)</span><span class="result">: <a href="typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">typed.TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@contraMap[U](fn:U=&gt;T):com.twitter.scalding.typed.TypedSink[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Transform this sink into another type by applying a function first
 </p><div class="fullcomment"><div class="comment cmt"><p>Transform this sink into another type by applying a function first
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
@@ -312,7 +350,11 @@ We don't call this map because of conflicts with Mappable, unfortunately
       <span class="symbol">
         <span class="name">converter</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span></span>]</span><span class="result">: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.converter.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@converter[U&gt;:T]:com.twitter.scalding.TupleConverter[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Because TupleConverter cannot be covariant, we need to jump through this hoop.</p><div class="fullcomment"><div class="comment cmt"><p>Because TupleConverter cannot be covariant, we need to jump through this hoop.
 A typical implementation might be:
 (implicit conv: TupleConverter[T])
@@ -329,7 +371,11 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -342,7 +388,11 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields:cascading.tuple.Fields"></a>
@@ -355,7 +405,11 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">fields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@fields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -368,7 +422,11 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -387,7 +445,11 @@ and then:</p><p>override def converter[U &gt;: T] = TupleConverter.asSuperConver
       <span class="symbol">
         <span class="name">flatMapTo</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="out">out: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="mf">mf: (<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>) ⇒ <a href="../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.Mappable.flatMapTo.U">U</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Mappable.flatMapTo.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@flatMapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;TraversableOnce[U])(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">If you want to filter, you should use this and output a 0 or 1 length Iterable.</p><div class="fullcomment"><div class="comment cmt"><p>If you want to filter, you should use this and output a 0 or 1 length Iterable.
 Filter does not change column names, and we generally expect to change columns here
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
@@ -402,7 +464,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -415,7 +481,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
@@ -428,7 +498,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -441,7 +515,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="localScheme:cascading.scheme.local.TextDelimited"></a>
@@ -454,7 +532,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.local.TextDelimited">TextDelimited</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@localScheme:cascading.scheme.local.TextDelimited" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a> → <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Mappable#mapTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;U)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe"></a>
@@ -467,7 +549,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">mapTo</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="out">out: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span name="mf">mf: (<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.Mappable.mapTo.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Mappable.mapTo.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@mapTo[U](out:cascading.tuple.Fields)(mf:T=&gt;U)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode,implicitsetter:com.twitter.scalding.TupleSetter[U]):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -480,7 +566,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -493,7 +583,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -506,7 +600,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#quote" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="quote:String"></a>
@@ -519,7 +617,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">quote</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@quote:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -532,7 +634,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.DelimitedScheme#safe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="safe:Boolean"></a>
@@ -545,7 +651,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">safe</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@safe:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#separator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="separator:String"></a>
@@ -558,7 +668,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">separator</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@separator:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#setter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setter[U&lt;:T]:com.twitter.scalding.TupleSetter[U]"></a>
@@ -571,7 +685,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">setter</span><span class="tparams">[<span name="U">U &lt;: <span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span></span>]</span><span class="result">: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.setter.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@setter[U&lt;:T]:com.twitter.scalding.TupleSetter[U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#sinkFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkFields:cascading.tuple.Fields"></a>
@@ -584,7 +702,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">sinkFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@sinkFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="typed/TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkMode:cascading.tap.SinkMode"></a>
@@ -597,7 +719,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TypedDelimited#skipHeader" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="skipHeader:Boolean"></a>
@@ -610,7 +736,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">skipHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@skipHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedSource#sourceFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceFields:cascading.tuple.Fields"></a>
@@ -623,7 +753,11 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">sourceFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@sourceFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="typed/TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceId:String"></a>
@@ -636,9 +770,15 @@ Filter does not change column names, and we generally expect to change columns h
       <span class="symbol">
         <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
-(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
 (put another way, if s1.sourceId == s2.sourceId, the job should
 work the same if one is replaced with the other
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -653,7 +793,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">strict</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@strict:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -666,7 +810,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Mappable#toIterator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toIterator(implicitconfig:com.twitter.scalding.Config,implicitmode:com.twitter.scalding.Mode):Iterator[T]"></a>
@@ -679,7 +827,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">toIterator</span><span class="params">(<span class="implicit">implicit </span><span name="config">config: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <a href="../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.TypedDelimited.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@toIterator(implicitconfig:com.twitter.scalding.Config,implicitmode:com.twitter.scalding.Mode):Iterator[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.</p><div class="fullcomment"><div class="comment cmt"><p>Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
 Typical use might be to read in Job.next to determine if another job is needed
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a></dd></dl></div>
@@ -694,7 +846,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -707,7 +863,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -720,7 +880,11 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformInTest:Boolean"></a>
@@ -733,8 +897,13 @@ Typical use might be to read in Job.next to determine if another job is needed
       <span class="symbol">
         <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
 as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
@@ -751,7 +920,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">types</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@types:Array[Class[_]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
@@ -764,7 +937,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -777,7 +954,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -796,7 +977,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -815,7 +1000,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -834,7 +1023,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
@@ -851,7 +1044,11 @@ the next operation
       <span class="symbol">
         <span class="name">writeHeader</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@writeHeader:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a> → <a href="DelimitedScheme.html" class="extype" name="com.twitter.scalding.DelimitedScheme">DelimitedScheme</a></dd></dl></div>
     </li></ol>
             </div>
@@ -871,7 +1068,11 @@ the next operation
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TypedDelimited@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -915,6 +1116,7 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

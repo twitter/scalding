@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>extensions - com.twitter.scalding.commons.extensions</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../../package.html" class="extype" name="com">com</a>.<a href="../../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="../package.html" class="extype" name="com.twitter.scalding.commons">commons</a></p>
-        <h1>extensions</h1>
+        <h1>extensions</h1><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.extensions.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -62,7 +70,7 @@
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="com.twitter.scalding.commons.extensions.Checkpoint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="com.twitter.scalding.commons.extensions.Checkpoint" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Checkpoint"></a>
       <a id="Checkpoint:Checkpoint"></a>
       <h4 class="signature">
@@ -73,9 +81,36 @@
       <span class="symbol">
         <a href="Checkpoint$.html"><span class="name">Checkpoint</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Checkpoint provides a simple mechanism to read and write intermediate results
-from a Scalding flow to HDFS.</p>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#com.twitter.scalding.commons.extensions.package@Checkpoint" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Checkpoint provides a simple mechanism to read and write intermediate results
+from a Scalding flow to HDFS.</p><div class="fullcomment"><div class="comment cmt"><p>Checkpoint provides a simple mechanism to read and write intermediate results
+from a Scalding flow to HDFS.</p><p>Checkpoints are useful for debugging one part of a long flow, when you would
+otherwise have to run many steps to get to the one you care about.  To enable
+checkpoints, sprinkle calls to Checkpoint() throughout your flow, ideally
+after expensive steps.</p><p>When checkpoints are enabled, each Checkpoint() looks for a checkpoint file
+on HDFS.  If it exists we read results from the file; otherwise we execute
+the flow and write the results to the file.  When checkpoints are disabled,
+the flow is always executed and the results are never stored.</p><p>Each call to Checkpoint() takes the checkpoint name, as well as the types and
+names of the expected fields.  A sample invocation might look like this:
+  val pipe = Checkpoint[(Long, String, Long)](
+        &quot;clicks&quot;, ('tweetId, 'clickUrl, 'clickCount)) { ... }
+where { ... } contains a flow which computes the result.</p><p>Most checkpoint parameters are specified via command-line flags:
+--checkpoint.clobber: if true, recompute and overwrite any existing
+    checkpoint files.
+--checkpoint.clobber.&lt;name&gt;: override clobber for the given checkpoint.
+--checkpoint.file: specifies a filename prefix to use for checkpoint files.
+    If blank, checkpoints are disabled; otherwise the file for checkpoint
+    &lt;name&gt; is &lt;prefix&gt;_&lt;name&gt;.
+--checkpoint.file.&lt;name&gt;: override --checkpoint.file for the given
+    checkpoint; specifies the whole filename, not the prefix.
+--checkpoint.format: specifies a file format, either sequencefile or tsv.
+    Default is sequencefile for HDFS, tsv for local.
+--checkpoint.format.&lt;name&gt;: specifies file format for the given checkpoint.
+</p></div></div>
     </li></ol>
             </div>
 
@@ -101,6 +136,7 @@ from a Scalding flow to HDFS.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../../lib/template.js"></script>
+
+
     </body>
       </html>

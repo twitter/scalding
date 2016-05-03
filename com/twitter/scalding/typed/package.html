@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>typed - com.twitter.scalding.typed</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>typed</h1>
+        <h1>typed</h1><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -69,10 +77,14 @@
       <span class="symbol">
         <a href="BijectedSourceSink.html"><span class="name">BijectedSourceSink</span></a><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="result"> extends <a href="TypedSource.html" class="extype" name="com.twitter.scalding.typed.TypedSource">TypedSource</a>[<span class="extype" name="com.twitter.scalding.typed.BijectedSourceSink.U">U</span>] with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.BijectedSourceSink.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@BijectedSourceSink[T,U]extendsTypedSource[U]withTypedSink[U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.CoGroupable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="CoGroupable[K,+R]extendsHasReducerswithSerializable"></a>
+      <a id="CoGroupable[K,+R]extendsHasReducerswithHasDescriptionwithSerializable"></a>
       <a id="CoGroupable[K,+R]:CoGroupable[K,R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -80,13 +92,17 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="CoGroupable.html"><span class="name">CoGroupable</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
+        <a href="CoGroupable.html"><span class="name">CoGroupable</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a> with <a href="HasDescription.html" class="extype" name="com.twitter.scalding.typed.HasDescription">HasDescription</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Represents something than can be CoGrouped with another CoGroupable
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CoGroupable[K,+R]extendsHasReducerswithHasDescriptionwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents something than can be CoGrouped with another CoGroupable
 </p>
     </li><li name="com.twitter.scalding.typed.CoGrouped" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="CoGrouped[K,+R]extendsKeyedListLike[K,R,com.twitter.scalding.typed.CoGrouped]withCoGroupable[K,R]withWithReducers[com.twitter.scalding.typed.CoGrouped[K,R]]"></a>
+      <a id="CoGrouped[K,+R]extendsKeyedListLike[K,R,com.twitter.scalding.typed.CoGrouped]withCoGroupable[K,R]withWithReducers[com.twitter.scalding.typed.CoGrouped[K,R]]withWithDescription[com.twitter.scalding.typed.CoGrouped[K,R]]"></a>
       <a id="CoGrouped[K,+R]:CoGrouped[K,R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -94,9 +110,13 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="CoGrouped.html"><span class="name">CoGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>, <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>] with <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>]]</span>
+        <a href="CoGrouped.html"><span class="name">CoGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="R">+R</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>, <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>] with <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>]] with <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.CoGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGrouped.R">R</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CoGrouped[K,+R]extendsKeyedListLike[K,R,com.twitter.scalding.typed.CoGrouped]withCoGroupable[K,R]withWithReducers[com.twitter.scalding.typed.CoGrouped[K,R]]withWithDescription[com.twitter.scalding.typed.CoGrouped[K,R]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.CoGroupedJoiner" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="CoGroupedJoiner[K]extendsJoiner"></a>
@@ -109,7 +129,11 @@
       <span class="symbol">
         <a href="CoGroupedJoiner.html"><span class="name">CoGroupedJoiner</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends <span class="extype" name="cascading.pipe.joiner.Joiner">cascading.pipe.joiner.Joiner</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CoGroupedJoiner[K]extendsJoiner" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.ComputedValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ComputedValue[T]extendsValuePipe[T]withProductwithSerializable"></a>
@@ -122,7 +146,11 @@
       <span class="symbol">
         <a href="ComputedValue.html"><span class="name">ComputedValue</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.ComputedValue.T">T</span>]</span>)</span><span class="result"> extends <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.ComputedValue.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@ComputedValue[T]extendsValuePipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.Converter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Converter[R]extendsFlatMapFn[R]withProductwithSerializable"></a>
@@ -135,7 +163,11 @@
       <span class="symbol">
         <a href="Converter.html"><span class="name">Converter</span></a><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.Converter.R">R</span>]</span>)</span><span class="result"> extends <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.Converter.R">R</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Converter[R]extendsFlatMapFn[R]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.DistinctCoGroupJoiner" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DistinctCoGroupJoiner[K]extendsCoGroupedJoiner[K]"></a>
@@ -148,7 +180,11 @@
       <span class="symbol">
         <a href="DistinctCoGroupJoiner.html"><span class="name">DistinctCoGroupJoiner</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends <a href="CoGroupedJoiner.html" class="extype" name="com.twitter.scalding.typed.CoGroupedJoiner">CoGroupedJoiner</a>[<span class="extype" name="com.twitter.scalding.typed.DistinctCoGroupJoiner.K">K</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@DistinctCoGroupJoiner[K]extendsCoGroupedJoiner[K]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.FilteredFn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="FilteredFn[R]extendsFlatMapFn[R]withProductwithSerializable"></a>
@@ -161,9 +197,13 @@
       <span class="symbol">
         <a href="FilteredFn.html"><span class="name">FilteredFn</span></a><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.FilteredFn.R">R</span>]</span>, <span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.FilteredFn.R">R</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.FilteredFn.R">R</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@FilteredFn[R]extendsFlatMapFn[R]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.FlatMapFn" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.FlatMapFn" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="FlatMapFn[+R]extendscascading.tuple.TupleEntry=&gt;TraversableOnce[R]withSerializable"></a>
       <a id="FlatMapFn[+R]:FlatMapFn[R]"></a>
       <h4 class="signature">
@@ -174,8 +214,12 @@
       <span class="symbol">
         <a href="FlatMapFn.html"><span class="name">FlatMapFn</span></a><span class="tparams">[<span name="R">+R</span>]</span><span class="result"> extends (<span class="extype" name="cascading.tuple.TupleEntry">TupleEntry</span>) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.FlatMapFn.R">R</span>] with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Closures are difficult for serialization.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@FlatMapFn[+R]extendscascading.tuple.TupleEntry=&gt;TraversableOnce[R]withSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Closures are difficult for serialization.</p><div class="fullcomment"><div class="comment cmt"><p>Closures are difficult for serialization. This class avoids that.</p></div></div>
     </li><li name="com.twitter.scalding.typed.FlatMappedFn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="FlatMappedFn[T,R]extendsFlatMapFn[R]withProductwithSerializable"></a>
       <a id="FlatMappedFn[T,R]:FlatMappedFn[T,R]"></a>
@@ -187,10 +231,14 @@
       <span class="symbol">
         <a href="FlatMappedFn.html"><span class="name">FlatMappedFn</span></a><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.FlatMappedFn.T">T</span>]</span>, <span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.FlatMappedFn.T">T</span>) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.FlatMappedFn.R">R</span>]</span>)</span><span class="result"> extends <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.FlatMappedFn.R">R</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@FlatMappedFn[T,R]extendsFlatMapFn[R]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.Grouped" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="Grouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withSortable[V,[+x]com.twitter.scalding.typed.SortedGrouped[K,x]withcom.twitter.scalding.typed.Reversable[com.twitter.scalding.typed.SortedGrouped[K,x]]]withWithReducers[com.twitter.scalding.typed.Grouped[K,V]]"></a>
+    </li><li name="com.twitter.scalding.typed.Grouped" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Grouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withSortable[V,[+x]com.twitter.scalding.typed.SortedGrouped[K,x]withcom.twitter.scalding.typed.Reversable[com.twitter.scalding.typed.SortedGrouped[K,x]]]withWithReducers[com.twitter.scalding.typed.Grouped[K,V]]withWithDescription[com.twitter.scalding.typed.Grouped[K,V]]"></a>
       <a id="Grouped[K,+V]:Grouped[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -198,13 +246,39 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>, <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>] with <a href="Sortable.html" class="extype" name="com.twitter.scalding.typed.Sortable">Sortable</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>, [+x]<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.&lt;refinement&gt;.t.x">x</span>] with <a href="Reversable.html" class="extype" name="com.twitter.scalding.typed.Reversable">Reversable</a>[<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.&lt;refinement&gt;.t.x">x</span>]]] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>]]</span>
+        <a href="Grouped.html"><span class="name">Grouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>, <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>] with <a href="Sortable.html" class="extype" name="com.twitter.scalding.typed.Sortable">Sortable</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>, [+x]<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.&lt;refinement&gt;.t.x">x</span>] with <a href="Reversable.html" class="extype" name="com.twitter.scalding.typed.Reversable">Reversable</a>[<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.&lt;refinement&gt;.t.x">x</span>]]] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>]] with <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.Grouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Grouped.V">V</span>]]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This encodes the rules that
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Grouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withSortable[V,[+x]com.twitter.scalding.typed.SortedGrouped[K,x]withcom.twitter.scalding.typed.Reversable[com.twitter.scalding.typed.SortedGrouped[K,x]]]withWithReducers[com.twitter.scalding.typed.Grouped[K,V]]withWithDescription[com.twitter.scalding.typed.Grouped[K,V]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This encodes the rules that
 1) sorting is only possible before doing any reduce,
-2) reversing is only possible after sorting.</p>
-    </li><li name="com.twitter.scalding.typed.HasReducers" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+2) reversing is only possible after sorting.</p><div class="fullcomment"><div class="comment cmt"><p>This encodes the rules that
+1) sorting is only possible before doing any reduce,
+2) reversing is only possible after sorting.
+3) unsorted Groups can be CoGrouped or HashJoined</p><p>This may appear a complex type, but it makes
+sure that code won't compile if it breaks the rule
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.HasDescription" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HasDescriptionextendsAnyRef"></a>
+      <a id="HasDescription:HasDescription"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HasDescription.html"><span class="name">HasDescription</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HasDescriptionextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used for objects that may have a description set to be used in .dot and MR step names.</p>
+    </li><li name="com.twitter.scalding.typed.HasReducers" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="HasReducersextendsAnyRef"></a>
       <a id="HasReducers:HasReducers"></a>
       <h4 class="signature">
@@ -215,9 +289,185 @@
       <span class="symbol">
         <a href="HasReducers.html"><span class="name">HasReducers</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">used for types that may know how many reducers they need
-e.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HasReducersextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">used for types that may know how many reducers they need
+e.g.</p><div class="fullcomment"><div class="comment cmt"><p>used for types that may know how many reducers they need
+e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.HashEqualsArrayWrapper" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsArrayWrapper[T]extendsAnyRef"></a>
+      <a id="HashEqualsArrayWrapper[T]:HashEqualsArrayWrapper[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsArrayWrapper.html"><span class="name">HashEqualsArrayWrapper</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsArrayWrapper[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsBooleanArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsBooleanArrayWrapperextendsHashEqualsArrayWrapper[Boolean]"></a>
+      <a id="HashEqualsBooleanArrayWrapper:HashEqualsBooleanArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsBooleanArrayWrapper.html"><span class="name">HashEqualsBooleanArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsBooleanArrayWrapperextendsHashEqualsArrayWrapper[Boolean]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsByteArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsByteArrayWrapperextendsHashEqualsArrayWrapper[Byte]"></a>
+      <a id="HashEqualsByteArrayWrapper:HashEqualsByteArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsByteArrayWrapper.html"><span class="name">HashEqualsByteArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Byte">Byte</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsByteArrayWrapperextendsHashEqualsArrayWrapper[Byte]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsCharArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsCharArrayWrapperextendsHashEqualsArrayWrapper[Char]"></a>
+      <a id="HashEqualsCharArrayWrapper:HashEqualsCharArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsCharArrayWrapper.html"><span class="name">HashEqualsCharArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Char">Char</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsCharArrayWrapperextendsHashEqualsArrayWrapper[Char]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsDoubleArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsDoubleArrayWrapperextendsHashEqualsArrayWrapper[Double]"></a>
+      <a id="HashEqualsDoubleArrayWrapper:HashEqualsDoubleArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsDoubleArrayWrapper.html"><span class="name">HashEqualsDoubleArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Double">Double</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsDoubleArrayWrapperextendsHashEqualsArrayWrapper[Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsFloatArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsFloatArrayWrapperextendsHashEqualsArrayWrapper[Float]"></a>
+      <a id="HashEqualsFloatArrayWrapper:HashEqualsFloatArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsFloatArrayWrapper.html"><span class="name">HashEqualsFloatArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Float">Float</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsFloatArrayWrapperextendsHashEqualsArrayWrapper[Float]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsIntArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsIntArrayWrapperextendsHashEqualsArrayWrapper[Int]"></a>
+      <a id="HashEqualsIntArrayWrapper:HashEqualsIntArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsIntArrayWrapper.html"><span class="name">HashEqualsIntArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsIntArrayWrapperextendsHashEqualsArrayWrapper[Int]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsLongArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsLongArrayWrapperextendsHashEqualsArrayWrapper[Long]"></a>
+      <a id="HashEqualsLongArrayWrapper:HashEqualsLongArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsLongArrayWrapper.html"><span class="name">HashEqualsLongArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Long">Long</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsLongArrayWrapperextendsHashEqualsArrayWrapper[Long]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsObjectArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsObjectArrayWrapper[T]extendsHashEqualsArrayWrapper[T]"></a>
+      <a id="HashEqualsObjectArrayWrapper[T]:HashEqualsObjectArrayWrapper[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsObjectArrayWrapper.html"><span class="name">HashEqualsObjectArrayWrapper</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="com.twitter.scalding.typed.HashEqualsObjectArrayWrapper.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsObjectArrayWrapper[T]extendsHashEqualsArrayWrapper[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsShortArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsShortArrayWrapperextendsHashEqualsArrayWrapper[Short]"></a>
+      <a id="HashEqualsShortArrayWrapper:HashEqualsShortArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsShortArrayWrapper.html"><span class="name">HashEqualsShortArrayWrapper</span></a><span class="result"> extends <a href="HashEqualsArrayWrapper.html" class="extype" name="com.twitter.scalding.typed.HashEqualsArrayWrapper">HashEqualsArrayWrapper</a>[<span class="extype" name="scala.Short">Short</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsShortArrayWrapperextendsHashEqualsArrayWrapper[Short]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="com.twitter.scalding.typed.HashJoinable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="HashJoinable[K,+V]extendsCoGroupable[K,V]withKeyedPipe[K]"></a>
       <a id="HashJoinable[K,+V]:HashJoinable[K,V]"></a>
@@ -229,9 +479,14 @@ e.</p>
       <span class="symbol">
         <a href="HashJoinable.html"><span class="name">HashJoinable</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.HashJoinable.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.HashJoinable.V">V</span>] with <a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.HashJoinable.K">K</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">If we can HashJoin, then we can CoGroup, but not vice-versa
-i.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashJoinable[K,+V]extendsCoGroupable[K,V]withKeyedPipe[K]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">If we can HashJoin, then we can CoGroup, but not vice-versa
+i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
+is CoGroupable, but not HashJoinable).</p>
     </li><li name="com.twitter.scalding.typed.HashJoiner" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HashJoiner[K,V,W,R]extendsJoiner"></a>
       <a id="HashJoiner[K,V,W,R]:HashJoiner[K,V,W,R]"></a>
@@ -243,8 +498,12 @@ i.</p>
       <span class="symbol">
         <a href="HashJoiner.html"><span class="name">HashJoiner</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="W">W</span>, <span name="R">R</span>]</span><span class="result"> extends <span class="extype" name="cascading.pipe.joiner.Joiner">cascading.pipe.joiner.Joiner</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashJoiner[K,V,W,R]extendsJoiner" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
 </p>
     </li><li name="com.twitter.scalding.typed.IdentityReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="IdentityReduce[K,V1]extendsReduceStep[K,V1]withGrouped[K,V1]withProductwithSerializable"></a>
@@ -255,9 +514,13 @@ i.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="IdentityReduce.html"><span class="name">IdentityReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>)]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>] with <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="IdentityReduce.html"><span class="name">IdentityReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>)]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="descriptions">descriptions: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>] with <a href="Grouped.html" class="extype" name="com.twitter.scalding.typed.Grouped">Grouped</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityReduce.V1">V1</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@IdentityReduce[K,V1]extendsReduceStep[K,V1]withGrouped[K,V1]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.IdentityValueSortedReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="IdentityValueSortedReduce[K,V1]extendsReduceStep[K,V1]withSortedGrouped[K,V1]withReversable[com.twitter.scalding.typed.IdentityValueSortedReduce[K,V1]]withProductwithSerializable"></a>
@@ -268,11 +531,15 @@ i.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="IdentityValueSortedReduce.html"><span class="name">IdentityValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>)]</span>, <span name="valueSort">valueSort: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>] with <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>] with <a href="Reversable.html" class="extype" name="com.twitter.scalding.typed.Reversable">Reversable</a>[<a href="IdentityValueSortedReduce.html" class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce">IdentityValueSortedReduce</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="IdentityValueSortedReduce.html"><span class="name">IdentityValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>)]</span>, <span name="valueSort">valueSort: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="descriptions">descriptions: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>] with <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>] with <a href="Reversable.html" class="extype" name="com.twitter.scalding.typed.Reversable">Reversable</a>[<a href="IdentityValueSortedReduce.html" class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce">IdentityValueSortedReduce</a>[<span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IdentityValueSortedReduce.V1">V1</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@IdentityValueSortedReduce[K,V1]extendsReduceStep[K,V1]withSortedGrouped[K,V1]withReversable[com.twitter.scalding.typed.IdentityValueSortedReduce[K,V1]]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.IterablePipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.IterablePipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="IterablePipe[T]extendsTypedPipe[T]withProductwithSerializable"></a>
       <a id="IterablePipe[T]:IterablePipe[T]"></a>
       <h4 class="signature">
@@ -283,8 +550,13 @@ i.</p>
       <span class="symbol">
         <a href="IterablePipe.html"><span class="name">IterablePipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iterable">iterable: <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.IterablePipe.T">T</span>]</span>)</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.IterablePipe.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Creates a TypedPipe from an Iterable[T].</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@IterablePipe[T]extendsTypedPipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a TypedPipe from an Iterable[T].</p><div class="fullcomment"><div class="comment cmt"><p>Creates a TypedPipe from an Iterable[T]. Prefer TypedPipe.from.</p><p>If you avoid toPipe, this class is more efficient than IterableSource.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.IteratorMappedReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="IteratorMappedReduce[K,V1,V2]extendsReduceStep[K,V1]withUnsortedGrouped[K,V2]withProductwithSerializable"></a>
       <a id="IteratorMappedReduce[K,V1,V2]:IteratorMappedReduce[K,V1,V2]"></a>
@@ -294,9 +566,13 @@ i.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="IteratorMappedReduce.html"><span class="name">IteratorMappedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>)]</span>, <span name="reduceFn">reduceFn: (<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V2">V2</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>] with <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V2">V2</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="IteratorMappedReduce.html"><span class="name">IteratorMappedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>)]</span>, <span name="reduceFn">reduceFn: (<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V2">V2</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="descriptions">descriptions: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V1">V1</span>] with <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce.V2">V2</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@IteratorMappedReduce[K,V1,V2]extendsReduceStep[K,V1]withUnsortedGrouped[K,V2]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.KeyedList" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="KeyedList[K,+T]extendsKeyedListLike[K,T,com.twitter.scalding.typed.KeyedList]"></a>
@@ -309,11 +585,15 @@ i.</p>
       <span class="symbol">
         <a href="KeyedList.html"><span class="name">KeyedList</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedList.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedList.T">T</span>, <a href="KeyedList.html" class="extype" name="com.twitter.scalding.typed.KeyedList">KeyedList</a>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is for the case where you don't want to expose any structure
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@KeyedList[K,+T]extendsKeyedListLike[K,T,com.twitter.scalding.typed.KeyedList]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is for the case where you don't want to expose any structure
 but the ability to operate on an iterator of the values
 </p>
-    </li><li name="com.twitter.scalding.typed.KeyedListLike" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.KeyedListLike" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="KeyedListLike[K,+T,+This[K,+T]&lt;:com.twitter.scalding.typed.KeyedListLike[K,T,This]]extendsSerializable"></a>
       <a id="KeyedListLike[K,+T,+This[K,+T]&lt;:KeyedListLike[K,T,This]]:KeyedListLike[K,T,This]"></a>
       <h4 class="signature">
@@ -324,11 +604,20 @@ but the ability to operate on an iterator of the values
       <span class="symbol">
         <a href="KeyedListLike.html"><span class="name">KeyedListLike</span></a><span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>, <span name="This">+This<span class="tparams">[<span name="K">K</span>, <span name="T">+T</span>]</span> &lt;: <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.This.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.This.T">T</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.This">This</span>]</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Represents sharded lists of items of type T
-There are exactly two the fundamental operations:
-toTypedPipe: marks the end of the grouped-on-key operations.</p>
-    </li><li name="com.twitter.scalding.typed.KeyedPipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@KeyedListLike[K,+T,+This[K,+T]&lt;:com.twitter.scalding.typed.KeyedListLike[K,T,This]]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents sharded lists of items of type T
+There are exactly two fundamental operations:
+toTypedPipe: marks the end of the grouped-on-key operations.</p><div class="fullcomment"><div class="comment cmt"><p>Represents sharded lists of items of type T
+There are exactly two fundamental operations:
+toTypedPipe: marks the end of the grouped-on-key operations.
+mapValueStream: further transforms all values, in order, one at a time,
+ with a function from Iterator to another Iterator
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.KeyedPipe" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="KeyedPipe[K]extendsAnyRef"></a>
       <a id="KeyedPipe[K]:KeyedPipe[K]"></a>
       <h4 class="signature">
@@ -339,9 +628,16 @@ toTypedPipe: marks the end of the grouped-on-key operations.</p>
       <span class="symbol">
         <a href="KeyedPipe.html"><span class="name">KeyedPipe</span></a><span class="tparams">[<span name="K">K</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Represents anything that starts as a TypedPipe of Key Value, where
-the value type has been erased.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@KeyedPipe[K]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents anything that starts as a TypedPipe of Key Value, where
+the value type has been erased.</p><div class="fullcomment"><div class="comment cmt"><p>Represents anything that starts as a TypedPipe of Key Value, where
+the value type has been erased. Acts as proof that the K in the tuple
+has an Ordering
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.LiteralValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="LiteralValue[T]extendsValuePipe[T]withProductwithSerializable"></a>
       <a id="LiteralValue[T]:LiteralValue[T]"></a>
@@ -353,7 +649,11 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="LiteralValue.html"><span class="name">LiteralValue</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="value">value: <span class="extype" name="com.twitter.scalding.typed.LiteralValue.T">T</span></span>)</span><span class="result"> extends <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="com.twitter.scalding.typed.LiteralValue.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@LiteralValue[T]extendsValuePipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.MapFn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MapFn[T,R]extendsFlatMapFn[R]withProductwithSerializable"></a>
@@ -366,9 +666,13 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="MapFn.html"><span class="name">MapFn</span></a><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fmap">fmap: <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.MapFn.T">T</span>]</span>, <span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.MapFn.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.MapFn.R">R</span></span>)</span><span class="result"> extends <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="com.twitter.scalding.typed.MapFn.R">R</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MapFn[T,R]extendsFlatMapFn[R]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.MappablePipeJoinEnrichment" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.MappablePipeJoinEnrichment" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="MappablePipeJoinEnrichment[T]extendsAnyRef"></a>
       <a id="MappablePipeJoinEnrichment[T]:MappablePipeJoinEnrichment[T]"></a>
       <h4 class="signature">
@@ -379,9 +683,16 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="MappablePipeJoinEnrichment.html"><span class="name">MappablePipeJoinEnrichment</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">This class is for the syntax enrichment enabling
-.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MappablePipeJoinEnrichment[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class is for the syntax enrichment enabling
+.joinBy on TypedPipes.</p><div class="fullcomment"><div class="comment cmt"><p>This class is for the syntax enrichment enabling
+.joinBy on TypedPipes. To access this, do
+import Syntax.joinOnMappablePipe
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.MemorySink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MemorySink[T]extendsTypedSink[T]"></a>
       <a id="MemorySink[T]:MemorySink[T]"></a>
@@ -393,7 +704,11 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="MemorySink.html"><span class="name">MemorySink</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.MemorySink.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MemorySink[T]extendsTypedSink[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.MergedTypedPipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MergedTypedPipe[T]extendsTypedPipe[T]withProductwithSerializable"></a>
@@ -406,9 +721,33 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="MergedTypedPipe.html"><span class="name">MergedTypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="left">left: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>, <span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>]</span>)</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.MergedTypedPipe.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MergedTypedPipe[T]extendsTypedPipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.NoStackAndThen" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.MustHaveReducers" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="MustHaveReducersextendsHasReducers"></a>
+      <a id="MustHaveReducers:MustHaveReducers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MustHaveReducers.html"><span class="name">MustHaveReducers</span></a><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MustHaveReducersextendsHasReducers" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">used for types that must know how many reducers they need
+e.g.</p><div class="fullcomment"><div class="comment cmt"><p>used for types that must know how many reducers they need
+e.g. Sketched
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.NoStackAndThen" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="NoStackAndThen[-A,+B]extendsSerializable"></a>
       <a id="NoStackAndThen[-A,+B]:NoStackAndThen[A,B]"></a>
       <h4 class="signature">
@@ -419,10 +758,18 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="NoStackAndThen.html"><span class="name">NoStackAndThen</span></a><span class="tparams">[<span name="A">-A</span>, <span name="B">+B</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This type is used to implement .</p>
-    </li><li name="com.twitter.scalding.typed.PartitionSchemed" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="PartitionSchemed[P,T]extendsSchemedSourcewithTypedSink[(P,T)]withMappable[(P,T)]"></a>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@NoStackAndThen[-A,+B]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This type is used to implement .andThen on a function in a way
+that will never blow up the stack.</p><div class="fullcomment"><div class="comment cmt"><p>This type is used to implement .andThen on a function in a way
+that will never blow up the stack. This is done to prevent
+deep scalding TypedPipe pipelines from blowing the stack</p><p>This may be slow, but is used in scalding at planning time
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.PartitionSchemed" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="PartitionSchemed[P,T]extendsSchemedSourcewithTypedSink[(P,T)]withMappable[(P,T)]withHfsTapProvider"></a>
       <a id="PartitionSchemed[P,T]:PartitionSchemed[P,T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -430,11 +777,18 @@ the value type has been erased.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="PartitionSchemed.html"><span class="name">PartitionSchemed</span></a><span class="tparams">[<span name="P">P</span>, <span name="T">T</span>]</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.P">P</span>, <span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.T">T</span>)] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.P">P</span>, <span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.T">T</span>)]</span>
+        <a href="PartitionSchemed.html"><span class="name">PartitionSchemed</span></a><span class="tparams">[<span name="P">P</span>, <span name="T">T</span>]</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.P">P</span>, <span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.T">T</span>)] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.P">P</span>, <span class="extype" name="com.twitter.scalding.typed.PartitionSchemed.T">T</span>)] with <a href="../HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Trait to assist with creating partitioned sources.</p>
-    </li><li name="com.twitter.scalding.typed.PartitionedDelimited" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionSchemed[P,T]extendsSchemedSourcewithTypedSink[(P,T)]withMappable[(P,T)]withHfsTapProvider" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Trait to assist with creating partitioned sources.</p><div class="fullcomment"><div class="comment cmt"><p>Trait to assist with creating partitioned sources.</p><p>Apart from the abstract members below, <code>hdfsScheme</code> and <code>localScheme</code> also need to be set.
+Note that for both of them the sink fields need to be set to only include the actual fields
+that should be written to file and not the partition fields.
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.PartitionedDelimited" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="PartitionedDelimitedextendsSerializable"></a>
       <a id="PartitionedDelimited:PartitionedDelimited"></a>
       <h4 class="signature">
@@ -445,9 +799,15 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="PartitionedDelimited.html"><span class="name">PartitionedDelimited</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Trait to assist with creating objects such as <a href="PartitionedTsv$.html" class="extype" name="com.twitter.scalding.typed.PartitionedTsv">PartitionedTsv</a> to read from separated files.</p>
-    </li><li name="com.twitter.scalding.typed.PartitionedDelimitedSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedDelimitedextendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Trait to assist with creating objects such as <a href="PartitionedTsv$.html" class="extype" name="com.twitter.scalding.typed.PartitionedTsv">PartitionedTsv</a> to read from separated files.</p><div class="fullcomment"><div class="comment cmt"><p>Trait to assist with creating objects such as <a href="PartitionedTsv$.html" class="extype" name="com.twitter.scalding.typed.PartitionedTsv">PartitionedTsv</a> to read from separated files.
+Override separator, skipHeader, writeHeader as needed.
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.PartitionedDelimitedSource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="PartitionedDelimitedSource[P,T]extendsSchemedSourcewithPartitionSchemed[P,T]withSerializablewithProductwithSerializable"></a>
       <a id="PartitionedDelimitedSource[P,T]:PartitionedDelimitedSource[P,T]"></a>
       <h4 class="signature">
@@ -458,10 +818,22 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="PartitionedDelimitedSource.html"><span class="name">PartitionedDelimitedSource</span></a><span class="tparams">[<span name="P">P</span>, <span name="T">T</span>]</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="template">template: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="separator">separator: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="fields">fields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="skipHeader">skipHeader: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="writeHeader">writeHeader: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="quote">quote: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;\&quot;&quot;</span></span>, <span name="strict">strict: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>, <span name="safe">safe: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mt">mt: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.T">T</span>]</span>, <span name="valueSetter">valueSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.T">T</span>]</span>, <span name="valueConverter">valueConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.T">T</span>]</span>, <span name="partitionSetter">partitionSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.P">P</span>]</span>, <span name="partitionConverter">partitionConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.P">P</span>]</span>)</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="PartitionSchemed.html" class="extype" name="com.twitter.scalding.typed.PartitionSchemed">PartitionSchemed</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.P">P</span>, <span class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource.T">T</span>] with <span class="extype" name="java.io.Serializable">Serializable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Scalding source to read or write partitioned delimited text.</p>
-    </li><li name="com.twitter.scalding.typed.PartitionedTextLine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="PartitionedTextLine[P]extendsSchemedSourcewithTypedSink[(P,String)]withMappable[(P,(Long,String))]withSerializablewithProductwithSerializable"></a>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedDelimitedSource[P,T]extendsSchemedSourcewithPartitionSchemed[P,T]withSerializablewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Scalding source to read or write partitioned delimited text.</p><div class="fullcomment"><div class="comment cmt"><p>Scalding source to read or write partitioned delimited text.</p><p>For writing it expects a pair of <code>(P, T)</code>, where <code>P</code> is the data used for partitioning and
+<code>T</code> is the output to write out. Below is an example.</p><pre><span class="kw">val</span> data = <span class="std">List</span>(
+  ((<span class="lit">"a"</span>, <span class="lit">"x"</span>), (<span class="lit">"i"</span>, <span class="num">1</span>)),
+  ((<span class="lit">"a"</span>, <span class="lit">"y"</span>), (<span class="lit">"j"</span>, <span class="num">2</span>)),
+  ((<span class="lit">"b"</span>, <span class="lit">"z"</span>), (<span class="lit">"k"</span>, <span class="num">3</span>))
+)
+IterablePipe(data, flowDef, mode)
+  .write(PartitionedDelimited[(<span class="std">String</span>, <span class="std">String</span>), (<span class="std">String</span>, <span class="std">Int</span>)](args(<span class="lit">"out"</span>), <span class="lit">"col1=%s/col2=%s"</span>))</pre><p>For reading it produces a pair <code>(P, T)</code> where <code>P</code> is the partition data and <code>T</code> is data in the
+files. Below is an example.</p><pre><span class="kw">val</span> in: TypedPipe[((<span class="std">String</span>, <span class="std">String</span>), (<span class="std">String</span>, <span class="std">Int</span>))] = PartitionedDelimited[(<span class="std">String</span>, <span class="std">String</span>), (<span class="std">String</span>, <span class="std">Int</span>)](args(<span class="lit">"in"</span>), <span class="lit">"col1=%s/col2=%s"</span>)</pre></div></div>
+    </li><li name="com.twitter.scalding.typed.PartitionedTextLine" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="PartitionedTextLine[P]extendsSchemedSourcewithTypedSink[(P,String)]withMappable[(P,(Long,String))]withHfsTapProviderwithSerializablewithProductwithSerializable"></a>
       <a id="PartitionedTextLine[P]:PartitionedTextLine[P]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -469,10 +841,22 @@ the value type has been erased.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="PartitionedTextLine.html"><span class="name">PartitionedTextLine</span></a><span class="tparams">[<span name="P">P</span>]</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="template">template: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="encoding">encoding: <span class="extype" name="scala.Predef.String">String</span> = <span class="defval" name="cascading.scheme.hadoop.TextLine.DEFAULT_CHARSET">...</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="valueSetter">valueSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="valueConverter">valueConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>, <span name="partitionSetter">partitionSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>]</span>, <span name="partitionConverter">partitionConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>]</span>)</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>, <span class="extype" name="scala.Predef.String">String</span>)] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>, (<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Predef.String">String</span>))] with <span class="extype" name="java.io.Serializable">Serializable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="PartitionedTextLine.html"><span class="name">PartitionedTextLine</span></a><span class="tparams">[<span name="P">P</span>]</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="template">template: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="encoding">encoding: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">TextLine.DEFAULT_CHARSET</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="valueSetter">valueSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="valueConverter">valueConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>, <span name="partitionSetter">partitionSetter: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>]</span>, <span name="partitionConverter">partitionConverter: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>]</span>)</span><span class="result"> extends <a href="../SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a> with <a href="TypedSink.html" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>, <span class="extype" name="scala.Predef.String">String</span>)] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[(<span class="extype" name="com.twitter.scalding.typed.PartitionedTextLine.P">P</span>, (<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Predef.String">String</span>))] with <a href="../HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a> with <span class="extype" name="java.io.Serializable">Serializable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Scalding source to read or write partitioned text.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedTextLine[P]extendsSchemedSourcewithTypedSink[(P,String)]withMappable[(P,(Long,String))]withHfsTapProviderwithSerializablewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Scalding source to read or write partitioned text.</p><div class="fullcomment"><div class="comment cmt"><p>Scalding source to read or write partitioned text.</p><p>For writing it expects a pair of <code>(P, String)</code>, where <code>P</code> is the data used for partitioning and
+<code>String</code> is the output to write out. Below is an example.</p><pre><span class="kw">val</span> data = <span class="std">List</span>(
+  ((<span class="lit">"a"</span>, <span class="lit">"x"</span>), <span class="lit">"line1"</span>),
+  ((<span class="lit">"a"</span>, <span class="lit">"y"</span>), <span class="lit">"line2"</span>),
+  ((<span class="lit">"b"</span>, <span class="lit">"z"</span>), <span class="lit">"line3"</span>)
+)
+IterablePipe(data, flowDef, mode)
+  .write(PartitionTextLine[(<span class="std">String</span>, <span class="std">String</span>)](args(<span class="lit">"out"</span>), <span class="lit">"col1=%s/col2=%s"</span>))</pre><p>For reading it produces a pair <code>(P, (Long, String))</code> where <code>P</code> is the partition data, <code>Long</code>
+is the offset into the file and <code>String</code> is a line from the file. Below is an example.</p><pre><span class="kw">val</span> in: TypedPipe[((<span class="std">String</span>, <span class="std">String</span>), (<span class="std">Long</span>, <span class="std">String</span>))] = PartitionTextLine[(<span class="std">String</span>, <span class="std">String</span>)](args(<span class="lit">"in"</span>), <span class="lit">"col1=%s/col2=%s"</span>)</pre></div><dl class="paramcmts block"><dt class="param">path</dt><dd class="cmt"><p>Base path of the partitioned directory</p></dd><dt class="param">template</dt><dd class="cmt"><p>Template for the partitioned path</p></dd><dt class="param">encoding</dt><dd class="cmt"><p>Text encoding of the file content</p></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.PipeTExtensions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PipeTExtensionsextendsSerializable"></a>
       <a id="PipeTExtensions:PipeTExtensions"></a>
@@ -484,9 +868,13 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="PipeTExtensions.html"><span class="name">PipeTExtensions</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PipeTExtensionsextendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.ReduceStep" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.ReduceStep" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="ReduceStep[K,V1]extendsKeyedPipe[K]"></a>
       <a id="ReduceStep[K,V1]:ReduceStep[K,V1]"></a>
       <h4 class="signature">
@@ -497,8 +885,15 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="ReduceStep.html"><span class="name">ReduceStep</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="result"> extends <a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.ReduceStep.K">K</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is a class that models the logical portion of the reduce step.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@ReduceStep[K,V1]extendsKeyedPipe[K]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is a class that models the logical portion of the reduce step.</p><div class="fullcomment"><div class="comment cmt"><p>This is a class that models the logical portion of the reduce step.
+details like where this occurs, the number of reducers, etc... are
+left in the Grouped class
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.Reversable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="Reversable[+R]extendsAnyRef"></a>
       <a id="Reversable[+R]:Reversable[R]"></a>
@@ -510,10 +905,14 @@ the value type has been erased.</p>
       <span class="symbol">
         <a href="Reversable.html"><span class="name">Reversable</span></a><span class="tparams">[<span name="R">+R</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Reversable[+R]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.SketchJoined" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SketchJoined[K,V,V2,R]extendsHasReducerswithProductwithSerializable"></a>
+      <a id="SketchJoined[K,V,V2,R]extendsMustHaveReducerswithProductwithSerializable"></a>
       <a id="SketchJoined[K,V,V2,R]:SketchJoined[K,V,V2,R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -521,12 +920,16 @@ the value type has been erased.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="SketchJoined.html"><span class="name">SketchJoined</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="V2">V2</span>, <span name="R">R</span>]</span><span class="params">(<span name="left">left: <a href="Sketched.html" class="extype" name="com.twitter.scalding.typed.Sketched">Sketched</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V">V</span>]</span>, <span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V2">V2</span>)]</span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span name="joiner">joiner: (<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V">V</span>, <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.V2">V2</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.R">R</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="evidence$1">evidence$1: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>]</span>)</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="SketchJoined.html"><span class="name">SketchJoined</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>, <span name="V2">V2</span>, <span name="R">R</span>]</span><span class="params">(<span name="left">left: <a href="Sketched.html" class="extype" name="com.twitter.scalding.typed.Sketched">Sketched</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V">V</span>]</span>, <span name="right">right: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V2">V2</span>)]</span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span name="joiner">joiner: (<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SketchJoined.V">V</span>, <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.V2">V2</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.R">R</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="evidence$1">evidence$1: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.SketchJoined.K">K</span>]</span>)</span><span class="result"> extends <a href="MustHaveReducers.html" class="extype" name="com.twitter.scalding.typed.MustHaveReducers">MustHaveReducers</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@SketchJoined[K,V,V2,R]extendsMustHaveReducerswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.Sketched" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Sketched[K,V]extendsHasReducerswithProductwithSerializable"></a>
+      <a id="Sketched[K,V]extendsMustHaveReducerswithProductwithSerializable"></a>
       <a id="Sketched[K,V]:Sketched[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -534,12 +937,17 @@ the value type has been erased.</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Sketched.html"><span class="name">Sketched</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>)]</span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Int">Int</span></span>, <span name="delta">delta: <span class="extype" name="scala.Double">Double</span></span>, <span name="eps">eps: <span class="extype" name="scala.Double">Double</span></span>, <span name="seed">seed: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="serialization">serialization: (<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="ordering">ordering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>]</span>)</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="Sketched.html"><span class="name">Sketched</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span><span class="params">(<span name="pipe">pipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.Sketched.V">V</span>)]</span>, <span name="numReducers">numReducers: <span class="extype" name="scala.Int">Int</span></span>, <span name="delta">delta: <span class="extype" name="scala.Double">Double</span></span>, <span name="eps">eps: <span class="extype" name="scala.Double">Double</span></span>, <span name="seed">seed: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="serialization">serialization: (<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="ordering">ordering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.Sketched.K">K</span>]</span>)</span><span class="result"> extends <a href="MustHaveReducers.html" class="extype" name="com.twitter.scalding.typed.MustHaveReducers">MustHaveReducers</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This class is generally only created by users
-with the TypedPipe.</p>
-    </li><li name="com.twitter.scalding.typed.Sortable" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Sketched[K,V]extendsMustHaveReducerswithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This class is generally only created by users
+with the TypedPipe.sketch method
+</p>
+    </li><li name="com.twitter.scalding.typed.Sortable" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Sortable[+T,+Sorted[+_]]extendsAnyRef"></a>
       <a id="Sortable[+T,+Sorted[+_]]:Sortable[T,Sorted]"></a>
       <h4 class="signature">
@@ -550,10 +958,17 @@ with the TypedPipe.</p>
       <span class="symbol">
         <a href="Sortable.html"><span class="name">Sortable</span></a><span class="tparams">[<span name="T">+T</span>, <span name="Sorted">+Sorted<span class="tparams">[<span name="_">+_</span>]</span></span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">All sorting methods defined here trigger Hadoop secondary sort on key + value.</p>
-    </li><li name="com.twitter.scalding.typed.SortedGrouped" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="SortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.SortedGrouped]withWithReducers[com.twitter.scalding.typed.SortedGrouped[K,V]]"></a>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Sortable[+T,+Sorted[+_]]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">All sorting methods defined here trigger Hadoop secondary sort on key + value.</p><div class="fullcomment"><div class="comment cmt"><p>All sorting methods defined here trigger Hadoop secondary sort on key + value.
+Hadoop secondary sort is external sorting. i.e. it won't materialize all values
+of each key in memory on the reducer.
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.SortedGrouped" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="SortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.SortedGrouped]withWithReducers[com.twitter.scalding.typed.SortedGrouped[K,V]]withWithDescription[com.twitter.scalding.typed.SortedGrouped[K,V]]"></a>
       <a id="SortedGrouped[K,+V]:SortedGrouped[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -561,13 +976,22 @@ with the TypedPipe.</p>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="SortedGrouped.html"><span class="name">SortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.SortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SortedGrouped.V">V</span>, <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.SortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SortedGrouped.V">V</span>]]</span>
+        <a href="SortedGrouped.html"><span class="name">SortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.SortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SortedGrouped.V">V</span>, <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.SortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SortedGrouped.V">V</span>]] with <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.SortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.SortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
-      <p class="comment cmt">After sorting, we are no longer CoGroupable, and we can only call reverse
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@SortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.SortedGrouped]withWithReducers[com.twitter.scalding.typed.SortedGrouped[K,V]]withWithDescription[com.twitter.scalding.typed.SortedGrouped[K,V]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">After sorting, we are no longer CoGroupable, and we can only call reverse
 in the initial SortedGrouped created from the Sortable:
-.</p>
-    </li><li name="com.twitter.scalding.typed.TemplatePartition" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+.sortBy(_._2).reverse
+for instance</p><div class="fullcomment"><div class="comment cmt"><p>After sorting, we are no longer CoGroupable, and we can only call reverse
+in the initial SortedGrouped created from the Sortable:
+.sortBy(_._2).reverse
+for instance</p><p>Once we have sorted, we cannot do a HashJoin or a CoGrouping
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TemplatePartition" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TemplatePartitionextendsPartitionwithProductwithSerializable"></a>
       <a id="TemplatePartition:TemplatePartition"></a>
       <h4 class="signature">
@@ -578,9 +1002,14 @@ in the initial SortedGrouped created from the Sortable:
       <span class="symbol">
         <a href="TemplatePartition.html"><span class="name">TemplatePartition</span></a><span class="params">(<span name="partitionFields">partitionFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="template">template: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="cascading.tap.partition.Partition">Partition</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Creates a partition using the given template string.</p>
-    </li><li name="com.twitter.scalding.typed.TypedPipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TemplatePartitionextendsPartitionwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a partition using the given template string.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a partition using the given template string.</p><p>The template string needs to have %s as placeholder for a given field.
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="TypedPipe[+T]extendsSerializable"></a>
       <a id="TypedPipe[+T]:TypedPipe[T]"></a>
       <h4 class="signature">
@@ -591,9 +1020,16 @@ in the initial SortedGrouped created from the Sortable:
       <span class="symbol">
         <a href="TypedPipe.html"><span class="name">TypedPipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Think of a TypedPipe as a distributed unordered list that may or may not yet
-have been materialized in memory or disk.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipe[+T]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Think of a TypedPipe as a distributed unordered list that may or may not yet
+have been materialized in memory or disk.</p><div class="fullcomment"><div class="comment cmt"><p>Think of a TypedPipe as a distributed unordered list that may or may not yet
+have been materialized in memory or disk.</p><p>Represents a phase in a distributed computation on an input data source
+Wraps a cascading Pipe object, and holds the transformation done up until that point
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.TypedPipeFactory" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedPipeFactory[T]extendsTypedPipe[T]"></a>
       <a id="TypedPipeFactory[T]:TypedPipeFactory[T]"></a>
@@ -605,8 +1041,12 @@ have been materialized in memory or disk.</p>
       <span class="symbol">
         <a href="TypedPipeFactory.html"><span class="name">TypedPipeFactory</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeFactory.T">T</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is a TypedPipe that delays having access
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipeFactory[T]extendsTypedPipe[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is a TypedPipe that delays having access
 to the FlowDef and Mode until toPipe is called
 </p>
     </li><li name="com.twitter.scalding.typed.TypedPipeInst" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
@@ -620,8 +1060,12 @@ to the FlowDef and Mode until toPipe is called
       <span class="symbol">
         <a href="TypedPipeInst.html"><span class="name">TypedPipeInst</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.TypedPipeInst.T">T</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is an instance of a TypedPipe that wraps a cascading Pipe
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipeInst[T]extendsTypedPipe[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is an instance of a TypedPipe that wraps a cascading Pipe
 </p>
     </li><li name="com.twitter.scalding.typed.TypedSink" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="TypedSink[-T]extendsSerializable"></a>
@@ -634,8 +1078,12 @@ to the FlowDef and Mode until toPipe is called
       <span class="symbol">
         <a href="TypedSink.html"><span class="name">TypedSink</span></a><span class="tparams">[<span name="T">-T</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Opposite of TypedSource, used for writing into
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedSink[-T]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Opposite of TypedSource, used for writing into
 </p>
     </li><li name="com.twitter.scalding.typed.TypedSource" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="TypedSource[+T]extendsSerializable"></a>
@@ -648,10 +1096,14 @@ to the FlowDef and Mode until toPipe is called
       <span class="symbol">
         <a href="TypedSource.html"><span class="name">TypedSource</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedSource[+T]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.UnsortedGrouped" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="UnsortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withWithReducers[com.twitter.scalding.typed.UnsortedGrouped[K,V]]"></a>
+    </li><li name="com.twitter.scalding.typed.UnsortedGrouped" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="UnsortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withWithReducers[com.twitter.scalding.typed.UnsortedGrouped[K,V]]withWithDescription[com.twitter.scalding.typed.UnsortedGrouped[K,V]]"></a>
       <a id="UnsortedGrouped[K,+V]:UnsortedGrouped[K,V]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -659,10 +1111,17 @@ to the FlowDef and Mode until toPipe is called
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="UnsortedGrouped.html"><span class="name">UnsortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
+        <a href="UnsortedGrouped.html"><span class="name">UnsortedGrouped</span></a><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]] with <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This is the state after we have done some reducing.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@UnsortedGrouped[K,+V]extendsKeyedListLike[K,V,com.twitter.scalding.typed.UnsortedGrouped]withHashJoinable[K,V]withWithReducers[com.twitter.scalding.typed.UnsortedGrouped[K,V]]withWithDescription[com.twitter.scalding.typed.UnsortedGrouped[K,V]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is the state after we have done some reducing.</p><div class="fullcomment"><div class="comment cmt"><p>This is the state after we have done some reducing. It is
+not possible to sort at this phase, but it is possible to
+do a CoGrouping or a HashJoin.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.UnsortedIdentityReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UnsortedIdentityReduce[K,V1]extendsReduceStep[K,V1]withUnsortedGrouped[K,V1]withProductwithSerializable"></a>
       <a id="UnsortedIdentityReduce[K,V1]:UnsortedIdentityReduce[K,V1]"></a>
@@ -672,11 +1131,15 @@ to the FlowDef and Mode until toPipe is called
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="UnsortedIdentityReduce.html"><span class="name">UnsortedIdentityReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>)]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>] with <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="UnsortedIdentityReduce.html"><span class="name">UnsortedIdentityReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>)]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="descriptions">descriptions: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>] with <a href="UnsortedGrouped.html" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce.V1">V1</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@UnsortedIdentityReduce[K,V1]extendsReduceStep[K,V1]withUnsortedGrouped[K,V1]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.ValuePipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.ValuePipe" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="ValuePipe[+T]extendsSerializable"></a>
       <a id="ValuePipe[+T]:ValuePipe[T]"></a>
       <h4 class="signature">
@@ -687,8 +1150,15 @@ to the FlowDef and Mode until toPipe is called
       <span class="symbol">
         <a href="ValuePipe.html"><span class="name">ValuePipe</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">ValuePipe is special case of a TypedPipe of just a optional single element.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@ValuePipe[+T]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">ValuePipe is special case of a TypedPipe of just a optional single element.</p><div class="fullcomment"><div class="comment cmt"><p>ValuePipe is special case of a TypedPipe of just a optional single element.
+ It is like a distribute Option type
+It allows to perform scalar based operations on pipes like normalization.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.ValueSortedReduce" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ValueSortedReduce[K,V1,V2]extendsReduceStep[K,V1]withSortedGrouped[K,V2]withProductwithSerializable"></a>
       <a id="ValueSortedReduce[K,V1,V2]:ValueSortedReduce[K,V1,V2]"></a>
@@ -698,24 +1168,66 @@ to the FlowDef and Mode until toPipe is called
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ValueSortedReduce.html"><span class="name">ValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>)]</span>, <span name="valueSort">valueSort: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>]</span>, <span name="reduceFn">reduceFn: (<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V2">V2</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>] with <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V2">V2</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="ValueSortedReduce.html"><span class="name">ValueSortedReduce</span></a><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="params">(<span name="keyOrdering">keyOrdering: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>]</span>, <span name="mapped">mapped: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>)]</span>, <span name="valueSort">valueSort: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>]</span>, <span name="reduceFn">reduceFn: (<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V2">V2</span>]</span>, <span name="reducers">reducers: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="descriptions">descriptions: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ReduceStep.html" class="extype" name="com.twitter.scalding.typed.ReduceStep">ReduceStep</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V1">V1</span>] with <a href="SortedGrouped.html" class="extype" name="com.twitter.scalding.typed.SortedGrouped">SortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.ValueSortedReduce.V2">V2</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@ValueSortedReduce[K,V1,V2]extendsReduceStep[K,V1]withSortedGrouped[K,V2]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.WithDescription" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="WithDescription[+This&lt;:com.twitter.scalding.typed.WithDescription[This]]extendsHasDescription"></a>
+      <a id="WithDescription[+This&lt;:WithDescription[This]]:WithDescription[This]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="WithDescription.html"><span class="name">WithDescription</span></a><span class="tparams">[<span name="This">+This &lt;: <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<span class="extype" name="com.twitter.scalding.typed.WithDescription.This">This</span>]</span>]</span><span class="result"> extends <a href="HasDescription.html" class="extype" name="com.twitter.scalding.typed.HasDescription">HasDescription</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@WithDescription[+This&lt;:com.twitter.scalding.typed.WithDescription[This]]extendsHasDescription" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Used for objects that may _set_ a description to be used in .dot and MR step names.</p>
+    </li><li name="com.twitter.scalding.typed.WithDescriptionTypedPipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WithDescriptionTypedPipe[T]extendsTypedPipe[T]withProductwithSerializable"></a>
+      <a id="WithDescriptionTypedPipe[T]:WithDescriptionTypedPipe[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="WithDescriptionTypedPipe.html"><span class="name">WithDescriptionTypedPipe</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="typedPipe">typedPipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.WithDescriptionTypedPipe.T">T</span>]</span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.WithDescriptionTypedPipe.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@WithDescriptionTypedPipe[T]extendsTypedPipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.WithOnComplete" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="WithOnComplete[T]extendsTypedPipe[T]"></a>
+      <a id="WithOnComplete[T]extendsTypedPipe[T]withProductwithSerializable"></a>
       <a id="WithOnComplete[T]:WithOnComplete[T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="WithOnComplete.html"><span class="name">WithOnComplete</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.WithOnComplete.T">T</span>]</span>
+        <a href="WithOnComplete.html"><span class="name">WithOnComplete</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="typedPipe">typedPipe: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.WithOnComplete.T">T</span>]</span>, <span name="fn">fn: () ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.WithOnComplete.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@WithOnComplete[T]extendsTypedPipe[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.WithReducers" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.WithReducers" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="WithReducers[+This&lt;:com.twitter.scalding.typed.WithReducers[This]]extendsHasReducers"></a>
       <a id="WithReducers[+This&lt;:WithReducers[This]]:WithReducers[This]"></a>
       <h4 class="signature">
@@ -726,9 +1238,15 @@ to the FlowDef and Mode until toPipe is called
       <span class="symbol">
         <a href="WithReducers.html"><span class="name">WithReducers</span></a><span class="tparams">[<span name="This">+This &lt;: <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<span class="extype" name="com.twitter.scalding.typed.WithReducers.This">This</span>]</span>]</span><span class="result"> extends <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">used for objects that may _set_ how many reducers they need
-e.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@WithReducers[+This&lt;:com.twitter.scalding.typed.WithReducers[This]]extendsHasReducers" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">used for objects that may _set_ how many reducers they need
+e.g.</p><div class="fullcomment"><div class="comment cmt"><p>used for objects that may _set_ how many reducers they need
+e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
+</p></div></div>
     </li></ol>
             </div>
 
@@ -747,7 +1265,11 @@ e.</p>
       <span class="symbol">
         <a href="BijectedSourceSink$.html"><span class="name">BijectedSourceSink</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@BijectedSourceSink" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.CoGroupable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CoGroupable"></a>
@@ -760,7 +1282,11 @@ e.</p>
       <span class="symbol">
         <a href="CoGroupable$.html"><span class="name">CoGroupable</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CoGroupable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.CoGrouped" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CoGrouped"></a>
@@ -773,9 +1299,13 @@ e.</p>
       <span class="symbol">
         <a href="CoGrouped$.html"><span class="name">CoGrouped</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CoGrouped" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.CumulativeSum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.CumulativeSum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="CumulativeSum"></a>
       <a id="CumulativeSum:CumulativeSum"></a>
       <h4 class="signature">
@@ -786,8 +1316,35 @@ e.</p>
       <span class="symbol">
         <a href="CumulativeSum$.html"><span class="name">CumulativeSum</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Extension for TypedPipe to add a cumulativeSum method.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@CumulativeSum" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Extension for TypedPipe to add a cumulativeSum method.</p><div class="fullcomment"><div class="comment cmt"><p>Extension for TypedPipe to add a cumulativeSum method.
+Given a TypedPipe with T = (GroupField, (SortField, SummableField))
+cumulaitiveSum will return a SortedGrouped with the SummableField accumulated
+according to the sort field.
+eg:
+ ('San Francisco', (100, 100)),
+ ('San Francisco', (101, 50)),
+ ('San Francisco', (200, 200)),
+ ('Vancouver', (100, 50)),
+ ('Vancouver', (101, 300)),
+ ('Vancouver', (200, 100))
+becomes
+ ('San Francisco', (100, 100)),
+ ('San Francisco', (101, 150)),
+ ('San Francisco', (200, 300)),
+ ('Vancouver', (100, 50)),
+ ('Vancouver', (101, 350)),
+ ('Vancouver', (200, 450))</p><p>If you provide cumulativeSum a partition function you get the same result
+but you allow for more than one reducer per group. This is useful for
+when you have a single group that has a very large number of entries.
+For example in the previous example if you gave a partition function of the
+form { _ / 100 } then you would never have any one reducer deal with more
+than 2 entries.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.Empty" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Empty"></a>
       <a id="Empty:Empty"></a>
@@ -799,9 +1356,13 @@ e.</p>
       <span class="symbol">
         <a href="Empty$.html"><span class="name">Empty</span></a><span class="result"> extends <a href="FlatMapFn.html" class="extype" name="com.twitter.scalding.typed.FlatMapFn">FlatMapFn</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Empty" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.EmptyTypedPipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.EmptyTypedPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="EmptyTypedPipe"></a>
       <a id="EmptyTypedPipe:EmptyTypedPipe"></a>
       <h4 class="signature">
@@ -812,8 +1373,13 @@ e.</p>
       <span class="symbol">
         <a href="EmptyTypedPipe$.html"><span class="name">EmptyTypedPipe</span></a><span class="result"> extends <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This object is the EmptyTypedPipe.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@EmptyTypedPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This object is the EmptyTypedPipe.</p><div class="fullcomment"><div class="comment cmt"><p>This object is the EmptyTypedPipe. Prefer to create it with TypedPipe.empty
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.EmptyValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="EmptyValue"></a>
       <a id="EmptyValue:EmptyValue"></a>
@@ -825,9 +1391,13 @@ e.</p>
       <span class="symbol">
         <a href="EmptyValue$.html"><span class="name">EmptyValue</span></a><span class="result"> extends <a href="ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">ValuePipe</a>[<span class="extype" name="scala.Nothing">Nothing</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@EmptyValue" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.FlattenGroup" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.FlattenGroup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="FlattenGroup"></a>
       <a id="FlattenGroup:FlattenGroup"></a>
       <h4 class="signature">
@@ -838,9 +1408,16 @@ e.</p>
       <span class="symbol">
         <a href="FlattenGroup$.html"><span class="name">FlattenGroup</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Autogenerated methods for flattening the nested value tuples that result after
-joining many pipes together.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@FlattenGroup" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Autogenerated methods for flattening the nested value tuples that result after
+joining many pipes together.</p><div class="fullcomment"><div class="comment cmt"><p>Autogenerated methods for flattening the nested value tuples that result after
+joining many pipes together. These methods can be used directly, or via the
+the joins available in MultiJoin.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.Grouped" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Grouped"></a>
       <a id="Grouped:Grouped"></a>
@@ -852,7 +1429,28 @@ joining many pipes together.</p>
       <span class="symbol">
         <a href="Grouped$.html"><span class="name">Grouped</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Grouped" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.typed.HashEqualsArrayWrapper" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HashEqualsArrayWrapper"></a>
+      <a id="HashEqualsArrayWrapper:HashEqualsArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HashEqualsArrayWrapper$.html"><span class="name">HashEqualsArrayWrapper</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@HashEqualsArrayWrapper" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.Joiner" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Joiner"></a>
@@ -865,7 +1463,11 @@ joining many pipes together.</p>
       <span class="symbol">
         <a href="Joiner$.html"><span class="name">Joiner</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Joiner" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.KeyedListLike" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="KeyedListLike"></a>
@@ -878,9 +1480,13 @@ joining many pipes together.</p>
       <span class="symbol">
         <a href="KeyedListLike$.html"><span class="name">KeyedListLike</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@KeyedListLike" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.LookupJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.LookupJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="LookupJoin"></a>
       <a id="LookupJoin:LookupJoin"></a>
       <h4 class="signature">
@@ -891,11 +1497,34 @@ joining many pipes together.</p>
       <span class="symbol">
         <a href="LookupJoin$.html"><span class="name">LookupJoin</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">lookupJoin simulates the behavior of a realtime system attempting
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@LookupJoin" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">lookupJoin simulates the behavior of a realtime system attempting
 to leftJoin (K, V) pairs against some other value type (JoinedV)
-by performing realtime lookups on a key-value Store.</p>
-    </li><li name="com.twitter.scalding.typed.MultiJoin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+by performing realtime lookups on a key-value Store.</p><div class="fullcomment"><div class="comment cmt"><p>lookupJoin simulates the behavior of a realtime system attempting
+to leftJoin (K, V) pairs against some other value type (JoinedV)
+by performing realtime lookups on a key-value Store.</p><p>An example would join (K, V) pairs of (URL, Username) against a
+service of (URL, ImpressionCount). The result of this join would
+be a pipe of (ShortenedURL, (Username,
+Option[ImpressionCount])).</p><p>To simulate this behavior, lookupJoin accepts pipes of key-value
+pairs with an explicit time value T attached. T must have some
+sensible ordering. The semantics are, if one were to hit the
+right pipe's simulated realtime service at any time between
+T(tuple) T(tuple + 1), one would receive Some((K,
+JoinedV)(tuple)).</p><p>The entries in the left pipe's tuples have the following
+meaning:</p><p>T: The  time at which the (K, W) lookup occurred.
+K: the join key.
+W: the current value for the join key.</p><p>The right pipe's entries have the following meaning:</p><p>T: The time at which the &quot;service&quot; was fed an update
+K: the join K.
+V: value of the key at time T</p><p>Before the time T in the right pipe's very first entry, the
+simulated &quot;service&quot; will return None. After this time T, the
+right side will return None only if the key is absent,
+else, the service will return Some(joinedV).
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.MultiJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="MultiJoin"></a>
       <a id="MultiJoin:MultiJoin"></a>
       <h4 class="signature">
@@ -906,9 +1535,16 @@ by performing realtime lookups on a key-value Store.</p>
       <span class="symbol">
         <a href="MultiJoin$.html"><span class="name">MultiJoin</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This is an autogenerated object which gives you easy access to
-doing N-way joins so the types are cleaner.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@MultiJoin" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is an autogenerated object which gives you easy access to
+doing N-way joins so the types are cleaner.</p><div class="fullcomment"><div class="comment cmt"><p>This is an autogenerated object which gives you easy access to
+doing N-way joins so the types are cleaner. However, it just calls
+the underlying methods on CoGroupable and flattens the resulting tuple
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.NoStackAndThen" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="NoStackAndThen"></a>
       <a id="NoStackAndThen:NoStackAndThen"></a>
@@ -920,7 +1556,11 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="NoStackAndThen$.html"><span class="name">NoStackAndThen</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@NoStackAndThen" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.PartitionUtil" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PartitionUtil"></a>
@@ -933,8 +1573,12 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="PartitionUtil$.html"><span class="name">PartitionUtil</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Utility functions to assist with creating partitioned sourced.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionUtil" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Utility functions to assist with creating partitioned sourced.</p>
     </li><li name="com.twitter.scalding.typed.PartitionedCsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PartitionedCsv"></a>
       <a id="PartitionedCsv:PartitionedCsv"></a>
@@ -946,8 +1590,12 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="PartitionedCsv$.html"><span class="name">PartitionedCsv</span></a><span class="result"> extends <a href="PartitionedDelimited.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimited">PartitionedDelimited</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Partitioned typed commma separated source.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedCsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partitioned typed commma separated source.</p>
     </li><li name="com.twitter.scalding.typed.PartitionedOsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PartitionedOsv"></a>
       <a id="PartitionedOsv:PartitionedOsv"></a>
@@ -959,8 +1607,12 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="PartitionedOsv$.html"><span class="name">PartitionedOsv</span></a><span class="result"> extends <a href="PartitionedDelimited.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimited">PartitionedDelimited</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Partitioned typed <code>\1</code> separated source (commonly used by Pig).</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedOsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partitioned typed <code>\1</code> separated source (commonly used by Pig).</p>
     </li><li name="com.twitter.scalding.typed.PartitionedPsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PartitionedPsv"></a>
       <a id="PartitionedPsv:PartitionedPsv"></a>
@@ -972,8 +1624,12 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="PartitionedPsv$.html"><span class="name">PartitionedPsv</span></a><span class="result"> extends <a href="PartitionedDelimited.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimited">PartitionedDelimited</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Partitioned typed pipe separated source.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedPsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partitioned typed pipe separated source.</p>
     </li><li name="com.twitter.scalding.typed.PartitionedTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PartitionedTsv"></a>
       <a id="PartitionedTsv:PartitionedTsv"></a>
@@ -985,8 +1641,12 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="PartitionedTsv$.html"><span class="name">PartitionedTsv</span></a><span class="result"> extends <a href="PartitionedDelimited.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimited">PartitionedDelimited</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Partitioned typed tab separated source.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@PartitionedTsv" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partitioned typed tab separated source.</p>
     </li><li name="com.twitter.scalding.typed.SketchJoined" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SketchJoined"></a>
       <a id="SketchJoined:SketchJoined"></a>
@@ -998,9 +1658,13 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="SketchJoined$.html"><span class="name">SketchJoined</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@SketchJoined" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.typed.Syntax" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.typed.Syntax" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Syntax"></a>
       <a id="Syntax:Syntax"></a>
       <h4 class="signature">
@@ -1011,9 +1675,15 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="Syntax$.html"><span class="name">Syntax</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">These are named syntax extensions that users can optionally import.</p>
-    </li><li name="com.twitter.scalding.typed.TDsl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@Syntax" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">These are named syntax extensions that users can optionally import.</p><div class="fullcomment"><div class="comment cmt"><p>These are named syntax extensions that users can optionally import.
+Avoid import Syntax._
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TDsl" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TDsl"></a>
       <a id="TDsl:TDsl"></a>
       <h4 class="signature">
@@ -1024,10 +1694,19 @@ doing N-way joins so the types are cleaner.</p>
       <span class="symbol">
         <a href="TDsl$.html"><span class="name">TDsl</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="../GeneratedTupleAdders.html" class="extype" name="com.twitter.scalding.GeneratedTupleAdders">GeneratedTupleAdders</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">implicits for the type-safe DSL
-import TDsl.</p>
-    </li><li name="com.twitter.scalding.typed.TypedPipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TDsl" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">implicits for the type-safe DSL
+import TDsl._ to get the implicit conversions from Grouping/CoGrouping to Pipe,
+  to get the .toTypedPipe method on standard cascading Pipes.</p><div class="fullcomment"><div class="comment cmt"><p>implicits for the type-safe DSL
+import TDsl._ to get the implicit conversions from Grouping/CoGrouping to Pipe,
+  to get the .toTypedPipe method on standard cascading Pipes.
+  to get automatic conversion of Mappable[T] to TypedPipe[T]
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TypedPipe"></a>
       <a id="TypedPipe:TypedPipe"></a>
       <h4 class="signature">
@@ -1038,8 +1717,36 @@ import TDsl.</p>
       <span class="symbol">
         <a href="TypedPipe$.html"><span class="name">TypedPipe</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.</p><div class="fullcomment"><div class="comment cmt"><p>factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
+This object is here rather than in the typed package because a lot of code was written using
+the functions in the object, which we do not see how to hide with package object tricks.
+</p></div></div>
+    </li><li name="com.twitter.scalding.typed.TypedPipeDiff" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TypedPipeDiff"></a>
+      <a id="TypedPipeDiff:TypedPipeDiff"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypedPipeDiff$.html"><span class="name">TypedPipeDiff</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipeDiff" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Some methods for comparing two typed pipes and finding out the difference between them.</p><div class="fullcomment"><div class="comment cmt"><p>Some methods for comparing two typed pipes and finding out the difference between them.</p><p>Has support for the normal case where the typed pipes are pipes of objects usable as keys
+in scalding (have an ordering, proper equals and hashCode), as well as some special cases
+for dealing with Arrays and thrift objects.</p><p>See diffByHashCode for comparing typed pipes of objects that have no ordering but a stable hash code
+(such as Scrooge thrift).</p><p>See diffByGroup for comparing typed pipes of objects that have no ordering *and* an unstable hash code.
+</p></div></div>
     </li><li name="com.twitter.scalding.typed.TypedPipeFactory" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedPipeFactory"></a>
       <a id="TypedPipeFactory:TypedPipeFactory"></a>
@@ -1051,8 +1758,12 @@ import TDsl.</p>
       <span class="symbol">
         <a href="TypedPipeFactory$.html"><span class="name">TypedPipeFactory</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This is an implementation detail (and should be marked private)
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedPipeFactory" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is an implementation detail (and should be marked private)
 </p>
     </li><li name="com.twitter.scalding.typed.TypedSink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedSink"></a>
@@ -1065,7 +1776,11 @@ import TDsl.</p>
       <span class="symbol">
         <a href="TypedSink$.html"><span class="name">TypedSink</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@TypedSink" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.ValuePipe" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ValuePipe"></a>
@@ -1078,7 +1793,11 @@ import TDsl.</p>
       <span class="symbol">
         <a href="ValuePipe$.html"><span class="name">ValuePipe</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.package@ValuePipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -1105,6 +1824,7 @@ import TDsl.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

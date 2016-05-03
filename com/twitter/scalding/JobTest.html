@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>JobTest - com.twitter.scalding.JobTest</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="JobTest$.html" title="Go to companion"><img src="../../../lib/class_to_object_big.png" /></a>
+        <a href="JobTest$.html" title="See companion object"><img alt="Class/Object" src="../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1><a href="JobTest$.html" title="Go to companion">JobTest</a></h1>
+        <h1><a href="JobTest$.html" title="See companion object">JobTest</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="JobTest$.html" title="See companion object">object JobTest</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -48,9 +60,9 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="CascadeTest.html" class="extype" name="com.twitter.scalding.CascadeTest">CascadeTest</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="CascadeTest.html" class="extype" name="com.twitter.scalding.CascadeTest">CascadeTest</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -75,7 +87,6 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -98,7 +109,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">JobTest</span><span class="params">(<span name="cons">cons: (<a href="Args.html" class="extype" name="com.twitter.scalding.Args">Args</a>) ⇒ <a href="Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@&lt;init&gt;(cons:com.twitter.scalding.Args=&gt;com.twitter.scalding.Job):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -110,19 +125,6 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -133,8 +135,12 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -146,22 +152,13 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -172,8 +169,12 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.JobTest#arg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="arg(inArg:String,value:String):com.twitter.scalding.JobTest"></a>
       <a id="arg(String,String):JobTest"></a>
@@ -185,7 +186,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">arg</span><span class="params">(<span name="inArg">inArg: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="value">value: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@arg(inArg:String,value:String):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#arg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="arg(inArg:String,value:List[String]):com.twitter.scalding.JobTest"></a>
@@ -198,7 +203,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">arg</span><span class="params">(<span name="inArg">inArg: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="value">value: <a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@arg(inArg:String,value:List[String]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -211,7 +220,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -224,7 +237,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -243,7 +260,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">counter</span><span class="params">(<span name="counter">counter: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="group">group: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="Stats$.html">Stats.ScaldingGroup</a></span></span></span>)</span><span class="params">(<span name="op">op: (<span class="extype" name="scala.Long">Long</span>) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@counter(counter:String,group:String)(op:Long=&gt;Unit):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#counters" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="counters(op:Map[String,Long]=&gt;Unit):com.twitter.scalding.JobTest"></a>
@@ -256,7 +277,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">counters</span><span class="params">(<span name="op">op: (<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Long">Long</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@counters(op:Map[String,Long]=&gt;Unit):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -269,7 +294,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -282,7 +311,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -295,7 +328,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -314,7 +351,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">finish</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@finish:Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -327,7 +368,11 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -340,9 +385,13 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.twitter.scalding.JobTest#ifSource" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.twitter.scalding.JobTest#ifSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ifSource[T](fn:PartialFunction[com.twitter.scalding.Source,Iterable[T]])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest"></a>
       <a id="ifSource[T](PartialFunction[Source,Iterable[T]])(TupleSetter[T]):JobTest"></a>
       <h4 class="signature">
@@ -353,12 +402,15 @@ https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com
       <span class="symbol">
         <span class="name">ifSource</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.JobTest.ifSource.T">T</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.JobTest.ifSource.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@ifSource[T](fn:PartialFunction[com.twitter.scalding.Source,Iterable[T]])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Enables syntax like:
-.</p><div class="fullcomment"><div class="comment cmt"><p>Enables syntax like:
 .ifSource { case Tsv(&quot;in&quot;) =&gt; List(1, 2, 3) }
 We need a different function name from source to help the compiler
-</p></div></div>
+</p>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -370,7 +422,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -383,7 +439,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -396,7 +456,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -409,7 +473,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.JobTest#registerFile" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="registerFile(filename:String):com.twitter.scalding.JobTest"></a>
@@ -422,7 +490,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">registerFile</span><span class="params">(<span name="filename">filename: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@registerFile(filename:String):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#run" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="run:com.twitter.scalding.JobTest"></a>
@@ -435,7 +507,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">run</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@run:com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#runHadoop" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="runHadoop:com.twitter.scalding.JobTest"></a>
@@ -448,7 +524,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">runHadoop</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@runHadoop:com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#runHadoopWithConf" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="runHadoopWithConf(conf:org.apache.hadoop.mapred.JobConf):com.twitter.scalding.JobTest"></a>
@@ -461,7 +541,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">runHadoopWithConf</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@runHadoopWithConf(conf:org.apache.hadoop.mapred.JobConf):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#runWithoutNext" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="runWithoutNext(useHadoop:Boolean):com.twitter.scalding.JobTest"></a>
@@ -474,9 +558,13 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">runWithoutNext</span><span class="params">(<span name="useHadoop">useHadoop: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@runWithoutNext(useHadoop:Boolean):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.JobTest#sink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.JobTest#sink" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sink[A](s:com.twitter.scalding.Source)(op:scala.collection.mutable.Buffer[A]=&gt;Unit)(implicitconv:com.twitter.scalding.TupleConverter[A]):com.twitter.scalding.JobTest"></a>
       <a id="sink[A](Source)((Buffer[A])⇒Unit)(TupleConverter[A]):JobTest"></a>
       <h4 class="signature">
@@ -487,8 +575,15 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">sink</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="s">s: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="params">(<span name="op">op: (<span class="extype" name="scala.collection.mutable.Buffer">Buffer</span>[<span class="extype" name="com.twitter.scalding.JobTest.sink.A">A</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.JobTest.sink.A">A</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
-      
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@sink[A](s:com.twitter.scalding.Source)(op:scala.collection.mutable.Buffer[A]=&gt;Unit)(implicitconv:com.twitter.scalding.TupleConverter[A]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@SuppressWarnings</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="com.twitter.scalding.JobTest#source" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="source[T](s:com.twitter.scalding.Source,iTuple:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest"></a>
       <a id="source[T](Source,Iterable[T])(TupleSetter[T]):JobTest"></a>
@@ -500,20 +595,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">source</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="s">s: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="iTuple">iTuple: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.JobTest.source.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.JobTest.source.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
-      
-    </li><li name="com.twitter.scalding.JobTest#source" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="source(s:com.twitter.scalding.Source,iTuple:Iterable[Product]):com.twitter.scalding.JobTest"></a>
-      <a id="source(Source,Iterable[Product]):JobTest"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">source</span><span class="params">(<span name="s">s: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>, <span name="iTuple">iTuple: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Product">Product</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
-      </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@source[T](s:com.twitter.scalding.Source,iTuple:Iterable[T])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.JobTest#source" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="source[T](fn:com.twitter.scalding.Source=&gt;Option[Iterable[T]])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest"></a>
@@ -526,7 +612,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">source</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fn">fn: (<a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>) ⇒ <span class="extype" name="scala.Option">Option</span>[<a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.JobTest.source.T">T</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.JobTest.source.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@source[T](fn:com.twitter.scalding.Source=&gt;Option[Iterable[T]])(implicitsetter:com.twitter.scalding.TupleSetter[T]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Add a function to produce a mock when a certain source is requested</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -539,7 +629,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -552,7 +646,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.JobTest#typedSink" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="typedSink[A](s:com.twitter.scalding.Sourcewithcom.twitter.scalding.TypedSink[A])(op:scala.collection.mutable.Buffer[A]=&gt;Unit)(implicitconv:com.twitter.scalding.TupleConverter[A]):com.twitter.scalding.JobTest"></a>
@@ -565,7 +663,28 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">typedSink</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="s">s: <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a> with <a href="package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.JobTest.typedSink.A">A</span>]</span>)</span><span class="params">(<span name="op">op: (<span class="extype" name="scala.collection.mutable.Buffer">Buffer</span>[<span class="extype" name="com.twitter.scalding.JobTest.typedSink.A">A</span>]) ⇒ <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.JobTest.typedSink.A">A</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@typedSink[A](s:com.twitter.scalding.Sourcewithcom.twitter.scalding.TypedSink[A])(op:scala.collection.mutable.Buffer[A]=&gt;Unit)(implicitconv:com.twitter.scalding.TupleConverter[A]):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.JobTest#validate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="validate(v:Boolean):com.twitter.scalding.JobTest"></a>
+      <a id="validate(Boolean):JobTest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">validate</span><span class="params">(<span name="v">v: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.JobTest">JobTest</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@validate(v:Boolean):com.twitter.scalding.JobTest" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -578,7 +697,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -597,7 +720,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -616,7 +743,11 @@ We need a different function name from source to help the compiler
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.JobTest@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -653,6 +784,7 @@ We need a different function name from source to help the compiler
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

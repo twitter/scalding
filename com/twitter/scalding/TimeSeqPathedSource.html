@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>TimeSeqPathedSource - com.twitter.scalding.TimeSeqPathedSource</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <img alt="Class" src="../../../lib/class_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>TimeSeqPathedSource</h1>
+        <h1>TimeSeqPathedSource</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -41,11 +51,11 @@
       
           <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/TimePathedSource.scala" target="_blank">TimePathedSource.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a>, <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a>, <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a>, <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="commons/source/DailyPrefixSuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift">DailyPrefixSuffixLzoThrift</a>, <a href="commons/source/DailyPrefixSuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv">DailyPrefixSuffixLzoTsv</a>, <a href="source/DailyPrefixSuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource">DailyPrefixSuffixMostRecentSource</a>, <a href="source/DailyPrefixSuffixSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixSource">DailyPrefixSuffixSource</a>, <a href="source/DailySuffixCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixCsv">DailySuffixCsv</a>, <a href="commons/source/DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a>, <a href="commons/source/DailySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec">DailySuffixLzoCodec</a>, <a href="commons/source/DailySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf">DailySuffixLzoProtobuf</a>, <a href="commons/source/DailySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift">DailySuffixLzoThrift</a>, <a href="commons/source/DailySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv">DailySuffixLzoTsv</a>, <a href="source/DailySuffixMostRecentCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentCsv">DailySuffixMostRecentCsv</a>, <a href="commons/source/DailySuffixMostRecentLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf">DailySuffixMostRecentLzoProtobuf</a>, <a href="source/DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a>, <a href="parquet/scrooge/DailySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.DailySuffixParquetScrooge">DailySuffixParquetScrooge</a>, <a href="parquet/thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">DailySuffixParquetThrift</a>, <a href="parquet/tuple/DailySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple">DailySuffixParquetTuple</a>, <a href="source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a>, <a href="source/DailySuffixTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTsv">DailySuffixTsv</a>, <a href="source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="source/HourlySuffixCsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixCsv">HourlySuffixCsv</a>, <a href="commons/source/HourlySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec">HourlySuffixLzoCodec</a>, <a href="commons/source/HourlySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf">HourlySuffixLzoProtobuf</a>, <a href="commons/source/HourlySuffixLzoText.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoText">HourlySuffixLzoText</a>, <a href="commons/source/HourlySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift">HourlySuffixLzoThrift</a>, <a href="commons/source/HourlySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv">HourlySuffixLzoTsv</a>, <a href="source/HourlySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixMostRecentSource">HourlySuffixMostRecentSource</a>, <a href="parquet/scrooge/HourlySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.HourlySuffixParquetScrooge">HourlySuffixParquetScrooge</a>, <a href="parquet/thrift/HourlySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift">HourlySuffixParquetThrift</a>, <a href="parquet/tuple/HourlySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple">HourlySuffixParquetTuple</a>, <a href="source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a>, <a href="source/HourlySuffixTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTsv">HourlySuffixTsv</a>, <a href="source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a>, <a href="commons/source/MostRecentGoodLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile">MostRecentGoodLongThriftSequenceFile</a>, <a href="MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a>, <a href="commons/source/TimePathedLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a>, <a href="TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="commons/source/DailyPrefixSuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift">DailyPrefixSuffixLzoThrift</a>, <a href="commons/source/DailyPrefixSuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoTsv">DailyPrefixSuffixLzoTsv</a>, <a href="source/DailyPrefixSuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixMostRecentSource">DailyPrefixSuffixMostRecentSource</a>, <a href="source/DailyPrefixSuffixSource.html" class="extype" name="com.twitter.scalding.source.DailyPrefixSuffixSource">DailyPrefixSuffixSource</a>, <a href="source/DailySuffixCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixCsv">DailySuffixCsv</a>, <a href="commons/source/DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a>, <a href="commons/source/DailySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec">DailySuffixLzoCodec</a>, <a href="commons/source/DailySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf">DailySuffixLzoProtobuf</a>, <a href="commons/source/DailySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift">DailySuffixLzoThrift</a>, <a href="commons/source/DailySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoTsv">DailySuffixLzoTsv</a>, <a href="source/DailySuffixMostRecentCsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentCsv">DailySuffixMostRecentCsv</a>, <a href="commons/source/DailySuffixMostRecentLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf">DailySuffixMostRecentLzoProtobuf</a>, <a href="source/DailySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixMostRecentSource">DailySuffixMostRecentSource</a>, <a href="parquet/scrooge/DailySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.DailySuffixParquetScrooge">DailySuffixParquetScrooge</a>, <a href="parquet/thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">DailySuffixParquetThrift</a>, <a href="parquet/tuple/DailySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.DailySuffixParquetTuple">DailySuffixParquetTuple</a>, <a href="source/DailySuffixSource.html" class="extype" name="com.twitter.scalding.source.DailySuffixSource">DailySuffixSource</a>, <a href="source/DailySuffixTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTsv">DailySuffixTsv</a>, <a href="source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="source/HourlySuffixCsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixCsv">HourlySuffixCsv</a>, <a href="commons/source/HourlySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec">HourlySuffixLzoCodec</a>, <a href="commons/source/HourlySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf">HourlySuffixLzoProtobuf</a>, <a href="commons/source/HourlySuffixLzoText.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoText">HourlySuffixLzoText</a>, <a href="commons/source/HourlySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift">HourlySuffixLzoThrift</a>, <a href="commons/source/HourlySuffixLzoTsv.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoTsv">HourlySuffixLzoTsv</a>, <a href="source/HourlySuffixMostRecentSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixMostRecentSource">HourlySuffixMostRecentSource</a>, <a href="parquet/scrooge/HourlySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.HourlySuffixParquetScrooge">HourlySuffixParquetScrooge</a>, <a href="parquet/thrift/HourlySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift">HourlySuffixParquetThrift</a>, <a href="parquet/tuple/HourlySuffixParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.HourlySuffixParquetTuple">HourlySuffixParquetTuple</a>, <a href="source/HourlySuffixSource.html" class="extype" name="com.twitter.scalding.source.HourlySuffixSource">HourlySuffixSource</a>, <a href="source/HourlySuffixTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTsv">HourlySuffixTsv</a>, <a href="source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a>, <a href="commons/source/MostRecentGoodLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile">MostRecentGoodLongThriftSequenceFile</a>, <a href="MostRecentGoodSource.html" class="extype" name="com.twitter.scalding.MostRecentGoodSource">MostRecentGoodSource</a>, <a href="commons/source/MostRecentLzoTypedText.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentLzoTypedText">MostRecentLzoTypedText</a>, <a href="source/MostRecentTypedText.html" class="extype" name="com.twitter.scalding.source.MostRecentTypedText">MostRecentTypedText</a>, <a href="commons/source/TimePathLzoTypedText.html" class="extype" name="com.twitter.scalding.commons.source.TimePathLzoTypedText">TimePathLzoTypedText</a>, <a href="source/TimePathTypedText.html" class="extype" name="com.twitter.scalding.source.TimePathTypedText">TimePathTypedText</a>, <a href="commons/source/TimePathedLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a>, <a href="TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -62,7 +72,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.TimeSeqPathedSource"><span>TimeSeqPathedSource</span></li><li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.TimeSeqPathedSource"><span>TimeSeqPathedSource</span></li><li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.HfsTapProvider"><span>HfsTapProvider</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -70,7 +80,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -93,7 +102,11 @@
       <span class="symbol">
         <span class="name">TimeSeqPathedSource</span><span class="params">(<span name="patterns">patterns: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="dateRange">dateRange: <a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>, <span name="tz">tz: <span class="extype" name="java.util.TimeZone">TimeZone</span></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@&lt;init&gt;(patterns:Seq[String],dateRange:com.twitter.scalding.DateRange,tz:java.util.TimeZone):com.twitter.scalding.TimeSeqPathedSource" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -102,18 +115,22 @@
 
         <div id="values" class="values members">
               <h3>Abstract Value Members</h3>
-              <ol><li name="com.twitter.scalding.LocalSourceOverride#localPath" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="localPath:String"></a>
-      <a id="localPath:String"></a>
+              <ol><li name="com.twitter.scalding.LocalSourceOverride#localPaths" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="localPaths:Iterable[String]"></a>
+      <a id="localPaths:Iterable[String]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">localPath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">localPaths</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@localPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li></ol>
             </div>
@@ -121,19 +138,6 @@
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -144,8 +148,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -157,22 +165,13 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -183,8 +182,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#allPaths" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="allPaths:Iterable[String]"></a>
       <a id="allPaths:Iterable[String]"></a>
@@ -196,7 +199,11 @@
       <span class="symbol">
         <span class="name">allPaths</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@allPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">These are all the paths we will read for this data completely enumerated</p>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#allPathsFor" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="allPathsFor(pattern:String):Iterable[String]"></a>
@@ -209,7 +216,11 @@
       <span class="symbol">
         <span class="name">allPathsFor</span><span class="params">(<span name="pattern">pattern: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@allPathsFor(pattern:String):Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -222,7 +233,11 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
@@ -235,7 +250,11 @@
       <span class="symbol">
         <span class="name">checkFlowDefNotNull</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@checkFlowDefNotNull(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -248,7 +267,11 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -267,20 +290,45 @@
       <span class="symbol">
         <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@createHdfsReadTap(hdfsMode:com.twitter.scalding.Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
-    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[_,_,_]"></a>
-      <a id="createLocalTap(SinkMode):Tap[_,_,_]"></a>
+    </li><li name="com.twitter.scalding.HfsTapProvider#createHfsTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs"></a>
+      <a id="createHfsTap(Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_],String,SinkMode):Hfs"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
+        <span class="name">createHfsTap</span><span class="params">(<span name="scheme">scheme: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createLocalTap(SinkMode):Tap[JobConf,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
 </p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#createTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -294,7 +342,11 @@
       <span class="symbol">
         <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
 making Taps suitable for testing.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -309,7 +361,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">dateRange</span><span class="result">: <a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@dateRange:com.twitter.scalding.DateRange" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#defaultDurationFor" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defaultDurationFor(pattern:String):Option[com.twitter.scalding.Duration]"></a>
@@ -322,7 +378,11 @@ making Taps suitable for testing.
       <span class="symbol">
         <span class="name">defaultDurationFor</span><span class="params">(<span name="pattern">pattern: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="Duration.html" class="extype" name="com.twitter.scalding.Duration">Duration</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@defaultDurationFor(pattern:String):Option[com.twitter.scalding.Duration]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override this if you have for instance an hourly pattern but want to run every 6 hours.</p><div class="fullcomment"><div class="comment cmt"><p>Override this if you have for instance an hourly pattern but want to run every 6 hours.
 By default, we call TimePathedSource.stepSize(pattern, tz)
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
@@ -337,7 +397,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(that:Any):Boolean"></a>
@@ -350,7 +414,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="that">that: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@equals(that:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -363,7 +431,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -382,7 +454,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#getPathStatuses" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getPathStatuses(conf:org.apache.hadoop.conf.Configuration):Iterable[(String,Boolean)]"></a>
@@ -395,7 +471,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">getPathStatuses</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Boolean">Boolean</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@getPathStatuses(conf:org.apache.hadoop.conf.Configuration):Iterable[(String,Boolean)]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Get path statuses based on daterange.</p><div class="fullcomment"><div class="comment cmt"><p>Get path statuses based on daterange. This tests each path with pathIsGood
 (which by default checks that there is at least on file in that directory)
 </p></div></div>
@@ -410,7 +490,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@goodHdfsPaths(hdfsMode:com.twitter.scalding.Hdfs):Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -423,7 +507,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hdfsPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsPaths:Iterable[String]"></a>
@@ -436,7 +524,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">hdfsPaths</span><span class="result">: <a href="../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@hdfsPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#hdfsReadPathsAreGood" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
@@ -449,7 +541,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
@@ -462,7 +558,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#hdfsWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hdfsWritePath:String"></a>
@@ -475,7 +575,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">hdfsWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@hdfsWritePath:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -488,7 +592,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]"></a>
@@ -501,8 +609,29 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="java.util.Properties">Properties</span>, <span class="extype" name="java.io.InputStream">InputStream</span>, <span class="extype" name="java.io.OutputStream">OutputStream</span>, _, _]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localWritePath:String"></a>
+      <a id="localWritePath:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@localWritePath:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -514,7 +643,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -527,7 +660,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -540,7 +677,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.FileSource#pathIsGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="pathIsGood(p:String,conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
@@ -553,7 +694,11 @@ By default, we call TimePathedSource.stepSize(pattern, tz)
       <span class="symbol">
         <span class="name">pathIsGood</span><span class="params">(<span name="p">p: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@pathIsGood(p:String,conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Determines if a path is 'valid' for this source.</p><div class="fullcomment"><div class="comment cmt"><p>Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
 In non-strict mode, all invalid paths will be filtered out.</p><p>Subclasses can override this to validate paths.</p><p>The default implementation is a quick sanity check to look for missing or empty directories.
 It is necessary but not sufficient -- there are cases where this will return true but there is
@@ -571,7 +716,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">patterns</span><span class="result">: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@patterns:Seq[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -584,7 +733,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sinkMode:cascading.tap.SinkMode"></a>
@@ -597,7 +750,11 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceId:String"></a>
@@ -610,9 +767,15 @@ TODO: missing days / hours etc.
       <span class="symbol">
         <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
-(put another way, if s1.</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
 (put another way, if s1.sourceId == s2.sourceId, the job should
 work the same if one is replaced with the other
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
@@ -627,7 +790,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.TimeSeqPathedSource#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -640,7 +807,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.TimeSeqPathedSource">TimeSeqPathedSource</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -653,7 +824,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
@@ -666,7 +841,11 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transformInTest:Boolean"></a>
@@ -679,8 +858,13 @@ work the same if one is replaced with the other
       <span class="symbol">
         <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">The mock passed in to scalding.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
 as a mock of the Tap or the Source. By default, as of 0.9.0,
 it is considered as a Mock of the Source. If you set this
 to true, the mock in TestMode will be considered to be a
@@ -697,7 +881,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">tz</span><span class="result">: <span class="extype" name="java.util.TimeZone">TimeZone</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@tz:java.util.TimeZone" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.FileSource#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
@@ -710,7 +898,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -723,7 +915,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -742,7 +938,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -761,7 +961,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -780,7 +984,11 @@ mock of the Tap (which must be transformed) and not the Source.
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
 the next operation
 </p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
@@ -804,7 +1012,11 @@ the next operation
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <a href="../../../scala/package.html#Stream[+A]=scala.collection.immutable.Stream[A]" class="extmbr" name="scala.Stream">Stream</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.TimeSeqPathedSource@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -816,6 +1028,8 @@ the next operation
         <div id="inheritedMembers">
         <div class="parent" name="com.twitter.scalding.FileSource">
               <h3>Inherited from <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.HfsTapProvider">
+              <h3>Inherited from <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></h3>
             </div><div class="parent" name="com.twitter.scalding.LocalSourceOverride">
               <h3>Inherited from <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></h3>
             </div><div class="parent" name="com.twitter.scalding.SchemedSource">
@@ -844,6 +1058,7 @@ the next operation
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

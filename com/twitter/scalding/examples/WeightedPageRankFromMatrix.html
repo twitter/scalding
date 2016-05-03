@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>WeightedPageRankFromMatrix - com.twitter.scalding.examples.WeightedPageRankFromMatrix</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../lib/class_big.png" />
+        <img alt="Class" src="../../../../lib/class_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.examples">examples</a></p>
-        <h1>WeightedPageRankFromMatrix</h1>
+        <h1>WeightedPageRankFromMatrix</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.examples">package examples</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -40,8 +50,8 @@
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A weighted PageRank implementation using the Scalding Matrix API. This
-assumes that all rows and columns are of type <code> Int</code> and values or egde
-weights are <code> Double</code>. If you want an unweighted PageRank, simply set
+assumes that all rows and columns are of type <code><span class="extype" name="Int">Int</span></code> and values or egde
+weights are <code><span class="extype" name="Double">Double</span></code>. If you want an unweighted PageRank, simply set
 the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
  n -- number of nodes in the graph
  currentIteration -- start with 0 probably
@@ -61,7 +71,7 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
        |- M_hat
        |- priorVector</p><p>Don't forget to set the number of reducers for this job:
 -D mapred.reduce.tasks=n
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/examples/WeightedPageRankFromMatrix.scala" target="_blank">WeightedPageRankFromMatrix.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-commons/src/main/scala/com/twitter/scalding/examples/WeightedPageRankFromMatrix.scala" target="_blank">WeightedPageRankFromMatrix.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a>, <a href="../LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -89,7 +99,6 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -112,7 +121,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">WeightedPageRankFromMatrix</span><span class="params">(<span name="args">args: <a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@&lt;init&gt;(args:com.twitter.scalding.Args):com.twitter.scalding.examples.WeightedPageRankFromMatrix" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -124,19 +137,6 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -147,8 +147,12 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -160,22 +164,13 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -186,8 +181,12 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#M_hat" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="M_hat:com.twitter.scalding.mathematics.Matrix[Int,Int,Double]"></a>
       <a id="M_hat:Matrix[Int,Int,Double]"></a>
@@ -199,9 +198,30 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">M_hat</span><span class="result">: <a href="../mathematics/Matrix.html" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@M_hat:com.twitter.scalding.mathematics.Matrix[Int,Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Load or generate on first iteration the matrix M^ given A.
 </p>
+    </li><li name="com.twitter.scalding.Job#_implicitJobArgs" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_implicitJobArgs:com.twitter.scalding.Args"></a>
+      <a id="_implicitJobArgs:Args"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">_implicitJobArgs</span><span class="result">: <a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@_implicitJobArgs:com.twitter.scalding.Args" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.LowPriorityFieldConversions#anyToFieldArg" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="anyToFieldArg(f:Any):Comparable[_]"></a>
       <a id="anyToFieldArg(Any):Comparable[_]"></a>
@@ -213,8 +233,29 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">anyToFieldArg</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Comparable">Comparable</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@anyToFieldArg(f:Any):Comparable[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../LowPriorityFieldConversions.html" class="extype" name="com.twitter.scalding.LowPriorityFieldConversions">LowPriorityFieldConversions</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Job#args" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="args:com.twitter.scalding.Args"></a>
+      <a id="args:Args"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">args</span><span class="result">: <a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@args:com.twitter.scalding.Args" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -226,7 +267,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#asList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asList(f:cascading.tuple.Fields):List[Comparable[_]]"></a>
@@ -239,7 +284,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">asList</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@asList(f:cascading.tuple.Fields):List[Comparable[_]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#asSet" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asSet(f:cascading.tuple.Fields):Set[Comparable[_]]"></a>
@@ -252,7 +301,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">asSet</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="java.lang.Comparable">Comparable</span>[_]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@asSet(f:cascading.tuple.Fields):Set[Comparable[_]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#buildFlow" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="buildFlow:cascading.flow.Flow[_]"></a>
@@ -265,7 +318,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">buildFlow</span><span class="result">: <span class="extype" name="cascading.flow.Flow">Flow</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@buildFlow:cascading.flow.Flow[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">combine the config, flowDef and the Mode to produce a flow
 </p><div class="fullcomment"><div class="comment cmt"><p>combine the config, flowDef and the Mode to produce a flow
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
@@ -280,7 +337,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">classIdentifier</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@classIdentifier:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#clear" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clear:Unit"></a>
@@ -293,7 +354,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">clear</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@clear:Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#clone" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone(nextargs:com.twitter.scalding.Args):com.twitter.scalding.Job"></a>
@@ -306,7 +371,11 @@ the weights on the edges to 1.</p><p>Input arguments:</p><p> d -- damping factor
       <span class="symbol">
         <span class="name">clone</span><span class="params">(<span name="nextargs">nextargs: <a href="../Args.html" class="extype" name="com.twitter.scalding.Args">Args</a></span>)</span><span class="result">: <a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@clone(nextargs:com.twitter.scalding.Args):com.twitter.scalding.Job" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Copy this job
 By default, this uses reflection and the single argument Args constructor
 </p><div class="fullcomment"><div class="comment cmt"><p>Copy this job
@@ -323,7 +392,11 @@ By default, this uses reflection and the single argument Args constructor
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -342,7 +415,11 @@ By default, this uses reflection and the single argument Args constructor
       <span class="symbol">
         <span class="name">colVectorFromTsv</span><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../mathematics/ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@colVectorFromTsv(input:String):com.twitter.scalding.mathematics.ColVector[Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Job#config" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="config:Map[AnyRef,AnyRef]"></a>
@@ -355,7 +432,11 @@ By default, this uses reflection and the single argument Args constructor
       <span class="symbol">
         <span class="name">config</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@config:Map[AnyRef,AnyRef]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is the exact config that is passed to the Cascading FlowConnector.</p><div class="fullcomment"><div class="comment cmt"><p>This is the exact config that is passed to the Cascading FlowConnector.
 By default:
   if there are no spill thresholds in mode.config, we replace with defaultSpillThreshold
@@ -375,7 +456,11 @@ map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for 
       <span class="symbol">
         <span class="name">convergenceThreshold</span><span class="result">: <span class="extype" name="scala.Double">Double</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@convergenceThreshold:Double" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#currentIteration" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="currentIteration:Int"></a>
@@ -388,7 +473,11 @@ map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for 
       <span class="symbol">
         <span class="name">currentIteration</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@currentIteration:Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#d" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="d:Double"></a>
@@ -401,7 +490,11 @@ map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for 
       <span class="symbol">
         <span class="name">d</span><span class="result">: <span class="extype" name="scala.Double">Double</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@d:Double" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Job#dateParser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="dateParser:com.twitter.scalding.DateParser"></a>
@@ -414,7 +507,11 @@ map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for 
       <span class="symbol">
         <span class="name">dateParser</span><span class="result">: <a href="../DateParser.html" class="extype" name="com.twitter.scalding.DateParser">DateParser</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@dateParser:com.twitter.scalding.DateParser" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override this to control how dates are parsed</p><div class="fullcomment"><div class="comment cmt"><p>Override this to control how dates are parsed</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#defaultComparator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defaultComparator:Option[Class[_&lt;:java.util.Comparator[_]]]"></a>
@@ -427,7 +524,11 @@ map to add or overwrite more options</p><p>This returns Map[AnyRef, AnyRef] for 
       <span class="symbol">
         <span class="name">defaultComparator</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="java.util.Comparator">Comparator</span>[_]]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@defaultComparator:Option[Class[_&lt;:java.util.Comparator[_]]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Override this if you want to customize comparisons/hashing for your job
 the config method overwrites using this before sending to cascading
 The one we use by default is needed used to make Joins in the
@@ -448,10 +549,14 @@ If you only use the Typed-API, consider changing this to return None
       <span class="symbol">
         <span class="name">defaultMode</span><span class="params">(<span name="fromFields">fromFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="toFields">toFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@defaultMode(fromFields:cascading.tuple.Fields,toFields:cascading.tuple.Fields):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Rather than give the full power of cascading's selectors, we have
 a simpler set of rules encoded below:
-1) if the input is non-definite (ALL, GROUP, ARGS, etc.</p><div class="fullcomment"><div class="comment cmt"><p>Rather than give the full power of cascading's selectors, we have
+1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.</p><div class="fullcomment"><div class="comment cmt"><p>Rather than give the full power of cascading's selectors, we have
 a simpler set of rules encoded below:
 1) if the input is non-definite (ALL, GROUP, ARGS, etc...) ALL is the output.
      Perhaps only fromFields=ALL will make sense
@@ -470,7 +575,11 @@ a simpler set of rules encoded below:
       <span class="symbol">
         <span class="name">defaultSpillThreshold</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@defaultSpillThreshold:Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Keep 100k tuples in memory by default before spilling
 Turn this up as high as you can without getting OOM.</p><div class="fullcomment"><div class="comment cmt"><p>Keep 100k tuples in memory by default before spilling
 Turn this up as high as you can without getting OOM.</p><p>This is ignored if there is a value set in the incoming jobConf on Hadoop
@@ -486,7 +595,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">diffLoc</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@diffLoc:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#edgesLoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="edgesLoc:String"></a>
@@ -499,7 +612,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">edgesLoc</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@edgesLoc:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.FieldConversions#ensureUniqueFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ensureUniqueFields(left:cascading.tuple.Fields,right:cascading.tuple.Fields,rightPipe:cascading.pipe.Pipe):(cascading.tuple.Fields,cascading.pipe.Pipe)"></a>
@@ -512,7 +629,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">ensureUniqueFields</span><span class="params">(<span name="left">left: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="right">right: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="rightPipe">rightPipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@ensureUniqueFields(left:cascading.tuple.Fields,right:cascading.tuple.Fields,rightPipe:cascading.pipe.Pipe):(cascading.tuple.Fields,cascading.pipe.Pipe)" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#enumValueToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="enumValueToFields(x:Enumeration#Value):cascading.tuple.Fields"></a>
@@ -525,7 +646,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">enumValueToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Enumeration.Value">Value</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@enumValueToFields(x:Enumeration#Value):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -538,7 +663,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -551,7 +680,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fieldFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldFields[T&lt;:TraversableOnce[com.twitter.scalding.Field[_]]](f:T):com.twitter.scalding.RichFields"></a>
@@ -564,7 +697,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">fieldFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<a href="../Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fieldFields.T">T</span></span>)</span><span class="result">: <a href="../RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@fieldFields[T&lt;:TraversableOnce[com.twitter.scalding.Field[_]]](f:T):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fieldToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldToFields(f:com.twitter.scalding.Field[_]):com.twitter.scalding.RichFields"></a>
@@ -577,7 +714,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">fieldToFields</span><span class="params">(<span name="f">f: <a href="../Field.html" class="extype" name="com.twitter.scalding.Field">Field</a>[_]</span>)</span><span class="result">: <a href="../RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@fieldToFields(f:com.twitter.scalding.Field[_]):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fields[T&lt;:TraversableOnce[Symbol]](f:T):cascading.tuple.Fields"></a>
@@ -590,7 +731,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">fields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.fields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@fields[T&lt;:TraversableOnce[Symbol]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fieldsToRichFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fieldsToRichFields(fields:cascading.tuple.Fields):com.twitter.scalding.RichFields"></a>
@@ -603,7 +748,11 @@ Turn this up as high as you can without getting OOM.</p><p>This is ignored if th
       <span class="symbol">
         <span class="name">fieldsToRichFields</span><span class="params">(<span name="fields">fields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <a href="../RichFields.html" class="extype" name="com.twitter.scalding.RichFields">RichFields</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@fieldsToRichFields(fields:cascading.tuple.Fields):com.twitter.scalding.RichFields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">We can't set the field Manifests because cascading doesn't (yet) expose field type information
 in the Fields API.</p><div class="fullcomment"><div class="comment cmt"><p>We can't set the field Manifests because cascading doesn't (yet) expose field type information
 in the Fields API.
@@ -619,7 +768,11 @@ in the Fields API.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -638,7 +791,11 @@ in the Fields API.
       <span class="symbol">
         <span class="name">flowDef</span><span class="result">: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@flowDef:cascading.flow.FlowDef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#fromEnum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fromEnum[T&lt;:Enumeration](enumeration:T):cascading.tuple.Fields"></a>
@@ -651,7 +808,11 @@ in the Fields API.
       <span class="symbol">
         <span class="name">fromEnum</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.Enumeration">Enumeration</span></span>]</span><span class="params">(<span name="enumeration">enumeration: <span class="extype" name="com.twitter.scalding.FieldConversions.fromEnum.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@fromEnum[T&lt;:Enumeration](enumeration:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Multi-entry fields.</p><div class="fullcomment"><div class="comment cmt"><p>Multi-entry fields.  This are higher priority than Product conversions so
 that List will not conflict with Product.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
@@ -666,7 +827,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#getField" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getField(f:cascading.tuple.Fields,idx:Int):cascading.tuple.Fields"></a>
@@ -679,7 +844,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">getField</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@getField(f:cascading.tuple.Fields,idx:Int):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#handleStats" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="handleStats(statsData:cascading.stats.CascadingStats):Unit"></a>
@@ -692,7 +861,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">handleStats</span><span class="params">(<span name="statsData">statsData: <span class="extype" name="cascading.stats.CascadingStats">CascadingStats</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@handleStats(statsData:cascading.stats.CascadingStats):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#hasInts" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasInts(f:cascading.tuple.Fields):Boolean"></a>
@@ -705,7 +878,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">hasInts</span><span class="params">(<span name="f">f: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@hasInts(f:cascading.tuple.Fields):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -718,7 +895,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#intFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="intFields[T&lt;:TraversableOnce[Int]](f:T):cascading.tuple.Fields"></a>
@@ -731,7 +912,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">intFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Int">Int</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.intFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@intFields[T&lt;:TraversableOnce[Int]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#intToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="intToFields(x:Int):cascading.tuple.Fields"></a>
@@ -744,7 +929,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">intToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@intToFields(x:Int):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#integerToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="integerToFields(x:Integer):cascading.tuple.Fields"></a>
@@ -757,7 +946,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">integerToFields</span><span class="params">(<span name="x">x: <span class="extype" name="java.lang.Integer">Integer</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@integerToFields(x:Integer):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#ioSerializations" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ioSerializations:List[Class[_&lt;:org.apache.hadoop.io.serializer.Serialization[_]]]"></a>
@@ -770,7 +963,11 @@ that List will not conflict with Product.
       <span class="symbol">
         <span class="name">ioSerializations</span><span class="result">: <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="org.apache.hadoop.io.serializer.Serialization">Serialization</span>[_]]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@ioSerializations:List[Class[_&lt;:org.apache.hadoop.io.serializer.Serialization[_]]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">These are user-defined serializations IN-ADDITION to (but deduped)
 with the required serializations
 </p><div class="fullcomment"><div class="comment cmt"><p>These are user-defined serializations IN-ADDITION to (but deduped)
@@ -787,7 +984,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Job#iterableToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="iterableToRichPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.RichPipe"></a>
@@ -800,7 +1001,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">iterableToRichPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Job.iterableToRichPipe.T">T</span>]</span>)</span><span class="result">: <a href="../RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@iterableToRichPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#iterationsDir" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="iterationsDir:String"></a>
@@ -813,7 +1018,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">iterationsDir</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@iterationsDir:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Job#keepAlive" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="keepAlive:Unit"></a>
@@ -826,7 +1035,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">keepAlive</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@keepAlive:Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this if a map or reduce phase takes a while before emitting tuples.</p><div class="fullcomment"><div class="comment cmt"><p>Use this if a map or reduce phase takes a while before emitting tuples.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#listeners" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -840,7 +1053,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">listeners</span><span class="result">: <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="cascading.flow.FlowListener">FlowListener</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@listeners:List[cascading.flow.FlowListener]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#matrixFromTsv" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="matrixFromTsv(input:String):com.twitter.scalding.mathematics.Matrix[Int,Int,Double]"></a>
@@ -853,7 +1070,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">matrixFromTsv</span><span class="params">(<span name="input">input: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="../mathematics/Matrix.html" class="extype" name="com.twitter.scalding.mathematics.Matrix">Matrix</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@matrixFromTsv(input:String):com.twitter.scalding.mathematics.Matrix[Int,Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#maxIterations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="maxIterations:Int"></a>
@@ -866,7 +1087,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">maxIterations</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@maxIterations:Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#measureConvergenceAndStore" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="measureConvergenceAndStore():Unit"></a>
@@ -879,7 +1104,11 @@ with the required serializations
       <span class="symbol">
         <span class="name">measureConvergenceAndStore</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@measureConvergenceAndStore():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Measure convergence by  calculating the total of the absolute difference
 between the previous and next vectors.</p><div class="fullcomment"><div class="comment cmt"><p>Measure convergence by  calculating the total of the absolute difference
 between the previous and next vectors. This stores the result after
@@ -896,7 +1125,11 @@ calculation.
       <span class="symbol">
         <span class="name">mode</span><span class="result">: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@mode:com.twitter.scalding.Mode" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#n" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="n:Int"></a>
@@ -909,7 +1142,11 @@ calculation.
       <span class="symbol">
         <span class="name">n</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@n:Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Job#name" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="name:String"></a>
@@ -922,7 +1159,11 @@ calculation.
       <span class="symbol">
         <span class="name">name</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@name:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -935,7 +1176,11 @@ calculation.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#newSymbol" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="newSymbol(avoid:Set[Symbol],guess:Symbol,trial:Int):Symbol"></a>
@@ -948,7 +1193,11 @@ calculation.
       <span class="symbol">
         <span class="name">newSymbol</span><span class="params">(<span name="avoid">avoid: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Symbol">Symbol</span>]</span>, <span name="guess">guess: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="trial">trial: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">0</span></span>)</span><span class="result">: <span class="extype" name="scala.Symbol">Symbol</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@newSymbol(avoid:Set[Symbol],guess:Symbol,trial:Int):Symbol" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@tailrec</span><span class="args">()</span>
               
@@ -964,7 +1213,11 @@ calculation.
       <span class="symbol">
         <span class="name">next</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@next:Option[com.twitter.scalding.Job]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Recurse and iterate again iff we are under the max number of iterations and
 vector has not converged.</p><div class="fullcomment"><div class="comment cmt"><p>Recurse and iterate again iff we are under the max number of iterations and
 vector has not converged.
@@ -980,7 +1233,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">nextVector</span><span class="result">: <a href="../mathematics/ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@nextVector:com.twitter.scalding.mathematics.ColVector[Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#nextVectorLoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="nextVectorLoc:String"></a>
@@ -993,7 +1250,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">nextVectorLoc</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@nextVectorLoc:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -1006,7 +1267,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -1019,7 +1284,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#onesVectorLoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="onesVectorLoc:String"></a>
@@ -1032,7 +1301,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">onesVectorLoc</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@onesVectorLoc:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.FieldConversions#parseAnySeqToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="parseAnySeqToFields[T&lt;:TraversableOnce[Any]](anyf:T):cascading.tuple.Fields"></a>
@@ -1045,7 +1318,11 @@ vector has not converged.
       <span class="symbol">
         <span class="name">parseAnySeqToFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Any">Any</span>]</span>]</span><span class="params">(<span name="anyf">anyf: <span class="extype" name="com.twitter.scalding.FieldConversions.parseAnySeqToFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@parseAnySeqToFields[T&lt;:TraversableOnce[Any]](anyf:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Useful to convert f : Any* to Fields.</p><div class="fullcomment"><div class="comment cmt"><p>Useful to convert f : Any* to Fields.  This handles mixed cases (&quot;hey&quot;, 'you).
 Not sure we should be this flexible, but given that Cascading will throw an
 exception before scheduling the job, I guess this is okay.
@@ -1061,7 +1338,11 @@ exception before scheduling the job, I guess this is okay.
       <span class="symbol">
         <span class="name">pipeToRichPipe</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <a href="../RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@pipeToRichPipe(pipe:cascading.pipe.Pipe):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">you should never call this directly, it is here to make
 the DSL work.</p><div class="fullcomment"><div class="comment cmt"><p>you should never call this directly, it is here to make
 the DSL work.  Just know, you can treat a Pipe as a RichPipe
@@ -1078,7 +1359,11 @@ within a Job
       <span class="symbol">
         <span class="name">previousVector</span><span class="result">: <a href="../mathematics/ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@previousVector:com.twitter.scalding.mathematics.ColVector[Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#previousVectorLoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="previousVectorLoc:String"></a>
@@ -1091,7 +1376,11 @@ within a Job
       <span class="symbol">
         <span class="name">previousVectorLoc</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@previousVectorLoc:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.examples.WeightedPageRankFromMatrix#priorVector" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="priorVector:com.twitter.scalding.mathematics.ColVector[Int,Double]"></a>
@@ -1104,7 +1393,11 @@ within a Job
       <span class="symbol">
         <span class="name">priorVector</span><span class="result">: <a href="../mathematics/ColVector.html" class="extype" name="com.twitter.scalding.mathematics.ColVector">ColVector</a>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@priorVector:com.twitter.scalding.mathematics.ColVector[Int,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Load or generate on first iteration the prior vector given d and n.</p>
     </li><li name="com.twitter.scalding.LowPriorityFieldConversions#productToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="productToFields(f:Product):cascading.tuple.Fields"></a>
@@ -1117,7 +1410,11 @@ within a Job
       <span class="symbol">
         <span class="name">productToFields</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Product">Product</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@productToFields(f:Product):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Handles treating any TupleN as a Fields object.</p><div class="fullcomment"><div class="comment cmt"><p>Handles treating any TupleN as a Fields object.
 This is low priority because List is also a Product, but this method
 will not work for List (because List is Product2(head, tail) and so
@@ -1136,7 +1433,11 @@ higher priority.
       <span class="symbol">
         <span class="name">read</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@read(src:com.twitter.scalding.Source):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is implicit so that a Source can be used as the argument
 to a join or other method that accepts Pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is implicit so that a Source can be used as the argument
 to a join or other method that accepts Pipe.
@@ -1152,7 +1453,11 @@ to a join or other method that accepts Pipe.
       <span class="symbol">
         <span class="name">rootDir</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@rootDir:String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.Job#run" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="run:Boolean"></a>
@@ -1165,7 +1470,11 @@ to a join or other method that accepts Pipe.
       <span class="symbol">
         <span class="name">run</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@run:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#scaldingConfig" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="scaldingConfig:com.twitter.scalding.Config"></a>
@@ -1178,8 +1487,13 @@ to a join or other method that accepts Pipe.
       <span class="symbol">
         <span class="name">scaldingConfig</span><span class="result">: <a href="../Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">This is here so that Mappable.</p><div class="fullcomment"><div class="comment cmt"><p>This is here so that Mappable.toIterator can find an implicit config
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@scaldingConfig:com.twitter.scalding.Config" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is here so that Mappable.toIterator can find an implicit config
+</p><div class="fullcomment"><div class="comment cmt"><p>This is here so that Mappable.toIterator can find an implicit config
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#skipStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="skipStrategy:Option[cascading.flow.FlowSkipStrategy]"></a>
@@ -1192,7 +1506,11 @@ to a join or other method that accepts Pipe.
       <span class="symbol">
         <span class="name">skipStrategy</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.flow.FlowSkipStrategy">FlowSkipStrategy</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@skipStrategy:Option[cascading.flow.FlowSkipStrategy]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#sourceToRichPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sourceToRichPipe(src:com.twitter.scalding.Source):com.twitter.scalding.RichPipe"></a>
@@ -1205,9 +1523,13 @@ to a join or other method that accepts Pipe.
       <span class="symbol">
         <span class="name">sourceToRichPipe</span><span class="params">(<span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <a href="../RichPipe.html" class="extype" name="com.twitter.scalding.RichPipe">RichPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@sourceToRichPipe(src:com.twitter.scalding.Source):com.twitter.scalding.RichPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This implicit is to enable RichPipe methods directly on Source
-objects, such as map/flatMap, etc.</p><div class="fullcomment"><div class="comment cmt"><p>This implicit is to enable RichPipe methods directly on Source
+objects, such as map/flatMap, etc...</p><div class="fullcomment"><div class="comment cmt"><p>This implicit is to enable RichPipe methods directly on Source
 objects, such as map/flatMap, etc...</p><p>Note that Mappable is a subclass of Source, and Mappable already
 has mapTo and flatMapTo BUT WITHOUT incoming fields used (see
 the Mappable trait). This creates some confusion when using these methods
@@ -1226,7 +1548,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">stepListeners</span><span class="result">: <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="cascading.flow.FlowStepListener">FlowStepListener</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@stepListeners:List[cascading.flow.FlowStepListener]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#stepStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stepStrategy:Option[cascading.flow.FlowStepStrategy[_]]"></a>
@@ -1239,9 +1565,12 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">stepStrategy</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.flow.FlowStepStrategy">FlowStepStrategy</span>[_]]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Specify a callback to run before the start of each flow step.</p><div class="fullcomment"><div class="comment cmt"><p>Specify a callback to run before the start of each flow step.</p><p>Defaults to what Config.getReducerEstimator specifies.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd><dt>See also</dt><dd><span class="cmt"><p>ExecutionContext.buildFlow
-</p></span></dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@stepStrategy:Option[cascading.flow.FlowStepStrategy[_]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Specify a callback to run before the start of each flow step.</p><div class="fullcomment"><div class="comment cmt"><p>Specify a callback to run before the start of each flow step.</p><p>Defaults to what Config.getReducerEstimator specifies.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd><dt>See also</dt><dd><span class="cmt"><p>ExecutionContext.buildFlow</p></span></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#strFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="strFields[T&lt;:TraversableOnce[String]](f:T):cascading.tuple.Fields"></a>
       <a id="strFields[T&lt;:TraversableOnce[String]](T):Fields"></a>
@@ -1253,7 +1582,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">strFields</span><span class="tparams">[<span name="T">T &lt;: <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.scalding.FieldConversions.strFields.T">T</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@strFields[T&lt;:TraversableOnce[String]](f:T):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#stringToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stringToFields(x:String):cascading.tuple.Fields"></a>
@@ -1266,7 +1599,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">stringToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@stringToFields(x:String):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#symbolToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="symbolToFields(x:Symbol):cascading.tuple.Fields"></a>
@@ -1279,8 +1616,13 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">symbolToFields</span><span class="params">(<span name="x">x: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">'* means Fields.</p><div class="fullcomment"><div class="comment cmt"><p>'* means Fields.ALL, otherwise we take the .name
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@symbolToFields(x:Symbol):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">'* means Fields.ALL, otherwise we take the .name
+</p><div class="fullcomment"><div class="comment cmt"><p>'* means Fields.ALL, otherwise we take the .name
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -1293,7 +1635,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.Job#timeout" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="timeout[T](timeout:com.twitter.scalding.AbsoluteDuration)(t:=&gt;T):Option[T]"></a>
@@ -1306,7 +1652,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">timeout</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="timeout">timeout: <a href="../AbsoluteDuration.html" class="extype" name="com.twitter.scalding.AbsoluteDuration">AbsoluteDuration</a></span>)</span><span class="params">(<span name="t">t: ⇒ <span class="extype" name="com.twitter.scalding.Job.timeout.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.Job.timeout.T">T</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@timeout[T](timeout:com.twitter.scalding.AbsoluteDuration)(t:=&gt;T):Option[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#toPipe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):cascading.pipe.Pipe"></a>
@@ -1319,7 +1669,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">toPipe</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="iter">iter: <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Job.toPipe.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@toPipe[T](iter:Iterable[T])(implicitset:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -1332,7 +1686,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#tuple2ToFieldsPair" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="tuple2ToFieldsPair[T,U](pair:(T,U))(implicittf:T=&gt;cascading.tuple.Fields,implicituf:U=&gt;cascading.tuple.Fields):(cascading.tuple.Fields,cascading.tuple.Fields)"></a>
@@ -1345,7 +1703,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">tuple2ToFieldsPair</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="pair">pair: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>, <span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="tf">tf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.T">T</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="uf">uf: (<span class="extype" name="com.twitter.scalding.FieldConversions.tuple2ToFieldsPair.U">U</span>) ⇒ <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@tuple2ToFieldsPair[T,U](pair:(T,U))(implicittf:T=&gt;cascading.tuple.Fields,implicituf:U=&gt;cascading.tuple.Fields):(cascading.tuple.Fields,cascading.tuple.Fields)" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FieldConversions#unitToFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="unitToFields(u:Unit):cascading.tuple.Fields"></a>
@@ -1358,7 +1720,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">unitToFields</span><span class="params">(<span name="u">u: <span class="extype" name="scala.Unit">Unit</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@unitToFields(u:Unit):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../FieldConversions.html" class="extype" name="com.twitter.scalding.FieldConversions">FieldConversions</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Job#validate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="validate:Unit"></a>
@@ -1371,7 +1737,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">validate</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@validate:Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -1384,7 +1754,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1403,7 +1777,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1422,7 +1800,11 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1441,9 +1823,15 @@ operating with a mapTo/flatMapTo.
       <span class="symbol">
         <span class="name">write</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>, <span name="src">src: <a href="../Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.examples.WeightedPageRankFromMatrix@write(pipe:cascading.pipe.Pipe,src:com.twitter.scalding.Source):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is only here for Java jobs which cannot automatically
-access the implicit Pipe =&gt; RichPipe which makes: pipe.</p><div class="fullcomment"><div class="comment cmt"><p>This is only here for Java jobs which cannot automatically
+access the implicit Pipe =&gt; RichPipe which makes: pipe.write( )
+convenient
+</p><div class="fullcomment"><div class="comment cmt"><p>This is only here for Java jobs which cannot automatically
 access the implicit Pipe =&gt; RichPipe which makes: pipe.write( )
 convenient
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Job.html" class="extype" name="com.twitter.scalding.Job">Job</a></dd></dl></div>
@@ -1484,6 +1872,7 @@ convenient
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

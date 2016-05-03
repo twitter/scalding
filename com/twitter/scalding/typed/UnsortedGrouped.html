@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>UnsortedGrouped - com.twitter.scalding.typed.UnsortedGrouped</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../../lib/trait_big.png" />
+        <img alt="Trait" src="../../../../lib/trait_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.typed">typed</a></p>
-        <h1>UnsortedGrouped</h1>
+        <h1>UnsortedGrouped</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding.typed">package typed</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,7 +45,7 @@
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <span class="name">UnsortedGrouped</span><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
+        <span class="name">UnsortedGrouped</span><span class="tparams">[<span name="K">K</span>, <span name="V">+V</span>]</span><span class="result"> extends <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>] with <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>] with <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]] with <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
       </h4>
       
@@ -44,11 +54,11 @@ not possible to sort at this phase, but it is possible to
 do a CoGrouping or a HashJoin.
 </p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/typed/Grouped.scala" target="_blank">Grouped.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]], <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>], <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a>, <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>], <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]], <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]], <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>], <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <a href="HasDescription.html" class="extype" name="com.twitter.scalding.typed.HasDescription">HasDescription</a>, <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a>, <a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>], <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="IteratorMappedReduce.html" class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce">IteratorMappedReduce</a>, <a href="UnsortedIdentityReduce.html" class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce">UnsortedIdentityReduce</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="IteratorMappedReduce.html" class="extype" name="com.twitter.scalding.typed.IteratorMappedReduce">IteratorMappedReduce</a>, <a href="UnsortedIdentityReduce.html" class="extype" name="com.twitter.scalding.typed.UnsortedIdentityReduce">UnsortedIdentityReduce</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -65,7 +75,7 @@ do a CoGrouping or a HashJoin.
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.typed.UnsortedGrouped"><span>UnsortedGrouped</span></li><li class="in" name="com.twitter.scalding.typed.WithReducers"><span>WithReducers</span></li><li class="in" name="com.twitter.scalding.typed.HashJoinable"><span>HashJoinable</span></li><li class="in" name="com.twitter.scalding.typed.KeyedPipe"><span>KeyedPipe</span></li><li class="in" name="com.twitter.scalding.typed.CoGroupable"><span>CoGroupable</span></li><li class="in" name="com.twitter.scalding.typed.HasReducers"><span>HasReducers</span></li><li class="in" name="com.twitter.scalding.typed.KeyedListLike"><span>KeyedListLike</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.typed.UnsortedGrouped"><span>UnsortedGrouped</span></li><li class="in" name="com.twitter.scalding.typed.WithDescription"><span>WithDescription</span></li><li class="in" name="com.twitter.scalding.typed.WithReducers"><span>WithReducers</span></li><li class="in" name="com.twitter.scalding.typed.HashJoinable"><span>HashJoinable</span></li><li class="in" name="com.twitter.scalding.typed.KeyedPipe"><span>KeyedPipe</span></li><li class="in" name="com.twitter.scalding.typed.CoGroupable"><span>CoGroupable</span></li><li class="in" name="com.twitter.scalding.typed.HasDescription"><span>HasDescription</span></li><li class="in" name="com.twitter.scalding.typed.HasReducers"><span>HasReducers</span></li><li class="in" name="com.twitter.scalding.typed.KeyedListLike"><span>KeyedListLike</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -73,7 +83,6 @@ do a CoGrouping or a HashJoin.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -100,7 +109,11 @@ do a CoGrouping or a HashJoin.
       <span class="symbol">
         <span class="name">bufferedTake</span><span class="params">(<span name="n">n: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@bufferedTake(n:Int):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is like take except that the items are kept in memory
 and we attempt to partially execute on the mappers if possible
 For very large values of n, this could create memory pressure.</p><div class="fullcomment"><div class="comment cmt"><p>This is like take except that the items are kept in memory
@@ -109,6 +122,23 @@ For very large values of n, this could create memory pressure.
 (as you may aggregate n items in a memory heap for each key)
 If you get OOM issues, try to resolve using the method <code>take</code> instead.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.HasDescription#descriptions" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="descriptions:Seq[String]"></a>
+      <a id="descriptions:Seq[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">descriptions</span><span class="result">: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@descriptions:Seq[String]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HasDescription.html" class="extype" name="com.twitter.scalding.typed.HasDescription">HasDescription</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#filterKeys" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="filterKeys(fn:K=&gt;Boolean):This[K,T]"></a>
       <a id="filterKeys((K)⇒Boolean):UnsortedGrouped[K,V]"></a>
@@ -120,7 +150,11 @@ If you get OOM issues, try to resolve using the method <code>take</code> instead
       <span class="symbol">
         <span class="name">filterKeys</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@filterKeys(fn:K=&gt;Boolean):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">filter keys on a predicate.</p><div class="fullcomment"><div class="comment cmt"><p>filter keys on a predicate. More efficient than filter if you are
 only looking at keys
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
@@ -135,7 +169,11 @@ only looking at keys
       <span class="symbol">
         <span class="name">joinFunction</span><span class="result">: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>], <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>]]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@joinFunction:(K,Iterator[cascading.tuple.Tuple],Seq[Iterable[cascading.tuple.Tuple]])=&gt;Iterator[R]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This function is not type-safe for others to call, but it should
 never have an error.</p><div class="fullcomment"><div class="comment cmt"><p>This function is not type-safe for others to call, but it should
 never have an error. By construction, we never call it with incorrect
@@ -155,7 +193,11 @@ would actually help anyone for it to be type-safe
       <span class="symbol">
         <span class="name">keyOrdering</span><span class="result">: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@keyOrdering:Ordering[K]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#mapGroup" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="mapGroup[V](smfn:(K,Iterator[T])=&gt;Iterator[V]):This[K,V]"></a>
@@ -168,7 +210,11 @@ would actually help anyone for it to be type-safe
       <span class="symbol">
         <span class="name">mapGroup</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="smfn">smfn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapGroup.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapGroup.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@mapGroup[V](smfn:(K,Iterator[T])=&gt;Iterator[V]):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Operate on an Iterator[T] of all the values for each key at one time.</p><div class="fullcomment"><div class="comment cmt"><p>Operate on an Iterator[T] of all the values for each key at one time.
 Prefer this to toList, when you can avoid accumulating the whole list in memory.
 Prefer sum, which is partially executed map-side by default.
@@ -187,7 +233,11 @@ Note, any key that has all values removed will not appear in subsequent
       <span class="symbol">
         <span class="name">mapped</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Any">Any</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@mapped:com.twitter.scalding.typed.TypedPipe[(K,Any)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.HasReducers#reducers" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="reducers:Option[Int]"></a>
@@ -200,7 +250,11 @@ Note, any key that has all values removed will not appear in subsequent
       <span class="symbol">
         <span class="name">reducers</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@reducers:Option[Int]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#toTypedPipe" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="toTypedPipe:com.twitter.scalding.typed.TypedPipe[(K,T)]"></a>
@@ -213,10 +267,31 @@ Note, any key that has all values removed will not appear in subsequent
       <span class="symbol">
         <span class="name">toTypedPipe</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@toTypedPipe:com.twitter.scalding.typed.TypedPipe[(K,T)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">End of the operations on values.</p><div class="fullcomment"><div class="comment cmt"><p>End of the operations on values. From this point on the keyed structure
 is lost and another shuffle is generally required to reconstruct it
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.WithDescription#withDescription" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="withDescription(description:String):This"></a>
+      <a id="withDescription(String):UnsortedGrouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withDescription</span><span class="params">(<span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@withDescription(description:String):This" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">never mutates this, instead returns a new item.</p><div class="fullcomment"><div class="comment cmt"><p>never mutates this, instead returns a new item.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.WithReducers#withReducers" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="withReducers(reds:Int):This"></a>
       <a id="withReducers(Int):UnsortedGrouped[K,V]"></a>
@@ -228,7 +303,11 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span class="name">withReducers</span><span class="params">(<span name="reds">reds: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@withReducers(reds:Int):This" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">never mutates this, instead returns a new item.</p><div class="fullcomment"><div class="comment cmt"><p>never mutates this, instead returns a new item.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a></dd></dl></div>
     </li></ol>
             </div>
@@ -236,19 +315,6 @@ is lost and another shuffle is generally required to reconstruct it
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -259,8 +325,12 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -272,22 +342,13 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -298,8 +359,12 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#aggregate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aggregate[B,C](agg:com.twitter.algebird.Aggregator[T,B,C]):This[K,C]"></a>
       <a id="aggregate[B,C](Aggregator[V,B,C]):UnsortedGrouped[K,C]"></a>
@@ -311,7 +376,11 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span class="name">aggregate</span><span class="tparams">[<span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="agg">agg: <span class="extype" name="com.twitter.algebird.Aggregator">Aggregator</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.aggregate.B">B</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.aggregate.C">C</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.aggregate.C">C</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@aggregate[B,C](agg:com.twitter.algebird.Aggregator[T,B,C]):This[K,C]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use Algebird Aggregator to do the reduction
 </p><div class="fullcomment"><div class="comment cmt"><p>Use Algebird Aggregator to do the reduction
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
@@ -326,7 +395,11 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -339,7 +412,11 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -358,7 +435,11 @@ is lost and another shuffle is generally required to reconstruct it
       <span class="symbol">
         <span class="name">cogroup</span><span class="tparams">[<span name="R1">R1</span>, <span name="R2">R2</span>]</span><span class="params">(<span name="smaller">smaller: <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.cogroup.R1">R1</span>]</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.CoGroupable.cogroup.R1">R1</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.CoGroupable.cogroup.R2">R2</span>]</span>)</span><span class="result">: <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.cogroup.R2">R2</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@cogroup[R1,R2](smaller:com.twitter.scalding.typed.CoGroupable[K,R1])(fn:(K,Iterator[R],Iterable[R1])=&gt;Iterator[R2]):com.twitter.scalding.typed.CoGrouped[K,R2]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Smaller is about average values/key not total size (that does not matter, but is
 clearly related).</p><div class="fullcomment"><div class="comment cmt"><p>Smaller is about average values/key not total size (that does not matter, but is
 clearly related).</p><p>Note that from the type signature we see that the right side is iterated (or may be)
@@ -377,8 +458,50 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">count</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Long">Long</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@count(fn:T=&gt;Boolean):This[K,Long]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, count the number of values that satisfy a predicate</p><div class="fullcomment"><div class="comment cmt"><p>For each key, count the number of values that satisfy a predicate</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.KeyedListLike#distinctSize" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="distinctSize:This[K,Long]"></a>
+      <a id="distinctSize:UnsortedGrouped[K,Long]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinctSize</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Long">Long</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@distinctSize:This[K,Long]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">For each key, give the number of unique values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the number of unique values. WARNING: May OOM.
+This assumes the values for each key can fit in memory.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.KeyedListLike#distinctValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="distinctValues:This[K,T]"></a>
+      <a id="distinctValues:UnsortedGrouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinctValues</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@distinctValues:This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">For each key, remove duplicate values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, remove duplicate values. WARNING: May OOM.
+This assumes the values for each key can fit in memory.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#drop" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="drop(n:Int):This[K,T]"></a>
       <a id="drop(Int):UnsortedGrouped[K,V]"></a>
@@ -390,7 +513,11 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">drop</span><span class="params">(<span name="n">n: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@drop(n:Int):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, selects all elements except first n ones.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, selects all elements except first n ones.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#dropWhile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -404,7 +531,11 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">dropWhile</span><span class="params">(<span name="p">p: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@dropWhile(p:T=&gt;Boolean):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, Drops longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Drops longest prefix of elements that satisfy the given predicate.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -418,7 +549,11 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -431,7 +566,11 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#filter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="filter(fn:((K,T))=&gt;Boolean):This[K,T]"></a>
@@ -444,8 +583,15 @@ If one side is a one-to-one mapping, that should be the &quot;smaller&quot; side
       <span class="symbol">
         <span class="name">filter</span><span class="params">(<span name="fn">fn: ((<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>)) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">.</p><div class="fullcomment"><div class="comment cmt"><p>.filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@filter(fn:((K,T))=&gt;Boolean):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">.filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
+It is generally better to avoid going back to a TypedPipe
+as long as possible: this minimizes the times we go in
+and out of cascading/hadoop types.</p><div class="fullcomment"><div class="comment cmt"><p>.filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
 It is generally better to avoid going back to a TypedPipe
 as long as possible: this minimizes the times we go in
 and out of cascading/hadoop types.
@@ -461,7 +607,11 @@ and out of cascading/hadoop types.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -469,6 +619,26 @@ and out of cascading/hadoop types.
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.KeyedListLike#flatMapValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="flatMapValues[V](fn:T=&gt;TraversableOnce[V]):This[K,V]"></a>
+      <a id="flatMapValues[V]((V)⇒TraversableOnce[V]):UnsortedGrouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatMapValues</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.flatMapValues.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.flatMapValues.V">V</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@flatMapValues[V](fn:T=&gt;TraversableOnce[V]):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Similar to mapValues, but works like flatMap, returning a collection of outputs
+for each value input.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to mapValues, but works like flatMap, returning a collection of outputs
+for each value input.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#flattenValues" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="flattenValues[U](implicitev:&lt;:&lt;[T,TraversableOnce[U]]):This[K,U]"></a>
       <a id="flattenValues[U](&lt;:&lt;[V,TraversableOnce[U]]):UnsortedGrouped[K,U]"></a>
@@ -480,7 +650,11 @@ and out of cascading/hadoop types.
       <span class="symbol">
         <span class="name">flattenValues</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <a href="../../../../scala/package.html#TraversableOnce[+A]=scala.collection.TraversableOnce[A]" class="extmbr" name="scala.TraversableOnce">TraversableOnce</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.flattenValues.U">U</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.flattenValues.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@flattenValues[U](implicitev:&lt;:&lt;[T,TraversableOnce[U]]):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">flatten the values
 Useful after sortedTake, for instance
 </p><div class="fullcomment"><div class="comment cmt"><p>flatten the values
@@ -497,7 +671,11 @@ Useful after sortedTake, for instance
       <span class="symbol">
         <span class="name">fold</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="f">f: <span class="extype" name="com.twitter.algebird.Fold">Fold</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.fold.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.fold.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@fold[V](f:com.twitter.algebird.Fold[T,V]):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Folds are composable aggregations that make one pass over the data.</p><div class="fullcomment"><div class="comment cmt"><p>Folds are composable aggregations that make one pass over the data.
 If you need to do several custom folds over the same data, use Fold.join
 and this method
@@ -513,7 +691,11 @@ and this method
       <span class="symbol">
         <span class="name">foldLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldLeft.B">B</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldLeft.B">B</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldLeft.B">B</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldLeft.B">B</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@foldLeft[B](z:B)(fn:(B,T)=&gt;B):This[K,B]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, fold the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, fold the values. see scala.collection.Iterable.foldLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#foldWithKey" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="foldWithKey[V](fn:K=&gt;com.twitter.algebird.Fold[T,V]):This[K,V]"></a>
@@ -526,7 +708,11 @@ and this method
       <span class="symbol">
         <span class="name">foldWithKey</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>) ⇒ <span class="extype" name="com.twitter.algebird.Fold">Fold</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldWithKey.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.foldWithKey.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@foldWithKey[V](fn:K=&gt;com.twitter.algebird.Fold[T,V]):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">If the fold depends on the key, use this method to construct
 the fold for each key
 </p><div class="fullcomment"><div class="comment cmt"><p>If the fold depends on the key, use this method to construct
@@ -543,7 +729,11 @@ the fold for each key
       <span class="symbol">
         <span class="name">forall</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@forall(fn:T=&gt;Boolean):This[K,Boolean]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, check to see if a predicate is true for all Values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, check to see if a predicate is true for all Values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#forceToReducers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="forceToReducers:This[K,T]"></a>
@@ -556,7 +746,11 @@ the fold for each key
       <span class="symbol">
         <span class="name">forceToReducers</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@forceToReducers:This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is just short hand for mapValueStream(identity), it makes sure the
 planner sees that you want to force a shuffle.</p><div class="fullcomment"><div class="comment cmt"><p>This is just short hand for mapValueStream(identity), it makes sure the
 planner sees that you want to force a shuffle. For expert tuning
@@ -572,7 +766,11 @@ planner sees that you want to force a shuffle. For expert tuning
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -585,7 +783,11 @@ planner sees that you want to force a shuffle. For expert tuning
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.HashJoinable#hashCogroupOn" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCogroupOn[V1,R](mapside:com.twitter.scalding.typed.TypedPipe[(K,V1)])(joiner:(K,V1,Iterable[V])=&gt;Iterator[R]):com.twitter.scalding.typed.TypedPipe[(K,R)]"></a>
@@ -598,7 +800,11 @@ planner sees that you want to force a shuffle. For expert tuning
       <span class="symbol">
         <span class="name">hashCogroupOn</span><span class="tparams">[<span name="V1">V1</span>, <span name="R">R</span>]</span><span class="params">(<span name="mapside">mapside: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.HashJoinable.hashCogroupOn.V1">V1</span>)]</span>)</span><span class="params">(<span name="joiner">joiner: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.HashJoinable.hashCogroupOn.V1">V1</span>, <a href="../../../../scala/package.html#Iterable[+A]=Iterable[A]" class="extmbr" name="scala.Iterable">Iterable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.HashJoinable.hashCogroupOn.R">R</span>]</span>)</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.HashJoinable.hashCogroupOn.R">R</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@hashCogroupOn[V1,R](mapside:com.twitter.scalding.typed.TypedPipe[(K,V1)])(joiner:(K,V1,Iterable[V])=&gt;Iterator[R]):com.twitter.scalding.typed.TypedPipe[(K,R)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This fully replicates this entire Grouped to the argument: mapside.</p><div class="fullcomment"><div class="comment cmt"><p>This fully replicates this entire Grouped to the argument: mapside.
 This means that we never see the case where the key is absent in the pipe. This
 means implementing a right-join (from the pipe) is impossible.
@@ -620,7 +826,11 @@ http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
       <span class="symbol">
         <span class="name">head</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@head:This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this to get the first value encountered.</p><div class="fullcomment"><div class="comment cmt"><p>Use this to get the first value encountered.
 prefer this to take(1).
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
@@ -635,7 +845,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">inputs</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[<a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Any">Any</span>)]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@inputs:List[com.twitter.scalding.typed.TypedPipe[(K,Any)]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">A HashJoinable has a single input into to the cogroup</p><div class="fullcomment"><div class="comment cmt"><p>A HashJoinable has a single input into to the cogroup</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a> → <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -648,7 +862,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.CoGroupable#join" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="join[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(R,W)]"></a>
@@ -661,7 +879,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">join</span><span class="tparams">[<span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.join.W">W</span>]</span>)</span><span class="result">: <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.join.W">W</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@join[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(R,W)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#keys" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="keys:com.twitter.scalding.typed.TypedPipe[K]"></a>
@@ -674,7 +896,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">keys</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@keys:com.twitter.scalding.typed.TypedPipe[K]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert to a TypedPipe and only keep the keys</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the keys</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.CoGroupable#leftJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="leftJoin[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(R,Option[W])]"></a>
@@ -687,7 +913,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">leftJoin</span><span class="tparams">[<span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.leftJoin.W">W</span>]</span>)</span><span class="result">: <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>, <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.CoGroupable.leftJoin.W">W</span>])]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@leftJoin[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(R,Option[W])]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#mapValueStream" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapValueStream[V](smfn:Iterator[T]=&gt;Iterator[V]):This[K,V]"></a>
@@ -700,7 +930,11 @@ prefer this to take(1).
       <span class="symbol">
         <span class="name">mapValueStream</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="smfn">smfn: (<a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]) ⇒ <a href="../../../../scala/package.html#Iterator[+A]=Iterator[A]" class="extmbr" name="scala.Iterator">Iterator</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapValueStream.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapValueStream.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@mapValueStream[V](smfn:Iterator[T]=&gt;Iterator[V]):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use this when you don't care about the key for the group,
 otherwise use mapGroup
 </p><div class="fullcomment"><div class="comment cmt"><p>Use this when you don't care about the key for the group,
@@ -717,7 +951,11 @@ otherwise use mapGroup
       <span class="symbol">
         <span class="name">mapValues</span><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapValues.V">V</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.mapValues.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@mapValues[V](fn:T=&gt;V):This[K,V]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is a special case of mapValueStream, but can be optimized because it doesn't need
 all the values for a given key at once.</p><div class="fullcomment"><div class="comment cmt"><p>This is a special case of mapValueStream, but can be optimized because it doesn't need
 all the values for a given key at once.  An unoptimized implementation is:
@@ -735,7 +973,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">max</span><span class="tparams">[<span name="B">B &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.max.B">B</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@max[B&gt;:T](implicitcmp:Ordering[B]):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, give the maximum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#maxBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="maxBy[B](fn:T=&gt;B)(implicitcmp:Ordering[B]):This[K,T]"></a>
@@ -748,7 +990,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">maxBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.maxBy.B">B</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.maxBy.B">B</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@maxBy[B](fn:T=&gt;B)(implicitcmp:Ordering[B]):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, give the maximum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the maximum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#min" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="min[B&gt;:T](implicitcmp:Ordering[B]):This[K,T]"></a>
@@ -761,7 +1007,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">min</span><span class="tparams">[<span name="B">B &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.min.B">B</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@min[B&gt;:T](implicitcmp:Ordering[B]):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, give the minimum value</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#minBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="minBy[B](fn:T=&gt;B)(implicitcmp:Ordering[B]):This[K,T]"></a>
@@ -774,7 +1024,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">minBy</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.minBy.B">B</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cmp">cmp: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.minBy.B">B</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@minBy[B](fn:T=&gt;B)(implicitcmp:Ordering[B]):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, give the minimum value by some function</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the minimum value by some function</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -787,7 +1041,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -800,7 +1058,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -813,7 +1075,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.CoGroupable#outerJoin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="outerJoin[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(Option[R],Option[W])]"></a>
@@ -826,7 +1092,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">outerJoin</span><span class="tparams">[<span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.outerJoin.W">W</span>]</span>)</span><span class="result">: <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, (<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.CoGroupable.outerJoin.W">W</span>])]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@outerJoin[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(Option[R],Option[W])]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#product" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="product[U&gt;:T](implicitring:com.twitter.algebird.Ring[U]):This[K,U]"></a>
@@ -839,7 +1109,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">product</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.product.U">U</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.product.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@product[U&gt;:T](implicitring:com.twitter.algebird.Ring[U]):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, Return the product of all the values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Return the product of all the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#reduce" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reduce[U&gt;:T](fn:(U,U)=&gt;U):This[K,U]"></a>
@@ -852,7 +1126,11 @@ but for Grouped we can avoid resorting to mapValueStream
       <span class="symbol">
         <span class="name">reduce</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduce.U">U</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduce.U">U</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduce.U">U</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduce.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@reduce[U&gt;:T](fn:(U,U)=&gt;U):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">reduce with fn which must be associative and commutative.</p><div class="fullcomment"><div class="comment cmt"><p>reduce with fn which must be associative and commutative.
 Like the above this can be optimized in some Grouped cases.
 If you don't have a commutative operator, use reduceLeft
@@ -868,7 +1146,11 @@ If you don't have a commutative operator, use reduceLeft
       <span class="symbol">
         <span class="name">reduceLeft</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduceLeft.U">U</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduceLeft.U">U</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduceLeft.U">U</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.reduceLeft.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@reduceLeft[U&gt;:T](fn:(U,U)=&gt;U):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Similar to reduce but always on the reduce-side (never optimized to mapside),
 and named for the scala function.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to reduce but always on the reduce-side (never optimized to mapside),
 and named for the scala function. fn need not be associative and/or commutative.
@@ -886,7 +1168,11 @@ the old value comes in on the left.
       <span class="symbol">
         <span class="name">rightJoin</span><span class="tparams">[<span name="W">W</span>]</span><span class="params">(<span name="smaller">smaller: <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.CoGroupable.rightJoin.W">W</span>]</span>)</span><span class="result">: <a href="CoGrouped.html" class="extype" name="com.twitter.scalding.typed.CoGrouped">CoGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, (<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>], <span class="extype" name="com.twitter.scalding.typed.CoGroupable.rightJoin.W">W</span>)]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@rightJoin[W](smaller:com.twitter.scalding.typed.CoGroupable[K,W]):com.twitter.scalding.typed.CoGrouped[K,(Option[R],W)]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#scanLeft" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="scanLeft[B](z:B)(fn:(B,T)=&gt;B):This[K,B]"></a>
@@ -899,7 +1185,11 @@ the old value comes in on the left.
       <span class="symbol">
         <span class="name">scanLeft</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="z">z: <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.scanLeft.B">B</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.scanLeft.B">B</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.scanLeft.B">B</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.scanLeft.B">B</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@scanLeft[B](z:B)(fn:(B,T)=&gt;B):This[K,B]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, scanLeft the values.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, scanLeft the values. see scala.collection.Iterable.scanLeft</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#size" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="size:This[K,Long]"></a>
@@ -912,7 +1202,11 @@ the old value comes in on the left.
       <span class="symbol">
         <span class="name">size</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Long">Long</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@size:This[K,Long]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, give the number of values</p><div class="fullcomment"><div class="comment cmt"><p>For each key, give the number of values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#sortWithTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sortWithTake[U&gt;:T](k:Int)(lessThan:(U,U)=&gt;Boolean):This[K,Seq[T]]"></a>
@@ -925,7 +1219,11 @@ the old value comes in on the left.
       <span class="symbol">
         <span class="name">sortWithTake</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span name="lessThan">lessThan: (<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sortWithTake.U">U</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sortWithTake.U">U</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@sortWithTake[U&gt;:T](k:Int)(lessThan:(U,U)=&gt;Boolean):This[K,Seq[T]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Like the above, but with a less than operation for the ordering</p><div class="fullcomment"><div class="comment cmt"><p>Like the above, but with a less than operation for the ordering</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#sortedReverseTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sortedReverseTake(k:Int)(implicitord:Ordering[_&gt;:T]):This[K,Seq[T]]"></a>
@@ -938,7 +1236,11 @@ the old value comes in on the left.
       <span class="symbol">
         <span class="name">sortedReverseTake</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@sortedReverseTake(k:Int)(implicitord:Ordering[_&gt;:T]):This[K,Seq[T]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Take the largest k things according to the implicit ordering.</p><div class="fullcomment"><div class="comment cmt"><p>Take the largest k things according to the implicit ordering.
 Useful for top-k without having to call ord.reverse
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
@@ -953,7 +1255,11 @@ Useful for top-k without having to call ord.reverse
       <span class="symbol">
         <span class="name">sortedTake</span><span class="params">(<span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ord">ord: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[_ &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@sortedTake(k:Int)(implicitord:Ordering[_&gt;:T]):This[K,Seq[T]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This implements bottom-k (smallest k items) on each mapper for each key, then
 sends those to reducers to get the result.</p><div class="fullcomment"><div class="comment cmt"><p>This implements bottom-k (smallest k items) on each mapper for each key, then
 sends those to reducers to get the result. This is faster
@@ -971,7 +1277,11 @@ to fit in memory.
       <span class="symbol">
         <span class="name">sum</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sum.U">U</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sum.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@sum[U&gt;:T](implicitsg:com.twitter.algebird.Semigroup[U]):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Add all items according to the implicit Semigroup
 If there is no sorting, we default to assuming the Semigroup is
 commutative.</p><div class="fullcomment"><div class="comment cmt"><p>Add all items according to the implicit Semigroup
@@ -991,7 +1301,11 @@ so prefer using sum/sumLeft to reduce
       <span class="symbol">
         <span class="name">sumLeft</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sumLeft.U">U</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.KeyedListLike.sumLeft.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@sumLeft[U&gt;:T](implicitsg:com.twitter.algebird.Semigroup[U]):This[K,U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Semigroups MAY have a faster implementation of sum for iterators,
 so prefer using sum/sumLeft to reduce/reduceLeft
 </p><div class="fullcomment"><div class="comment cmt"><p>Semigroups MAY have a faster implementation of sum for iterators,
@@ -1008,7 +1322,11 @@ so prefer using sum/sumLeft to reduce/reduceLeft
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#take" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="take(n:Int):This[K,T]"></a>
@@ -1021,7 +1339,11 @@ so prefer using sum/sumLeft to reduce/reduceLeft
       <span class="symbol">
         <span class="name">take</span><span class="params">(<span name="n">n: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@take(n:Int):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, Selects first n elements.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#takeWhile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1035,7 +1357,11 @@ so prefer using sum/sumLeft to reduce/reduceLeft
       <span class="symbol">
         <span class="name">takeWhile</span><span class="params">(<span name="p">p: (<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@takeWhile(p:T=&gt;Boolean):This[K,T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">For each key, Takes longest prefix of elements that satisfy the given predicate.</p><div class="fullcomment"><div class="comment cmt"><p>For each key, Takes longest prefix of elements that satisfy the given predicate.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#toList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1049,7 +1375,11 @@ so prefer using sum/sumLeft to reduce/reduceLeft
       <span class="symbol">
         <span class="name">toList</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <a href="../../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@toList:This[K,List[T]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
 For each key, accumulate all the values into a List.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
 For each key, accumulate all the values into a List. WARNING: May OOM
@@ -1068,7 +1398,11 @@ want to do some custom reduction, do it in mapGroup or mapValueStream
       <span class="symbol">
         <span class="name">toSet</span><span class="tparams">[<span name="U">U &gt;: <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span></span>]</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="com.twitter.scalding.typed.KeyedListLike.toSet.U">U</span>]]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@toSet[U&gt;:T]:This[K,Set[U]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">AVOID THIS IF POSSIBLE
 Same risks apply here as to toList: you may OOM.</p><div class="fullcomment"><div class="comment cmt"><p>AVOID THIS IF POSSIBLE
 Same risks apply here as to toList: you may OOM. See toList.
@@ -1088,7 +1422,11 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.KeyedListLike#values" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="values:com.twitter.scalding.typed.TypedPipe[T]"></a>
@@ -1101,7 +1439,11 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <span class="symbol">
         <span class="name">values</span><span class="result">: <a href="TypedPipe.html" class="extype" name="com.twitter.scalding.typed.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@values:com.twitter.scalding.typed.TypedPipe[T]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert to a TypedPipe and only keep the values</p><div class="fullcomment"><div class="comment cmt"><p>Convert to a TypedPipe and only keep the values</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="KeyedListLike.html" class="extype" name="com.twitter.scalding.typed.KeyedListLike">KeyedListLike</a></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -1114,7 +1456,11 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1133,7 +1479,11 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1152,7 +1502,11 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1160,6 +1514,23 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.twitter.scalding.typed.WithDescription#withDescription" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="withDescription(descriptionOpt:Option[String]):This"></a>
+      <a id="withDescription(Option[String]):UnsortedGrouped[K,V]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withDescription</span><span class="params">(<span name="descriptionOpt">descriptionOpt: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.UnsortedGrouped@withDescription(descriptionOpt:Option[String]):This" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a></dd></dl></div>
     </li></ol>
             </div>
 
@@ -1169,7 +1540,9 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="com.twitter.scalding.typed.WithReducers">
+        <div class="parent" name="com.twitter.scalding.typed.WithDescription">
+              <h3>Inherited from <a href="WithDescription.html" class="extype" name="com.twitter.scalding.typed.WithDescription">WithDescription</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</h3>
+            </div><div class="parent" name="com.twitter.scalding.typed.WithReducers">
               <h3>Inherited from <a href="WithReducers.html" class="extype" name="com.twitter.scalding.typed.WithReducers">WithReducers</a>[<a href="" class="extype" name="com.twitter.scalding.typed.UnsortedGrouped">UnsortedGrouped</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]]</h3>
             </div><div class="parent" name="com.twitter.scalding.typed.HashJoinable">
               <h3>Inherited from <a href="HashJoinable.html" class="extype" name="com.twitter.scalding.typed.HashJoinable">HashJoinable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</h3>
@@ -1177,6 +1550,8 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
               <h3>Inherited from <a href="KeyedPipe.html" class="extype" name="com.twitter.scalding.typed.KeyedPipe">KeyedPipe</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>]</h3>
             </div><div class="parent" name="com.twitter.scalding.typed.CoGroupable">
               <h3>Inherited from <a href="CoGroupable.html" class="extype" name="com.twitter.scalding.typed.CoGroupable">CoGroupable</a>[<span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.K">K</span>, <span class="extype" name="com.twitter.scalding.typed.UnsortedGrouped.V">V</span>]</h3>
+            </div><div class="parent" name="com.twitter.scalding.typed.HasDescription">
+              <h3>Inherited from <a href="HasDescription.html" class="extype" name="com.twitter.scalding.typed.HasDescription">HasDescription</a></h3>
             </div><div class="parent" name="com.twitter.scalding.typed.HasReducers">
               <h3>Inherited from <a href="HasReducers.html" class="extype" name="com.twitter.scalding.typed.HasReducers">HasReducers</a></h3>
             </div><div class="parent" name="com.twitter.scalding.typed.KeyedListLike">
@@ -1203,6 +1578,7 @@ http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covari
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>MRMBy - com.twitter.scalding.MRMBy</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <img alt="Class" src="../../../lib/class_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>MRMBy</h1>
+        <h1>MRMBy</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -42,7 +52,7 @@
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>MapReduceMapBy Class
 </p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala" target="_blank">Operations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="cascading.pipe.assembly.AggregateBy">AggregateBy</span>, <span class="extype" name="cascading.pipe.SubAssembly">SubAssembly</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>, <span class="extype" name="cascading.flow.FlowElement">FlowElement</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="cascading.pipe.assembly.AggregateBy">AggregateBy</span>, <span class="extype" name="cascading.pipe.SubAssembly">SubAssembly</span>, <span class="extype" name="cascading.pipe.Pipe">Pipe</span>, <span class="extype" name="cascading.util.Traceable">Traceable</span>, <span class="extype" name="cascading.flow.FlowElement">FlowElement</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -60,7 +70,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.MRMBy"><span>MRMBy</span></li><li class="in" name="cascading.pipe.assembly.AggregateBy"><span>AggregateBy</span></li><li class="in" name="cascading.pipe.SubAssembly"><span>SubAssembly</span></li><li class="in" name="cascading.pipe.Pipe"><span>Pipe</span></li><li class="in" name="cascading.flow.FlowElement"><span>FlowElement</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.MRMBy"><span>MRMBy</span></li><li class="in" name="cascading.pipe.assembly.AggregateBy"><span>AggregateBy</span></li><li class="in" name="cascading.pipe.SubAssembly"><span>SubAssembly</span></li><li class="in" name="cascading.pipe.Pipe"><span>Pipe</span></li><li class="in" name="cascading.util.Traceable"><span>Traceable</span></li><li class="in" name="cascading.flow.FlowElement"><span>FlowElement</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -68,7 +78,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -91,7 +100,11 @@
       <span class="symbol">
         <span class="name">MRMBy</span><span class="params">(<span name="arguments">arguments: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="middleFields">middleFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="declaredFields">declaredFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="mfn">mfn: (<span class="extype" name="com.twitter.scalding.MRMBy.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.MRMBy.X">X</span></span>, <span name="rfn">rfn: (<span class="extype" name="com.twitter.scalding.MRMBy.X">X</span>, <span class="extype" name="com.twitter.scalding.MRMBy.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.MRMBy.X">X</span></span>, <span name="mfn2">mfn2: (<span class="extype" name="com.twitter.scalding.MRMBy.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.MRMBy.U">U</span></span>, <span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.MRMBy.T">T</span>]</span>, <span name="midSet">midSet: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.MRMBy.X">X</span>]</span>, <span name="midConv">midConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.MRMBy.X">X</span>]</span>, <span name="endSet">endSet: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.MRMBy.U">U</span>]</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@&lt;init&gt;(arguments:cascading.tuple.Fields,middleFields:cascading.tuple.Fields,declaredFields:cascading.tuple.Fields,mfn:T=&gt;X,rfn:(X,X)=&gt;X,mfn2:X=&gt;U,startConv:com.twitter.scalding.TupleConverter[T],midSet:com.twitter.scalding.TupleSetter[X],midConv:com.twitter.scalding.TupleConverter[X],endSet:com.twitter.scalding.TupleSetter[U]):com.twitter.scalding.MRMBy[T,X,U]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -103,19 +116,6 @@
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -126,8 +126,12 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -139,22 +143,13 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -165,8 +160,12 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -178,7 +177,11 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -191,7 +194,11 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -210,7 +217,11 @@
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -223,7 +234,11 @@
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -236,7 +251,11 @@
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -255,7 +274,11 @@
       <span class="symbol">
         <span class="name">getAggregators</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.operation.Aggregator">Aggregator</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getAggregators():Array[cascading.operation.Aggregator]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#getArgumentFields" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getArgumentFields():Array[cascading.tuple.Fields]"></a>
@@ -268,7 +291,11 @@
       <span class="symbol">
         <span class="name">getArgumentFields</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getArgumentFields():Array[cascading.tuple.Fields]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -281,7 +308,11 @@
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#getConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getConfigDef():cascading.property.ConfigDef"></a>
@@ -294,7 +325,11 @@
       <span class="symbol">
         <span class="name">getConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#getFieldDeclarations" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getFieldDeclarations():Array[cascading.tuple.Fields]"></a>
@@ -307,7 +342,11 @@
       <span class="symbol">
         <span class="name">getFieldDeclarations</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getFieldDeclarations():Array[cascading.tuple.Fields]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#getFunctors" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getFunctors():Array[cascading.pipe.assembly.AggregateBy.Functor]"></a>
@@ -320,7 +359,11 @@
       <span class="symbol">
         <span class="name">getFunctors</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.assembly.AggregateBy.Functor">Functor</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getFunctors():Array[cascading.pipe.assembly.AggregateBy.Functor]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#getGroupBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getGroupBy():cascading.pipe.GroupBy"></a>
@@ -333,7 +376,11 @@
       <span class="symbol">
         <span class="name">getGroupBy</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.pipe.GroupBy">GroupBy</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getGroupBy():cascading.pipe.GroupBy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#getGroupingFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getGroupingFields():cascading.tuple.Fields"></a>
@@ -346,7 +393,11 @@
       <span class="symbol">
         <span class="name">getGroupingFields</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getGroupingFields():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#getHeads" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getHeads():Array[cascading.pipe.Pipe]"></a>
@@ -359,7 +410,11 @@
       <span class="symbol">
         <span class="name">getHeads</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getHeads():Array[cascading.pipe.Pipe]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#getName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getName():String"></a>
@@ -372,7 +427,11 @@
       <span class="symbol">
         <span class="name">getName</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getName():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubAssembly → Pipe</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#getParent" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getParent():cascading.pipe.Pipe"></a>
@@ -385,7 +444,11 @@
       <span class="symbol">
         <span class="name">getParent</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getParent():cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#getPrevious" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getPrevious():Array[cascading.pipe.Pipe]"></a>
@@ -398,7 +461,11 @@
       <span class="symbol">
         <span class="name">getPrevious</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getPrevious():Array[cascading.pipe.Pipe]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubAssembly → Pipe</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#getStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getStepConfigDef():cascading.property.ConfigDef"></a>
@@ -411,7 +478,11 @@
       <span class="symbol">
         <span class="name">getStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.property.ConfigDef">ConfigDef</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getStepConfigDef():cascading.property.ConfigDef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#getTailNames" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getTailNames():Array[String]"></a>
@@ -424,7 +495,11 @@
       <span class="symbol">
         <span class="name">getTailNames</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.String">String</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getTailNames():Array[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubAssembly</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#getTails" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getTails():Array[cascading.pipe.Pipe]"></a>
@@ -437,8 +512,36 @@
       <span class="symbol">
         <span class="name">getTails</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getTails():Array[cascading.pipe.Pipe]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubAssembly</dd></dl></div>
+    </li><li name="cascading.pipe.assembly.AggregateBy#getThreshold" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getThreshold():Int"></a>
+      <a id="getThreshold():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getThreshold</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getThreshold():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AggregateBy</dd><dt>Annotations</dt><dd>
+                <span class="name">@PropertyConfigured</span><span class="args">()</span>
+              
+                <span class="name">@PropertyDescription</span><span class="args">()</span>
+              
+                <span class="name">@Property</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="cascading.pipe.Pipe#getTrace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getTrace():String"></a>
       <a id="getTrace():String"></a>
@@ -450,8 +553,12 @@
       <span class="symbol">
         <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@getTrace():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → Traceable</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#hasConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasConfigDef():Boolean"></a>
       <a id="hasConfigDef():Boolean"></a>
@@ -463,7 +570,11 @@
       <span class="symbol">
         <span class="name">hasConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@hasConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#hasStepConfigDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hasStepConfigDef():Boolean"></a>
@@ -476,7 +587,11 @@
       <span class="symbol">
         <span class="name">hasStepConfigDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@hasStepConfigDef():Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -489,7 +604,11 @@
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → AnyRef → Any</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#initialize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="initialize(x$1:cascading.tuple.Fields,x$2:Array[cascading.pipe.Pipe],x$3:Array[cascading.tuple.Fields],x$4:Array[cascading.pipe.assembly.AggregateBy.Functor],x$5:Array[cascading.operation.Aggregator]):Unit"></a>
@@ -502,7 +621,11 @@
       <span class="symbol">
         <span class="name">initialize</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>, <span name="arg2">arg2: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>, <span name="arg3">arg3: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.assembly.AggregateBy.Functor">Functor</span>]</span>, <span name="arg4">arg4: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.operation.Aggregator">Aggregator</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@initialize(x$1:cascading.tuple.Fields,x$2:Array[cascading.pipe.Pipe],x$3:Array[cascading.tuple.Fields],x$4:Array[cascading.pipe.assembly.AggregateBy.Functor],x$5:Array[cascading.operation.Aggregator]):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#initialize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="initialize(x$1:cascading.tuple.Fields,x$2:Array[cascading.pipe.Pipe],x$3:cascading.tuple.Fields,x$4:cascading.pipe.assembly.AggregateBy.Functor,x$5:cascading.operation.Aggregator):Unit"></a>
@@ -515,7 +638,11 @@
       <span class="symbol">
         <span class="name">initialize</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>, <span name="arg2">arg2: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="arg3">arg3: <span class="extype" name="cascading.pipe.assembly.AggregateBy.Functor">Functor</span></span>, <span name="arg4">arg4: <span class="extype" name="cascading.operation.Aggregator">Aggregator</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@initialize(x$1:cascading.tuple.Fields,x$2:Array[cascading.pipe.Pipe],x$3:cascading.tuple.Fields,x$4:cascading.pipe.assembly.AggregateBy.Functor,x$5:cascading.operation.Aggregator):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#isEquivalentTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean"></a>
@@ -528,7 +655,11 @@
       <span class="symbol">
         <span class="name">isEquivalentTo</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@isEquivalentTo(x$1:cascading.flow.FlowElement):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -541,7 +672,11 @@
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -554,7 +689,11 @@
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -567,7 +706,11 @@
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -580,7 +723,11 @@
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#outgoingScopeFor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="outgoingScopeFor(x$1:java.util.Set[cascading.flow.planner.Scope]):cascading.flow.planner.Scope"></a>
@@ -593,7 +740,11 @@
       <span class="symbol">
         <span class="name">outgoingScopeFor</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.util.Set">Set</span>[<span class="extype" name="cascading.flow.planner.Scope">Scope</span>]</span>)</span><span class="result">: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@outgoingScopeFor(x$1:java.util.Set[cascading.flow.planner.Scope]):cascading.flow.planner.Scope" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#print" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="print(x$1:cascading.flow.planner.Scope):String"></a>
@@ -606,7 +757,11 @@
       <span class="symbol">
         <span class="name">print</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@print(x$1:cascading.flow.planner.Scope):String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#printInternal" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="printInternal(x$1:StringBuffer,x$2:cascading.flow.planner.Scope):Unit"></a>
@@ -619,7 +774,11 @@
       <span class="symbol">
         <span class="name">printInternal</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.StringBuffer">StringBuffer</span></span>, <span name="arg1">arg1: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@printInternal(x$1:StringBuffer,x$2:cascading.flow.planner.Scope):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe.html" class="extype" name="cascading.pipe">cascading.pipe</a>] </dd><dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#resolveIncomingOperationArgumentFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
@@ -632,7 +791,11 @@
       <span class="symbol">
         <span class="name">resolveIncomingOperationArgumentFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@resolveIncomingOperationArgumentFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#resolveIncomingOperationPassThroughFields" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields"></a>
@@ -645,7 +808,11 @@
       <span class="symbol">
         <span class="name">resolveIncomingOperationPassThroughFields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.flow.planner.Scope">Scope</span></span>)</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@resolveIncomingOperationPassThroughFields(x$1:cascading.flow.planner.Scope):cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → FlowElement</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#setParent" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setParent(x$1:cascading.pipe.Pipe):Unit"></a>
@@ -658,10 +825,14 @@
       <span class="symbol">
         <span class="name">setParent</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@setParent(x$1:cascading.pipe.Pipe):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe.html" class="extype" name="cascading.pipe">cascading.pipe</a>] </dd><dt>Definition Classes</dt><dd>Pipe</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#setPrevious" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="setPrevious(x$1:&lt;repeated...&gt;[cascading.pipe.Pipe]):Unit"></a>
+      <a id="setPrevious(x$1:cascading.pipe.Pipe*):Unit"></a>
       <a id="setPrevious(&lt;repeated...&gt;[Pipe]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -671,10 +842,14 @@
       <span class="symbol">
         <span class="name">setPrevious</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@setPrevious(x$1:cascading.pipe.Pipe*):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe.html" class="extype" name="cascading.pipe">cascading.pipe</a>] </dd><dt>Definition Classes</dt><dd>SubAssembly</dd></dl></div>
     </li><li name="cascading.pipe.SubAssembly#setTails" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="setTails(x$1:&lt;repeated...&gt;[cascading.pipe.Pipe]):Unit"></a>
+      <a id="setTails(x$1:cascading.pipe.Pipe*):Unit"></a>
       <a id="setTails(&lt;repeated...&gt;[Pipe]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -684,7 +859,11 @@
       <span class="symbol">
         <span class="name">setTails</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="cascading.pipe.Pipe">Pipe</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@setTails(x$1:cascading.pipe.Pipe*):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe.html" class="extype" name="cascading.pipe">cascading.pipe</a>] </dd><dt>Definition Classes</dt><dd>SubAssembly</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -697,7 +876,11 @@
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.pipe.Pipe#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -710,7 +893,11 @@
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Pipe → AnyRef → Any</dd></dl></div>
     </li><li name="cascading.pipe.assembly.AggregateBy#verify" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="verify():Unit"></a>
@@ -723,7 +910,11 @@
       <span class="symbol">
         <span class="name">verify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@verify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../cascading$pipe$assembly.html" class="extype" name="cascading.pipe.assembly">cascading.pipe.assembly</a>] </dd><dt>Definition Classes</dt><dd>AggregateBy</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -736,7 +927,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -755,7 +950,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -774,7 +973,11 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MRMBy@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -797,6 +1000,8 @@
               <h3>Inherited from <span class="extype" name="cascading.pipe.SubAssembly">SubAssembly</span></h3>
             </div><div class="parent" name="cascading.pipe.Pipe">
               <h3>Inherited from <span class="extype" name="cascading.pipe.Pipe">Pipe</span></h3>
+            </div><div class="parent" name="cascading.util.Traceable">
+              <h3>Inherited from <span class="extype" name="cascading.util.Traceable">Traceable</span></h3>
             </div><div class="parent" name="cascading.flow.FlowElement">
               <h3>Inherited from <span class="extype" name="cascading.flow.FlowElement">FlowElement</span></h3>
             </div><div class="parent" name="java.io.Serializable">
@@ -821,6 +1026,7 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

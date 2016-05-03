@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>TypedSink - com.twitter.scalding.typed.TypedSink</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="TypedSink$.html" title="Go to companion"><img src="../../../../lib/trait_to_object_big.png" /></a>
+        <a href="TypedSink$.html" title="See companion object"><img alt="Trait/Object" src="../../../../lib/trait_to_object_big.png" /></a>
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a>.<a href="package.html" class="extype" name="com.twitter.scalding.typed">typed</a></p>
-        <h1><a href="TypedSink$.html" title="Go to companion">TypedSink</a></h1>
+        <h1><a href="TypedSink$.html" title="See companion object">TypedSink</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="TypedSink$.html" title="See companion object">object TypedSink</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding.typed">package typed</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -44,9 +56,9 @@
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="BijectedSourceSink.html" class="extype" name="com.twitter.scalding.typed.BijectedSourceSink">BijectedSourceSink</a>, <a href="../commons/source/DailyPrefixSuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift">DailyPrefixSuffixLzoThrift</a>, <a href="../commons/source/DailySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec">DailySuffixLzoCodec</a>, <a href="../commons/source/DailySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf">DailySuffixLzoProtobuf</a>, <a href="../commons/source/DailySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift">DailySuffixLzoThrift</a>, <a href="../commons/source/DailySuffixMostRecentLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf">DailySuffixMostRecentLzoProtobuf</a>, <a href="../parquet/scrooge/DailySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.DailySuffixParquetScrooge">DailySuffixParquetScrooge</a>, <a href="../parquet/thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">DailySuffixParquetThrift</a>, <a href="../source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="../commons/source/ErrorHandlingLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec">ErrorHandlingLzoCodec</a>, <a href="../commons/source/ErrorThresholdLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec">ErrorThresholdLzoCodec</a>, <a href="../commons/source/FixedPathLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf">FixedPathLzoProtobuf</a>, <a href="../commons/source/FixedPathLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoThrift">FixedPathLzoThrift</a>, <a href="../parquet/scrooge/FixedPathParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.FixedPathParquetScrooge">FixedPathParquetScrooge</a>, <a href="../parquet/thrift/FixedPathParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift">FixedPathParquetThrift</a>, <a href="../FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="../commons/source/HourlySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec">HourlySuffixLzoCodec</a>, <a href="../commons/source/HourlySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf">HourlySuffixLzoProtobuf</a>, <a href="../commons/source/HourlySuffixLzoText.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoText">HourlySuffixLzoText</a>, <a href="../commons/source/HourlySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift">HourlySuffixLzoThrift</a>, <a href="../parquet/scrooge/HourlySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.HourlySuffixParquetScrooge">HourlySuffixParquetScrooge</a>, <a href="../parquet/thrift/HourlySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift">HourlySuffixParquetThrift</a>, <a href="../source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a>, <a href="../commons/source/LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>, <a href="../commons/source/LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>, <a href="../commons/source/LzoText.html" class="extype" name="com.twitter.scalding.commons.source.LzoText">LzoText</a>, <a href="../commons/source/LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>, <a href="../commons/source/LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>, <a href="../commons/source/LzoTypedTsv1.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv1">LzoTypedTsv1</a>, <a href="../commons/source/LzoTypedTsv10.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10">LzoTypedTsv10</a>, <a href="../commons/source/LzoTypedTsv11.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11">LzoTypedTsv11</a>, <a href="../commons/source/LzoTypedTsv12.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12">LzoTypedTsv12</a>, <a href="../commons/source/LzoTypedTsv13.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13">LzoTypedTsv13</a>, <a href="../commons/source/LzoTypedTsv14.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14">LzoTypedTsv14</a>, <a href="../commons/source/LzoTypedTsv15.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15">LzoTypedTsv15</a>, <a href="../commons/source/LzoTypedTsv16.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16">LzoTypedTsv16</a>, <a href="../commons/source/LzoTypedTsv17.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17">LzoTypedTsv17</a>, <a href="../commons/source/LzoTypedTsv18.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18">LzoTypedTsv18</a>, <a href="../commons/source/LzoTypedTsv19.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19">LzoTypedTsv19</a>, <a href="../commons/source/LzoTypedTsv2.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2">LzoTypedTsv2</a>, <a href="../commons/source/LzoTypedTsv20.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20">LzoTypedTsv20</a>, <a href="../commons/source/LzoTypedTsv21.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21">LzoTypedTsv21</a>, <a href="../commons/source/LzoTypedTsv22.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22">LzoTypedTsv22</a>, <a href="../commons/source/LzoTypedTsv3.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3">LzoTypedTsv3</a>, <a href="../commons/source/LzoTypedTsv4.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4">LzoTypedTsv4</a>, <a href="../commons/source/LzoTypedTsv5.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5">LzoTypedTsv5</a>, <a href="../commons/source/LzoTypedTsv6.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6">LzoTypedTsv6</a>, <a href="../commons/source/LzoTypedTsv7.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7">LzoTypedTsv7</a>, <a href="../commons/source/LzoTypedTsv8.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8">LzoTypedTsv8</a>, <a href="../commons/source/LzoTypedTsv9.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9">LzoTypedTsv9</a>, <a href="MemorySink.html" class="extype" name="com.twitter.scalding.typed.MemorySink">MemorySink</a>, <a href="../avro/PackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.PackedAvroSource">PackedAvroSource</a>, <a href="../parquet/scrooge/ParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.ParquetScrooge">ParquetScrooge</a>, <a href="../parquet/thrift/ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>, <a href="../parquet/thrift/ParquetThriftBase.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase">ParquetThriftBase</a>, <a href="PartitionSchemed.html" class="extype" name="com.twitter.scalding.typed.PartitionSchemed">PartitionSchemed</a>, <a href="PartitionedDelimitedSource.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource">PartitionedDelimitedSource</a>, <a href="PartitionedTextLine.html" class="extype" name="com.twitter.scalding.typed.PartitionedTextLine">PartitionedTextLine</a>, <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>, <a href="../source/TypedSequenceFile.html" class="extype" name="com.twitter.scalding.source.TypedSequenceFile">TypedSequenceFile</a>, <a href="../TypedSink1.html" class="extype" name="com.twitter.scalding.TypedSink1">TypedSink1</a>, <a href="../TypedSink10.html" class="extype" name="com.twitter.scalding.TypedSink10">TypedSink10</a>, <a href="../TypedSink11.html" class="extype" name="com.twitter.scalding.TypedSink11">TypedSink11</a>, <a href="../TypedSink12.html" class="extype" name="com.twitter.scalding.TypedSink12">TypedSink12</a>, <a href="../TypedSink13.html" class="extype" name="com.twitter.scalding.TypedSink13">TypedSink13</a>, <a href="../TypedSink14.html" class="extype" name="com.twitter.scalding.TypedSink14">TypedSink14</a>, <a href="../TypedSink15.html" class="extype" name="com.twitter.scalding.TypedSink15">TypedSink15</a>, <a href="../TypedSink16.html" class="extype" name="com.twitter.scalding.TypedSink16">TypedSink16</a>, <a href="../TypedSink17.html" class="extype" name="com.twitter.scalding.TypedSink17">TypedSink17</a>, <a href="../TypedSink18.html" class="extype" name="com.twitter.scalding.TypedSink18">TypedSink18</a>, <a href="../TypedSink19.html" class="extype" name="com.twitter.scalding.TypedSink19">TypedSink19</a>, <a href="../TypedSink2.html" class="extype" name="com.twitter.scalding.TypedSink2">TypedSink2</a>, <a href="../TypedSink20.html" class="extype" name="com.twitter.scalding.TypedSink20">TypedSink20</a>, <a href="../TypedSink21.html" class="extype" name="com.twitter.scalding.TypedSink21">TypedSink21</a>, <a href="../TypedSink22.html" class="extype" name="com.twitter.scalding.TypedSink22">TypedSink22</a>, <a href="../TypedSink3.html" class="extype" name="com.twitter.scalding.TypedSink3">TypedSink3</a>, <a href="../TypedSink4.html" class="extype" name="com.twitter.scalding.TypedSink4">TypedSink4</a>, <a href="../TypedSink5.html" class="extype" name="com.twitter.scalding.TypedSink5">TypedSink5</a>, <a href="../TypedSink6.html" class="extype" name="com.twitter.scalding.TypedSink6">TypedSink6</a>, <a href="../TypedSink7.html" class="extype" name="com.twitter.scalding.TypedSink7">TypedSink7</a>, <a href="../TypedSink8.html" class="extype" name="com.twitter.scalding.TypedSink8">TypedSink8</a>, <a href="../TypedSink9.html" class="extype" name="com.twitter.scalding.TypedSink9">TypedSink9</a>, <a href="../avro/UnpackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource">UnpackedAvroSource</a>, <a href="../commons/source/VersionedKeyValSource.html" class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource">VersionedKeyValSource</a>, <a href="../WritableSequenceFile.html" class="extype" name="com.twitter.scalding.WritableSequenceFile">WritableSequenceFile</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="BijectedSourceSink.html" class="extype" name="com.twitter.scalding.typed.BijectedSourceSink">BijectedSourceSink</a>, <a href="../commons/source/DailyPrefixSuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailyPrefixSuffixLzoThrift">DailyPrefixSuffixLzoThrift</a>, <a href="../commons/source/DailySuffixLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLongThriftSequenceFile">DailySuffixLongThriftSequenceFile</a>, <a href="../commons/source/DailySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoCodec">DailySuffixLzoCodec</a>, <a href="../commons/source/DailySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoProtobuf">DailySuffixLzoProtobuf</a>, <a href="../commons/source/DailySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixLzoThrift">DailySuffixLzoThrift</a>, <a href="../commons/source/DailySuffixMostRecentLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.DailySuffixMostRecentLzoProtobuf">DailySuffixMostRecentLzoProtobuf</a>, <a href="../parquet/scrooge/DailySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.DailySuffixParquetScrooge">DailySuffixParquetScrooge</a>, <a href="../parquet/thrift/DailySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift">DailySuffixParquetThrift</a>, <a href="../source/DailySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.DailySuffixTypedTsv">DailySuffixTypedTsv</a>, <a href="../commons/source/ErrorHandlingLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorHandlingLzoCodec">ErrorHandlingLzoCodec</a>, <a href="../commons/source/ErrorThresholdLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.ErrorThresholdLzoCodec">ErrorThresholdLzoCodec</a>, <a href="../commons/source/FixedLzoTypedText.html" class="extype" name="com.twitter.scalding.commons.source.FixedLzoTypedText">FixedLzoTypedText</a>, <a href="../commons/source/FixedPathLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoProtobuf">FixedPathLzoProtobuf</a>, <a href="../commons/source/FixedPathLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.FixedPathLzoThrift">FixedPathLzoThrift</a>, <a href="../parquet/scrooge/FixedPathParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.FixedPathParquetScrooge">FixedPathParquetScrooge</a>, <a href="../parquet/thrift/FixedPathParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.FixedPathParquetThrift">FixedPathParquetThrift</a>, <a href="../FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="../source/FixedTypedText.html" class="extype" name="com.twitter.scalding.source.FixedTypedText">FixedTypedText</a>, <a href="../commons/source/HourlySuffixLzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoCodec">HourlySuffixLzoCodec</a>, <a href="../commons/source/HourlySuffixLzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoProtobuf">HourlySuffixLzoProtobuf</a>, <a href="../commons/source/HourlySuffixLzoText.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoText">HourlySuffixLzoText</a>, <a href="../commons/source/HourlySuffixLzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.HourlySuffixLzoThrift">HourlySuffixLzoThrift</a>, <a href="../parquet/scrooge/HourlySuffixParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.HourlySuffixParquetScrooge">HourlySuffixParquetScrooge</a>, <a href="../parquet/thrift/HourlySuffixParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.HourlySuffixParquetThrift">HourlySuffixParquetThrift</a>, <a href="../source/HourlySuffixTypedTsv.html" class="extype" name="com.twitter.scalding.source.HourlySuffixTypedTsv">HourlySuffixTypedTsv</a>, <a href="../commons/source/LzoCodec.html" class="extype" name="com.twitter.scalding.commons.source.LzoCodec">LzoCodec</a>, <a href="../commons/source/LzoGenericSource.html" class="extype" name="com.twitter.scalding.commons.source.LzoGenericSource">LzoGenericSource</a>, <a href="../commons/source/LzoProtobuf.html" class="extype" name="com.twitter.scalding.commons.source.LzoProtobuf">LzoProtobuf</a>, <a href="../commons/source/LzoText.html" class="extype" name="com.twitter.scalding.commons.source.LzoText">LzoText</a>, <a href="../commons/source/LzoThrift.html" class="extype" name="com.twitter.scalding.commons.source.LzoThrift">LzoThrift</a>, <a href="../commons/source/LzoTypedTextDelimited.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTextDelimited">LzoTypedTextDelimited</a>, <a href="../commons/source/LzoTypedTsv.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv">LzoTypedTsv</a>, <a href="../commons/source/LzoTypedTsv1.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv1">LzoTypedTsv1</a>, <a href="../commons/source/LzoTypedTsv10.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv10">LzoTypedTsv10</a>, <a href="../commons/source/LzoTypedTsv11.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv11">LzoTypedTsv11</a>, <a href="../commons/source/LzoTypedTsv12.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv12">LzoTypedTsv12</a>, <a href="../commons/source/LzoTypedTsv13.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv13">LzoTypedTsv13</a>, <a href="../commons/source/LzoTypedTsv14.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv14">LzoTypedTsv14</a>, <a href="../commons/source/LzoTypedTsv15.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv15">LzoTypedTsv15</a>, <a href="../commons/source/LzoTypedTsv16.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv16">LzoTypedTsv16</a>, <a href="../commons/source/LzoTypedTsv17.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv17">LzoTypedTsv17</a>, <a href="../commons/source/LzoTypedTsv18.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv18">LzoTypedTsv18</a>, <a href="../commons/source/LzoTypedTsv19.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv19">LzoTypedTsv19</a>, <a href="../commons/source/LzoTypedTsv2.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv2">LzoTypedTsv2</a>, <a href="../commons/source/LzoTypedTsv20.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv20">LzoTypedTsv20</a>, <a href="../commons/source/LzoTypedTsv21.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv21">LzoTypedTsv21</a>, <a href="../commons/source/LzoTypedTsv22.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv22">LzoTypedTsv22</a>, <a href="../commons/source/LzoTypedTsv3.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv3">LzoTypedTsv3</a>, <a href="../commons/source/LzoTypedTsv4.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv4">LzoTypedTsv4</a>, <a href="../commons/source/LzoTypedTsv5.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv5">LzoTypedTsv5</a>, <a href="../commons/source/LzoTypedTsv6.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv6">LzoTypedTsv6</a>, <a href="../commons/source/LzoTypedTsv7.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv7">LzoTypedTsv7</a>, <a href="../commons/source/LzoTypedTsv8.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv8">LzoTypedTsv8</a>, <a href="../commons/source/LzoTypedTsv9.html" class="extype" name="com.twitter.scalding.commons.source.LzoTypedTsv9">LzoTypedTsv9</a>, <a href="MemorySink.html" class="extype" name="com.twitter.scalding.typed.MemorySink">MemorySink</a>, <a href="../commons/source/MostRecentGoodLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentGoodLongThriftSequenceFile">MostRecentGoodLongThriftSequenceFile</a>, <a href="../commons/source/MostRecentLzoTypedText.html" class="extype" name="com.twitter.scalding.commons.source.MostRecentLzoTypedText">MostRecentLzoTypedText</a>, <a href="../source/MostRecentTypedText.html" class="extype" name="com.twitter.scalding.source.MostRecentTypedText">MostRecentTypedText</a>, <a href="../source/NullSink$.html" class="extype" name="com.twitter.scalding.source.NullSink">NullSink</a>, <a href="../avro/PackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.PackedAvroSource">PackedAvroSource</a>, <a href="../parquet/scrooge/ParquetScrooge.html" class="extype" name="com.twitter.scalding.parquet.scrooge.ParquetScrooge">ParquetScrooge</a>, <a href="../parquet/thrift/ParquetThrift.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThrift">ParquetThrift</a>, <a href="../parquet/thrift/ParquetThriftBase.html" class="extype" name="com.twitter.scalding.parquet.thrift.ParquetThriftBase">ParquetThriftBase</a>, <a href="PartitionSchemed.html" class="extype" name="com.twitter.scalding.typed.PartitionSchemed">PartitionSchemed</a>, <a href="PartitionedDelimitedSource.html" class="extype" name="com.twitter.scalding.typed.PartitionedDelimitedSource">PartitionedDelimitedSource</a>, <a href="PartitionedTextLine.html" class="extype" name="com.twitter.scalding.typed.PartitionedTextLine">PartitionedTextLine</a>, <a href="../commons/source/TimePathLzoTypedText.html" class="extype" name="com.twitter.scalding.commons.source.TimePathLzoTypedText">TimePathLzoTypedText</a>, <a href="../source/TimePathTypedText.html" class="extype" name="com.twitter.scalding.source.TimePathTypedText">TimePathTypedText</a>, <a href="../commons/source/TimePathedLongThriftSequenceFile.html" class="extype" name="com.twitter.scalding.commons.source.TimePathedLongThriftSequenceFile">TimePathedLongThriftSequenceFile</a>, <a href="../TypedDelimited.html" class="extype" name="com.twitter.scalding.TypedDelimited">TypedDelimited</a>, <a href="../parquet/tuple/TypedFixedPathParquetTuple.html" class="extype" name="com.twitter.scalding.parquet.tuple.TypedFixedPathParquetTuple">TypedFixedPathParquetTuple</a>, <a href="../TypedJson.html" class="extype" name="com.twitter.scalding.TypedJson">TypedJson</a>, <a href="../TypedJsonLzo.html" class="extype" name="com.twitter.scalding.TypedJsonLzo">TypedJsonLzo</a>, <a href="../parquet/tuple/TypedParquet.html" class="extype" name="com.twitter.scalding.parquet.tuple.TypedParquet">TypedParquet</a>, <a href="../source/TypedSequenceFile.html" class="extype" name="com.twitter.scalding.source.TypedSequenceFile">TypedSequenceFile</a>, <a href="../TypedSink1.html" class="extype" name="com.twitter.scalding.TypedSink1">TypedSink1</a>, <a href="../TypedSink10.html" class="extype" name="com.twitter.scalding.TypedSink10">TypedSink10</a>, <a href="../TypedSink11.html" class="extype" name="com.twitter.scalding.TypedSink11">TypedSink11</a>, <a href="../TypedSink12.html" class="extype" name="com.twitter.scalding.TypedSink12">TypedSink12</a>, <a href="../TypedSink13.html" class="extype" name="com.twitter.scalding.TypedSink13">TypedSink13</a>, <a href="../TypedSink14.html" class="extype" name="com.twitter.scalding.TypedSink14">TypedSink14</a>, <a href="../TypedSink15.html" class="extype" name="com.twitter.scalding.TypedSink15">TypedSink15</a>, <a href="../TypedSink16.html" class="extype" name="com.twitter.scalding.TypedSink16">TypedSink16</a>, <a href="../TypedSink17.html" class="extype" name="com.twitter.scalding.TypedSink17">TypedSink17</a>, <a href="../TypedSink18.html" class="extype" name="com.twitter.scalding.TypedSink18">TypedSink18</a>, <a href="../TypedSink19.html" class="extype" name="com.twitter.scalding.TypedSink19">TypedSink19</a>, <a href="../TypedSink2.html" class="extype" name="com.twitter.scalding.TypedSink2">TypedSink2</a>, <a href="../TypedSink20.html" class="extype" name="com.twitter.scalding.TypedSink20">TypedSink20</a>, <a href="../TypedSink21.html" class="extype" name="com.twitter.scalding.TypedSink21">TypedSink21</a>, <a href="../TypedSink22.html" class="extype" name="com.twitter.scalding.TypedSink22">TypedSink22</a>, <a href="../TypedSink3.html" class="extype" name="com.twitter.scalding.TypedSink3">TypedSink3</a>, <a href="../TypedSink4.html" class="extype" name="com.twitter.scalding.TypedSink4">TypedSink4</a>, <a href="../TypedSink5.html" class="extype" name="com.twitter.scalding.TypedSink5">TypedSink5</a>, <a href="../TypedSink6.html" class="extype" name="com.twitter.scalding.TypedSink6">TypedSink6</a>, <a href="../TypedSink7.html" class="extype" name="com.twitter.scalding.TypedSink7">TypedSink7</a>, <a href="../TypedSink8.html" class="extype" name="com.twitter.scalding.TypedSink8">TypedSink8</a>, <a href="../TypedSink9.html" class="extype" name="com.twitter.scalding.TypedSink9">TypedSink9</a>, <a href="../source/TypedTextDelimited.html" class="extype" name="com.twitter.scalding.source.TypedTextDelimited">TypedTextDelimited</a>, <a href="../avro/UnpackedAvroSource.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource">UnpackedAvroSource</a>, <a href="../commons/source/VersionedKeyValSource.html" class="extype" name="com.twitter.scalding.commons.source.VersionedKeyValSource">VersionedKeyValSource</a>, <a href="../WritableSequenceFile.html" class="extype" name="com.twitter.scalding.WritableSequenceFile">WritableSequenceFile</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -71,7 +83,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -98,7 +109,11 @@
       <span class="symbol">
         <span class="name">setter</span><span class="tparams">[<span name="U">U &lt;: <span class="extype" name="com.twitter.scalding.typed.TypedSink.T">T</span></span>]</span><span class="result">: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSink.setter.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@setter[U&lt;:T]:com.twitter.scalding.TupleSetter[U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.typed.TypedSink#writeFrom" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
@@ -111,7 +126,11 @@
       <span class="symbol">
         <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">pipe is assumed to have the schema above, otherwise an error may occur
 The exact same pipe is returned to match the legacy Source API.</p>
     </li></ol>
@@ -120,19 +139,6 @@ The exact same pipe is returned to match the legacy Source API.</p>
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -143,8 +149,12 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -156,22 +166,13 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@##():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -182,8 +183,12 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -195,7 +200,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -208,7 +217,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -227,7 +240,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">contraMap</span><span class="tparams">[<span name="U">U</span>]</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>) ⇒ <span class="extype" name="com.twitter.scalding.typed.TypedSink.T">T</span></span>)</span><span class="result">: <a href="" class="extype" name="com.twitter.scalding.typed.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.typed.TypedSink.contraMap.U">U</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@contraMap[U](fn:U=&gt;T):com.twitter.scalding.typed.TypedSink[U]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Transform this sink into another type by applying a function first
 </p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -241,7 +258,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -254,7 +275,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -267,7 +292,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -286,7 +315,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -299,7 +332,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -312,7 +349,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -325,7 +366,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -338,7 +383,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -351,7 +400,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.typed.TypedSink#sinkFields" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="sinkFields:cascading.tuple.Fields"></a>
@@ -364,7 +417,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">sinkFields</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@sinkFields:cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -377,7 +434,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -390,7 +451,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@toString():String" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -403,7 +468,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -422,7 +491,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -441,7 +514,11 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.typed.TypedSink@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -480,6 +557,7 @@ The exact same pipe is returned to match the legacy Source API.</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

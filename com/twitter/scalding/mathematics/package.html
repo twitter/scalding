@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>mathematics - com.twitter.scalding.mathematics</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>mathematics</h1>
+        <h1>mathematics</h1><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -69,9 +77,13 @@
       <span class="symbol">
         <a href="BigToSmall.html"><span class="name">BigToSmall</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@BigToSmallextendsMatrixJoiner" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.BlockMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.BlockMatrix" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="BlockMatrix[RowT,GroupT,ColT,ValT]extendsAnyRef"></a>
       <a id="BlockMatrix[RowT,GroupT,ColT,ValT]:BlockMatrix[RowT,GroupT,ColT,ValT]"></a>
       <h4 class="signature">
@@ -82,9 +94,16 @@
       <span class="symbol">
         <a href="BlockMatrix.html"><span class="name">BlockMatrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="GroupT">GroupT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">BlockMatrix is 3 dimensional matrix where the rows are grouped
-It is useful for when we want to multiply groups of vectors only between themselves.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@BlockMatrix[RowT,GroupT,ColT,ValT]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">BlockMatrix is 3 dimensional matrix where the rows are grouped
+It is useful for when we want to multiply groups of vectors only between themselves.</p><div class="fullcomment"><div class="comment cmt"><p>BlockMatrix is 3 dimensional matrix where the rows are grouped
+It is useful for when we want to multiply groups of vectors only between themselves.
+For example, grouping users by countries and calculating products only between users from the same country
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.ColVector" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ColVector[RowT,ValT]extendsSerializablewithWrappedPipe"></a>
       <a id="ColVector[RowT,ValT]:ColVector[RowT,ValT]"></a>
@@ -96,7 +115,11 @@ It is useful for when we want to multiply groups of vectors only between themsel
       <span class="symbol">
         <a href="ColVector.html"><span class="name">ColVector</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@ColVector[RowT,ValT]extendsSerializablewithWrappedPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.DefaultMatrixJoiner" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DefaultMatrixJoinerextendsMatrixJoiner2"></a>
@@ -109,8 +132,12 @@ It is useful for when we want to multiply groups of vectors only between themsel
       <span class="symbol">
         <a href="DefaultMatrixJoiner.html"><span class="name">DefaultMatrixJoiner</span></a><span class="result"> extends <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">This uses standard join if the matrices are comparable size and large,
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@DefaultMatrixJoinerextendsMatrixJoiner2" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This uses standard join if the matrices are comparable size and large,
 otherwise, if one is much smaller than the other, we use a hash join
 </p>
     </li><li name="com.twitter.scalding.mathematics.Degree" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
@@ -124,7 +151,11 @@ otherwise, if one is much smaller than the other, we use a hash join
       <span class="symbol">
         <a href="Degree.html"><span class="name">Degree</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@DegreeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.DiagonalMatrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DiagonalMatrix[IdxT,ValT]extendsWrappedPipewithSerializable"></a>
@@ -137,7 +168,11 @@ otherwise, if one is much smaller than the other, we use a hash join
       <span class="symbol">
         <a href="DiagonalMatrix.html"><span class="name">DiagonalMatrix</span></a><span class="tparams">[<span name="IdxT">IdxT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@DiagonalMatrix[IdxT,ValT]extendsWrappedPipewithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.DimsumInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DimsumInCosine[N]extendsTypedSimilarity[N,(com.twitter.scalding.mathematics.Weight,com.twitter.scalding.mathematics.L2Norm),Double]"></a>
@@ -150,9 +185,13 @@ otherwise, if one is much smaller than the other, we use a hash join
       <span class="symbol">
         <a href="DimsumInCosine.html"><span class="name">DimsumInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.DimsumInCosine.N">N</span>, (<a href="Weight.html" class="extype" name="com.twitter.scalding.mathematics.Weight">Weight</a>, <a href="L2Norm.html" class="extype" name="com.twitter.scalding.mathematics.L2Norm">L2Norm</a>), <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@DimsumInCosine[N]extendsTypedSimilarity[N,(com.twitter.scalding.mathematics.Weight,com.twitter.scalding.mathematics.L2Norm),Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.DiscoInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.DiscoInCosine" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="DiscoInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]"></a>
       <a id="DiscoInCosine[N]:DiscoInCosine[N]"></a>
       <h4 class="signature">
@@ -163,10 +202,19 @@ otherwise, if one is much smaller than the other, we use a hash join
       <span class="symbol">
         <a href="DiscoInCosine.html"><span class="name">DiscoInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.DiscoInCosine.N">N</span>, <a href="InDegree.html" class="extype" name="com.twitter.scalding.mathematics.InDegree">InDegree</a>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">Params:
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@DiscoInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Params:
 minCos: the minimum cosine similarity you care about accuracy for
-delta: the error on the approximated cosine (e.</p>
+delta: the error on the approximated cosine (e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Params:
+minCos: the minimum cosine similarity you care about accuracy for
+delta: the error on the approximated cosine (e.g. 0.05 = 5%)
+boundedProb: the probability we have larger than delta error
+see: http://arxiv.org/pdf/1206.2082v2.pdf for more details
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.Edge" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Edge[+N,+E]extendsProductwithSerializable"></a>
       <a id="Edge[+N,+E]:Edge[N,E]"></a>
@@ -178,8 +226,12 @@ delta: the error on the approximated cosine (e.</p>
       <span class="symbol">
         <a href="Edge.html"><span class="name">Edge</span></a><span class="tparams">[<span name="N">+N</span>, <span name="E">+E</span>]</span><span class="params">(<span name="from">from: <span class="extype" name="com.twitter.scalding.mathematics.Edge.N">N</span></span>, <span name="to">to: <span class="extype" name="com.twitter.scalding.mathematics.Edge.N">N</span></span>, <span name="data">data: <span class="extype" name="com.twitter.scalding.mathematics.Edge.E">E</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Represents an Edge in a graph with some edge data
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Edge[+N,+E]extendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Represents an Edge in a graph with some edge data
 </p>
     </li><li name="com.twitter.scalding.mathematics.ExactInCosine" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ExactInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]"></a>
@@ -192,8 +244,12 @@ delta: the error on the approximated cosine (e.</p>
       <span class="symbol">
         <a href="ExactInCosine.html"><span class="name">ExactInCosine</span></a><span class="tparams">[<span name="N">N</span>]</span><span class="result"> extends <a href="TypedSimilarity.html" class="extype" name="com.twitter.scalding.mathematics.TypedSimilarity">TypedSimilarity</a>[<span class="extype" name="com.twitter.scalding.mathematics.ExactInCosine.N">N</span>, <a href="InDegree.html" class="extype" name="com.twitter.scalding.mathematics.InDegree">InDegree</a>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
-      </h4>
-      <p class="comment cmt">This algothm is just matrix multiplication done by hand to make it
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@ExactInCosine[N]extendsTypedSimilarity[N,com.twitter.scalding.mathematics.InDegree,Double]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This algothm is just matrix multiplication done by hand to make it
 clearer when we do the sampling implementation
 </p>
     </li><li name="com.twitter.scalding.mathematics.FiniteHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
@@ -205,9 +261,13 @@ clearer when we do the sampling implementation
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="FiniteHint.html"><span class="name">FiniteHint</span></a><span class="params">(<span name="rows">rows: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>, <span name="cols">cols: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">math.this.BigInt.long2bigInt(-1L)</span></span>)</span><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="FiniteHint.html"><span class="name">FiniteHint</span></a><span class="params">(<span name="rows">rows: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">1L</span></span>, <span name="cols">cols: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a> = <span class="symbol">1L</span></span>)</span><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@FiniteHintextendsSizeHintwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.HadamardProduct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HadamardProduct[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
@@ -220,7 +280,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="HadamardProduct.html"><span class="name">HadamardProduct</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.HadamardProduct.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@HadamardProduct[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Histogram" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="HistogramextendsAnyRef"></a>
@@ -233,7 +297,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="Histogram.html"><span class="name">Histogram</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@HistogramextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.InDegree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="InDegreeextendsDegreewithProductwithSerializable"></a>
@@ -246,7 +314,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="InDegree.html"><span class="name">InDegree</span></a><span class="params">(<span name="degree">degree: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="Degree.html" class="extype" name="com.twitter.scalding.mathematics.Degree">Degree</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@InDegreeextendsDegreewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.L2Norm" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="L2NormextendsProductwithSerializable"></a>
@@ -259,7 +331,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="L2Norm.html"><span class="name">L2Norm</span></a><span class="params">(<span name="norm">norm: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@L2NormextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.LiteralScalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="LiteralScalar[ValT]extendsSerializable"></a>
@@ -272,7 +348,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="LiteralScalar.html"><span class="name">LiteralScalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@LiteralScalar[ValT]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Matrix[RowT,ColT,ValT]extendsWrappedPipewithSerializable"></a>
@@ -285,9 +365,13 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="Matrix.html"><span class="name">Matrix</span></a><span class="tparams">[<span name="RowT">RowT</span>, <span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Matrix[RowT,ColT,ValT]extendsWrappedPipewithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.Matrix2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.Matrix2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Matrix2[R,C,V]extendsSerializable"></a>
       <a id="Matrix2[R,C,V]:Matrix2[R,C,V]"></a>
       <h4 class="signature">
@@ -298,8 +382,20 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="Matrix2.html"><span class="name">Matrix2</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This is the future Matrix API.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Matrix2[R,C,V]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is the future Matrix API.</p><div class="fullcomment"><div class="comment cmt"><p>This is the future Matrix API. The old one will be removed in scalding 0.10.0 (or 1.0.0).</p><p>Create Matrix2 instances with methods in the Matrix2 object.
+Note that this code optimizes the order in which it evaluates matrices, and replaces equivalent
+terms to avoid recomputation. Also, this code puts the parenthesis in the optimal place in
+terms of size according to the sizeHints. For instance:
+(A*B)*C == A*(B*C) but if B is a 10 x 10<sup>6 matrix, and C is 10</sup>6 x 100,
+it is better to do the B*C product first in order to avoid storing as much intermediate output.</p><p>NOTE THIS REQUIREMENT: for each formula, you can only have one Ring[V] in scope. If you
+evaluate part of the formula with one Ring, and another part with another, you must go through
+a TypedPipe (call toTypedPipe) or the result may not be correct.
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.MatrixCrosser" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="MatrixCrosserextendsSerializable"></a>
       <a id="MatrixCrosser:MatrixCrosser"></a>
@@ -311,7 +407,11 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="MatrixCrosser.html"><span class="name">MatrixCrosser</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixCrosserextendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.MatrixJoiner" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="MatrixJoinerextendsSerializable"></a>
@@ -324,10 +424,14 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="MatrixJoiner.html"><span class="name">MatrixJoiner</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Abstracts the approach taken to join the two matrices
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixJoinerextendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Abstracts the approach taken to join the two matrices
 </p>
-    </li><li name="com.twitter.scalding.mathematics.MatrixJoiner2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.MatrixJoiner2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="MatrixJoiner2extendsSerializable"></a>
       <a id="MatrixJoiner2:MatrixJoiner2"></a>
       <h4 class="signature">
@@ -338,9 +442,17 @@ clearer when we do the sampling implementation
       <span class="symbol">
         <a href="MatrixJoiner2.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">This trait allows users to plug in join algoritms
-where they are needed to improve products and propagations.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixJoiner2extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This trait allows users to plug in join algorithms
+where they are needed to improve products and propagations.</p><div class="fullcomment"><div class="comment cmt"><p>This trait allows users to plug in join algorithms
+where they are needed to improve products and propagations.
+The default works well in most cases, but highly skewed matrices may need some
+special handling
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.MatrixLiteral" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MatrixLiteral[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
       <a id="MatrixLiteral[R,C,V]:MatrixLiteral[R,C,V]"></a>
@@ -352,7 +464,11 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="MatrixLiteral.html"><span class="name">MatrixLiteral</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="toTypedPipe">toTypedPipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.V">V</span>)]</span>, <span name="sizeHint">sizeHint: <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="rowOrd">rowOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>]</span>, <span name="colOrd">colOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.MatrixLiteral.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixLiteral[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.MatrixMappableExtensions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MatrixMappableExtensions[T]extendsAnyRef"></a>
@@ -365,10 +481,14 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="MatrixMappableExtensions.html"><span class="name">MatrixMappableExtensions</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">This is the enrichment pattern on Mappable[T] for converting to Matrix types
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixMappableExtensions[T]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is the enrichment pattern on Mappable[T] for converting to Matrix types
 </p>
-    </li><li name="com.twitter.scalding.mathematics.MatrixPipeExtensions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.MatrixPipeExtensions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="MatrixPipeExtensionsextendsAnyRef"></a>
       <a id="MatrixPipeExtensions:MatrixPipeExtensions"></a>
       <h4 class="signature">
@@ -379,8 +499,22 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="MatrixPipeExtensions.html"><span class="name">MatrixPipeExtensions</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Matrix class - represents an infinite (hopefully sparse) matrix.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixPipeExtensionsextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Matrix class - represents an infinite (hopefully sparse) matrix.</p><div class="fullcomment"><div class="comment cmt"><p>Matrix class - represents an infinite (hopefully sparse) matrix.
+ any elements without a row are interpretted to be zero.
+ the pipe hold ('rowIdx, 'colIdx, 'val) where in principle
+ each row/col/value type is generic, with the constraint that ValT is a Ring[T]
+ In practice, RowT and ColT are going to be Strings, Integers or Longs in the usual case.</p><p>WARNING:
+  It is NOT OKAY to use the same instance of Matrix/Row/Col with DIFFERENT Monoids/Rings/Fields.
+  If you want to change, midstream, the Monoid on your ValT, you have to construct a new Matrix.
+  This is due to caching of internal computation graphs.</p><p>RowVector - handles matrices of row dimension one. It is the result of some of the matrix methods and has methods
+ that return ColVector and diagonal matrix</p><p>ColVector - handles matrices of col dimension one. It is the result of some of the matrix methods and has methods
+ that return RowVector and diagonal matrix
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.MatrixProduct" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="MatrixProduct[Left,Right,Result]extendsSerializable"></a>
       <a id="MatrixProduct[Left,Right,Result]:MatrixProduct[Left,Right,Result]"></a>
@@ -392,7 +526,11 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="MatrixProduct.html"><span class="name">MatrixProduct</span></a><span class="tparams">[<span name="Left">Left</span>, <span name="Right">Right</span>, <span name="Result">Result</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixProduct[Left,Right,Result]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.OneC" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="OneC[R,V]extendsMatrix2[R,Unit,V]withProductwithSerializable"></a>
@@ -405,8 +543,12 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="OneC.html"><span class="name">OneC</span></a><span class="tparams">[<span name="R">R</span>, <span name="V">V</span>]</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="rowOrd">rowOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneC.R">R</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneC.R">R</span>, <span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneC.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Infinite column vector - only for intermediate computations
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@OneC[R,V]extendsMatrix2[R,Unit,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Infinite column vector - only for intermediate computations
 </p>
     </li><li name="com.twitter.scalding.mathematics.OneR" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="OneR[C,V]extendsMatrix2[Unit,C,V]withProductwithSerializable"></a>
@@ -419,8 +561,12 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="OneR.html"><span class="name">OneR</span></a><span class="tparams">[<span name="C">C</span>, <span name="V">V</span>]</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="colOrd">colOrd: <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.mathematics.OneR.C">C</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="scala.Unit">Unit</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneR.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.OneR.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Infinite row vector - only for intermediate computations
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@OneR[C,V]extendsMatrix2[Unit,C,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Infinite row vector - only for intermediate computations
 </p>
     </li><li name="com.twitter.scalding.mathematics.OutDegree" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="OutDegreeextendsDegreewithProductwithSerializable"></a>
@@ -433,7 +579,11 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="OutDegree.html"><span class="name">OutDegree</span></a><span class="params">(<span name="degree">degree: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="Degree.html" class="extype" name="com.twitter.scalding.mathematics.Degree">Degree</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@OutDegreeextendsDegreewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Poisson" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PoissonextendsAnyRef"></a>
@@ -446,12 +596,16 @@ where they are needed to improve products and propagations.</p>
       <span class="symbol">
         <a href="Poisson.html"><span class="name">Poisson</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
-      <p class="comment cmt">Generating Poisson-distributed random variables
-according to Donald Knuth's algorith as shown on Wikipedia's
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@PoissonextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Generating Poisson-distributed random variables
+according to Donald Knuth's algorithm as shown on Wikipedia's
 Poisson Distribution page
 </p>
-    </li><li name="com.twitter.scalding.mathematics.Product" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.Product" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Product[R,C,C2,V]extendsMatrix2[R,C2,V]withProductwithSerializable"></a>
       <a id="Product[R,C,C2,V]:Product[R,C,C2,V]"></a>
       <h4 class="signature">
@@ -460,11 +614,16 @@ Poisson Distribution page
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Product.html"><span class="name">Product</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="C2">C2</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="expressions">expressions: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.collection.mutable.Map">Map</span>[<a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>], <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>)]]] = <span class="symbol">scala.None</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="joiner">joiner: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="Product.html"><span class="name">Product</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="C2">C2</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>]</span>, <span name="expressions">expressions: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.collection.mutable.Map">Map</span>[<a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>], <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[(<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>)]]] = <span class="symbol"><span class="name"><a href="../../../../scala/package.html">None</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="joiner">joiner: <a href="MatrixJoiner2.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner2">MatrixJoiner2</a></span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Product.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.C2">C2</span>, <span class="extype" name="com.twitter.scalding.mathematics.Product.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Class representing a matrix product
-</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Product[R,C,C2,V]extendsMatrix2[R,C2,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Class representing a matrix product
+</p><div class="fullcomment"><div class="comment cmt"><p>Class representing a matrix product
+</p></div><dl class="paramcmts block"><dt class="param">left</dt><dd class="cmt"><p>multiplicand</p></dd><dt class="param">right</dt><dd class="cmt"><p>multiplier</p></dd><dt class="param">expressions</dt><dd class="cmt"><p>a HashMap of common subtrees; None if possibly not optimal (did not go through optimize), Some(...) with a HashMap that was created in optimize</p></dd></dl></div>
     </li><li name="com.twitter.scalding.mathematics.RowVector" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="RowVector[ColT,ValT]extendsSerializablewithWrappedPipe"></a>
       <a id="RowVector[ColT,ValT]:RowVector[ColT,ValT]"></a>
@@ -476,7 +635,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="RowVector.html"><span class="name">RowVector</span></a><span class="tparams">[<span name="ColT">ColT</span>, <span name="ValT">ValT</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span> with <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@RowVector[ColT,ValT]extendsSerializablewithWrappedPipe" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Scalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Scalar[ValT]extendsWrappedPipewithSerializable"></a>
@@ -489,7 +652,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="Scalar.html"><span class="name">Scalar</span></a><span class="tparams">[<span name="ValT">ValT</span>]</span><span class="result"> extends <a href="WrappedPipe.html" class="extype" name="com.twitter.scalding.mathematics.WrappedPipe">WrappedPipe</a> with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Scalar[ValT]extendsWrappedPipewithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Scalar2" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="Scalar2[V]extendsSerializable"></a>
@@ -502,8 +669,12 @@ Poisson Distribution page
       <span class="symbol">
         <a href="Scalar2.html"><span class="name">Scalar2</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">A representation of a scalar value that can be used with Matrices
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Scalar2[V]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A representation of a scalar value that can be used with Matrices
 </p>
     </li><li name="com.twitter.scalding.mathematics.SetSimilarity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SetSimilarityextendsProductwithSerializable"></a>
@@ -516,7 +687,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="SetSimilarity.html"><span class="name">SetSimilarity</span></a><span class="params">(<span name="intersection">intersection: <span class="extype" name="scala.Int">Int</span></span>, <span name="sizeLeft">sizeLeft: <span class="extype" name="scala.Int">Int</span></span>, <span name="sizeRight">sizeRight: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SetSimilarityextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.SizeHint" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="SizeHintextendsAnyRef"></a>
@@ -529,7 +704,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="SizeHint.html"><span class="name">SizeHint</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SizeHintextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.SmallToBig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SmallToBigextendsMatrixJoiner"></a>
@@ -542,7 +721,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="SmallToBig.html"><span class="name">SmallToBig</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SmallToBigextendsMatrixJoiner" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.SparseHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SparseHintextendsSizeHintwithProductwithSerializable"></a>
@@ -555,7 +738,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="SparseHint.html"><span class="name">SparseHint</span></a><span class="params">(<span name="sparsity">sparsity: <span class="extype" name="scala.Double">Double</span></span>, <span name="rows">rows: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a></span>, <span name="cols">cols: <a href="../../../../scala/package.html#BigInt=scala.math.BigInt" class="extmbr" name="scala.BigInt">BigInt</a></span>)</span><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SparseHintextendsSizeHintwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Sum[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable"></a>
@@ -568,7 +755,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="Sum.html"><span class="name">Sum</span></a><span class="tparams">[<span name="R">R</span>, <span name="C">C</span>, <span name="V">V</span>]</span><span class="params">(<span name="left">left: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>, <span name="right">right: <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>, <span name="mon">mon: <span class="extype" name="com.twitter.algebird.Monoid">Monoid</span>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>]</span>)</span><span class="result"> extends <a href="Matrix2.html" class="extype" name="com.twitter.scalding.mathematics.Matrix2">Matrix2</a>[<span class="extype" name="com.twitter.scalding.mathematics.Sum.R">R</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.C">C</span>, <span class="extype" name="com.twitter.scalding.mathematics.Sum.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Sum[R,C,V]extendsMatrix2[R,C,V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.TypedSimilarity" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="TypedSimilarity[N,E,S]extendsSerializable"></a>
@@ -581,7 +772,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="TypedSimilarity.html"><span class="name">TypedSimilarity</span></a><span class="tparams">[<span name="N">N</span>, <span name="E">E</span>, <span name="S">S</span>]</span><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@TypedSimilarity[N,E,S]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.ValuePipeScalar" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ValuePipeScalar[V]extendsScalar2[V]withProductwithSerializable"></a>
@@ -594,7 +789,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="ValuePipeScalar.html"><span class="name">ValuePipeScalar</span></a><span class="tparams">[<span name="V">V</span>]</span><span class="params">(<span name="value">value: <a href="../typed/ValuePipe.html" class="extype" name="com.twitter.scalding.typed.ValuePipe">typed.ValuePipe</a>[<span class="extype" name="com.twitter.scalding.mathematics.ValuePipeScalar.V">V</span>]</span>)</span><span class="result"> extends <a href="Scalar2.html" class="extype" name="com.twitter.scalding.mathematics.Scalar2">Scalar2</a>[<span class="extype" name="com.twitter.scalding.mathematics.ValuePipeScalar.V">V</span>] with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@ValuePipeScalar[V]extendsScalar2[V]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Weight" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="WeightextendsProductwithSerializable"></a>
@@ -607,7 +806,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="Weight.html"><span class="name">Weight</span></a><span class="params">(<span name="weight">weight: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@WeightextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.WrappedPipe" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="WrappedPipeextendsAnyRef"></a>
@@ -620,7 +823,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="WrappedPipe.html"><span class="name">WrappedPipe</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@WrappedPipeextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -640,7 +847,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="AnyCrossSmall$.html"><span class="name">AnyCrossSmall</span></a><span class="result"> extends <a href="MatrixCrosser.html" class="extype" name="com.twitter.scalding.mathematics.MatrixCrosser">MatrixCrosser</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@AnyCrossSmall" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.AnyCrossTiny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="AnyCrossTiny"></a>
@@ -653,7 +864,11 @@ Poisson Distribution page
       <span class="symbol">
         <a href="AnyCrossTiny$.html"><span class="name">AnyCrossTiny</span></a><span class="result"> extends <a href="MatrixCrosser.html" class="extype" name="com.twitter.scalding.mathematics.MatrixCrosser">MatrixCrosser</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@AnyCrossTiny" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.AnyToTiny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="AnyToTiny"></a>
@@ -666,9 +881,13 @@ Poisson Distribution page
       <span class="symbol">
         <a href="AnyToTiny$.html"><span class="name">AnyToTiny</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@AnyToTiny" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.Combinatorics" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.Combinatorics" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Combinatorics"></a>
       <a id="Combinatorics:Combinatorics"></a>
       <h4 class="signature">
@@ -679,13 +898,24 @@ Poisson Distribution page
       <span class="symbol">
         <a href="Combinatorics$.html"><span class="name">Combinatorics</span></a>
       </span>
-      </h4>
-      <p class="comment cmt">Serve as a repo for self-contained combinatorial functions with no dependencies
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Combinatorics" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Serve as a repo for self-contained combinatorial functions with no dependencies
 such as
 combinations, aka n choose k, nCk
 permutations , aka nPk
 subset sum : numbers that add up to a finite sum
-weightedSum: For weights (a,b,c, .</p>
+weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy constraint  |ax + by + cz + ...</p><div class="fullcomment"><div class="comment cmt"><p>Serve as a repo for self-contained combinatorial functions with no dependencies
+such as
+combinations, aka n choose k, nCk
+permutations , aka nPk
+subset sum : numbers that add up to a finite sum
+weightedSum: For weights (a,b,c, ...), want integers (x,y,z,...) to satisfy constraint  |ax + by + cz + ... - result | &lt; error
+...
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.GraphOperations" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="GraphOperations"></a>
       <a id="GraphOperations:GraphOperations"></a>
@@ -697,7 +927,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="GraphOperations$.html"><span class="name">GraphOperations</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@GraphOperations" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Matrix"></a>
@@ -710,7 +944,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="Matrix$.html"><span class="name">Matrix</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Matrix" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Matrix2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Matrix2"></a>
@@ -723,7 +961,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="Matrix2$.html"><span class="name">Matrix2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Matrix2" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.MatrixJoiner2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MatrixJoiner2"></a>
@@ -736,9 +978,13 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="MatrixJoiner2$.html"><span class="name">MatrixJoiner2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixJoiner2" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.mathematics.MatrixProduct" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.mathematics.MatrixProduct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="MatrixProduct"></a>
       <a id="MatrixProduct:MatrixProduct"></a>
       <h4 class="signature">
@@ -749,8 +995,14 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="MatrixProduct$.html"><span class="name">MatrixProduct</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">TODO: Muliplication is the expensive stuff.</p>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@MatrixProduct" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">TODO: Muliplication is the expensive stuff.</p><div class="fullcomment"><div class="comment cmt"><p>TODO: Muliplication is the expensive stuff.  We need to optimize the methods below:
+This object holds the implicits to handle matrix products between various types
+</p></div></div>
     </li><li name="com.twitter.scalding.mathematics.NoClue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="NoClue"></a>
       <a id="NoClue:NoClue"></a>
@@ -762,7 +1014,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="NoClue$.html"><span class="name">NoClue</span></a><span class="result"> extends <a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@NoClue" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.Scalar2" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Scalar2"></a>
@@ -775,7 +1031,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="Scalar2$.html"><span class="name">Scalar2</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@Scalar2" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.SizeHint" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SizeHint"></a>
@@ -788,7 +1048,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="SizeHint$.html"><span class="name">SizeHint</span></a>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SizeHint" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.SizeHintOrdering" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SizeHintOrdering"></a>
@@ -801,8 +1065,12 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="SizeHintOrdering$.html"><span class="name">SizeHintOrdering</span></a><span class="result"> extends <a href="../../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<a href="SizeHint.html" class="extype" name="com.twitter.scalding.mathematics.SizeHint">SizeHint</a>] with <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
-      <p class="comment cmt">Allows us to sort matrices by approximate type
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@SizeHintOrdering" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Allows us to sort matrices by approximate type
 </p>
     </li><li name="com.twitter.scalding.mathematics.TinyToAny" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TinyToAny"></a>
@@ -815,7 +1083,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="TinyToAny$.html"><span class="name">TinyToAny</span></a><span class="result"> extends <a href="MatrixJoiner.html" class="extype" name="com.twitter.scalding.mathematics.MatrixJoiner">MatrixJoiner</a> with <span class="extype" name="scala.Product">scala.Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@TinyToAny" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.mathematics.TypedSimilarity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="TypedSimilarity"></a>
@@ -828,7 +1100,11 @@ weightedSum: For weights (a,b,c, .</p>
       <span class="symbol">
         <a href="TypedSimilarity$.html"><span class="name">TypedSimilarity</span></a><span class="result"> extends <span class="extype" name="java.io.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.mathematics.package@TypedSimilarity" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -855,6 +1131,7 @@ weightedSum: For weights (a,b,c, .</p>
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

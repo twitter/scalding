@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>avro - com.twitter.scalding.avro</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>avro</h1>
+        <h1>avro</h1><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -67,7 +75,6 @@
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -92,7 +99,11 @@
       <span class="symbol">
         <a href="AvroSchemaType.html"><span class="name">AvroSchemaType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@AvroSchemaType[T]extendsSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.PackedAvroFileScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="PackedAvroFileScheme[T]extendsFileSource"></a>
@@ -105,7 +116,11 @@
       <span class="symbol">
         <a href="PackedAvroFileScheme.html"><span class="name">PackedAvroFileScheme</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@PackedAvroFileScheme[T]extendsFileSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.PackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PackedAvroSource[T]extendsFixedPathSourcewithPackedAvroFileScheme[T]withMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable"></a>
@@ -118,7 +133,11 @@
       <span class="symbol">
         <a href="PackedAvroSource.html"><span class="name">PackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="tset">tset: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>, <span name="avroType">avroType: <a href="AvroSchemaType.html" class="extype" name="com.twitter.scalding.avro.AvroSchemaType">AvroSchemaType</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>]</span>)</span><span class="result"> extends <a href="../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="PackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.PackedAvroFileScheme">PackedAvroFileScheme</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.avro.PackedAvroSource.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@PackedAvroSource[T]extendsFixedPathSourcewithPackedAvroFileScheme[T]withMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.UnpackedAvroFileScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="UnpackedAvroFileSchemeextendsFileSource"></a>
@@ -131,7 +150,11 @@
       <span class="symbol">
         <a href="UnpackedAvroFileScheme.html"><span class="name">UnpackedAvroFileScheme</span></a><span class="result"> extends <a href="../FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@UnpackedAvroFileSchemeextendsFileSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.UnpackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UnpackedAvroSource[T]extendsFixedPathSourcewithUnpackedAvroFileSchemewithMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable"></a>
@@ -144,7 +167,11 @@
       <span class="symbol">
         <a href="UnpackedAvroSource.html"><span class="name">UnpackedAvroSource</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="paths">paths: <a href="../../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="schema">schema: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="org.apache.avro.Schema">Schema</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>]</span>, <span name="tset">tset: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>]</span>)</span><span class="result"> extends <a href="../FixedPathSource.html" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> with <a href="UnpackedAvroFileScheme.html" class="extype" name="com.twitter.scalding.avro.UnpackedAvroFileScheme">UnpackedAvroFileScheme</a> with <a href="../Mappable.html" class="extype" name="com.twitter.scalding.Mappable">Mappable</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>] with <a href="../package.html#TypedSink[-T]=com.twitter.scalding.typed.TypedSink[T]" class="extmbr" name="com.twitter.scalding.TypedSink">TypedSink</a>[<span class="extype" name="com.twitter.scalding.avro.UnpackedAvroSource.T">T</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@UnpackedAvroSource[T]extendsFixedPathSourcewithUnpackedAvroFileSchemewithMappable[T]withcom.twitter.scalding.TypedSink[T]withProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -164,7 +191,11 @@
       <span class="symbol">
         <a href="AvroSchemaType$.html"><span class="name">AvroSchemaType</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@AvroSchemaType" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.PackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PackedAvroSource"></a>
@@ -177,7 +208,11 @@
       <span class="symbol">
         <a href="PackedAvroSource$.html"><span class="name">PackedAvroSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@PackedAvroSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.avro.UnpackedAvroSource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UnpackedAvroSource"></a>
@@ -190,9 +225,13 @@
       <span class="symbol">
         <a href="UnpackedAvroSource$.html"><span class="name">UnpackedAvroSource</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@UnpackedAvroSource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.avro.package#writePackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.avro#writePackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="writePackedAvro[T](pipe:com.twitter.scalding.TypedPipe[T],path:String)(implicitmf:Manifest[T],implicitst:com.twitter.scalding.avro.AvroSchemaType[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="writePackedAvro[T](TypedPipe[T],String)(Manifest[T],AvroSchemaType[T],TupleConverter[T],TupleSetter[T],FlowDef,Mode):Unit"></a>
       <h4 class="signature">
@@ -203,9 +242,13 @@
       <span class="symbol">
         <span class="name">writePackedAvro</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pipe">pipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="st">st: <a href="AvroSchemaType.html" class="extype" name="com.twitter.scalding.avro.AvroSchemaType">AvroSchemaType</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.writePackedAvro.T">T</span>]</span>, <span name="flow">flow: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@writePackedAvro[T](pipe:com.twitter.scalding.TypedPipe[T],path:String)(implicitmf:Manifest[T],implicitst:com.twitter.scalding.avro.AvroSchemaType[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
-    </li><li name="com.twitter.scalding.avro.package#writeUnpackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.twitter.scalding.avro#writeUnpackedAvro" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="writeUnpackedAvro[T&lt;:Product](pipe:com.twitter.scalding.TypedPipe[T],path:String,schema:org.apache.avro.Schema)(implicitmf:Manifest[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
       <a id="writeUnpackedAvro[T&lt;:Product](TypedPipe[T],String,Schema)(Manifest[T],TupleConverter[T],TupleSetter[T],FlowDef,Mode):Unit"></a>
       <h4 class="signature">
@@ -216,7 +259,11 @@
       <span class="symbol">
         <span class="name">writeUnpackedAvro</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.Product">Product</span></span>]</span><span class="params">(<span name="pipe">pipe: <a href="../package.html#TypedPipe[+T]=com.twitter.scalding.typed.TypedPipe[T]" class="extmbr" name="com.twitter.scalding.TypedPipe">TypedPipe</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="schema">schema: <span class="extype" name="org.apache.avro.Schema">Schema</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mf">mf: <span class="extype" name="scala.Predef.Manifest">Manifest</span>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="conv">conv: <a href="../TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="set">set: <a href="../TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.avro.writeUnpackedAvro.T">T</span>]</span>, <span name="flow">flow: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="../Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.avro.package@writeUnpackedAvro[T&lt;:Product](pipe:com.twitter.scalding.TypedPipe[T],path:String,schema:org.apache.avro.Schema)(implicitmf:Manifest[T],implicitconv:com.twitter.scalding.TupleConverter[T],implicitset:com.twitter.scalding.TupleSetter[T],implicitflow:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -247,6 +294,7 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

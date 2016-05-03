@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>MapsideReduce - com.twitter.scalding.MapsideReduce</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,17 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/class_big.png" />
+        <a href="MapsideReduce$.html" title="See companion object"><img alt="Class/Object" src="../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>MapsideReduce</h1>
+        <h1><a href="MapsideReduce$.html" title="See companion object">MapsideReduce</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="MapsideReduce$.html" title="See companion object">object MapsideReduce</a>
+            | <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,26 +47,13 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">MapsideReduce</span><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]] with <span class="extype" name="cascading.operation.Function">Function</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]] with <a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>
+        <span class="name">MapsideReduce</span><span class="tparams">[<span name="V">V</span>]</span><span class="result"> extends <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]] with <span class="extype" name="cascading.operation.Function">Function</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]] with <a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An implementation of map-side combining which is appropriate for associative and commutative functions
-If a cacheSize is given, it is used, else we query
-the config for cascading.aggregateby.threshold (standard cascading param for an equivalent case)
-else we use a default value of 100,000</p><p>This keeps a cache of keys up to the cache-size, summing values as keys collide
-On eviction, or completion of this Operation, the key-value pairs are put into outputCollector.</p><p>This NEVER spills to disk and generally never be a performance penalty. If you have
-poor locality in the keys, you just don't get any benefit but little added cost.</p><p>Note this means that you may still have repeated keys in the output even on a single mapper
-since the key space may be so large that you can't fit all of them in the cache at the same
-time.</p><p>You can use this with the Fields-API by doing:</p><pre><span class="kw">val</span> msr = <span class="kw">new</span> MapsideReduce(Semigroup.from(fn), <span class="lit">'key, '</span>value, <span class="std">None</span>)
-<span class="cmt">// MUST map onto the same key,value space (may be multiple fields)</span>
-<span class="kw">val</span> mapSideReduced = pipe.eachTo((<span class="lit">'key, '</span>value) -&gt; (<span class="lit">'key, '</span>value)) { _ <span class="kw">=&gt;</span> msr }</pre><p>That said, this is equivalent to AggregateBy, and the only value is that it is much simpler than AggregateBy.
-AggregateBy assumes several parallel reductions are happening, and thus has many loops, and array lookups
-to deal with that.  Since this does many fewer allocations, and has a smaller code-path it may be faster for
-the typed-API.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala" target="_blank">Operations.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Operations.scala" target="_blank">Operations.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.operation.Function">Function</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.operation.Operation">Operation</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.flow.planner.DeclaresResults">DeclaresResults</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.operation.Function">Function</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.util.Traceable">Traceable</span>, <span class="extype" name="cascading.operation.Operation">Operation</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]], <span class="extype" name="cascading.flow.planner.DeclaresResults">DeclaresResults</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -72,7 +71,7 @@ the typed-API.
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.twitter.scalding.MapsideReduce"><span>MapsideReduce</span></li><li class="in" name="com.twitter.scalding.ScaldingPrepare"><span>ScaldingPrepare</span></li><li class="in" name="cascading.operation.Function"><span>Function</span></li><li class="in" name="cascading.operation.BaseOperation"><span>BaseOperation</span></li><li class="in" name="cascading.operation.Operation"><span>Operation</span></li><li class="in" name="cascading.flow.planner.DeclaresResults"><span>DeclaresResults</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.twitter.scalding.MapsideReduce"><span>MapsideReduce</span></li><li class="in" name="com.twitter.scalding.ScaldingPrepare"><span>ScaldingPrepare</span></li><li class="in" name="cascading.operation.Function"><span>Function</span></li><li class="in" name="cascading.operation.BaseOperation"><span>BaseOperation</span></li><li class="in" name="cascading.util.Traceable"><span>Traceable</span></li><li class="in" name="cascading.operation.Operation"><span>Operation</span></li><li class="in" name="cascading.flow.planner.DeclaresResults"><span>DeclaresResults</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -80,7 +79,6 @@ the typed-API.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -103,7 +101,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">MapsideReduce</span><span class="params">(<span name="commutativeSemigroup">commutativeSemigroup: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]</span>, <span name="keyFields">keyFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="valueFields">valueFields: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="cacheSize">cacheSize: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]</span>, <span name="set">set: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]</span>)</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@&lt;init&gt;(commutativeSemigroup:com.twitter.algebird.Semigroup[V],keyFields:cascading.tuple.Fields,valueFields:cascading.tuple.Fields,cacheSize:Option[Int])(implicitconv:com.twitter.scalding.TupleConverter[V],implicitset:com.twitter.scalding.TupleSetter[V]):com.twitter.scalding.MapsideReduce[V]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -115,19 +117,6 @@ the typed-API.
         <div id="values" class="values members">
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -138,8 +127,12 @@ the typed-API.
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -151,22 +144,13 @@ the typed-API.
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -177,34 +161,12 @@ the typed-API.
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.twitter.scalding.MapsideReduce#DEFAULT_CACHE_SIZE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="DEFAULT_CACHE_SIZE:Int"></a>
-      <a id="DEFAULT_CACHE_SIZE:Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">DEFAULT_CACHE_SIZE</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
-      </span>
-      </h4>
-      
-    </li><li name="com.twitter.scalding.MapsideReduce#SIZE_CONFIG_KEY" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SIZE_CONFIG_KEY:String"></a>
-      <a id="SIZE_CONFIG_KEY:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">SIZE_CONFIG_KEY</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
-      </span>
-      </h4>
-      
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -216,7 +178,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.MapsideReduce#boxedSemigroup" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="boxedSemigroup:com.twitter.scalding.serialization.Externalizer[com.twitter.algebird.Semigroup[V]]"></a>
@@ -229,33 +195,28 @@ the typed-API.
       <span class="symbol">
         <span class="name">boxedSemigroup</span><span class="result">: <a href="serialization/Externalizer.html" class="extype" name="com.twitter.scalding.serialization.Externalizer">Externalizer</a>[<span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>
       </span>
-      </h4>
-      
-    </li><li name="com.twitter.scalding.MapsideReduce#cacheSize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="cacheSize(fp:cascading.flow.FlowProcess[_]):Int"></a>
-      <a id="cacheSize(FlowProcess[_]):Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">cacheSize</span><span class="params">(<span name="fp">fp: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
-      </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@boxedSemigroup:com.twitter.scalding.serialization.Externalizer[com.twitter.algebird.Semigroup[V]]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.MapsideReduce#cleanup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="cleanup(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.algebird.SummingCache[cascading.tuple.Tuple,V]]):Unit"></a>
-      <a id="cleanup(FlowProcess[_],OperationCall[SummingCache[Tuple,V]]):Unit"></a>
+      <a id="cleanup(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit"></a>
+      <a id="cleanup(FlowProcess[_],OperationCall[MapsideCache[Tuple,V]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">cleanup</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">cleanup</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@cleanup(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.MapsideReduce">MapsideReduce</a> → BaseOperation → Operation</dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
@@ -268,7 +229,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -287,7 +252,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -300,7 +269,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -313,7 +286,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -322,17 +299,21 @@ the typed-API.
               
         </dd></dl></div>
     </li><li name="com.twitter.scalding.MapsideReduce#flush" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="flush(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.algebird.SummingCache[cascading.tuple.Tuple,V]]):Unit"></a>
-      <a id="flush(FlowProcess[_],OperationCall[SummingCache[Tuple,V]]):Unit"></a>
+      <a id="flush(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit"></a>
+      <a id="flush(FlowProcess[_],OperationCall[MapsideCache[Tuple,V]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">flush</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">flush</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@flush(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.MapsideReduce">MapsideReduce</a> → BaseOperation → Operation</dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -345,7 +326,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#getFieldDeclaration" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getFieldDeclaration():cascading.tuple.Fields"></a>
@@ -358,7 +343,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">getFieldDeclaration</span><span class="params">()</span><span class="result">: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@getFieldDeclaration():cascading.tuple.Fields" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation → DeclaresResults</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#getNumArgs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getNumArgs():Int"></a>
@@ -371,7 +360,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">getNumArgs</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@getNumArgs():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#getTrace" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getTrace():String"></a>
@@ -384,8 +377,12 @@ the typed-API.
       <span class="symbol">
         <span class="name">getTrace</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@getTrace():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Traceable</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -397,7 +394,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -410,7 +411,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#isSafe" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isSafe():Boolean"></a>
@@ -423,7 +428,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">isSafe</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@isSafe():Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → Operation</dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
@@ -436,7 +445,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -449,7 +462,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -462,33 +479,45 @@ the typed-API.
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.MapsideReduce#operate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="operate(flowProcess:cascading.flow.FlowProcess[_],functionCall:cascading.operation.FunctionCall[com.twitter.algebird.SummingCache[cascading.tuple.Tuple,V]]):Unit"></a>
-      <a id="operate(FlowProcess[_],FunctionCall[SummingCache[Tuple,V]]):Unit"></a>
+      <a id="operate(flowProcess:cascading.flow.FlowProcess[_],functionCall:cascading.operation.FunctionCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit"></a>
+      <a id="operate(FlowProcess[_],FunctionCall[MapsideCache[Tuple,V]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">operate</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="functionCall">functionCall: <span class="extype" name="cascading.operation.FunctionCall">FunctionCall</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">operate</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="functionCall">functionCall: <span class="extype" name="cascading.operation.FunctionCall">FunctionCall</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@operate(flowProcess:cascading.flow.FlowProcess[_],functionCall:cascading.operation.FunctionCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.MapsideReduce">MapsideReduce</a> → Function</dd></dl></div>
     </li><li name="com.twitter.scalding.MapsideReduce#prepare" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="prepare(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.algebird.SummingCache[cascading.tuple.Tuple,V]]):Unit"></a>
-      <a id="prepare(FlowProcess[_],OperationCall[SummingCache[Tuple,V]]):Unit"></a>
+      <a id="prepare(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit"></a>
+      <a id="prepare(FlowProcess[_],OperationCall[MapsideCache[Tuple,V]]):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">prepare</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">prepare</span><span class="params">(<span name="flowProcess">flowProcess: <span class="extype" name="cascading.flow.FlowProcess">FlowProcess</span>[_]</span>, <span name="operationCall">operationCall: <span class="extype" name="cascading.operation.OperationCall">OperationCall</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@prepare(flowProcess:cascading.flow.FlowProcess[_],operationCall:cascading.operation.OperationCall[com.twitter.scalding.MapsideCache[cascading.tuple.Tuple,V]]):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.MapsideReduce">MapsideReduce</a> → <a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a> → BaseOperation → Operation</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -501,7 +530,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="cascading.operation.BaseOperation#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
@@ -514,7 +547,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BaseOperation → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -527,7 +564,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -546,7 +587,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -565,7 +610,11 @@ the typed-API.
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.MapsideReduce@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -583,13 +632,15 @@ the typed-API.
 
         <div id="inheritedMembers">
         <div class="parent" name="com.twitter.scalding.ScaldingPrepare">
-              <h3>Inherited from <a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
+              <h3>Inherited from <a href="ScaldingPrepare.html" class="extype" name="com.twitter.scalding.ScaldingPrepare">ScaldingPrepare</a>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
             </div><div class="parent" name="cascading.operation.Function">
-              <h3>Inherited from <span class="extype" name="cascading.operation.Function">Function</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
+              <h3>Inherited from <span class="extype" name="cascading.operation.Function">Function</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
             </div><div class="parent" name="cascading.operation.BaseOperation">
-              <h3>Inherited from <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
+              <h3>Inherited from <span class="extype" name="cascading.operation.BaseOperation">BaseOperation</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
+            </div><div class="parent" name="cascading.util.Traceable">
+              <h3>Inherited from <span class="extype" name="cascading.util.Traceable">Traceable</span></h3>
             </div><div class="parent" name="cascading.operation.Operation">
-              <h3>Inherited from <span class="extype" name="cascading.operation.Operation">Operation</span>[<span class="extype" name="com.twitter.algebird.SummingCache">SummingCache</span>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
+              <h3>Inherited from <span class="extype" name="cascading.operation.Operation">Operation</span>[<a href="MapsideCache.html" class="extype" name="com.twitter.scalding.MapsideCache">MapsideCache</a>[<span class="extype" name="cascading.tuple.Tuple">Tuple</span>, <span class="extype" name="com.twitter.scalding.MapsideReduce.V">V</span>]]</h3>
             </div><div class="parent" name="cascading.flow.planner.DeclaresResults">
               <h3>Inherited from <span class="extype" name="cascading.flow.planner.DeclaresResults">DeclaresResults</span></h3>
             </div><div class="parent" name="java.io.Serializable">
@@ -614,6 +665,7 @@ the typed-API.
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>

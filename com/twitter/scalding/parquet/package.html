@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>parquet - com.twitter.scalding.parquet</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
@@ -24,9 +28,13 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../../../lib/package_big.png" />
+        <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.twitter">twitter</a>.<a href="../package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>parquet</h1>
+        <h1>parquet</h1><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -58,18 +66,39 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.twitter.scalding.parquet.ColumnProjectionGlob" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ColumnProjectionGlobextendsProductwithSerializable"></a>
-      <a id="ColumnProjectionGlob:ColumnProjectionGlob"></a>
+              <ol><li name="com.twitter.scalding.parquet.ColumnProjectionString" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ColumnProjectionStringextendsAnyRef"></a>
+      <a id="ColumnProjectionString:ColumnProjectionString"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ColumnProjectionString.html"><span class="name">ColumnProjectionString</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@ColumnProjectionStringextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.parquet.DeprecatedColumnProjectionString" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DeprecatedColumnProjectionStringextendsColumnProjectionStringwithProductwithSerializable"></a>
+      <a id="DeprecatedColumnProjectionString:DeprecatedColumnProjectionString"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="ColumnProjectionGlob.html"><span class="name">ColumnProjectionGlob</span></a><span class="params">(<span name="glob">glob: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DeprecatedColumnProjectionString.html"><span class="name">DeprecatedColumnProjectionString</span></a><span class="params">(<span name="globStrings">globStrings: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ColumnProjectionString.html" class="extype" name="com.twitter.scalding.parquet.ColumnProjectionString">ColumnProjectionString</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@DeprecatedColumnProjectionStringextendsColumnProjectionStringwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.parquet.HasColumnProjection" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="HasColumnProjectionextendsAnyRef"></a>
@@ -82,7 +111,11 @@
       <span class="symbol">
         <a href="HasColumnProjection.html"><span class="name">HasColumnProjection</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@HasColumnProjectionextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.parquet.HasFilterPredicate" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="HasFilterPredicateextendsAnyRef"></a>
@@ -95,7 +128,45 @@
       <span class="symbol">
         <a href="HasFilterPredicate.html"><span class="name">HasFilterPredicate</span></a><span class="result"> extends <a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@HasFilterPredicateextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.parquet.ParquetValueScheme" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ParquetValueScheme[T]extendsScheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader,org.apache.hadoop.mapred.OutputCollector,Array[Object],Array[Object]]"></a>
+      <a id="ParquetValueScheme[T]:ParquetValueScheme[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ParquetValueScheme.html"><span class="name">ParquetValueScheme</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>, <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>, <span class="extype" name="scala.Array">Array</span>[<a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>], <span class="extype" name="scala.Array">Array</span>[<a href="../../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@ParquetValueScheme[T]extendsScheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader,org.apache.hadoop.mapred.OutputCollector,Array[Object],Array[Object]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.parquet.StrictColumnProjectionString" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StrictColumnProjectionStringextendsColumnProjectionStringwithProductwithSerializable"></a>
+      <a id="StrictColumnProjectionString:StrictColumnProjectionString"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="StrictColumnProjectionString.html"><span class="name">StrictColumnProjectionString</span></a><span class="params">(<span name="globStrings">globStrings: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <a href="ColumnProjectionString.html" class="extype" name="com.twitter.scalding.parquet.ColumnProjectionString">ColumnProjectionString</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@StrictColumnProjectionStringextendsColumnProjectionStringwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -104,7 +175,24 @@
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="com.twitter.scalding.parquet.scrooge" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="com.twitter.scalding.parquet.HasColumnProjection" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HasColumnProjection"></a>
+      <a id="HasColumnProjection:HasColumnProjection"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HasColumnProjection$.html"><span class="name">HasColumnProjection</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@HasColumnProjection" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.twitter.scalding.parquet.scrooge" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="scrooge"></a>
       <a id="scrooge:scrooge"></a>
       <h4 class="signature">
@@ -115,7 +203,11 @@
       <span class="symbol">
         <a href="scrooge/package.html"><span class="name">scrooge</span></a>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@scrooge" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.parquet.thrift" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="thrift"></a>
@@ -128,7 +220,11 @@
       <span class="symbol">
         <a href="thrift/package.html"><span class="name">thrift</span></a>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@thrift" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.parquet.tuple" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="tuple"></a>
@@ -141,7 +237,11 @@
       <span class="symbol">
         <a href="tuple/package.html"><span class="name">tuple</span></a>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#com.twitter.scalding.parquet.package@tuple" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li></ol>
             </div>
@@ -168,6 +268,7 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+
+
     </body>
       </html>

@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html >
 <html>
         <head>
           <title>FoldOperations - com.twitter.scalding.FoldOperations</title>
@@ -9,6 +8,11 @@
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
@@ -24,9 +28,15 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../../lib/trait_big.png" />
+        <img alt="Trait" src="../../../lib/trait_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
-        <h1>FoldOperations</h1>
+        <h1>FoldOperations</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       </div>
 
       <h4 id="signature" class="signature">
@@ -46,9 +56,9 @@ in each operation.
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="Sortable.html" class="extype" name="com.twitter.scalding.Sortable">Sortable</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span>], <a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span>], <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a href="CoGroupBuilder.html" class="extype" name="com.twitter.scalding.CoGroupBuilder">CoGroupBuilder</a>, <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></div>
-        </div></div>
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="CoGroupBuilder.html" class="extype" name="com.twitter.scalding.CoGroupBuilder">CoGroupBuilder</a>, <a href="GroupBuilder.html" class="extype" name="com.twitter.scalding.GroupBuilder">GroupBuilder</a></div>
+          </div></div>
         
 
       <div id="mbrsel">
@@ -73,7 +83,6 @@ in each operation.
               <li class="hideall out"><span>Hide All</span></li>
               <li class="showall in"><span>Show all</span></li>
             </ol>
-            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
           </div>
         <div id="visbl">
             <span class="filtertype">Visibility</span>
@@ -100,7 +109,11 @@ in each operation.
       <span class="symbol">
         <span class="name">foldLeft</span><span class="tparams">[<span name="X">X</span>, <span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="init">init: <span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.X">X</span></span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.X">X</span>, <span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.X">X</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.X">X</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.foldLeft.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@foldLeft[X,T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(init:X)(fn:(X,T)=&gt;X)(implicitsetter:com.twitter.scalding.TupleSetter[X],implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       
     </li><li name="com.twitter.scalding.ReduceOperations#mapReduceMap" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="mapReduceMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(redfn:(X,X)=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U]):Self"></a>
@@ -113,7 +126,11 @@ in each operation.
       <span class="symbol">
         <span class="name">mapReduceMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span></span>)</span><span class="params">(<span name="redfn">redfn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span></span>)</span><span class="params">(<span name="mapfn2">mapfn2: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.T">T</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.X">X</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapReduceMap.U">U</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mapReduceMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(redfn:(X,X)=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Type T is the type of the input field (input to map, T =&gt; X)
 Type X is the intermediate type, which your reduce function operates on
 (reduce is (X,X) =&gt; X)
@@ -134,7 +151,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span class="name">sortBy</span><span class="params">(<span name="innerSort">innerSort: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sortBy(innerSort:cascading.tuple.Fields):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Sortable.html" class="extype" name="com.twitter.scalding.Sortable">Sortable</a></dd></dl></div>
     </li><li name="com.twitter.scalding.Sortable#sorting" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="sorting:Option[cascading.tuple.Fields]"></a>
@@ -147,7 +168,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span class="name">sorting</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="cascading.tuple.Fields">Fields</span>]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sorting:Option[cascading.tuple.Fields]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Sortable.html" class="extype" name="com.twitter.scalding.Sortable">Sortable</a></dd></dl></div>
     </li></ol>
             </div>
@@ -155,19 +180,6 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
         <div id="values" class="values members">
               <h3>Concrete Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:AnyRef):Boolean"></a>
-      <a id="!=(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
       <h4 class="signature">
@@ -178,8 +190,12 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <a id="##():Int"></a>
@@ -191,22 +207,13 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:AnyRef):Boolean"></a>
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
       <a id="==(Any):Boolean"></a>
       <h4 class="signature">
@@ -217,8 +224,12 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#aggregate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aggregate[A,B,C](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(ag:com.twitter.algebird.Aggregator[A,B,C])(implicitstartConv:com.twitter.scalding.TupleConverter[A],implicitmiddleSetter:com.twitter.scalding.TupleSetter[B],implicitmiddleConv:com.twitter.scalding.TupleConverter[B],implicitendSetter:com.twitter.scalding.TupleSetter[C]):Self"></a>
       <a id="aggregate[A,B,C]((Fields,Fields))(Aggregator[A,B,C])(TupleConverter[A],TupleSetter[B],TupleConverter[B],TupleSetter[C]):Self"></a>
@@ -230,7 +241,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span class="name">aggregate</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="ag">ag: <span class="extype" name="com.twitter.algebird.Aggregator">Aggregator</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.A">A</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.C">C</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.A">A</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.B">B</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.aggregate.C">C</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@aggregate[A,B,C](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(ag:com.twitter.algebird.Aggregator[A,B,C])(implicitstartConv:com.twitter.scalding.TupleConverter[A],implicitmiddleSetter:com.twitter.scalding.TupleSetter[B],implicitmiddleConv:com.twitter.scalding.TupleConverter[B],implicitendSetter:com.twitter.scalding.TupleSetter[C]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p><div class="fullcomment"><div class="comment cmt"><p>Pretty much a synonym for mapReduceMap with the methods collected into a trait.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#approximateUniqueCount" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="approximateUniqueCount[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$1:T=&gt;Array[Byte],implicitevidence$2:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -243,7 +258,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.<
       <span class="symbol">
         <span class="name">approximateUniqueCount</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="com.twitter.scalding.ReduceOperations.approximateUniqueCount.T">T</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="arg1">arg1: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.approximateUniqueCount.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@approximateUniqueCount[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$1:T=&gt;Array[Byte],implicitevidence$2:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Approximate number of unique values
 We use about m = (104/errPercent)^2 bytes of memory per key
 Uses <code>.toString.getBytes</code> to serialize the data so you MUST
@@ -269,7 +288,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#average" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="average(f:Symbol):Self"></a>
@@ -282,7 +305,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">average</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@average(f:Symbol):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#average" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="average(f:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -295,7 +322,11 @@ ensure that .toString is an equivalance on your counted fields
       <span class="symbol">
         <span class="name">average</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@average(f:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">uses a more stable online algorithm which should
 be suitable for large numbers of records</p><div class="fullcomment"><div class="comment cmt"><p>uses a more stable online algorithm which should
 be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm</a>
@@ -311,7 +342,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -330,7 +365,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">count</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.count.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.count.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@count[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:T=&gt;Boolean)(implicitevidence$8:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">This is count with a predicate: only counts the tuples for which
 <code>fn(tuple)</code> is true
 </p><div class="fullcomment"><div class="comment cmt"><p>This is count with a predicate: only counts the tuples for which
@@ -347,7 +386,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">dot</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="left">left: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="right">right: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>, <span name="result">result: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ttconv">ttconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[(<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>)]</span>, <span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.dot.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@dot[T](left:cascading.tuple.Fields,right:cascading.tuple.Fields,result:cascading.tuple.Fields)(implicitttconv:com.twitter.scalding.TupleConverter[(T,T)],implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><div class="fullcomment"><div class="comment cmt"><p>First do &quot;times&quot; on each pair, then &quot;plus&quot; them all together.</p><h4> Example </h4><pre>groupBy('x) { _.dot(<span class="lit">'y,'</span>z, 'ydotz) }</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -360,7 +403,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
@@ -373,7 +420,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
@@ -386,7 +437,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -405,7 +460,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">forall</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.forall.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.forall.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@forall[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:T=&gt;Boolean)(implicitevidence$9:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
@@ -418,7 +477,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
@@ -431,7 +494,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#head" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="head(f:Symbol*):Self"></a>
@@ -444,7 +511,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">head</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@head(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#head" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="head(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -457,7 +528,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">head</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@head(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Return the first, useful probably only for sorted case.</p><div class="fullcomment"><div class="comment cmt"><p>Return the first, useful probably only for sorted case.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#histogram" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -471,7 +546,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">histogram</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="binWidth">binWidth: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@histogram(f:(cascading.tuple.Fields,cascading.tuple.Fields),binWidth:Double):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#hyperLogLog" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hyperLogLog[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$3:T=&gt;Array[Byte],implicitevidence$4:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -484,7 +563,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">hyperLogLog</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: (<span class="extype" name="com.twitter.scalding.ReduceOperations.hyperLogLog.T">T</span>) ⇒ <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>, <span name="arg1">arg1: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.hyperLogLog.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@hyperLogLog[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double)(implicitevidence$3:T=&gt;Array[Byte],implicitevidence$4:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -497,7 +580,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#last" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="last(f:Symbol*):Self"></a>
@@ -510,7 +597,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">last</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@last(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#last" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="last(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -523,7 +614,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">last</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@last(fd:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.FoldOperations#mapList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mapList[T,R](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:List[T]=&gt;R)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[R]):Self"></a>
@@ -536,7 +631,11 @@ be suitable for large numbers of records</p><h4> Similar To </h4><p><a href="htt
       <span class="symbol">
         <span class="name">mapList</span><span class="tparams">[<span name="T">T</span>, <span name="R">R</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<a href="../../../scala/package.html#List[+A]=List[A]" class="extmbr" name="scala.List">List</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.T">T</span>]) ⇒ <span class="extype" name="com.twitter.scalding.FoldOperations.mapList.R">R</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.T">T</span>]</span>, <span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.FoldOperations.mapList.R">R</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mapList[T,R](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:List[T]=&gt;R)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitsetter:com.twitter.scalding.TupleSetter[R]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Collect all the values into a List[T] and then operate on that
 list.</p><div class="fullcomment"><div class="comment cmt"><p>Collect all the values into a List[T] and then operate on that
 list. This fundamentally uses as much memory as it takes to store the list.
@@ -554,7 +653,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mapPlusMap</span><span class="tparams">[<span name="T">T</span>, <span name="X">X</span>, <span name="U">U</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="mapfn">mapfn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span></span>)</span><span class="params">(<span name="mapfn2">mapfn2: (<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.U">U</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="startConv">startConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.T">T</span>]</span>, <span name="middleSetter">middleSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>, <span name="middleConv">middleConv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>, <span name="endSetter">endSetter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.U">U</span>]</span>, <span name="sgX">sgX: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.mapPlusMap.X">X</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mapPlusMap[T,X,U](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(mapfn:T=&gt;X)(mapfn2:X=&gt;U)(implicitstartConv:com.twitter.scalding.TupleConverter[T],implicitmiddleSetter:com.twitter.scalding.TupleSetter[X],implicitmiddleConv:com.twitter.scalding.TupleConverter[X],implicitendSetter:com.twitter.scalding.TupleSetter[U],implicitsgX:com.twitter.algebird.Semigroup[X]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#max" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="max(f:Symbol*):Self"></a>
@@ -567,7 +670,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">max</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@max(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#max" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="max(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -580,7 +687,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">max</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@max(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#min" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="min(f:Symbol*):Self"></a>
@@ -593,7 +704,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">min</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@min(f:Symbol*):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#min" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="min(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self"></a>
@@ -606,7 +721,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">min</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@min(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol):Self"></a>
@@ -619,7 +738,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:Symbol):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol,sep:String):Self"></a>
@@ -632,7 +755,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:Symbol,sep:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:Symbol,start:String,sep:String,end:String):Self"></a>
@@ -645,7 +772,11 @@ as a stack for efficiency reasons). If you care about order, call .reverse in yo
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span></span>, <span name="start">start: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="end">end: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:Symbol,start:String,sep:String,end:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">these will only be called if a tuple is not passed, meaning just one
 column
 </p><div class="fullcomment"><div class="comment cmt"><p>these will only be called if a tuple is not passed, meaning just one
@@ -662,7 +793,11 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),sep:String):Self"></a>
@@ -675,7 +810,11 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),sep:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#mkString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),start:String,sep:String,end:String):Self"></a>
@@ -688,8 +827,14 @@ column
       <span class="symbol">
         <span class="name">mkString</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="start">start: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sep">sep: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="end">end: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Similar to the scala.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to the scala.collection.Iterable.mkString
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@mkString(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),start:String,sep:String,end:String):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Similar to the scala.collection.Iterable.mkString
+takes the source and destination fieldname, which should be a single
+field.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to the scala.collection.Iterable.mkString
 takes the source and destination fieldname, which should be a single
 field. The result will be start, each item.toString separated by sep,
 followed by end for convenience there several common variants below
@@ -705,7 +850,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
@@ -718,7 +867,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -731,7 +884,11 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#pivot" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="pivot(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),defaultVal:Any):Self"></a>
@@ -744,14 +901,18 @@ followed by end for convenience there several common variants below
       <span class="symbol">
         <span class="name">pivot</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="defaultVal">defaultVal: <span class="extype" name="scala.Any">Any</span> = <span class="symbol">null</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
-      <p class="shortcomment cmt">Opposite of RichPipe.</p><div class="fullcomment"><div class="comment cmt"><p>Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@pivot(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields),defaultVal:Any):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Opposite of RichPipe.unpivot.</p><div class="fullcomment"><div class="comment cmt"><p>Opposite of RichPipe.unpivot.  See SQL/Excel for more on this function
 converts a row-wise representation into a column-wise one.</p><h4> Example </h4><pre>pivot(('feature, 'value) -&gt; ('clicks, 'impressions, 'requests))</pre><p>it will find the feature named &quot;clicks&quot;, and put the value in the column with the field named
 clicks.</p><p>Absent fields result in null unless a default value is provided. Unnamed output fields are ignored.</p><h4> Note </h4><p>Duplicated fields will result in an error.</p><h4> Hint </h4><p>if you want more precision, first do a</p><pre>map('value -&gt; value) { x : <span class="std">AnyRef</span> <span class="kw">=&gt;</span> <span class="std">Option</span>(x) }</pre><p>and you will have non-nulls for all present values, and Nones for values that were present
 but previously null.  All nulls in the final output will be those truly missing.
 Similarly, if you want to check if there are any items present that shouldn't be:</p><pre>map('feature -&gt; 'feature) { fname : <span class="std">String</span> <span class="kw">=&gt;</span>
-<span class="kw">if</span> (!goodFeatures(fname)) { <span class="kw">throw</span> <span class="kw">new</span> Exception(<span class="lit">"ohnoes"</span>) }
-<span class="kw">else</span> fname
+  <span class="kw">if</span> (!goodFeatures(fname)) { <span class="kw">throw</span> <span class="kw">new</span> Exception(<span class="lit">"ohnoes"</span>) }
+  <span class="kw">else</span> fname
 }</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#reduce" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reduce[T](fieldDef:Symbol*)(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -764,7 +925,11 @@ Similarly, if you want to check if there are any items present that shouldn't be
       <span class="symbol">
         <span class="name">reduce</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@reduce[T](fieldDef:Symbol*)(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#reduce" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reduce[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self"></a>
@@ -777,9 +942,13 @@ Similarly, if you want to check if there are any items present that shouldn't be
       <span class="symbol">
         <span class="name">reduce</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span name="fn">fn: (<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>) ⇒ <span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="setter">setter: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.reduce.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@reduce[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(fn:(T,T)=&gt;T)(implicitsetter:com.twitter.scalding.TupleSetter[T],implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Apply an associative/commutative operation on the left field.</p><div class="fullcomment"><div class="comment cmt"><p>Apply an associative/commutative operation on the left field.</p><h4> Example </h4><pre>reduce((<span class="lit">'mass,'</span>allids)-&gt;('totalMass, 'idset)) { (left:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>]),right:(<span class="std">Double</span>,<span class="std">Set</span>[<span class="std">Long</span>])) <span class="kw">=&gt;</span>
-(left._1 + right._1, left._2 ++ right._2)
+  (left._1 + right._1, left._2 ++ right._2)
 }</pre><p>Equivalent to a mapReduceMap with trivial (identity) map functions.</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers</p><p>The previous output goes into the reduce function on the left, like foldLeft,
 so if your operation is faster for the accumulator to be on one side, be aware.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -794,7 +963,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">size</span><span class="params">(<span name="thisF">thisF: <span class="extype" name="cascading.tuple.Fields">Fields</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@size(thisF:cascading.tuple.Fields):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#size" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="size:Self"></a>
@@ -807,7 +980,11 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">size</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@size:Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">How many values are there for this key
 </p><div class="fullcomment"><div class="comment cmt"><p>How many values are there for this key
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -822,9 +999,14 @@ so if your operation is faster for the accumulator to be on one side, be aware.
       <span class="symbol">
         <span class="name">sizeAveStdev</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sizeAveStdev(fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields)):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Compute the count, ave and standard deviation in one pass
-example: g.</p><div class="fullcomment"><div class="comment cmt"><p>Compute the count, ave and standard deviation in one pass
+example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
+</p><div class="fullcomment"><div class="comment cmt"><p>Compute the count, ave and standard deviation in one pass
 example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortWithTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -838,12 +1020,16 @@ example: g.sizeAveStdev('x -&gt; ('cntx, 'avex, 'stdevx))
       <span class="symbol">
         <span class="name">sortWithTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span name="lt">lt: (<span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>, <span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortWithTake.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sortWithTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(lt:(T,T)=&gt;Boolean)(implicitevidence$10:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Equivalent to sorting by a comparison function
 then take-ing k items.</p><div class="fullcomment"><div class="comment cmt"><p>Equivalent to sorting by a comparison function
 then take-ing k items.  This is MUCH more efficient than doing a total sort followed by a take,
 since these bounded sorts are done on the mapper, so only a sort of size k is needed.</p><h4> Example </h4><pre>sortWithTake( ('clicks, 'tweet) -&gt; 'topClicks, <span class="num">5</span>) {
-fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<span class="std">Long</span>,<span class="std">Long</span>) <span class="kw">=&gt;</span> t0._1 &lt; t1._1 }</pre><p>topClicks will be a List[(Long,Long)]
+  fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<span class="std">Long</span>,<span class="std">Long</span>) <span class="kw">=&gt;</span> t0._1 &lt; t1._1 }</pre><p>topClicks will be a List[(Long,Long)]
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortedReverseTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="sortedReverseTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self"></a>
@@ -856,7 +1042,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sortedReverseTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedReverseTake.T">T</span>]</span>, <span name="ord">ord: <a href="../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedReverseTake.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sortedReverseTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Reverse of above when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Reverse of above when the implicit ordering makes sense.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sortedTake" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -870,7 +1060,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sortedTake</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="k">k: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedTake.T">T</span>]</span>, <span name="ord">ord: <a href="../../../scala/package.html#Ordering[T]=scala.math.Ordering[T]" class="extmbr" name="scala.Ordering">Ordering</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sortedTake.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sortedTake[T](f:(cascading.tuple.Fields,cascading.tuple.Fields),k:Int)(implicitconv:com.twitter.scalding.TupleConverter[T],implicitord:Ordering[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Same as above but useful when the implicit ordering makes sense.</p><div class="fullcomment"><div class="comment cmt"><p>Same as above but useful when the implicit ordering makes sense.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#sum" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -884,7 +1078,11 @@ fn : (t0 :(<span class="std">Long</span>,<span class="std">Long</span>), t1:(<sp
       <span class="symbol">
         <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sum[T](fs:Symbol*)(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The same as <code>sum(fs -&gt; fs)</code>
 Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>sum(fs -&gt; fs)</code>
 Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
@@ -900,7 +1098,11 @@ Assumed to be a commutative operation.  If you don't want that, use .forceToRedu
       <span class="symbol">
         <span class="name">sum</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.sum.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@sum[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Use <code>Semigroup.plus</code> to compute a sum.</p><div class="fullcomment"><div class="comment cmt"><p>Use <code>Semigroup.plus</code> to compute a sum.  Not called sum to avoid conflicting with standard sum
 Your <code>Semigroup[T]</code> should be associated and commutative, else this doesn't make sense</p><p>Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -915,7 +1117,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="com.twitter.scalding.ReduceOperations#times" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="times[T](fs:Symbol*)(implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self"></a>
@@ -928,7 +1134,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@times[T](fs:Symbol*)(implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">The same as <code>times(fs -&gt; fs)</code>
 </p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>times(fs -&gt; fs)</code>
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -943,7 +1153,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">times</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ring">ring: <span class="extype" name="com.twitter.algebird.Ring">Ring</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.times.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@times[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitring:com.twitter.algebird.Ring[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Returns the product of all the items in this grouping
 </p><div class="fullcomment"><div class="comment cmt"><p>Returns the product of all the items in this grouping
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
@@ -958,7 +1172,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">toList</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fieldDef">fieldDef: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.toList.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@toList[T](fieldDef:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitconv:com.twitter.scalding.TupleConverter[T]):Self" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <p class="shortcomment cmt">Convert a subset of fields into a list of Tuples.</p><div class="fullcomment"><div class="comment cmt"><p>Convert a subset of fields into a list of Tuples. Need to provide the types of the tuple fields.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd></dl></div>
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -972,7 +1190,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
@@ -985,7 +1207,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1004,7 +1230,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1023,7 +1253,11 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FoldOperations@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -1036,61 +1270,7 @@ Your <code>Semigroup[T]</code> should be associated and commutative, else this d
 
         
 
-        <div id="values" class="values members">
-              <h3>Deprecated Value Members</h3>
-              <ol><li name="com.twitter.scalding.ReduceOperations#approxUniques" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="approxUniques(f:(cascading.tuple.Fields,cascading.tuple.Fields),errPercent:Double):Self"></a>
-      <a id="approxUniques((Fields,Fields),Double):Self"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.8.3) use of approximateUniqueCount is preferred.">approxUniques</span><span class="params">(<span name="f">f: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>, <span name="errPercent">errPercent: <span class="extype" name="scala.Double">Double</span> = <span class="symbol">1.0</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.8.3)</i> use of approximateUniqueCount is preferred.</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReduceOperations#plus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="plus[T](fs:Symbol*)(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self"></a>
-      <a id="plus[T](Symbol*)(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fs">fs: <span class="extype" name="scala.Symbol">Symbol</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.</p><div class="fullcomment"><div class="comment cmt"><p>The same as <code>plus(fs -&gt; fs)</code>
-Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
-    </li><li name="com.twitter.scalding.ReduceOperations#plus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="plus[T](fd:(cascading.tuple.Fields,cascading.tuple.Fields))(implicitsg:com.twitter.algebird.Semigroup[T],implicittconv:com.twitter.scalding.TupleConverter[T],implicittset:com.twitter.scalding.TupleSetter[T]):Self"></a>
-      <a id="plus[T]((Fields,Fields))(Semigroup[T],TupleConverter[T],TupleSetter[T]):Self"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) Use sum">plus</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="fd">fd: (<span class="extype" name="cascading.tuple.Fields">Fields</span>, <span class="extype" name="cascading.tuple.Fields">Fields</span>)</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="sg">sg: <span class="extype" name="com.twitter.algebird.Semigroup">Semigroup</span>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tconv">tconv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>, <span name="tset">tset: <a href="TupleSetter.html" class="extype" name="com.twitter.scalding.TupleSetter">TupleSetter</a>[<span class="extype" name="com.twitter.scalding.ReduceOperations.plus.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="com.twitter.scalding.FoldOperations.Self">Self</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ReduceOperations.html" class="extype" name="com.twitter.scalding.ReduceOperations">ReduceOperations</a></dd><dt>Annotations</dt><dd>
-                <span class="name">@deprecated</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> Use sum</p></dd></dl></div>
-    </li></ol>
-            </div>
+        
         </div>
 
         <div id="inheritedMembers">
@@ -1120,6 +1300,7 @@ Assumed to be a commutative operation.  If you don't want that, use .forceToRedu
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+
+
     </body>
       </html>
