@@ -251,6 +251,8 @@ object ColumnDefinitionProviderImpl {
         // note: UNSIGNED BIGINT is currently unsupported
         val valueTerm = newTermName(c.fresh("colValue"))
         val boxed = box.map { b => q"""$b($valueTerm)""" }.getOrElse(q"""$valueTerm""")
+        // primitiveGetter needs to be invoked before we can use wasNull
+        // to check if the column value that was read is null or not
         q"""
           { val $valueTerm = $primitiveGetter; if ($rsTerm.wasNull) null else $boxed }
         """
