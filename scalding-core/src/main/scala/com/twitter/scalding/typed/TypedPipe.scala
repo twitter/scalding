@@ -891,8 +891,6 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = andThen(_.flatMap(f))
   override def map[U](f: T => U): TypedPipe[U] = andThen(_.map(f))
 
-  override def limit(count: Int) = andThen(_.limit(count))
-
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
     andThen(_.sumByLocalKeys[K, V])
 
