@@ -128,18 +128,12 @@ public class VersionedStore {
     }
 
     public void cleanup(int versionsToKeep) throws IOException {
+        if (versionsToKeep < 0) return;
         final List<Long> versions = getAllVersions();
-        final HashSet<Long> keepers;
-        if(versionsToKeep >= 0) {
-            keepers = new HashSet<Long>(versions.subList(0, Math.min(versions.size(), versionsToKeep)));
-        } else {
-            keepers = new HashSet<Long>(versions);
-        }
-
-        for(Long v : versions) {
-            if(v!=null && !keepers.contains(v)) {
-                    deleteVersion(v);
-            }
+        int numExisting = versions.size(); 
+        if (numExisting <= versionsToKeep) return;
+        for (Long v : versions.subList(versionsToKeep, numExisting)) {
+            deleteVersion(v);
         }
     }
 
