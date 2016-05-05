@@ -27,9 +27,6 @@ import scala.util.Random
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.Queue
 
-private[scalding] case class RenamedPipe(newName: String, pipe: Pipe)
-  extends Pipe(newName, pipe)
-
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
 
@@ -39,7 +36,7 @@ object RichPipe extends java.io.Serializable {
 
   def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
-  def assignName(p: Pipe): Pipe = RenamedPipe(getNextName, p)
+  def assignName(p: Pipe): Pipe = new Pipe(getNextName, p)
 
   private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
@@ -121,7 +118,7 @@ object RichPipe extends java.io.Serializable {
     @annotation.tailrec
     def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] = {
       p match {
-        case each @ (_: Each | _: RenamedPipe) => getChainOfEachs(getPreviousPipe(each).get, collect :+ each)
+        case each: Each => getChainOfEachs(getPreviousPipe(each).get, collect :+ each)
         case other => collect :+ other
       }
     }
@@ -129,7 +126,9 @@ object RichPipe extends java.io.Serializable {
     def getJoinedPipeSet(p: HashJoin): Set[Pipe] =
       p.getPrevious match {
         case a @ Array(_, _) =>
-          a.flatMap { p => getChainOfEachs(p) }.toSet
+          a.map(getPreviousPipe(_).get)
+            .flatMap { p => getChainOfEachs(p) }
+            .toSet
         case other =>
           throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
       }
@@ -139,7 +138,7 @@ object RichPipe extends java.io.Serializable {
         val result = getJoinedPipeSet(hj).contains(p2)
         result
       case m: Merge =>
-        m.getPrevious.exists { p => isHashJoinedWithPipe(p, p2) }
+        m.getPrevious.exists { p => isHashJoinedWithPipe(getPreviousPipe(p).get, p2) }
       case e: Each =>
         getHashJoinableFrom(e) match {
           case Some(hj) =>
@@ -147,8 +146,6 @@ object RichPipe extends java.io.Serializable {
           case None =>
             false
         }
-      case r: RenamedPipe =>
-        isHashJoinedWithPipe(getPreviousPipe(r).get, p2)
       case _ =>
         false
     }
