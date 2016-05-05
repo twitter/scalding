@@ -19,7 +19,7 @@ import java.io.{ OutputStream, InputStream, Serializable }
 import java.util.Random
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Each, Pipe }
+import cascading.pipe.{ Checkpoint, Each, Pipe, Merge }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
@@ -1088,7 +1088,15 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
       // there is no actual merging here, no need to rename:
       merged.head
     } else {
-      new cascading.pipe.Merge(merged.map(RichPipe.assignName): _*)
+      merged.reduce[Pipe] {
+        case (left, right) =>
+          if (RichPipe.isHashJoinedWithPipe(left, right))
+            new Merge(RichPipe.assignName(new Checkpoint(left)), RichPipe.assignName(right))
+          else if (RichPipe.isHashJoinedWithPipe(right, left))
+            new Merge(RichPipe.assignName(left), RichPipe.assignName(new Checkpoint(right)))
+          else
+            new Merge(RichPipe.assignName(left), RichPipe.assignName(right))
+      }
     }
   }
 

@@ -27,6 +27,9 @@ import scala.util.Random
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.Queue
 
+private[scalding] case class RenamedPipe(newName: String, pipe: Pipe)
+  extends Pipe(newName, pipe)
+
 object RichPipe extends java.io.Serializable {
   private val nextPipe = new AtomicInteger(-1)
 
@@ -36,7 +39,7 @@ object RichPipe extends java.io.Serializable {
 
   def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
-  def assignName(p: Pipe) = new Pipe(getNextName, p)
+  def assignName(p: Pipe): Pipe = RenamedPipe(getNextName, p)
 
   private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
@@ -95,6 +98,61 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
+  def getPreviousPipe(p: Pipe): Option[Pipe] = {
+    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
+    else None
+  }
+
+  /*
+   * If p1 represents a hashjoin, this method checks if
+   * p2 is one of the two sides in that hashjoin.
+   */
+  def isHashJoinedWithPipe(p1: Pipe, p2: Pipe): Boolean = {
+    // gets the HashJoin if present up the Each chain
+    @annotation.tailrec
+    def getHashJoinableFrom(pipe: Each): Option[HashJoin] =
+      getPreviousPipe(pipe) match {
+        case Some(p: HashJoin) => Some(p)
+        case Some(p: Each) => getHashJoinableFrom(p)
+        case _ => None
+      }
+
+    // collects all Eachs ending with a non-Each
+    @annotation.tailrec
+    def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] = {
+      p match {
+        case each @ (_: Each | _: RenamedPipe) => getChainOfEachs(getPreviousPipe(each).get, collect :+ each)
+        case other => collect :+ other
+      }
+    }
+
+    def getJoinedPipeSet(p: HashJoin): Set[Pipe] =
+      p.getPrevious match {
+        case a @ Array(_, _) =>
+          a.flatMap { p => getChainOfEachs(p) }.toSet
+        case other =>
+          throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
+      }
+
+    p1 match {
+      case hj: HashJoin =>
+        val result = getJoinedPipeSet(hj).contains(p2)
+        result
+      case m: Merge =>
+        m.getPrevious.exists { p => isHashJoinedWithPipe(p, p2) }
+      case e: Each =>
+        getHashJoinableFrom(e) match {
+          case Some(hj) =>
+            isHashJoinedWithPipe(hj, p2)
+          case None =>
+            false
+        }
+      case r: RenamedPipe =>
+        isHashJoinedWithPipe(getPreviousPipe(r).get, p2)
+      case _ =>
+        false
+    }
+  }
 }
 
 /**
@@ -106,6 +164,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   // We need this for the implicits
   import Dsl._
   import RichPipe.assignName
+  import RichPipe.isHashJoinedWithPipe
 
   /**
    * Rename the current pipe
@@ -210,15 +269,22 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Merge or Concatenate several pipes together with this one:
    */
-  def ++(that: Pipe): Pipe = {
-    if (this.pipe == that) {
-      // Cascading fails on self merge:
-      // solution by Jack Guo
-      new Merge(assignName(this.pipe), assignName(new Each(that, new Identity)))
-    } else {
-      new Merge(assignName(this.pipe), assignName(that))
+  def ++(that: Pipe): Pipe =
+    (this.pipe, that) match {
+      case (a, b) if a == b =>
+        // Cascading fails on self merge:
+        // solution by Jack Guo
+        new Merge(assignName(a), assignName(new Each(b, new Identity)))
+      // special handling for cases where one side of the hashjoin is merged
+      // with the hashjoin result. Cascading no longer allows it,
+      // so we add a checkpoint to the join result as a workaround
+      case (a, b) if isHashJoinedWithPipe(a, b) =>
+        new Merge(assignName(new Checkpoint(a)), assignName(b))
+      case (a, b) if isHashJoinedWithPipe(b, a) =>
+        new Merge(assignName(a), assignName(new Checkpoint(b)))
+      case (a, b) =>
+        new Merge(assignName(a), assignName(b))
     }
-  }
 
   /**
    * Group all tuples down to one reducer.

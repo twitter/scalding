@@ -66,7 +66,7 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   (mergerData ++ joinedData).groupBy('id) { _.size('count) }.write(output)
 }
 
-class TinyJoinAndMergeUnsupportedJob(args: Args) extends Job(args) {
+class TinyJoinAndSelfMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
   val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
@@ -74,13 +74,17 @@ class TinyJoinAndMergeUnsupportedJob(args: Args) extends Job(args) {
   val joined = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
     .joinWithTiny('id -> 'id, input1)
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
 
   // merging the output of a hashjoin with one of its inputs is
-  // no longer supported in cascading3. So we verify we fail here.
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
   (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
 }
 
-class TinyJoinAndMergeForceToDiskJob(args: Args) extends Job(args) {
+// same as TinyJoinAndSelfMergeJob, but with ++ merge operation order swapped
+class TinyJoinAndSelfMergeJob2(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
   val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
@@ -88,10 +92,43 @@ class TinyJoinAndMergeForceToDiskJob(args: Args) extends Job(args) {
   val joined = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
     .joinWithTiny('id -> 'id, input1)
-    .forceToDisk // workaround for cascading3
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
 
-  // this should work with the forceToDisk workaround
+  // merging the output of a hashjoin with one of its inputs is
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
+  (input1 ++ joined).groupBy('id) { _.size('count) }.write(output)
+}
+
+class TinyJoinAndSelfMergeForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .forceToDisk
+  // user supplied forceToDisk in addition to the one scalding
+  // adds under the hood
+
   (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeJob, but using typed api
+class TinyJoinAndSelfMergeJobTyped(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+
+  val joined = TypedPipe.from(joinInput2)
+    .asKeys
+    .hashJoin(input1.asKeys)
+    .keys
+    .forceToDisk // TODO: fix
+
+  (joined ++ input1).asKeys.size.map { case (k, v) => (k, v.toInt) }.write(output)
 }
 
 object TsvNoCacheJob {
@@ -473,32 +510,79 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .source(joinInput2, joinData2)
         .source(mergerInput, mergerData)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+        }
         .run
     }
   }
 
-  "A TinyJoinAndMergeUnsupportedJob" should {
+  "A TinyJoinAndSelfMergeJob" should {
     import TinyJoinAndMergeJob._
 
-    "fail without the forceToDisk workaround" in {
-      an[cascading.flow.planner.PlannerException] should be thrownBy {
-        HadoopPlatformJobTest(new TinyJoinAndMergeUnsupportedJob(_), cluster)
-          .source(joinInput1, joinData1)
-          .source(joinInput2, joinData2)
-          .sink(output) { _.toSet shouldBe (outputData.toSet) }
-          .run
-      }
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _ => () } //_.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run
     }
   }
 
-  "A TinyJoinAndMergeForceToDiskJob" should {
+  "A TinyJoinAndSelfMergeJob2" should {
     import TinyJoinAndMergeJob._
 
-    "run correctly with forceToDisk workaround" in {
-      HadoopPlatformJobTest(new TinyJoinAndMergeForceToDiskJob(_), cluster)
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob2(_), cluster)
         .source(joinInput1, joinData1)
         .source(joinInput2, joinData2)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run
+    }
+  }
+
+  "A TinyJoinAndSelfMergeForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with explicit forceToDisk" in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+          // user supplied forceToDisk should not add a third step
+        }
+        .run
+    }
+  }
+
+  "A TinyJoinAndSelfMergeJobTyped" should {
+    import TinyJoinAndMergeJob._
+
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJobTyped(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
         .run
     }
   }
