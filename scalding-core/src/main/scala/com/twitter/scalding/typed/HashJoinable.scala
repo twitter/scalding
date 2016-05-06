@@ -94,7 +94,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case _: GroupBy => true
       case _: CoGroup => true
       case _: Every => true
-      case p if isSourcePipe(p) => true
+      case p if RichPipe.isSourcePipe(p) => true
       case _ => false
     }
   }
@@ -128,15 +128,5 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         config.getHashJoinAutoForceRight
       case _ => false //default to false
     }
-  }
-
-  /**
-   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
-   * Splice.
-   */
-  private def isSourcePipe(pipe: Pipe): Boolean = {
-    pipe.getParent == null &&
-      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
-      (!pipe.isInstanceOf[Splice])
   }
 }

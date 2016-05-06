@@ -95,6 +95,16 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
+  /**
+   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
+   * Splice.
+   */
+  def isSourcePipe(pipe: Pipe): Boolean = {
+    pipe.getParent == null &&
+      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
+      (!pipe.isInstanceOf[Splice])
+  }
+
   def getPreviousPipe(p: Pipe): Option[Pipe] = {
     if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
     else None
@@ -105,48 +115,45 @@ object RichPipe extends java.io.Serializable {
    * p2 is one of the two sides in that hashjoin.
    */
   def isHashJoinedWithPipe(p1: Pipe, p2: Pipe): Boolean = {
-    // gets the HashJoin if present up the Each chain
-    @annotation.tailrec
-    def getHashJoinableFrom(pipe: Each): Option[HashJoin] =
-      getPreviousPipe(pipe) match {
-        case Some(p: HashJoin) => Some(p)
-        case Some(p: Each) => getHashJoinableFrom(p)
-        case _ => None
-      }
-
     // collects all Eachs ending with a non-Each
     @annotation.tailrec
-    def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] = {
+    def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] =
       p match {
-        case each: Each => getChainOfEachs(getPreviousPipe(each).get, collect :+ each)
-        case other => collect :+ other
+        case p if isSourcePipe(p) =>
+          collect :+ p
+        case each: Each =>
+          getChainOfEachs(each.getPrevious.head, collect :+ each)
+        // we don't use a special Pipe subtype for the assignName method
+        // and we can't. all Pipe types need to be defined in cascading
+        // because cascading assumes it knows all the Pipe subtypes
+        // and fails to match any others (think of it as a sealed trait)
+        // So we handle all special types before checking for the assignName case
+        case other @ (_: Checkpoint | _: Operator | _: Splice | _: SubAssembly) =>
+          collect :+ other
+        case renamedPipe: Pipe =>
+          // this is the assignName case
+          getChainOfEachs(renamedPipe.getPrevious.head, collect :+ renamedPipe)
       }
-    }
 
     def getJoinedPipeSet(p: HashJoin): Set[Pipe] =
       p.getPrevious match {
         case a @ Array(_, _) =>
-          a.map(getPreviousPipe(_).get)
-            .flatMap { p => getChainOfEachs(p) }
-            .toSet
+          // collect nodes up the left and right sides
+          a.flatMap { p => getChainOfEachs(p) }.toSet
         case other =>
           throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
       }
 
     p1 match {
       case hj: HashJoin =>
-        val result = getJoinedPipeSet(hj).contains(p2)
-        result
+        getJoinedPipeSet(hj).intersect(getChainOfEachs(p2).toSet).nonEmpty
       case m: Merge =>
-        m.getPrevious.exists { p => isHashJoinedWithPipe(getPreviousPipe(p).get, p2) }
+        m.getPrevious // gets all merged pipes
+          .exists { p => isHashJoinedWithPipe(p, p2) }
       case e: Each =>
-        getHashJoinableFrom(e) match {
-          case Some(hj) =>
-            isHashJoinedWithPipe(hj, p2)
-          case None =>
-            false
-        }
-      case _ =>
+        getPreviousPipe(e)
+          .exists { p => isHashJoinedWithPipe(p, p2) }
+      case other =>
         false
     }
   }

@@ -1090,6 +1090,9 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
     } else {
       merged.reduce[Pipe] {
         case (left, right) =>
+          // special handling for cases where one side of the hashjoin is merged
+          // with the hashjoin result. Cascading no longer allows it,
+          // so we add a checkpoint to the join result as a workaround
           if (RichPipe.isHashJoinedWithPipe(left, right))
             new Merge(RichPipe.assignName(new Checkpoint(left)), RichPipe.assignName(right))
           else if (RichPipe.isHashJoinedWithPipe(right, left))
