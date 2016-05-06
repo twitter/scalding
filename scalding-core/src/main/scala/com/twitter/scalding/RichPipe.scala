@@ -111,10 +111,10 @@ object RichPipe extends java.io.Serializable {
   }
 
   /*
-   * If p1 represents a hashjoin, this method checks if
-   * p2 is one of the two sides in that hashjoin.
+   * If hashJoinPipe represents a hashjoin, this method checks if
+   * hashJoinOperandPipe is one of the two sides in that hashjoin.
    */
-  def isHashJoinedWithPipe(p1: Pipe, p2: Pipe): Boolean = {
+  def isHashJoinedWithPipe(hashJoinPipe: Pipe, hashJoinOperandPipe: Pipe): Boolean = {
     // collects all Eachs ending with a non-Each
     @annotation.tailrec
     def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] =
@@ -144,15 +144,15 @@ object RichPipe extends java.io.Serializable {
           throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
       }
 
-    p1 match {
+    hashJoinPipe match {
       case hj: HashJoin =>
-        getJoinedPipeSet(hj).intersect(getChainOfEachs(p2).toSet).nonEmpty
+        getJoinedPipeSet(hj).intersect(getChainOfEachs(hashJoinOperandPipe).toSet).nonEmpty
       case m: Merge =>
         m.getPrevious // gets all merged pipes
-          .exists { p => isHashJoinedWithPipe(p, p2) }
+          .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
       case e: Each =>
         getPreviousPipe(e)
-          .exists { p => isHashJoinedWithPipe(p, p2) }
+          .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
       case other =>
         false
     }
