@@ -66,7 +66,7 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   (mergerData ++ joinedData).groupBy('id) { _.size('count) }.write(output)
 }
 
-class TinyJoinAndMergeUnsupportedJob(args: Args) extends Job(args) {
+class TinyJoinAndSelfMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
   val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
@@ -74,13 +74,17 @@ class TinyJoinAndMergeUnsupportedJob(args: Args) extends Job(args) {
   val joined = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
     .joinWithTiny('id -> 'id, input1)
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
 
   // merging the output of a hashjoin with one of its inputs is
-  // no longer supported in cascading3. So we verify we fail here.
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
   (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
 }
 
-class TinyJoinAndMergeForceToDiskJob(args: Args) extends Job(args) {
+// same as TinyJoinAndSelfMergeJob, but with ++ merge operation order swapped
+class TinyJoinAndSelfMergeJob2(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
   val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
@@ -88,10 +92,59 @@ class TinyJoinAndMergeForceToDiskJob(args: Args) extends Job(args) {
   val joined = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
     .joinWithTiny('id -> 'id, input1)
-    .forceToDisk // workaround for cascading3
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
 
-  // this should work with the forceToDisk workaround
+  // merging the output of a hashjoin with one of its inputs is
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
+  (input1 ++ joined).groupBy('id) { _.size('count) }.write(output)
+}
+
+class TinyJoinAndSelfMergeForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .forceToDisk
+  // user supplied forceToDisk in addition to the one scalding
+  // adds under the hood
+
   (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeJob, but using typed api
+class TinyJoinAndSelfMergeJobTyped(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+
+  val joined = TypedPipe.from(joinInput2)
+    .asKeys
+    .hashJoin(input1.asKeys)
+    .keys
+
+  (joined ++ input1).asKeys.size.map { case (k, v) => (k, v.toInt) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeForceToDiskJob, but using typed api
+class TinyJoinAndSelfMergeForceToDiskJobTyped(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+
+  val joined = TypedPipe.from(joinInput2)
+    .asKeys
+    .hashJoin(input1.asKeys)
+    .keys
+    .forceToDisk
+  // user supplied forceToDisk in addition to the one scalding
+  // adds under the hood
+
+  (joined ++ input1).asKeys.size.map { case (k, v) => (k, v.toInt) }.write(output)
 }
 
 object TsvNoCacheJob {
@@ -473,32 +526,97 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .source(joinInput2, joinData2)
         .source(mergerInput, mergerData)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+        }
         .run
     }
   }
 
-  "A TinyJoinAndMergeUnsupportedJob" should {
+  "A TinyJoinAndSelfMergeJob" should {
     import TinyJoinAndMergeJob._
 
-    "fail without the forceToDisk workaround" in {
-      an[cascading.flow.planner.PlannerException] should be thrownBy {
-        HadoopPlatformJobTest(new TinyJoinAndMergeUnsupportedJob(_), cluster)
-          .source(joinInput1, joinData1)
-          .source(joinInput2, joinData2)
-          .sink(output) { _.toSet shouldBe (outputData.toSet) }
-          .run
-      }
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _ => () } //_.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run
     }
   }
 
-  "A TinyJoinAndMergeForceToDiskJob" should {
+  "A TinyJoinAndSelfMergeJob2" should {
     import TinyJoinAndMergeJob._
 
-    "run correctly with forceToDisk workaround" in {
-      HadoopPlatformJobTest(new TinyJoinAndMergeForceToDiskJob(_), cluster)
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob2(_), cluster)
         .source(joinInput1, joinData1)
         .source(joinInput2, joinData2)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run
+    }
+  }
+
+  "A TinyJoinAndSelfMergeForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with explicit forceToDisk" in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+          // user supplied forceToDisk should not add a third step
+        }
+        .run
+    }
+  }
+
+  "A TinyJoinAndSelfMergeJobTyped" should {
+    import TinyJoinAndMergeJob._
+
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJobTyped(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run
+    }
+  }
+
+  "A TinyJoinAndSelfMergeForceToDiskJobTyped" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with explicit forceToDisk" in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJobTyped(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+          // user supplied forceToDisk should not add a third step
+        }
         .run
     }
   }
@@ -555,7 +673,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val firstStepDescs = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
 
-          val expected = Set(188, 190, 191, 194, 195).map(linenum => /* WARNING: keep aligned with line numbers above */
+          val expected = Set(241, 243, 244, 247, 248).map(linenum => /* WARNING: keep aligned with line numbers above */
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
           firstStepDescSet should equal(expected)
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
@@ -687,7 +805,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
             "write") ++
-            Seq(175, 176, 178, 179, 180).map( /* WARNING: keep aligned with line numbers above */
+            Seq(228, 229, 231, 232, 233).map( /* WARNING: keep aligned with line numbers above */
               linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions).split(",").map(_.trim).toSet)
