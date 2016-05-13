@@ -155,7 +155,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A ContainerToPopulationJob" should {
@@ -174,7 +174,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   val fatInputData = List((8, 13))
@@ -192,7 +192,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A FatContainerToPopulationJob" should {
@@ -207,6 +207,6 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

@@ -52,6 +52,6 @@ class WeightedPageRankSpec extends WordSpec with Matchers {
       }
       .runWithoutNext(useHadoop = false)
       .runWithoutNext(useHadoop = true)
-      .finish
+      .finish()
   }
 }

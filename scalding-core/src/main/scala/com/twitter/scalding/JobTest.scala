@@ -166,7 +166,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   // This SITS is unfortunately needed to get around Specs
-  def finish: Unit = { () }
+  def finish(): Unit = { () }
 
   def validate(v: Boolean) = {
     validateJob = v
@@ -208,11 +208,11 @@ class JobTest(cons: (Args) => Job) {
     }
 
     if (validateJob) {
-      job.validate
+      job.validate()
     }
     job.run
     // Make sure to clean the state:
-    job.clear
+    job.clear()
 
     val next: Option[Job] = if (runNext) { job.next } else { None }
     next match {

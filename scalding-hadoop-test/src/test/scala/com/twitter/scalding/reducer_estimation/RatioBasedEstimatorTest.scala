@@ -151,7 +151,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val conf = steps.head.getConfig
           conf.getNumReduceTasks should equal (1) // default
         }
-        .run
+        .run()
     }
 
     "not set reducers when error fetching history" in {
@@ -167,7 +167,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val conf = steps.head.getConfig
           conf.getNumReduceTasks should equal (1) // default
         }
-        .run
+        .run()
     }
 
     "set reducers correctly when there is valid history" in {
@@ -187,7 +187,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val conf = steps.head.getConfig
           conf.getNumReduceTasks should equal (2)
         }
-        .run
+        .run()
     }
 
     /*
@@ -214,7 +214,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
 
           val conf = steps.head.getConfig
           conf.getNumReduceTasks should equal (2) // used to pick 1000 with the rounding error
-        }.run
+        }.run()
     }
 
     "not set reducers when there is no valid history" in {
@@ -230,7 +230,7 @@ class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopS
           val conf = steps.head.getConfig
           conf.getNumReduceTasks should equal (1) // default
         }
-        .run
+        .run()
     }
   }
 }

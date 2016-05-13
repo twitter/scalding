@@ -19,8 +19,8 @@ abstract class CascadeJob(args: Args) extends Job(args) {
     statsData.isSuccessful
   }
 
-  override def validate {
-    jobs.foreach { _.validate }
+  override def validate(): Unit = {
+    jobs.foreach { _.validate() }
   }
 
   /*

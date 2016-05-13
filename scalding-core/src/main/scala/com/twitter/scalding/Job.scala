@@ -77,9 +77,9 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   /**
    * Use this if a map or reduce phase takes a while before emitting tuples.
    */
-  def keepAlive {
+  def keepAlive(): Unit = {
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
-    flowProcess.keepAlive
+    flowProcess.keepAlive()
   }
 
   /**
@@ -244,13 +244,13 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   // called before run
   // only override if you do not use flowDef
-  def validate {
+  def validate(): Unit = {
     FlowStateMap.validateSources(flowDef, mode)
   }
 
   // called after successfull run
   // only override if you do not use flowDef
-  def clear {
+  def clear(): Unit = {
     FlowStateMap.clear(flowDef)
   }
 

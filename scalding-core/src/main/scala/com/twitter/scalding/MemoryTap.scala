@@ -37,7 +37,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
     true
   }
   override def deleteResource(conf: Properties) = {
-    tupleBuffer.clear
+    tupleBuffer.clear()
     true
   }
   override def resourceExists(conf: Properties) = tupleBuffer.size > 0
@@ -49,7 +49,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
   }
 
   override def openForWrite(flowProcess: FlowProcess[Properties], output: Out): TupleEntryCollector = {
-    tupleBuffer.clear
+    tupleBuffer.clear()
     new MemoryTupleEntryCollector(tupleBuffer, this)
   }
 

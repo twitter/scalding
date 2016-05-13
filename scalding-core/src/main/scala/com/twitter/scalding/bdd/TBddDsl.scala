@@ -95,7 +95,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       }
 
       // Execute
-      jobTest.run.finish
+      jobTest.run.finish()
     }
   }
 
