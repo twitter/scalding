@@ -298,7 +298,7 @@ lazy val scaldingArgs = module("args")
 lazy val scaldingDate = module("date")
 
 lazy val cascadingVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-52")
+  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.0-wip-60")
 
 lazy val elephantbirdCascadingArtifact = cascadingVersion.split('.').head match {
   case "2" => "elephant-bird-cascading2"
