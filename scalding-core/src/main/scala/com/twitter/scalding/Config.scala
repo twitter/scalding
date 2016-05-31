@@ -23,7 +23,7 @@ import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
 
 import cascading.pipe.assembly.AggregateByProps
-import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
+import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowRuntimeProps, FlowStepStrategy }
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -403,9 +403,12 @@ object Config {
 
   /**
    * Parameter that actually controls the number of reduce tasks.
+   * We use Cascading's common config key for this (instead of Hadoop's mapred.reduce.tasks),
+   * so that it works across different underlying fabrics like Hadoop MR, Tez, etc.
+   *
    * Be sure to set this in the JobConf for the *step* not the flow.
    */
-  val HadoopNumReducers = "mapred.reduce.tasks"
+  val HadoopNumReducers = FlowRuntimeProps.GATHER_PARTITIONS
 
   /** Name of parameter to specify which class to use as the default estimator. */
   val ReducerEstimators = "scalding.reducer.estimator.classes"

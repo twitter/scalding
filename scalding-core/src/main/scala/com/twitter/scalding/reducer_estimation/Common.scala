@@ -218,7 +218,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       // set number of reducers
       if (!setExplicitly || overrideExplicit) {
-        cappedNumReducers.foreach(conf.setNumReduceTasks)
+        cappedNumReducers.foreach { n => conf.setInt(Config.HadoopNumReducers, n) }
       }
     }
   }

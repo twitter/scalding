@@ -38,7 +38,6 @@ object RichPipe extends java.io.Serializable {
 
   def assignName(p: Pipe): Pipe = new Pipe(getNextName, p)
 
-  private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
    * Gets the underlying config for this pipe and sets the number of reducers
    * useful for cascading GroupBy/CoGroup pipes.
@@ -46,7 +45,7 @@ object RichPipe extends java.io.Serializable {
   def setReducers(p: Pipe, reducers: Int): Pipe = {
     if (reducers > 0) {
       p.getStepConfigDef()
-        .setProperty(REDUCER_KEY, reducers.toString)
+        .setProperty(Config.HadoopNumReducers, reducers.toString)
       p.getStepConfigDef()
         .setProperty(Config.WithReducersSetExplicitly, "true")
     } else if (reducers != -1) {
