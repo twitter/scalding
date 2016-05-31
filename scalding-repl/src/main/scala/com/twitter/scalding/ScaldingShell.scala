@@ -40,7 +40,7 @@ trait BaseScaldingShell extends MainGenericRunner {
   /**
    * An instance of the Scala REPL the user will interact with.
    */
-  private var scaldingREPL: Option[ILoop] = None
+  protected var scaldingREPL: Option[ILoop] = None
 
   /**
    * An instance of the default configuration for the REPL
