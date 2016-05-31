@@ -290,6 +290,27 @@ class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
     .write(TypedTsv[(Int, Long)]("output"))
 }
 
+class GroupedLimitJobWithSteps(args: Args) extends Job(args) {
+  val writeWords =
+    TypedPipe.from[String](List("word1 word2", "word1", "word2"))
+      .flatMap { _.split("\\s+") }
+      .map{ k => k -> 1L }
+      .sumByKey
+      .limit(3)
+
+  writeWords
+    .groupBy(_._1)
+    .head
+    .keys
+    .write(TypedTsv[String]("output1"))
+
+  writeWords
+    .groupBy(_._1)
+    .head
+    .keys
+    .write(TypedTsv[String]("output2"))
+}
+
 object OrderedSerializationTest {
   implicit val genASGK = Arbitrary {
     for {
@@ -482,6 +503,20 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           lab2(0) should include ("output frequency by length")
         }
         .run()
+    }
+  }
+
+  "A limit" should {
+    "not fan out into consumers" in {
+      // This covers a case where limit was being swept into a typed pipe factory
+      // so each consumer was re-running the limit independently
+      // which makes it usage unstable too.
+      HadoopPlatformJobTest(new GroupedLimitJobWithSteps(_), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 4
+        }
+        .run
     }
   }
 
