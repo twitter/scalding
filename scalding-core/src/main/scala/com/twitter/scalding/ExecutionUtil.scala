@@ -7,11 +7,10 @@ object ExecutionUtil {
    * Generate a list of executions from a date range
    *
    * @param duration Duration to split daterange
-   * @param parallelism How many jobs to run in parallel
    * @param fn Function to run a execution given a date range
    * @return Sequence of Executions per Day
    */
-  def executionsFromDates[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[T]] =
+  def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[T]] =
     dr.each(duration).map(fn).toSeq
 
   /**
