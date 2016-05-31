@@ -427,7 +427,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new InAndOutJob(_), cluster)
         .source("input", inAndOut)
         .sink[String]("output") { _.toSet shouldBe (inAndOut.toSet) }
-        .run
+        .run()
     }
   }
 
@@ -439,7 +439,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .source(peopleInput, peopleData)
         .source(messageInput, messageData)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
-        .run
+        .run()
     }
   }
 
@@ -451,7 +451,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .source(dataInput, data)
         .sink(typedThrowAwayOutput) { _.toSet should have size 4 }
         .sink(typedRealOutput) { _.map{ f: Float => (f * 10).toInt }.toList shouldBe (outputData.map{ f: Float => (f * 10).toInt }.toList) }
-        .run
+        .run()
     }
   }
 
@@ -462,7 +462,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new MultipleGroupByJob(_), cluster)
         .source[String]("input", data)
         .sink[String]("output") { _.toSet shouldBe data.map(_.toString).toSet }
-        .run
+        .run()
     }
 
   }
@@ -481,7 +481,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           lab2 should have size 1
           lab2(0) should include ("output frequency by length")
         }
-        .run
+        .run()
     }
   }
 
@@ -501,7 +501,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           lines.foreach { l => firstStep should include (l) }
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
-        .run
+        .run()
     }
   }
 
@@ -515,7 +515,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val secondStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           secondStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -529,7 +529,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -543,7 +543,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -557,7 +557,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -571,7 +571,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -586,7 +586,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -601,7 +601,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -616,7 +616,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val lastStep = steps.lastOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           lastStep should include ("hashJoin")
         }
-        .run
+        .run()
     }
   }
 
@@ -639,7 +639,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           }
           //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
-        .run
+        .run()
     }
   }
 
@@ -650,19 +650,19 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new NormalDistinctJob(_), cluster)
         .source[String]("input", data ++ data ++ data)
         .sink[String]("output") { _.toList shouldBe data }
-        .run
+        .run()
     }
 
     "distinctBy(identity) properly from a list in memory" in {
       HadoopPlatformJobTest(new IterableSourceDistinctIdentityJob(_), cluster)
         .sink[String]("output") { _.toList shouldBe data }
-        .run
+        .run()
     }
 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
         .sink[String]("output") { _.toList shouldBe data }
-        .run
+        .run()
     }
   }
 
@@ -678,7 +678,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         // then we are good.
         .sink[String](TypedTsv[String]("output2")) { x => () }
         .sink[String](TypedTsv[String]("output1")) { x => () }
-        .run
+        .run()
     }
 
     "A test job with that joins then groupAll's should have its boxes setup correctly." in {
@@ -691,7 +691,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         // then we are good.
         .sink[String](TypedTsv[String]("output2")) { x => () }
         .sink[String](TypedTsv[String]("output1")) { x => () }
-        .run
+        .run()
     }
   }
 
@@ -706,7 +706,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .inspectCompletedFlow({ flow =>
           flow.getFlowStats.getCounterValue(Stats.ScaldingGroup, "joins") shouldBe 2
         })
-        .run
+        .run()
     }
 
     "have access to a FlowProcess from a join in the Typed API" in {
@@ -719,7 +719,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .inspectCompletedFlow({ flow =>
           flow.getFlowStats.getCounterValue(Stats.ScaldingGroup, "joins") shouldBe 2
         })
-        .run
+        .run()
     }
   }
 
@@ -728,7 +728,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       val result: FlowException = intercept[FlowException] {
         HadoopPlatformJobTest(new ReadPathJob(_), cluster)
           .arg("input", "/sploop/boop/doopity/doo/")
-          .run
+          .run()
       }
 
       assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException]))

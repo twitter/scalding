@@ -61,7 +61,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
         out.toSet shouldBe expected.toSet
       }
-      .run
+      .run()
   }
 
   "ThriftStruct Test" should {

@@ -60,7 +60,7 @@ class BlockJoinPipeTest extends WordSpec with Matchers {
           callback(outBuf)
         }
         .run
-        .finish
+        .finish()
     }
 
     "correctly compute product with 1 left block and 1 right block" in {

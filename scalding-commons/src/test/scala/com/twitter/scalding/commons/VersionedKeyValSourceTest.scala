@@ -80,7 +80,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A MoreComplexTypedWriteIncrementalJob" should {
@@ -94,7 +94,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A ToIteratorJob" should {
@@ -106,7 +106,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
           assert(keys.map { _ * 2 } === vals)
         }
         .run
-        .finish
+        .finish()
     }
   }
 

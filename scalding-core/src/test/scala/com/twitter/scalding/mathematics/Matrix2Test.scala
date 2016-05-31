@@ -310,7 +310,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -325,7 +325,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -342,7 +342,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }(implicitly[TypeDescriptor[(Int, Int, (Double, Double, Double))]].converter)
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -358,7 +358,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -374,7 +374,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -388,7 +388,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -403,7 +403,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -417,7 +417,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -431,7 +431,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -446,7 +446,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -475,7 +475,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -489,7 +489,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -510,7 +510,7 @@ class Matrix2Test extends WordSpec with Matchers {
 
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 
@@ -549,7 +549,7 @@ class Matrix2Test extends WordSpec with Matchers {
           }
         }
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }

@@ -59,7 +59,7 @@ class TwoPhaseCascadeTest extends WordSpec with Matchers with FieldConversions {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 
   "A Cascade job run though Tool.main" should {

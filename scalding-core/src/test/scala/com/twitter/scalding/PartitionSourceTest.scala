@@ -95,7 +95,7 @@ class DelimitedPartitionSourceTest extends WordSpec with Matchers {
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2)), input)
         .runHadoop
-        .finish
+        .finish()
 
       val testMode = job.mode.asInstanceOf[HadoopTest]
 
@@ -129,7 +129,7 @@ class CustomPartitionSourceTest extends WordSpec with Matchers {
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2, 'col3)), input)
         .runHadoop
-        .finish
+        .finish()
 
       val testMode = job.mode.asInstanceOf[HadoopTest]
 
@@ -164,7 +164,7 @@ class PartialPartitionSourceTest extends WordSpec with Matchers {
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2, 'col3)), input)
         .runHadoop
-        .finish
+        .finish()
 
       val testMode = job.mode.asInstanceOf[HadoopTest]
 

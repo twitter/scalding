@@ -86,7 +86,7 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
       }
 
       // Execute
-      jobTest.run.finish
+      jobTest.run.finish()
     }
   }
 

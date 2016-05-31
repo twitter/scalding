@@ -120,7 +120,7 @@ class Tool extends Configured with HTool {
         flow.writeStepsDOT(thisStepsDot)
         true
       } else {
-        j.validate
+        j.validate()
         j.run
       }
       j.clear

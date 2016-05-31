@@ -29,7 +29,7 @@ class TypedSketchJoinJobForEmptyKeysTest extends WordSpec with Matchers {
           unordered should contain (1, 1111, -1)
         }
         .run
-        .finish
+        .finish()
     }
   }
 }

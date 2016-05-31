@@ -133,7 +133,7 @@ class LookupJoinedTest extends WordSpec with Matchers {
           }
         .run
         //.runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -210,7 +210,7 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
           }
         .run
         //.runHadoop
-        .finish
+        .finish()
     }
   }
 }

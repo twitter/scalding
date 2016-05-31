@@ -88,7 +88,7 @@ case class HadoopPlatformJobTest(
     sourceReaders.foreach { _(cluster.mode) }
   }
 
-  def run {
+  def run(): Unit = {
     System.setProperty("cascading.update.skip", "true")
     val job = initJob(cons)
     cluster.addClassSourceToClassPath(cons.getClass)

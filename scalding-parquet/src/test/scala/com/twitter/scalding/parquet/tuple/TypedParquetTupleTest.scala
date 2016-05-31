@@ -21,13 +21,13 @@ class TypedParquetTupleTest extends WordSpec with Matchers with HadoopPlatformTe
         .arg("output", "output1")
         .sink[SampleClassB](TypedParquet[SampleClassB](Seq("output1"))) {
           toMap(_) shouldBe toMap(values)
-        }.run
+        }.run()
 
       HadoopPlatformJobTest(new ReadWithFilterPredicateJob(_), cluster)
         .arg("input", "output1")
         .arg("output", "output2")
         .sink[Boolean]("output2") { toMap(_) shouldBe toMap(values.filter(_.string == "B1").map(_.a.bool)) }
-        .run
+        .run()
     }
   }
 }

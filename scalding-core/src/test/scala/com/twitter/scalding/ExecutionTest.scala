@@ -247,7 +247,7 @@ class ExecutionTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
   "Executions" should {
