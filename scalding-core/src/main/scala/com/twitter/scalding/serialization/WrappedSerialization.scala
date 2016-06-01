@@ -39,7 +39,7 @@ class WrappedSerialization[T] extends HSerialization[T] with Configurable {
    */
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
   override def getConf: Configuration = conf.get
-  override def setConf(config: Configuration) {
+  override def setConf(config: Configuration): Unit = {
     conf = Some(config)
     serializations = WrappedSerialization.getBinary(config)
   }

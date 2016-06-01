@@ -241,7 +241,7 @@ case class HadoopTest(@transient conf: Configuration,
     writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, rndIdx))
   }
 
-  def finalize(src: Source) {
+  def finalize(src: Source): Unit = {
     /* The following `_.get` is only safe if `src` belongs to the source map.
      * This invariant is preserved by the `JobTest.sink` and `JobTest.runJob`
      * functions, and those functions have been documented accordingly to

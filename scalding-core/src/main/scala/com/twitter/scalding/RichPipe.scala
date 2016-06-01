@@ -116,7 +116,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * Beginning of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
-  def using[C <: { def release() }](bf: => C) = new {
+  def using[C <: { def release(): Unit }](bf: => C) = new {
 
     /**
      * For pure side effect.
@@ -125,7 +125,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
       conv.assertArityMatches(f)
       val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
         new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C) { c.release() }
+          def apply(c: C): Unit = { c.release() }
         },
         Fields.NONE, conv, set))
       NullSource.writeFrom(newPipe)(flowDef, mode)
@@ -140,7 +140,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
       set.assertArityMatches(fs._2)
       val mf = new SideEffectMapFunction(bf, fn,
         new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C) { c.release() }
+          def apply(c: C): Unit = { c.release() }
         },
         fs._2, conv, set)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
@@ -154,7 +154,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
       set.assertArityMatches(fs._2)
       val mf = new SideEffectFlatMapFunction(bf, fn,
         new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C) { c.release() }
+          def apply(c: C): Unit = { c.release() }
         },
         fs._2, conv, set)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
@@ -748,5 +748,5 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
  * A simple trait for releasable resource. Provides noop implementation.
  */
 trait Stateful {
-  def release() {}
+  def release(): Unit = ()
 }

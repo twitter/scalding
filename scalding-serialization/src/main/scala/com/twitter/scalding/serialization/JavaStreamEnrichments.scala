@@ -52,8 +52,11 @@ object JavaStreamEnrichments {
     }
     private[this] var pos = initPos
     def position: Int = pos
-    override def write(b: Int) { buffer(pos) = b.toByte; pos += 1 }
-    override def write(b: Array[Byte], off: Int, len: Int) {
+    override def write(b: Int): Unit = {
+      buffer(pos) = b.toByte
+      pos += 1
+    }
+    override def write(b: Array[Byte], off: Int, len: Int): Unit = {
       Array.copy(b, off, buffer, pos, len)
       pos += len
     }

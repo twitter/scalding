@@ -25,7 +25,7 @@ import com.twitter.scalding._
  * This is a runtime check for types we should never be serializing
  */
 class ThrowingSerializer[T] extends KSerializer[T] {
-  override def write(kryo: Kryo, output: Output, t: T) {
+  override def write(kryo: Kryo, output: Output, t: T): Unit = {
     sys.error(s"Kryo should never be used to serialize an instance: $t")
   }
   override def read(kryo: Kryo, input: Input, t: Class[T]): T =
@@ -39,7 +39,7 @@ class ThrowingSerializer[T] extends KSerializer[T] {
 class RichDateSerializer extends KSerializer[RichDate] {
   // RichDates are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, date: RichDate) {
+  def write(kser: Kryo, out: Output, date: RichDate): Unit = {
     out.writeLong(date.timestamp, true);
   }
 
@@ -50,7 +50,7 @@ class RichDateSerializer extends KSerializer[RichDate] {
 class DateRangeSerializer extends KSerializer[DateRange] {
   // DateRanges are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, range: DateRange) {
+  def write(kser: Kryo, out: Output, range: DateRange): Unit = {
     out.writeLong(range.start.timestamp, true);
     out.writeLong(range.end.timestamp, true);
   }
@@ -63,7 +63,7 @@ class DateRangeSerializer extends KSerializer[DateRange] {
 class ArgsSerializer extends KSerializer[Args] {
   // Args are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, a: Args) {
+  def write(kser: Kryo, out: Output, a: Args): Unit = {
     out.writeString(a.toString)
   }
   def read(kser: Kryo, in: Input, cls: Class[Args]): Args =
@@ -73,7 +73,7 @@ class ArgsSerializer extends KSerializer[Args] {
 class IntFieldSerializer extends KSerializer[IntField[_]] {
   //immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, a: IntField[_]) {
+  def write(kser: Kryo, out: Output, a: IntField[_]): Unit = {
     out.writeInt(a.id)
     kser.writeClassAndObject(out, a.ord)
     kser.writeClassAndObject(out, a.mf)
@@ -89,7 +89,7 @@ class IntFieldSerializer extends KSerializer[IntField[_]] {
 class StringFieldSerializer extends KSerializer[StringField[_]] {
   //immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, a: StringField[_]) {
+  def write(kser: Kryo, out: Output, a: StringField[_]): Unit = {
     out.writeString(a.id)
     kser.writeClassAndObject(out, a.ord)
     kser.writeClassAndObject(out, a.mf)

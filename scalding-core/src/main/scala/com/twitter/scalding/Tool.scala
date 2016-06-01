@@ -30,7 +30,7 @@ class Tool extends Configured with HTool {
   var rootJob: Option[(Args) => Job] = None
 
   //  Allows you to set the job for the Tool to run
-  def setJobConstructor(jobc: (Args) => Job) {
+  def setJobConstructor(jobc: (Args) => Job): Unit = {
     if (rootJob.isDefined) {
       sys.error("Job is already defined")
     } else {
@@ -82,7 +82,7 @@ class Tool extends Configured with HTool {
     */
     val jobName = job.getClass.getName
     @tailrec
-    def start(j: Job, cnt: Int) {
+    def start(j: Job, cnt: Int): Unit = {
       val successful = if (onlyPrintGraph) {
         val flow = j.buildFlow
         /*
@@ -143,7 +143,7 @@ class Tool extends Configured with HTool {
 }
 
 object Tool {
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     try {
       ToolRunner.run(new JobConf, new Tool, ExpandLibJarsGlobs(args))
     } catch {

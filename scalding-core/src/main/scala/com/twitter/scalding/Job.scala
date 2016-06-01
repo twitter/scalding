@@ -254,7 +254,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.clear(flowDef)
   }
 
-  protected def handleStats(statsData: CascadingStats) {
+  protected def handleStats(statsData: CascadingStats): Unit = {
     scaldingCascadingStats = Some(statsData)
     // TODO: Why the two ways to do stats? Answer: jank-den.
     if (args.boolean("scalding.flowstats")) {
@@ -329,7 +329,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * access the implicit Pipe => RichPipe which makes: pipe.write( )
    * convenient
    */
-  def write(pipe: Pipe, src: Source) { src.writeFrom(pipe) }
+  def write(pipe: Pipe, src: Source): Unit = { src.writeFrom(pipe) }
 
   /*
    * Need to be lazy to be used within pipes.

@@ -27,7 +27,7 @@ import TDsl._
 import typed.MultiJoin
 
 object TUtil {
-  def printStack(fn: => Unit) {
+  def printStack(fn: => Unit): Unit = {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
   }
 }

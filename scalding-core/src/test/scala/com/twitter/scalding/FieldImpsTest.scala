@@ -20,37 +20,37 @@ import cascading.tuple.Fields
 import org.scalatest.{ Matchers, WordSpec }
 
 class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
-  def setAndCheck[T <: Comparable[_]](v: T)(implicit conv: (T) => Fields) {
+  def setAndCheck[T <: Comparable[_]](v: T)(implicit conv: (T) => Fields): Unit = {
     conv(v) shouldBe (new Fields(v))
   }
-  def setAndCheckS[T <: Comparable[_]](v: Seq[T])(implicit conv: (Seq[T]) => Fields) {
+  def setAndCheckS[T <: Comparable[_]](v: Seq[T])(implicit conv: (Seq[T]) => Fields): Unit = {
     conv(v) shouldBe (new Fields(v: _*))
   }
-  def setAndCheckSym(v: Symbol) {
+  def setAndCheckSym(v: Symbol): Unit = {
     (v: Fields) shouldBe (new Fields(v.toString.tail))
   }
-  def setAndCheckSymS(v: Seq[Symbol]) {
+  def setAndCheckSymS(v: Seq[Symbol]): Unit = {
     (v: Fields) shouldBe (new Fields(v.map(_.toString.tail): _*))
   }
-  def setAndCheckField(v: Field[_]) {
+  def setAndCheckField(v: Field[_]): Unit = {
     val vF: Fields = v
     val fields = new Fields(v.id)
     fields.setComparators(v.ord)
     checkFieldsWithComparators(vF, fields)
   }
-  def setAndCheckFieldS(v: Seq[Field[_]]) {
+  def setAndCheckFieldS(v: Seq[Field[_]]): Unit = {
     val vF: Fields = v
     val fields = new Fields(v.map(_.id): _*)
     fields.setComparators(v.map(_.ord): _*)
     checkFieldsWithComparators(vF, fields)
   }
-  def setAndCheckEnumValue(v: Enumeration#Value) {
+  def setAndCheckEnumValue(v: Enumeration#Value): Unit = {
     (v: Fields) shouldBe (new Fields(v.toString))
   }
-  def setAndCheckEnumValueS(v: Seq[Enumeration#Value]) {
+  def setAndCheckEnumValueS(v: Seq[Enumeration#Value]): Unit = {
     (v: Fields) shouldBe (new Fields(v.map(_.toString): _*))
   }
-  def checkFieldsWithComparators(actual: Fields, expected: Fields) {
+  def checkFieldsWithComparators(actual: Fields, expected: Fields): Unit = {
     // sometimes one or the other is actually a RichFields, so rather than test for
     // actual.equals(expected), we just check that all the field names and comparators line up
     actual should have size (expected.size)

@@ -151,7 +151,7 @@ object RuntimeStats extends java.io.Serializable {
   }
 
   private[this] var prevFP: FlowProcess[_] = null
-  def addFlowProcess(fp: FlowProcess[_]) {
+  def addFlowProcess(fp: FlowProcess[_]): Unit = {
     if (!(prevFP eq fp)) {
       val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
       if (uniqueJobIdObj != null) {

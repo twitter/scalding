@@ -427,7 +427,7 @@ class ReadPathJob(args: Args) extends Job(args) {
 }
 
 object PlatformTest {
-  def setAutoForceRight(mode: Mode, autoForce: Boolean) {
+  def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
       case h: HadoopMode =>
         val config = h.jobConf
