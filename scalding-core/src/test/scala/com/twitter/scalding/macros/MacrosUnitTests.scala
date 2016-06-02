@@ -39,7 +39,7 @@ case class SampleClassE(a: String, b: Boolean, c: Short, d: Int, e: Long, f: Flo
 case class SampleClassF(a: Option[Int])
 case class SampleClassG(a: java.util.Date)
 
-case class SampleClassFail(a: Option[Option[Int]])
+case class SampleClassFail(a: Option[Option[Int]]) // linter:ignore
 
 object MacroProperties extends Properties("TypeDescriptor.roundTrip") {
   def roundTrip[T: Arbitrary: TypeDescriptor]: Prop = forAll { t: T =>

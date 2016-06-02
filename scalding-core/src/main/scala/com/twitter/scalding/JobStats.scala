@@ -22,7 +22,7 @@ import scala.util.{ Failure, Try }
 
 object JobStats {
   def apply(stats: CascadingStats): JobStats = {
-    val m = statsMap(stats)
+    val m: Map[String, Any] = statsMap(stats)
     new JobStats(
       stats match {
         case cs: CascadeStats => m

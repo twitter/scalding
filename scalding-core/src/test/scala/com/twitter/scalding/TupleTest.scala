@@ -24,15 +24,16 @@ class TupleTest extends WordSpec with Matchers {
   def set[T](t: T)(implicit ts: TupleSetter[T]): CTuple = ts(t)
 
   def arityConvMatches[T](t: T, ar: Int)(implicit tc: TupleConverter[T]): Boolean = {
+    assert(t != null)
     tc.arity == ar
   }
   def aritySetMatches[T](t: T, ar: Int)(implicit tc: TupleSetter[T]): Boolean = {
+    assert(t != null)
     tc.arity == ar
   }
 
-  def roundTrip[T](t: T)(implicit tc: TupleConverter[T], ts: TupleSetter[T]): Boolean = {
+  def roundTrip[T](t: T)(implicit tc: TupleConverter[T], ts: TupleSetter[T]): Boolean =
     tc(new TupleEntry(ts(t))) == t
-  }
 
   "TupleConverters" should {
 

@@ -219,7 +219,7 @@ trait Config extends Serializable {
   def setScaldingVersion: Config =
     (this.+(Config.ScaldingVersion -> scaldingVersion)).+(
       // This is setting a property for cascading/driven
-      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion.toString)))
+      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion)))
 
   def getUniqueIds: Set[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID)
@@ -319,10 +319,9 @@ trait Config extends Serializable {
 
   def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
     get(Config.FlowListeners)
-      .toIterable
+      .toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowListenerSerializer.invert(_))
-      .toList
 
   def addFlowStepListener(flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
     val serializedListener = flowStepListenerSerializer(flowListenerProvider)
@@ -334,10 +333,9 @@ trait Config extends Serializable {
 
   def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
     get(Config.FlowStepListeners)
-      .toIterable
+      .toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowStepListenerSerializer.invert(_))
-      .toList
 
   def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
     val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
@@ -352,10 +350,9 @@ trait Config extends Serializable {
 
   def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
     get(Config.FlowStepStrategies)
-      .toIterable
+      .toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowStepStrategiesSerializer.invert(_))
-      .toList
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
@@ -505,7 +502,7 @@ object Config {
    * Either union these two, or return the keys that overlap
    */
   def disjointUnion[K >: String, V >: String](m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
-    val asMap = conf.toMap.toMap[K, V]
+    val asMap = conf.toMap.toMap[K, V] // linter:ignore we are upcasting K, V
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
     else Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
@@ -514,7 +511,7 @@ object Config {
    * This overwrites any keys in m that exist in config.
    */
   def overwrite[K >: String, V >: String](m: Map[K, V], conf: Config): Map[K, V] =
-    m ++ (conf.toMap.toMap[K, V])
+    m ++ (conf.toMap.toMap[K, V]) // linter:ignore we are upcasting K, V
 
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is

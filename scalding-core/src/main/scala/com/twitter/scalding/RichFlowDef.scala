@@ -124,7 +124,6 @@ class RichFlowDef(val fd: FlowDef) {
     val headNames: Set[String] = upipes
       .filter(_.getPrevious.length == 0) // implies _ is a head
       .map(_.getName)
-      .toSet
 
     headNames
       .foreach { head =>

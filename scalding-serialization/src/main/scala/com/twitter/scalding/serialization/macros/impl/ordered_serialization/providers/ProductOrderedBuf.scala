@@ -50,9 +50,8 @@ object ProductOrderedBuf {
       typeOf[Product21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Product22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
 
-    def validType(curType: Type): Boolean = {
-      validTypes.find{ t => curType <:< t }.isDefined
-    }
+    def validType(curType: Type): Boolean =
+      validTypes.exists { t => curType <:< t }
 
     // The `_.get` is safe since it's always preceded by a matching
     // `_.isDefined` check in `validType`

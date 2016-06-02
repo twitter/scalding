@@ -194,7 +194,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setScaldingFlowClass(getClass)
       .setArgs(args)
       .maybeSetSubmittedTimestamp()._2
-      .toMap.toMap // the second one is to lift from String -> AnyRef
+      .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
   }
 
   /**

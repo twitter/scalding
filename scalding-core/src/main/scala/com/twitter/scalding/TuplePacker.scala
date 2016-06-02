@@ -89,14 +89,14 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   lazy val setters = getSetters
 
   override def apply(input: TupleEntry): T = {
-    val newInst = m.runtimeClass.newInstance()
+    val newInst = m.runtimeClass.newInstance().asInstanceOf[T]
     val fields = input.getFields
     (0 until fields.size).map { idx =>
       val thisField = fields.get(idx)
       val setMethod = setters(thisField.toString)
       setMethod.invoke(newInst, input.getObject(thisField))
     }
-    newInst.asInstanceOf[T]
+    newInst
   }
 }
 

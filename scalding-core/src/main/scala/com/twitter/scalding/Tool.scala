@@ -43,7 +43,7 @@ class Tool extends Configured with HTool {
     case None if args.positional.isEmpty =>
       throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
     case None => // has at least one arg
-      val jobName = args.positional(0)
+      val jobName = args.positional.head
       // Remove the job name from the positional arguments:
       val nonJobNameArgs = args + ("" -> args.positional.tail)
       Job(jobName, nonJobNameArgs)

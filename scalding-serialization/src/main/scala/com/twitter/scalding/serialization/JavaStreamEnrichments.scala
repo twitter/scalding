@@ -241,8 +241,9 @@ object JavaStreamEnrichments {
           s.write(i >> 8)
           s.write(i)
         } else {
+          // the linter does not like us repeating ourselves here
           s.write(-1)
-          s.write(-1)
+          s.write(-1) // linter:ignore
           writeInt(i)
         }
       }

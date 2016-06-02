@@ -109,7 +109,7 @@ object OrderedSerialization {
         private[this] var cache: (T, U) = null
         private[this] def packCache(t: T): U = {
           val readCache = cache
-          if (null == readCache || readCache._1 != t) {
+          if (readCache == null || readCache._1 != t) {
             val u = packFn(t)
             cache = (t, u)
             u
