@@ -28,9 +28,9 @@ trait Stat extends java.io.Serializable {
    */
   def incBy(amount: Long): Unit
   /** increment by 1L */
-  def inc: Unit = incBy(1L)
+  def inc(): Unit = incBy(1L)
   /** increment by -1L (decrement) */
-  def dec: Unit = incBy(-1L)
+  def dec(): Unit = incBy(-1L)
   def key: StatKey
 }
 

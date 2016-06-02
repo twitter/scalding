@@ -121,9 +121,9 @@ class Tool extends Configured with HTool {
         true
       } else {
         j.validate()
-        j.run
+        j.run()
       }
-      j.clear
+      j.clear()
       //When we get here, the job is finished
       if (successful) {
         j.next match {

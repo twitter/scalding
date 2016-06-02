@@ -830,7 +830,7 @@ object Execution {
    */
   def waitFor[C](flow: Flow[C]): Try[JobStats] =
     Try {
-      flow.complete;
+      flow.complete()
       JobStats(flow.getStats)
     }
 

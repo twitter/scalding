@@ -28,7 +28,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
   extends Tap[Properties, In, Out](scheme) {
 
   private var modifiedTime: Long = 1L
-  def updateModifiedTime: Unit = {
+  def updateModifiedTime(): Unit = {
     modifiedTime = System.currentTimeMillis
   }
 

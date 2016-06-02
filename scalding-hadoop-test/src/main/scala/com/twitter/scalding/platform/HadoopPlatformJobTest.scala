@@ -107,8 +107,8 @@ case class HadoopPlatformJobTest(
 
   @annotation.tailrec
   private final def runJob(job: Job): Unit = {
-    job.run
-    job.clear
+    job.run()
+    job.clear()
     job.next match {
       case Some(nextJob) => runJob(nextJob)
       case None => ()

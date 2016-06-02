@@ -516,7 +516,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 4
         }
-        .run
+        .run()
     }
   }
 
