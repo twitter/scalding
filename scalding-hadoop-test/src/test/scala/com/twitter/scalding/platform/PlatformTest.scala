@@ -412,7 +412,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 }
 
 case class BypassValidationSource(path: String) extends FixedTypedText[Int](TypedText.TAB, path) {
-  override def validateTaps(mode: Mode): Unit = {}
+  override def validateTaps(mode: Mode): Unit = ()
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     (mode, readOrWrite) match {
       case (hdfsMode: Hdfs, Read) => new InvalidSourceTap(Seq(path))
@@ -432,7 +432,7 @@ object PlatformTest {
       case h: HadoopMode =>
         val config = h.jobConf
         config.setBoolean(Config.HashJoinAutoForceRight, autoForce)
-      case _ => Unit
+      case _ => ()
     }
   }
 }

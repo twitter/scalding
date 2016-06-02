@@ -128,7 +128,7 @@ class Tool extends Configured with HTool {
       if (successful) {
         j.next match {
           case Some(nextj) => start(nextj, cnt + 1)
-          case None => Unit
+          case None => ()
         }
       } else {
         throw new RuntimeException("Job failed to run: " + jobName +
