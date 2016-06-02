@@ -106,7 +106,7 @@ class ExecutionTest extends WordSpec with Matchers {
       assert(res.isSuccess)
     }
     "lift to try on exception" in {
-      val res = ExecutionTestJobs
+      val res: Try[Nothing] = ExecutionTestJobs
         .wordCount2(TypedPipe.from(List("a", "b")))
         .map(_ => throw new RuntimeException("Something went wrong"))
         .liftToTry
