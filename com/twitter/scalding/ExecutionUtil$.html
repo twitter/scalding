@@ -220,24 +220,24 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.ExecutionUtil#executionsFromDates" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="executionsFromDates[T](duration:com.twitter.scalding.Duration,parallelism:Int)(fn:com.twitter.scalding.DateRange=&gt;com.twitter.scalding.Execution[T])(implicitdr:com.twitter.scalding.DateRange):Seq[com.twitter.scalding.Execution[T]]"></a>
-      <a id="executionsFromDates[T](Duration,Int)((DateRange)⇒Execution[T])(DateRange):Seq[Execution[T]]"></a>
+      <a id="executionsFromDates[T](duration:com.twitter.scalding.Duration)(fn:com.twitter.scalding.DateRange=&gt;com.twitter.scalding.Execution[T])(implicitdr:com.twitter.scalding.DateRange):Seq[com.twitter.scalding.Execution[T]]"></a>
+      <a id="executionsFromDates[T](Duration)((DateRange)⇒Execution[T])(DateRange):Seq[Execution[T]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">executionsFromDates</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="duration">duration: <a href="Duration.html" class="extype" name="com.twitter.scalding.Duration">Duration</a></span>, <span name="parallelism">parallelism: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">1</span></span>)</span><span class="params">(<span name="fn">fn: (<a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a>) ⇒ <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ExecutionUtil.executionsFromDates.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="dr">dr: <a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="result">: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ExecutionUtil.executionsFromDates.T">T</span>]]</span>
+        <span class="name">executionsFromDates</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="duration">duration: <a href="Duration.html" class="extype" name="com.twitter.scalding.Duration">Duration</a></span>)</span><span class="params">(<span name="fn">fn: (<a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a>) ⇒ <a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ExecutionUtil.executionsFromDates.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="dr">dr: <a href="DateRange.html" class="extype" name="com.twitter.scalding.DateRange">DateRange</a></span>)</span><span class="result">: <a href="../../../scala/package.html#Seq[+A]=Seq[A]" class="extmbr" name="scala.Seq">Seq</a>[<a href="Execution.html" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.ExecutionUtil.executionsFromDates.T">T</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.twitter.scalding.ExecutionUtil$@executionsFromDates[T](duration:com.twitter.scalding.Duration,parallelism:Int)(fn:com.twitter.scalding.DateRange=&gt;com.twitter.scalding.Execution[T])(implicitdr:com.twitter.scalding.DateRange):Seq[com.twitter.scalding.Execution[T]]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.twitter.scalding.ExecutionUtil$@executionsFromDates[T](duration:com.twitter.scalding.Duration)(fn:com.twitter.scalding.DateRange=&gt;com.twitter.scalding.Execution[T])(implicitdr:com.twitter.scalding.DateRange):Seq[com.twitter.scalding.Execution[T]]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Generate a list of executions from a date range
 </p><div class="fullcomment"><div class="comment cmt"><p>Generate a list of executions from a date range
-</p></div><dl class="paramcmts block"><dt class="param">duration</dt><dd class="cmt"><p>Duration to split daterange</p></dd><dt class="param">parallelism</dt><dd class="cmt"><p>How many jobs to run in parallel</p></dd><dt class="param">fn</dt><dd class="cmt"><p>Function to run a execution given a date range</p></dd><dt>returns</dt><dd class="cmt"><p>Sequence of Executions per Day</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">duration</dt><dd class="cmt"><p>Duration to split daterange</p></dd><dt class="param">fn</dt><dd class="cmt"><p>Function to run a execution given a date range</p></dd><dt>returns</dt><dd class="cmt"><p>Sequence of Executions per Day</p></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>

@@ -62,7 +62,7 @@ of your library call run.</p><p>Note this is a Monad, meaning flatMap composes i
 It is also an applicative functor, which means zip (called join
 in some libraries) composes two Executions is parallel. Prefer
 zip to flatMap if you want to run two Executions in parallel.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala" target="_blank">Execution.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Self Type</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a>[<span class="extype" name="com.twitter.scalding.Execution.T">T</span>] with <span class="extype" name="scala.Product">Product</span></dd><dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala" target="_blank">Execution.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="java.io.Serializable">Serializable</span>, <a href="../../../scala/package.html#AnyRef=Object" class="extmbr" name="scala.AnyRef">AnyRef</a>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -106,18 +106,18 @@ zip to flatMap if you want to run two Executions in parallel.
         <div id="values" class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="com.twitter.scalding.Execution#runStats" visbl="prt" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]"></a>
-      <a id="runStats(Config,Mode,EvalCache)(scala.concurrent.ExecutionContext):Future[(T,ExecutionCounters)]"></a>
+      <a id="runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):com.twitter.algebird.monad.Trampoline[scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]]"></a>
+      <a id="runStats(Config,Mode,EvalCache)(scala.concurrent.ExecutionContext):Trampoline[Future[(T,ExecutionCounters)]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">runStats</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="cache">cache: <span class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>)]</span>
+        <span class="name">runStats</span><span class="params">(<span name="conf">conf: <a href="Config.html" class="extype" name="com.twitter.scalding.Config">Config</a></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="cache">cache: <span class="extype" name="com.twitter.scalding.Execution.EvalCache">EvalCache</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="cec">cec: <span class="extype" name="scala.concurrent.ExecutionContext">scala.concurrent.ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="com.twitter.algebird.monad.Trampoline">Trampoline</span>[<span class="extype" name="scala.concurrent.Future">Future</span>[(<span class="extype" name="com.twitter.scalding.Execution.T">T</span>, <a href="ExecutionCounters.html" class="extype" name="com.twitter.scalding.ExecutionCounters">ExecutionCounters</a>)]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.twitter.scalding.Execution@runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.twitter.scalding.Execution@runStats(conf:com.twitter.scalding.Config,mode:com.twitter.scalding.Mode,cache:com.twitter.scalding.Execution.EvalCache)(implicitcec:scala.concurrent.ExecutionContext):com.twitter.algebird.monad.Trampoline[scala.concurrent.Future[(T,com.twitter.scalding.ExecutionCounters)]]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -245,8 +245,8 @@ is complete
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="equals(x$1:Any):Boolean"></a>
+    </li><li name="com.twitter.scalding.Execution#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(other:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -254,14 +254,14 @@ is complete
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="other">other: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.twitter.scalding.Execution@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../../../index.html#com.twitter.scalding.Execution@equals(other:Any):Boolean" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a> → AnyRef → Any</dd></dl></div>
     </li><li name="com.twitter.scalding.Execution#filter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="filter(pred:T=&gt;Boolean):com.twitter.scalding.Execution[T]"></a>
       <a id="filter((T)⇒Boolean):Execution[T]"></a>
@@ -397,23 +397,23 @@ convergence.
       <p class="shortcomment cmt">Reads the counters into the value, but does not reset them.</p><div class="fullcomment"><div class="comment cmt"><p>Reads the counters into the value, but does not reset them.
 You may want .getAndResetCounters.
 </p></div></div>
-    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="hashCode():Int"></a>
-      <a id="hashCode():Int"></a>
+    </li><li name="com.twitter.scalding.Execution#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode:Int"></a>
+      <a id="hashCode:Int"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">def</span>
+        <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+        <span class="name">hashCode</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.twitter.scalding.Execution@hashCode():Int" title="Permalink" target="_top">
+      <a href="../../../index.html#com.twitter.scalding.Execution@hashCode:Int" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.Execution">Execution</a> → AnyRef → Any</dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
