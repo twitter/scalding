@@ -202,7 +202,7 @@ abstract class Source extends java.io.Serializable {
   /*
    * This throws InvalidSourceException if this source is invalid.
    */
-  def validateTaps(mode: Mode): Unit = {}
+  def validateTaps(mode: Mode): Unit = {} // linter:ignore
 
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {

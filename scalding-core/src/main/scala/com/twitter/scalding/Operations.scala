@@ -499,7 +499,7 @@ package com.twitter.scalding {
     def aggregate(flowProcess: FlowProcess[_], call: AggregatorCall[Tuple]) {
       val arg = extractArgument(call)
       val ctx = call.getContext
-      if (null == ctx) {
+      if (ctx == null) {
         // Initialize the context, this is the only allocation done by this loop.
         val newCtx = Tuple.size(1)
         newCtx.set(0, arg.asInstanceOf[AnyRef])
@@ -546,7 +546,7 @@ package com.twitter.scalding {
      */
     override final def aggregate(flowProcess: FlowProcess[_], args: TupleEntry, context: Tuple) = {
       var nextContext: Tuple = null
-      val newContextObj = if (null == context) {
+      val newContextObj = if (context == null) {
         // First call, make a new mutable tuple to reduce allocations:
         nextContext = Tuple.size(1)
         first(args)
@@ -562,7 +562,7 @@ package com.twitter.scalding {
     }
 
     override final def complete(flowProcess: FlowProcess[_], context: Tuple) = {
-      if (null == context) {
+      if (context == null) {
         throw new Exception("FoldFunctor completed with any aggregate calls")
       } else {
         val res = context.getObject(0).asInstanceOf[X]

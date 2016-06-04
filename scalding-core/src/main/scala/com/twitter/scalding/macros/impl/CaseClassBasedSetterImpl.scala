@@ -54,7 +54,7 @@ object CaseClassBasedSetterImpl {
     case class OptionSetter(inner: SetterBuilder) extends SetterBuilder {
       def columns = inner.columns
       def setTree(value: Tree, offset: Int) = {
-        val someVal = newTermName(c.fresh(s"someVal"))
+        val someVal = newTermName(c.fresh("someVal"))
         val someValTree = q"$someVal"
         q"""if($value.isDefined) {
           val $someVal = $value.get
@@ -69,7 +69,7 @@ object CaseClassBasedSetterImpl {
       def setTree(value: Tree, offset: Int) = {
         val setters = members.scanLeft((offset, Option.empty[Tree])) {
           case ((off, _), (access, sb)) =>
-            val cca = newTermName(c.fresh(s"access"))
+            val cca = newTermName(c.fresh("access"))
             val ccaT = q"$cca"
             (off + sb.columns, Some(q"val $cca = ${access(value)}; ${sb.setTree(ccaT, off)}"))
         }

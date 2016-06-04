@@ -71,7 +71,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
 
     // if the user has turned off auto force right, we fall back to the old behavior and
     //just return the mapped pipe
-    if (!getHashJoinAutoForceRight(mode) || isSafeToSkipForceToDisk(mappedPipe, mode)) mappedPipe
+    if (!getHashJoinAutoForceRight(mode) || isSafeToSkipForceToDisk(mappedPipe)) mappedPipe
     else mappedPipe.forceToDisk
   }
 
@@ -83,12 +83,12 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * Recursion handles situations where we have a couple of Each ops in a row.
    * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
    */
-  private def isSafeToSkipForceToDisk(pipe: Pipe, mode: Mode): Boolean = {
+  private def isSafeToSkipForceToDisk(pipe: Pipe): Boolean =
     pipe match {
       case eachPipe: Each =>
-        if (canSkipEachOperation(eachPipe.getOperation, mode)) {
+        if (canSkipEachOperation(eachPipe.getOperation)) {
           //need to recurse down to see if parent pipe is ok
-          getPreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe, mode))
+          getPreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe))
         } else false
       case _: Checkpoint => true
       case _: GroupBy => true
@@ -97,7 +97,6 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case p if isSourcePipe(p) => true
       case _ => false
     }
-  }
 
   /**
    * Checks the transform to deduce if it is safe to skip the force to disk.
@@ -106,7 +105,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
    * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
    */
-  private def canSkipEachOperation(eachOperation: Operation[_], mode: Mode): Boolean = {
+  private def canSkipEachOperation(eachOperation: Operation[_]): Boolean =
     eachOperation match {
       case f: FlatMapFunction[_, _] =>
         f.getFunction match {
@@ -119,7 +118,6 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case _: CleanupIdentityFunction => true
       case _ => false
     }
-  }
 
   private def getHashJoinAutoForceRight(mode: Mode): Boolean = {
     mode match {

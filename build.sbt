@@ -109,6 +109,12 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
         Seq()
   },
 
+  /**
+   * add linter for common scala issues:
+   * https://github.com/HairyFotr/linter
+   */
+  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.14"),
+
   // Enables full stack traces in scalatest
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 

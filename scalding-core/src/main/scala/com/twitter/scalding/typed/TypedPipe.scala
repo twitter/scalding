@@ -1079,7 +1079,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         case (pipe, 1) => pipe
         case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
       }
-      .map(_.toPipe[U](fieldNames)(flowDef, mode, setter))
+      .map(_.toPipe[U](fieldNames)(flowDef, mode, setter)) // linter:ignore
       .toList
 
     if (merged.size == 1) {

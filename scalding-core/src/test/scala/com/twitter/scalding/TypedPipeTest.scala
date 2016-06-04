@@ -1067,10 +1067,7 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-join" in {
           def groupMax(it: Seq[(Int, Int)]): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              val (k, v) = kvs.maxBy(_._2)
-              v
-            }.toMap
+            it.groupBy(_._1).map { case (_, kvs) => kvs.maxBy(_._2) }
 
           val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
           val d1 = groupMax(mk1)
@@ -1088,10 +1085,10 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
               case (v0s, (k, v1, v2)) =>
                 v0s.map { (k, _, v1, v2) }
             }
-            .toList.sorted
+            .sorted
 
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
@@ -1134,9 +1131,10 @@ class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-self-join" in {
           def group(it: Seq[(Int, Int)])(red: (Int, Int) => Int): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              kvs.map(_._2).reduce(red)
-            }.toMap
+            it.groupBy(_._1).map {
+              case (k, kvs) =>
+                (k, kvs.map(_._2).reduce(red))
+            }
 
           val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
           val d1 = group(mk1)(_ max _)
@@ -1154,10 +1152,10 @@ class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
               case (v0s, (k, v1, v2)) =>
                 v0s.map { (k, _, v1, v2) }
             }
-            .toList.sorted
+            .sorted
 
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
@@ -1185,12 +1183,14 @@ class TypedMapGroupTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int)]("output")) { outBuf =>
         "correctly do a mapGroup" in {
           def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              kvs.map { case (k, v) => k * v }.max
-            }.toMap
+            it.groupBy(_._1).map {
+              case (k, kvs) =>
+                (k, kvs.map { case (k, v) => k * v }.max)
+            }
+
           val correct = mapGroup(mk).toList.sorted
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
