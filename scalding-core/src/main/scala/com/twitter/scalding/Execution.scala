@@ -163,7 +163,7 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
    */
   protected def runStats(conf: Config,
     mode: Mode,
-    cache: EvalCache)(implicit cec: ConcurrentExecutionContext): Trampoline[Future[(T, ExecutionCounters)]]
+    cache: EvalCache)(implicit cec: ConcurrentExecutionContext): Trampoline[Future[(T, Map[Long, ExecutionCounters])]]
 
   /**
    * This is convenience for when we don't care about the result.
@@ -295,15 +295,16 @@ object Execution {
     private[EvalCache] case class RunFlowDef(conf: Config,
       mode: Mode,
       fd: FlowDef,
-      result: Promise[JobStats]) extends FlowDefAction
+      result: Promise[(Long, JobStats)]) extends FlowDefAction
     private[EvalCache] case object Stop extends FlowDefAction
   }
 
   private[scalding] class EvalCache {
     import EvalCache._
-    private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, ExecutionCounters)]
 
-    private[this] val toWriteCache = new FutureCache[(Config, ToWrite), ExecutionCounters]
+    type Counters = Map[Long, ExecutionCounters]
+    private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
+    private[this] val toWriteCache = new FutureCache[(Config, ToWrite), Counters]
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
@@ -324,12 +325,17 @@ object Execution {
     protected lazy val thread = new Thread(new Runnable {
       def run() {
         @annotation.tailrec
-        def go(): Unit = messageQueue.take match {
+        def go(id: Long): Unit = messageQueue.take match {
           case Stop => ()
           case RunFlowDef(conf, mode, fd, promise) =>
             try {
-              promise.completeWith(
-                ExecutionContext.newContext(conf)(fd, mode).run)
+              val ctx = ExecutionContext.newContext(conf)(fd, mode)
+              ctx.buildFlow match {
+                case Success(flow) =>
+                  promise.completeWith(Execution.run(id, flow))
+                case Failure(err) =>
+                  promise.failure(err)
+              }
             } catch {
               case t: Throwable =>
                 // something bad happened, but this thread is a daemon
@@ -343,17 +349,17 @@ object Execution {
                 promise.tryFailure(t)
             }
             // Loop
-            go()
+            go(id + 1)
         }
 
         // Now we actually run the recursive loop
-        go()
+        go(0)
       }
     })
 
-    def runFlowDef(conf: Config, mode: Mode, fd: FlowDef): Future[JobStats] =
+    def runFlowDef(conf: Config, mode: Mode, fd: FlowDef): Future[(Long, JobStats)] =
       try {
-        val promise = Promise[JobStats]()
+        val promise = Promise[(Long, JobStats)]()
         val fut = promise.future
         messageQueue.put(RunFlowDef(conf, mode, fd, promise))
         // Don't do any work after the .put call, we want no chance for exception
@@ -374,17 +380,17 @@ object Execution {
      */
     def finished(): Unit = messageQueue.put(Stop)
 
-    def getOrLock(cfg: Config, write: ToWrite): Either[Promise[ExecutionCounters], Future[ExecutionCounters]] =
+    def getOrLock(cfg: Config, write: ToWrite): Either[Promise[Counters], Future[Counters]] =
       toWriteCache.getOrPromise((cfg, write))
 
     def getOrElseInsertWithFeedback[T](cfg: Config, ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)]): (Boolean, Future[(T, ExecutionCounters)]) =
+      res: => Future[(T, Counters)]): (Boolean, Future[(T, Counters)]) =
       // This cast is safe because we always insert with match T types
       cache.getOrElseUpdateIsNew((cfg, ex), res)
-        .asInstanceOf[(Boolean, Future[(T, ExecutionCounters)])]
+        .asInstanceOf[(Boolean, Future[(T, Counters)])]
 
     def getOrElseInsert[T](cfg: Config, ex: Execution[T],
-      res: => Future[(T, ExecutionCounters)]): Future[(T, ExecutionCounters)] =
+      res: => Future[(T, Counters)]): Future[(T, Counters)] =
       getOrElseInsertWithFeedback(cfg, ex, res)._2
   }
 
@@ -394,7 +400,7 @@ object Execution {
         for {
           futt <- toFuture(Try(get(cec)))
           t <- futt
-        } yield (t, ExecutionCounters.empty)))
+        } yield (t, Map.empty)))
 
     // Note that unit is not optimized away, since Futures are often used with side-effects, so,
     // we ensure that get is always called in contrast to Mapped, which assumes that fn is pure.
@@ -407,7 +413,7 @@ object Execution {
             (s, st1) <- fut1
             next = fn(s)
             (t, st2) <- Trampoline.call(next.runStats(conf, mode, cache)).get
-          } yield (t, Monoid.plus(st1, st2)))
+          } yield (t, st1 ++ st2))
       }
   }
 
@@ -422,14 +428,18 @@ object Execution {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { fut =>
         cache.getOrElseInsert(conf, this,
-          fut.map { case tc @ (t, c) => (tc, c) })
+          fut.map {
+            case (t, c) =>
+              val totalCount = Monoid.sum(c.map(_._2))
+              ((t, totalCount), c)
+          })
       }
   }
   private case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { fut =>
         cache.getOrElseInsert(conf, this,
-          fut.map { case (t, _) => (t, ExecutionCounters.empty) })
+          fut.map { case (t, _) => (t, Map.empty) })
       }
   }
 
@@ -469,7 +479,7 @@ object Execution {
            * The result we give is only completed AFTER fn is run
            * so callers can wait on the result of this OnComplete
            */
-          val finished = Promise[(T, ExecutionCounters)]()
+          val finished = Promise[(T, Map[Long, ExecutionCounters])]()
           res.onComplete { tryT =>
             try {
               fn(tryT.map(_._1))
@@ -566,7 +576,7 @@ object Execution {
       } yield {
         cache.getOrElseInsert(conf, this,
           failFastZip(f1, f2)
-            .map { case ((s, ss), (t, st)) => ((s, t), Monoid.plus(ss, st)) })
+            .map { case ((s, ss), (t, st)) => ((s, t), ss ++ st) })
       }
   }
   private case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
@@ -586,9 +596,9 @@ object Execution {
         for {
           flowDef <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
-          jobStats <- cache.runFlowDef(conf, mode, flowDef)
+          (id, jobStats) <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), ExecutionCounters.fromJobStats(jobStats)))
+        } yield ((), Map(id -> ExecutionCounters.fromJobStats(jobStats))))
   }
 
   /*
@@ -634,13 +644,13 @@ object Execution {
       mode: Mode,
       cache: EvalCache,
       head: ToWrite,
-      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[ExecutionCounters] = {
+      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
       for {
         flowDef <- toFuture(Try { val fd = new FlowDef; (head :: tail).foreach(_.write(conf, fd, mode)); fd })
         _ = FlowStateMap.validateSources(flowDef, mode)
-        jobStats <- cache.runFlowDef(conf, mode, flowDef)
+        (id, jobStats) <- cache.runFlowDef(conf, mode, flowDef)
         _ = FlowStateMap.clear(flowDef)
-      } yield (ExecutionCounters.fromJobStats(jobStats))
+      } yield Map(id -> ExecutionCounters.fromJobStats(jobStats))
     }
 
     def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
@@ -658,30 +668,34 @@ object Execution {
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
       Trampoline(cache.getOrElseInsert(conf, this, {
-        val cacheLookup: List[(ToWrite, Either[Promise[ExecutionCounters], Future[ExecutionCounters]])] = (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
+        val cacheLookup: List[(ToWrite, Either[Promise[Map[Long, ExecutionCounters]], Future[Map[Long, ExecutionCounters]]])] =
+          (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
         val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
         otherResult.value match {
           case Some(Failure(e)) => Future.failed(e)
           case _ => // Either successful or not completed yet
-            val localFlowDefCountersFuture: Future[ExecutionCounters] =
+            val localFlowDefCountersFuture: Future[Map[Long, ExecutionCounters]] =
               weDoOperation match {
                 case all @ (h :: tail) =>
-                  val futCounters: Future[ExecutionCounters] = scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
+                  val futCounters: Future[Map[Long, ExecutionCounters]] =
+                    scheduleToWrites(conf, mode, cache, h._1, tail.map(_._1))
                   // Complete all of the promises we put into the cache
                   // with this future counters set
-                  weDoOperation.foreach {
+                  all.foreach {
                     case (toWrite, promise) =>
                       promise.completeWith(futCounters)
                   }
                   futCounters
-                case Nil => Future.successful(ExecutionCounters.empty) // No work to do, provide a fulled set of 0 counters to operate on
+                case Nil =>
+                  // No work to do, provide a fulled set of 0 counters to operate on
+                  Future.successful(Map.empty)
               }
 
             failFastZip(otherResult, localFlowDefCountersFuture).map {
               case (lCounters, fdCounters) =>
-                val summedCounters: ExecutionCounters = Monoid.sum(fdCounters :: lCounters)
+                val summedCounters = (fdCounters :: lCounters).reduce(_ ++ _)
                 (fn(conf, mode), summedCounters)
             }
         }
@@ -711,7 +725,7 @@ object Execution {
    */
   private case object ReaderExecution extends Execution[(Config, Mode)] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline(Future.successful(((conf, mode), ExecutionCounters.empty)))
+      Trampoline(Future.successful(((conf, mode), Map.empty)))
   }
 
   private def toFuture[R](t: Try[R]): Future[R] =
@@ -823,6 +837,9 @@ object Execution {
   def run[C](flow: Flow[C]): Future[JobStats] =
     // This is in Java because of the cascading API's raw types on FlowListener
     FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
+  private def run[L, C](label: L, flow: Flow[C]): Future[(L, JobStats)] =
+    // This is in Java because of the cascading API's raw types on FlowListener
+    FlowListenerPromise.start(flow, { f: Flow[C] => (label, JobStats(f.getFlowStats)) })
 
   /*
    * This blocks the current thread until the job completes with either success or
