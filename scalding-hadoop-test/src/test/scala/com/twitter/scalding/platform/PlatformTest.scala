@@ -379,7 +379,7 @@ class CheckForFlowProcessInFieldsJob(args: Args) extends Job(args) {
   val inB = Tsv("inputB", ('x, 'y))
 
   val p = inA.joinWithSmaller('a -> 'x, inB).map(('b, 'y) -> 'z) { args: (String, String) =>
-    stat.inc
+    stat.inc()
 
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
     if (flowProcess == null) {
@@ -400,7 +400,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
   val inB = TypedPipe.from(TypedTsv[(String, String)]("inputB"))
 
   inA.group.join(inB.group).forceToReducers.mapGroup((key, valuesIter) => {
-    stat.inc
+    stat.inc()
 
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
     if (flowProcess == null) {

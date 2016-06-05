@@ -1781,13 +1781,13 @@ class CounterJob(args: Args) extends Job(args) {
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) {
       case (name, age) if age > 18 =>
-        age_group_older_than_18.inc
+        age_group_older_than_18.inc()
         name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc: Int, age: Int) =>
-          reduce_hit.inc
+          reduce_hit.inc()
           acc + age
       }
     }

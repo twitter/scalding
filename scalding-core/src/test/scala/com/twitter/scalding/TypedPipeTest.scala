@@ -339,8 +339,8 @@ class TypedPipeTypedTest extends WordSpec with Matchers {
 class TypedWithOnCompleteJob(args: Args) extends Job(args) {
   val onCompleteMapperStat = Stat("onCompleteMapper")
   val onCompleteReducerStat = Stat("onCompleteReducer")
-  def onCompleteMapper() = onCompleteMapperStat.inc
-  def onCompleteReducer() = onCompleteReducerStat.inc
+  def onCompleteMapper() = onCompleteMapperStat.inc()
+  def onCompleteReducer() = onCompleteReducerStat.inc()
   // find repeated words ignoring case
   TypedText.tsv[String]("input")
     .map(_.toUpperCase)

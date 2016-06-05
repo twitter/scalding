@@ -33,7 +33,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
   }
 
   override def createResource(conf: Properties) = {
-    updateModifiedTime
+    updateModifiedTime()
     true
   }
   override def deleteResource(conf: Properties) = {
@@ -62,7 +62,7 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
 class MemoryTupleEntryCollector(val tupleBuffer: Buffer[Tuple], mt: MemoryTap[_, _]) extends TupleEntryCollector {
 
   override def collect(tupleEntry: TupleEntry): Unit = {
-    mt.updateModifiedTime
+    mt.updateModifiedTime()
     tupleBuffer += tupleEntry.getTupleCopy
   }
 }
