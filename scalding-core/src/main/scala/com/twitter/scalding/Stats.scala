@@ -28,9 +28,9 @@ trait Stat extends java.io.Serializable {
    */
   def incBy(amount: Long): Unit
   /** increment by 1L */
-  def inc: Unit = incBy(1L)
+  def inc(): Unit = incBy(1L)
   /** increment by -1L (decrement) */
-  def dec: Unit = incBy(-1L)
+  def dec(): Unit = incBy(-1L)
   def key: StatKey
 }
 
@@ -151,7 +151,7 @@ object RuntimeStats extends java.io.Serializable {
   }
 
   private[this] var prevFP: FlowProcess[_] = null
-  def addFlowProcess(fp: FlowProcess[_]) {
+  def addFlowProcess(fp: FlowProcess[_]): Unit = {
     if (!(prevFP eq fp)) {
       val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
       if (uniqueJobIdObj != null) {

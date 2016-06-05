@@ -55,7 +55,7 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
 
   settings = new GenericRunnerSettings({ s => echo(s) })
 
-  override def printWelcome() {
+  override def printWelcome(): Unit = {
     val fc = Console.YELLOW
     val wc = Console.RED
     def wrapFlames(s: String) = s.replaceAll("[()]+", fc + "$0" + wc)
@@ -104,7 +104,7 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
     "com.twitter.scalding.ReplImplicitContext._",
     "com.twitter.scalding.ReplState._")
 
-  override def createInterpreter() {
+  override def createInterpreter(): Unit = {
     super.createInterpreter()
     intp.beQuietDuring {
       addImports(imports: _*)

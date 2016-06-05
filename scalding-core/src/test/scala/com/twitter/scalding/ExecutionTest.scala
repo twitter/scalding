@@ -398,7 +398,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
     "block correctly" in {
       var seen = 0
-      def updateSeen(idx: Int) {
+      def updateSeen(idx: Int): Unit = {
         assert(seen === idx)
         seen += 1
       }

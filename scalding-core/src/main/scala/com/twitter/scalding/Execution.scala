@@ -322,7 +322,7 @@ object Execution {
      * from multiple threads. This thread does all the Flow starting.
      */
     protected lazy val thread = new Thread(new Runnable {
-      def run() {
+      def run(): Unit = {
         @annotation.tailrec
         def go(): Unit = messageQueue.take match {
           case Stop => ()
@@ -830,7 +830,7 @@ object Execution {
    */
   def waitFor[C](flow: Flow[C]): Try[JobStats] =
     Try {
-      flow.complete;
+      flow.complete()
       JobStats(flow.getStats)
     }
 

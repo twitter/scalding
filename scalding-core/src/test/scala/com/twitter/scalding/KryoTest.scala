@@ -126,7 +126,7 @@ class KryoTest extends WordSpec with Matchers {
       singleRT(new HyperLogLogMonoid(5)).bits shouldBe 5
     }
     "handle arrays" in {
-      def arrayRT[T](arr: Array[T]) {
+      def arrayRT[T](arr: Array[T]): Unit = {
         serializationRT(List(arr)).head
           .asInstanceOf[Array[T]].toList shouldBe (arr.toList)
       }

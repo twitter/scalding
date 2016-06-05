@@ -67,7 +67,7 @@ object KMeans {
       .map {
         case ((oldId, vector), Some(centroids)) =>
           val (id, newcentroid) = closest(vector, centroids)
-          if (id != oldId) s.inc
+          if (id != oldId) s.inc()
           (id, vector)
         case (_, None) => sys.error("Missing clusters, this should never happen")
       }

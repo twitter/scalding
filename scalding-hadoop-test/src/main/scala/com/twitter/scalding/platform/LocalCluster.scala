@@ -58,13 +58,13 @@ class LocalCluster(mutex: Boolean = true) {
   // running without colliding. Thus we implement our own mutex. Mkdir should be atomic so
   // there should be no race. Just to be careful, however, we make sure that the file
   // is what we expected, or else we fail.
-  private[this] def acquireMutex() {
+  private[this] def acquireMutex(): Unit = {
     LOG.debug("Attempting to acquire mutex")
     lock = Some(LocalCluster.MUTEX.lock())
     LOG.debug("Mutex file acquired")
   }
 
-  private[this] def releaseMutex() {
+  private[this] def releaseMutex(): Unit = {
     LOG.debug("Releasing mutex")
     lock.foreach { _.release() }
     LOG.debug("Mutex released")
@@ -149,7 +149,7 @@ class LocalCluster(mutex: Boolean = true) {
     this
   }
 
-  def addClassSourceToClassPath[T](clazz: Class[T]) {
+  def addClassSourceToClassPath[T](clazz: Class[T]): Unit = {
     addFileToHadoopClassPath(getFileForClass(clazz))
   }
 
@@ -181,7 +181,7 @@ class LocalCluster(mutex: Boolean = true) {
   }
 
   //TODO is there a way to know if we need to wait on anything to shut down, etc?
-  def shutdown() {
+  def shutdown(): Unit = {
     hadoop.foreach {
       case (dfs, mr, _) =>
         dfs.shutdown()

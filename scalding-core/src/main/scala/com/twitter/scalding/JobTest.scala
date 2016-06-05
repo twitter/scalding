@@ -210,7 +210,7 @@ class JobTest(cons: (Args) => Job) {
     if (validateJob) {
       job.validate()
     }
-    job.run
+    job.run()
     // Make sure to clean the state:
     job.clear()
 

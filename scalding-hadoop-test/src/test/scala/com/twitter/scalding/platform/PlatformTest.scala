@@ -379,7 +379,7 @@ class CheckForFlowProcessInFieldsJob(args: Args) extends Job(args) {
   val inB = Tsv("inputB", ('x, 'y))
 
   val p = inA.joinWithSmaller('a -> 'x, inB).map(('b, 'y) -> 'z) { args: (String, String) =>
-    stat.inc
+    stat.inc()
 
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
     if (flowProcess == null) {
@@ -400,7 +400,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
   val inB = TypedPipe.from(TypedTsv[(String, String)]("inputB"))
 
   inA.group.join(inB.group).forceToReducers.mapGroup((key, valuesIter) => {
-    stat.inc
+    stat.inc()
 
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
     if (flowProcess == null) {
@@ -412,7 +412,7 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 }
 
 case class BypassValidationSource(path: String) extends FixedTypedText[Int](TypedText.TAB, path) {
-  override def validateTaps(mode: Mode): Unit = {}
+  override def validateTaps(mode: Mode): Unit = ()
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     (mode, readOrWrite) match {
       case (hdfsMode: Hdfs, Read) => new InvalidSourceTap(Seq(path))
@@ -427,12 +427,12 @@ class ReadPathJob(args: Args) extends Job(args) {
 }
 
 object PlatformTest {
-  def setAutoForceRight(mode: Mode, autoForce: Boolean) {
+  def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
       case h: HadoopMode =>
         val config = h.jobConf
         config.setBoolean(Config.HashJoinAutoForceRight, autoForce)
-      case _ => Unit
+      case _ => ()
     }
   }
 }
@@ -516,7 +516,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 4
         }
-        .run
+        .run()
     }
   }
 

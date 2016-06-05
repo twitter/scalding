@@ -36,7 +36,7 @@ object MakeJar {
     new File(syntheticJar.getAbsolutePath)
   }
 
-  private[this] def add(parent: File, source: File, target: JarOutputStream) {
+  private[this] def add(parent: File, source: File, target: JarOutputStream): Unit = {
     val name = getRelativeFileBetween(parent, source).getOrElse(new File("")).getPath.replace("\\", "/")
     if (source.isDirectory) {
       if (!name.isEmpty) {

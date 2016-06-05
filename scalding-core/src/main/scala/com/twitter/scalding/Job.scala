@@ -254,14 +254,14 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.clear(flowDef)
   }
 
-  protected def handleStats(statsData: CascadingStats) {
+  protected def handleStats(statsData: CascadingStats): Unit = {
     scaldingCascadingStats = Some(statsData)
     // TODO: Why the two ways to do stats? Answer: jank-den.
     if (args.boolean("scalding.flowstats")) {
       val statsFilename = args.getOrElse("scalding.flowstats", name + "._flowstats.json")
       val br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(statsFilename), "utf-8"))
       br.write(JobStats(statsData).toJson)
-      br.close
+      br.close()
     }
     // Print custom counters unless --scalding.nocounters is used or there are no custom stats
     if (!args.boolean("scalding.nocounters")) {
@@ -291,9 +291,9 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   private[scalding] var completedFlow: Option[Flow[_]] = None
 
   //Override this if you need to do some extra processing other than complete the flow
-  def run: Boolean = {
+  def run(): Boolean = {
     val flow = buildFlow
-    flow.complete
+    flow.complete()
     val statsData = flow.getFlowStats
     handleStats(statsData)
     completedFlow = Some(flow)
@@ -329,7 +329,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
    * access the implicit Pipe => RichPipe which makes: pipe.write( )
    * convenient
    */
-  def write(pipe: Pipe, src: Source) { src.writeFrom(pipe) }
+  def write(pipe: Pipe, src: Source): Unit = { src.writeFrom(pipe) }
 
   /*
    * Need to be lazy to be used within pipes.

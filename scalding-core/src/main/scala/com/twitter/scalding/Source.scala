@@ -268,9 +268,9 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
     new TupleEntryCollector {
-      override def add(te: TupleEntry) {}
-      override def add(t: CTuple) {}
-      protected def collect(te: TupleEntry) {}
+      override def add(te: TupleEntry): Unit = ()
+      override def add(t: CTuple): Unit = ()
+      protected def collect(te: TupleEntry): Unit = ()
     }
 
   def createResource(conf: Config) = true
