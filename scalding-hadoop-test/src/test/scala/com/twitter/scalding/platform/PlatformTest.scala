@@ -49,6 +49,7 @@ object TinyJoinAndMergeJob {
   val mergerData = List(1, 2, 3, 4)
 
   val output = TypedTsv[(Int, Int)]("output")
+  val output2 = TypedTsv[(Int, Int)]("output2")
   val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
 }
 
@@ -64,6 +65,40 @@ class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   val mergerData = mergerInput.read.mapTo(0 -> 'id) { v: Int => v }
 
   (mergerData ++ joinedData).groupBy('id) { _.size('count) }.write(output)
+}
+
+// Verifies fix for https://github.com/cwensel/cascading/pull/53
+class MergeTwoSinksForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+  val input2 = joinInput2.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val merged = (input1 ++ input2).groupBy('id) { _.size('count) }
+
+  merged
+    .project('id, 'count)
+    .forceToDisk
+    .write(output)
+
+  merged
+    .write(output2)
+}
+
+class MergeTwoSinksForceToDiskTypedJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+  val input2 = TypedPipe.from(joinInput2)
+
+  val merged = (input1 ++ input2).asKeys.group.size.map { case (k, v) => (k, v.toInt) }
+
+  merged
+    .forceToDisk
+    .write(output)
+
+  merged
+    .write(output2)
 }
 
 class TinyJoinAndSelfMergeJob(args: Args) extends Job(args) {
@@ -534,6 +569,40 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  "A MergeTwoSinksForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and write to two sinks with forceToDisk" in {
+      HadoopPlatformJobTest(new MergeTwoSinksForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet == outputData.toSet }
+        .sink(output2) { _.toSet == outputData.toSet }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 4
+        }
+        .run
+    }
+  }
+
+  "A MergeTwoSinksForceToDiskTypedJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and write to two sinks with forceToDisk" in {
+      HadoopPlatformJobTest(new MergeTwoSinksForceToDiskTypedJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet == outputData.toSet }
+        .sink(output2) { _.toSet == outputData.toSet }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 4
+        }
+        .run
+    }
+  }
+
   "A TinyJoinAndSelfMergeJob" should {
     import TinyJoinAndMergeJob._
 
@@ -541,7 +610,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob(_), cluster)
         .source(joinInput1, joinData1)
         .source(joinInput2, joinData2)
-        .sink(output) { _ => () } //_.toSet shouldBe (outputData.toSet) }
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 2
@@ -673,7 +742,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val firstStepDescs = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
 
-          val expected = Set(241, 243, 244, 247, 248).map(linenum => /* WARNING: keep aligned with line numbers above */
+          val expected = Set(276, 278, 279, 282, 283).map(linenum => /* WARNING: keep aligned with line numbers above */
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
           firstStepDescSet should equal(expected)
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
@@ -805,7 +874,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
             "write") ++
-            Seq(228, 229, 231, 232, 233).map( /* WARNING: keep aligned with line numbers above */
+            Seq(263, 264, 266, 267, 268).map( /* WARNING: keep aligned with line numbers above */
               linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions).split(",").map(_.trim).toSet)
