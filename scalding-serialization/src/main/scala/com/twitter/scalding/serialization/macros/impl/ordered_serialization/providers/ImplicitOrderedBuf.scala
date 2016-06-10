@@ -27,13 +27,11 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
   type. This is for the case where its an opaque class to our macros where we can't figure out the fields
 */
 object ImplicitOrderedBuf {
-  val macroMarker = "MACROASKEDORDEREDSER"
 
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if !tpe.toString.contains(macroMarker) => ImplicitOrderedBuf(c)(tpe)
+      case tpe => ImplicitOrderedBuf(c)(tpe)
     }
     pf
   }
@@ -45,10 +43,9 @@ object ImplicitOrderedBuf {
     val variableID = (outerType.typeSymbol.fullName.hashCode.toLong + Int.MaxValue.toLong).toString
     val variableNameStr = s"orderedSer_$variableID"
     val variableName = newTermName(variableNameStr)
-    val typeAlias = newTypeName(c.fresh("MACROASKEDORDEREDSER"))
+
     val implicitInstanciator = q"""
-      type $typeAlias = $outerType
-      implicitly[_root_.com.twitter.scalding.serialization.OrderedSerialization[$typeAlias]]"""
+      implicitly[_root_.com.twitter.scalding.serialization.OrderedSerialization[${outerType}]]"""
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
