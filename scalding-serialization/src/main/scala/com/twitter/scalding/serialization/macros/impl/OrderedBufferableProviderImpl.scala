@@ -62,20 +62,16 @@ object OrderedSerializationProviderImpl {
   // Outer dispatcher, do not do implcit for the outermost level, makes no sense there. Should just fail.
   private def outerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = OrderedSerializationProviderImpl.innerDispatcher(c)
-
-    scaldingBasicDispatchers(c)(buildDispatcher).orElse {
+    scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
     }
   }
 
+  // Same as the outer dispatcher but we allow an implicit fallback for fields.
+  // So in essence it never fails to do a lookup
   private def innerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = OrderedSerializationProviderImpl.innerDispatcher(c)
-
-    scaldingBasicDispatchers(c)(buildDispatcher).orElse(fallbackImplicitDispatcher(c)).orElse {
-      case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
-    }
+    scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse(fallbackImplicitDispatcher(c))
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
