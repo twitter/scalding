@@ -50,7 +50,6 @@ object ScroogeInternalOrderedSerializationImpl {
 
   private def innerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    val scroogeDispatcher = ScroogeOrderedBuf.dispatch(c)(ScroogeInternalOrderedSerializationImpl.innerDispatcher(c))
     baseScroogeDispatcher(c)
       .orElse(OrderedSerializationProviderImpl.fallbackImplicitDispatcher(c))
       .orElse {
