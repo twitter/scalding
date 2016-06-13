@@ -31,8 +31,6 @@ object CaseObjectOrderedBuf {
 
   def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
-
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType

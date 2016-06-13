@@ -125,6 +125,8 @@ case class TestCaseClassE(a: String) extends AnyVal
 
 case object TestObjectE extends SealedTraitTest
 
+case class TypedParameterCaseClass[A](v: A)
+
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
     for {
@@ -701,6 +703,15 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkCollisions[Option[MacroOpaqueContainer]]
     check[List[MacroOpaqueContainer]]
     checkCollisions[List[MacroOpaqueContainer]]
+  }
+
+  def fn[A](implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] = {
+    primitiveOrderedBufferSupplier[TypedParameterCaseClass[A]]
+  }
+
+  test("Test out MacroOpaqueContainer inside a case class as an abstract type") {
+    fn[MacroOpaqueContainer]
+    primitiveOrderedBufferSupplier[(MacroOpaqueContainer, MacroOpaqueContainer)]
   }
 }
 
