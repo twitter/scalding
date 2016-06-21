@@ -85,7 +85,7 @@ class CheckpointSpec extends WordSpec {
         .sink[(Int, Int, Double)](Tsv("output"))(verifyOutput(out, _))
         .run
         .runHadoop
-        .finish
+        .finish()
 
     "run without checkpoints" in runTest {
       JobTest(new CheckpointJob(_))
@@ -155,7 +155,7 @@ class TypedCheckpointSpec extends WordSpec {
         .sink[(Int, Int, Double)](TypedTsv[(Int, Int, Double)]("output"))(verifyOutput(out, _))
         .run
         .runHadoop
-        .finish
+        .finish()
 
     "run without checkpoints" in runTest {
       JobTest(new TypedCheckpointJob(_))

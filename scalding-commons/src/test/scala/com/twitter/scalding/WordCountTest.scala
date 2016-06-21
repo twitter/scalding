@@ -31,6 +31,6 @@ class WordCountTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

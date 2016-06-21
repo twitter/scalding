@@ -99,35 +99,35 @@ object TreeOrderedBuf {
       val tempLen = freshT("tempLen")
       val lensLen = freshT("lensLen")
       val element = freshT("element")
-      val callDynamic = (q"""override def staticSize: Option[Int] = None""",
+      val callDynamic = (q"""override def staticSize: _root_.scala.Option[Int] = _root_.scala.None""",
         q"""
 
-      override def dynamicSize($element: $typeName): Option[Int] = {
-        if(skipLenCalc) None else {
+      override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = {
+        if(skipLenCalc) _root_.scala.None else {
           val $tempLen = payloadLength($element) match {
             case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
               failedLengthCalc()
-              None
-            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => Some(l)
-            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => Some(l)
+              _root_.scala.None
+            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(l) => _root_.scala.Some(l)
+            case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(l) => _root_.scala.Some(l)
           }
           (if ($tempLen.isDefined) {
             // Avoid a closure here while we are geeking out
             val innerLen = $tempLen.get
             val $lensLen = posVarIntSize(innerLen)
-            Some(innerLen + $lensLen)
-         } else None): Option[Int]
+            _root_.scala.Some(innerLen + $lensLen)
+         } else _root_.scala.None): _root_.scala.Option[Int]
       }
      }
       """)
 
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => (q"""
-          override def staticSize: Option[Int] = None""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = None""")
+          override def staticSize: _root_.scala.Option[Int] = _root_.scala.None""", q"""
+          override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = _root_.scala.None""")
         case const: ConstantLengthCalculation[_] => (q"""
-          override val staticSize: Option[Int] = Some(${const.toInt})""", q"""
-          override def dynamicSize($element: $typeName): Option[Int] = staticSize""")
+          override val staticSize: _root_.scala.Option[Int] = _root_.scala.Some(${const.toInt})""", q"""
+          override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = staticSize""")
         case f: FastLengthCalculation[_] => callDynamic
         case m: MaybeLengthCalculation[_] => callDynamic
       }
@@ -229,9 +229,6 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization[$T] {
-        // Ensure macro hygene for Option/Some/None
-        import _root_.scala.{Option, Some, None}
-
         override val uniqueId: String = ${T.tpe.toString}
 
         private[this] var lengthCalculationAttempts: Long = 0L

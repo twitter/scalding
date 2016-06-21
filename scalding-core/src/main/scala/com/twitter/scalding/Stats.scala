@@ -179,7 +179,7 @@ object RuntimeStats extends java.io.Serializable {
     val id = UniqueID.getIDFor(flowDef)
     () => {
       val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
-      flowProcess.keepAlive
+      flowProcess.keepAlive()
     }
   }
 }

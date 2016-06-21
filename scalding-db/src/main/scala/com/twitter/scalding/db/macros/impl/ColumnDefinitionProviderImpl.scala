@@ -230,18 +230,32 @@ object ColumnDefinitionProviderImpl {
       case cf: ColumnFormat[_] => {
         val fieldName = cf.fieldName.toStr
         // java boxed types needed below to populate cascading's Tuple
-        cf.fieldType match {
-          case "VARCHAR" | "TEXT" => q"""$rsTerm.getString($fieldName)"""
-          case "BOOLEAN" | "TINYINT" => q"""_root_.java.lang.Boolean.valueOf($rsTerm.getBoolean($fieldName))"""
-          case "DATE" | "DATETIME" => q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull"""
+        val (box: Option[Tree], primitiveGetter: Tree) = cf.fieldType match {
+          case "VARCHAR" | "TEXT" =>
+            (None, q"""$rsTerm.getString($fieldName)""")
+          case "BOOLEAN" | "TINYINT" =>
+            (Some(q"""_root_.java.lang.Boolean.valueOf"""), q"""$rsTerm.getBoolean($fieldName)""")
+          case "DATE" | "DATETIME" =>
+            (None, q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull""")
           // dates set to null are populated as None by tuple converter
           // if the corresponding case class field is an Option[Date]
-          case "DOUBLE" => q"""_root_.java.lang.Double.valueOf($rsTerm.getDouble($fieldName))"""
-          case "BIGINT" => q"""_root_.java.lang.Long.valueOf($rsTerm.getLong($fieldName))"""
-          case "INT" | "SMALLINT" => q"""_root_.java.lang.Integer.valueOf($rsTerm.getInt($fieldName))"""
-          case f => q"""sys.error("Invalid format " + $f + " for " + $fieldName)"""
+          case "DOUBLE" =>
+            (Some(q"""_root_.java.lang.Double.valueOf"""), q"""$rsTerm.getDouble($fieldName)""")
+          case "BIGINT" =>
+            (Some(q"""_root_.java.lang.Long.valueOf"""), q"""$rsTerm.getLong($fieldName)""")
+          case "INT" | "SMALLINT" =>
+            (Some(q"""_root_.java.lang.Integer.valueOf"""), q"""$rsTerm.getInt($fieldName)""")
+          case f =>
+            (None, q"""sys.error("Invalid format " + $f + " for " + $fieldName)""")
         }
         // note: UNSIGNED BIGINT is currently unsupported
+        val valueTerm = newTermName(c.fresh("colValue"))
+        val boxed = box.map { b => q"""$b($valueTerm)""" }.getOrElse(q"""$valueTerm""")
+        // primitiveGetter needs to be invoked before we can use wasNull
+        // to check if the column value that was read is null or not
+        q"""
+          { val $valueTerm = $primitiveGetter; if ($rsTerm.wasNull) null else $boxed }
+        """
       }
     }
     val tcTerm = newTermName(c.fresh("conv"))

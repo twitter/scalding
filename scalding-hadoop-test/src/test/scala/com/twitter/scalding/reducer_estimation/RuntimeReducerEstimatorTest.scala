@@ -68,7 +68,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // To do this in 25 ms, we need 60 reducers.
           assert(conf.getNumReduceTasks == 60)
         }
-        .run
+        .run()
     }
 
     "set reducers correctly with mean estimation scheme" in {
@@ -103,7 +103,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // To do this in 25 ms, we need 61.03 reducers, which rounds up to 62.
           assert(conf.getNumReduceTasks == 62)
         }
-        .run
+        .run()
     }
 
     "set reducers correctly with mean estimation scheme ignoring input size" in {
@@ -133,7 +133,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // To do this in 25 ms, we need 134 reducers.
           assert(conf.getNumReduceTasks == 134)
         }
-        .run
+        .run()
     }
 
     "set reducers correctly with median estimation scheme ignoring input size" in {
@@ -163,7 +163,7 @@ class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopShar
           // To do this in 25 ms, we need 120 reducers.
           assert(conf.getNumReduceTasks == 120)
         }
-        .run
+        .run()
     }
 
     "not set reducers when history service is empty" in {

@@ -60,7 +60,7 @@ class MutatedSourceTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -91,7 +91,7 @@ class ContraMappedAndThenSourceTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }

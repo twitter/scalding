@@ -94,7 +94,7 @@ class JsonLineTest extends WordSpec {
         }
       }
       .run
-      .finish
+      .finish()
 
     JobTest(new JsonLineRestrictedFieldsJob(_))
       .source(Tsv("input0", ('query, 'queryStats)), List(("doctor's mask", List(42.1f, 17.1f))))
@@ -105,7 +105,7 @@ class JsonLineTest extends WordSpec {
         }
       }
       .run
-      .finish
+      .finish()
 
     val json = """{"foo": 3, "bar": "baz"}\n"""
 
@@ -118,7 +118,7 @@ class JsonLineTest extends WordSpec {
           }
       }
       .run
-      .finish
+      .finish()
 
     val json2 = """{"foo": 7 }\n"""
 
@@ -131,7 +131,7 @@ class JsonLineTest extends WordSpec {
           }
       }
       .run
-      .finish
+      .finish()
 
     val json3 = """{"foo": {"too": 9}}\n"""
 
@@ -144,7 +144,7 @@ class JsonLineTest extends WordSpec {
           }
       }
       .run
-      .finish
+      .finish()
 
     "fail on empty lines by default" in {
       intercept[FlowException] {
@@ -155,7 +155,7 @@ class JsonLineTest extends WordSpec {
 
           }
           .run
-          .finish
+          .finish()
       }
     }
 
@@ -168,6 +168,6 @@ class JsonLineTest extends WordSpec {
           }
       }
       .run
-      .finish
+      .finish()
   }
 }

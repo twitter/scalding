@@ -83,7 +83,7 @@ class TypedDelimitedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A TypedCsv Source" should {
@@ -95,7 +95,7 @@ class TypedDelimitedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A TypedPsv Source" should {
@@ -107,7 +107,7 @@ class TypedDelimitedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A TypedOsv Source" should {
@@ -119,7 +119,7 @@ class TypedDelimitedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A DailySuffixTypedTsv Source" should {
@@ -133,6 +133,6 @@ class TypedDelimitedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

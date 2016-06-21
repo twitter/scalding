@@ -53,7 +53,7 @@ class TupleAdderTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -87,7 +87,7 @@ class TypedPipeTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -116,7 +116,7 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -146,7 +146,7 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -189,7 +189,7 @@ class TypedPipeJoinKryoTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, Int)]].converter)
       .runHadoop // need hadoop to test serialization
-      .finish
+      .finish()
   }
 }
 class TypedPipeDistinctJob(args: Args) extends Job(args) {
@@ -210,7 +210,7 @@ class TypedPipeDistinctTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -233,7 +233,7 @@ class TypedPipeDistinctByTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -268,7 +268,7 @@ class TypedPipeGroupedDistinctJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -297,7 +297,7 @@ class TypedPipeHashJoinTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -332,7 +332,7 @@ class TypedPipeTypedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -369,7 +369,7 @@ class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -405,7 +405,7 @@ class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -531,7 +531,7 @@ class TypedPipeJoinCountTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -561,7 +561,7 @@ class TypedPipeCrossTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -593,7 +593,7 @@ class TypedJoinTakeTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -624,7 +624,7 @@ class TypedGroupAllTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -644,7 +644,7 @@ class TSelfJoinTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -697,7 +697,7 @@ class TypedJoinWCTest extends WordSpec with Matchers {
           }
         }
         .run
-        .finish
+        .finish()
     }
   }
 }
@@ -718,7 +718,7 @@ class TypedLimitTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -739,7 +739,7 @@ class TypedFlattenTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -772,7 +772,7 @@ class TypedMergeTest extends WordSpec with Matchers {
         idx += 1
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -799,7 +799,7 @@ class TypedShardTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -831,7 +831,7 @@ class TypedLocalSumTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -859,7 +859,7 @@ class TypedHeadTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -902,7 +902,7 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -934,7 +934,7 @@ class TypedLookupJobTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -970,7 +970,7 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -997,7 +997,7 @@ class TypedFilterTest extends WordSpec with Matchers {
           }
           .run
           .runHadoop
-          .finish
+          .finish()
       }
     }
   }
@@ -1027,7 +1027,7 @@ class TypedPartitionTest extends WordSpec with Matchers {
           }
           .run
           .runHadoop
-          .finish
+          .finish()
       }
     }
   }
@@ -1095,7 +1095,7 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1161,7 +1161,7 @@ class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1194,7 +1194,7 @@ class TypedMapGroupTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1223,7 +1223,7 @@ class TypedSelfCrossTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1255,7 +1255,7 @@ class TypedSelfLeftCrossTest extends WordSpec with Matchers {
       }(implicitly[TypeDescriptor[(Int, Option[Int])]].converter)
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1278,7 +1278,7 @@ class JoinMapGroupJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1305,7 +1305,7 @@ class MapValueStreamNonEmptyIteratorTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1325,7 +1325,7 @@ class NullSinkJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1392,7 +1392,7 @@ object TypedSketchJoinTestHelper {
       .typedSink(TypedText.tsv[(Int, Int, Int)]("output-join")) { outBuf => innerResult ++= outBuf }
       .run
       .runHadoop
-      .finish
+      .finish()
 
     (sketchResult.toList.sorted, innerResult.toList.sorted)
   }

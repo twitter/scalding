@@ -63,7 +63,7 @@ class FileSourceTest extends WordSpec with Matchers {
             }
         }
       .run
-      .finish
+      .finish()
   }
 
   "A WritableSequenceFile Source" should {
@@ -87,7 +87,7 @@ class FileSourceTest extends WordSpec with Matchers {
           }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A MultipleTextLineFiles Source" should {
@@ -101,7 +101,7 @@ class FileSourceTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "TextLine.toIterator" should {
