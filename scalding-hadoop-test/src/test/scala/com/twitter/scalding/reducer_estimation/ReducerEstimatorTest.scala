@@ -101,8 +101,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (2)
+          conf.get(EstimatorConfig.originalNumReducers) should be (None)
         }
-        .run
+        .run()
     }
 
     "run with correct number of reducers when overriding set values" in {
@@ -117,8 +118,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (3)
+          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
         }
-        .run
+        .run()
     }
 
     "respect cap when estimated reducers is above the configured max" in {
@@ -138,7 +140,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           conf.get(EstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
           conf.getNumReducers should contain (10)
         }
-        .run
+        .run()
 
     }
   }
@@ -156,7 +158,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (1)
         }
-        .run
+        .run()
     }
   }
 
@@ -172,7 +174,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
           reducers shouldBe List(3, 1, 1)
         }
-        .run
+        .run()
     }
   }
 
@@ -190,7 +192,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val numReducers = conf.getNumReducers
           assert(!numReducers.isDefined || numReducers.get == 0, "Reducers should be 0")
         }
-        .run
+        .run()
     }
   }
 }

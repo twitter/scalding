@@ -105,7 +105,7 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
   "A sortedTake job" should {
     JobTest(new SortedTakeJob(_))
@@ -121,7 +121,7 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 
   "A sortedReverseTake job" should {
@@ -138,7 +138,7 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 
   "An approximateUniqueCount job" should {
@@ -161,6 +161,6 @@ class ReduceOperationsTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }

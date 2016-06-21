@@ -152,7 +152,7 @@ abstract class Source extends java.io.Serializable {
   def sourceId: String = toString
 
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    checkFlowDefNotNull
+    checkFlowDefNotNull()
 
     //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String, Any]]
@@ -178,7 +178,7 @@ abstract class Source extends java.io.Serializable {
    * the next operation
    */
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    checkFlowDefNotNull
+    checkFlowDefNotNull()
 
     //insane workaround for scala compiler bug
     val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
@@ -195,7 +195,7 @@ abstract class Source extends java.io.Serializable {
     pipe
   }
 
-  protected def checkFlowDefNotNull(implicit flowDef: FlowDef, mode: Mode) {
+  protected def checkFlowDefNotNull()(implicit flowDef: FlowDef, mode: Mode): Unit = {
     assert(flowDef != null, "Trying to access null FlowDef while in mode: %s".format(mode))
   }
 

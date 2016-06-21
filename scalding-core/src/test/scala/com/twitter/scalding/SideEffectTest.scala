@@ -58,7 +58,7 @@ class SideEffectTest extends WordSpec with Matchers with FieldConversions {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -110,6 +110,6 @@ class SideEffectBufferTest extends WordSpec with Matchers with FieldConversions 
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

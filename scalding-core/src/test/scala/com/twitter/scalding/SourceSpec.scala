@@ -61,7 +61,7 @@ class SourceSpec extends WordSpec with Matchers {
           buf.toSet shouldBe Set(("0", "0"), ("1", "1"))
         }
         .run
-        .finish
+        .finish()
     }
   }
 }

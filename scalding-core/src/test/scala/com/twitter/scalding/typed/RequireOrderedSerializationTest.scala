@@ -53,7 +53,7 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
           .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
           .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
           .run
-          .finish
+          .finish()
       }
       ex.getMessage should include("SerializationTest.scala:29")
     }
@@ -67,7 +67,7 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
           outBuf.toSet shouldBe Set(("a", "b"), ("b", "b"))
         }
         .run
-        .finish
+        .finish()
     }
   }
 }

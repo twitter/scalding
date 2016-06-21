@@ -51,7 +51,7 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
       JobTest(buildJob(_))
         .source(TypedCsv[(String, String, String)]("in"), input)
         .runHadoop
-        .finish
+        .finish()
 
       val testMode = job.mode.asInstanceOf[HadoopTest]
 
