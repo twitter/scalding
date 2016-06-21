@@ -73,7 +73,7 @@ object MultipleWritableSequenceFiles {
 }
 
 /**
- * This is only a TypedSource (which is a subclass of Mappable) as sinking into multiple directories
+ * This is only a TypedSource (which is a superclass of Mappable) as sinking into multiple directories
  * is not well defined
  */
 case class MultipleWritableSequenceFiles[K <: Writable: Manifest, V <: Writable: Manifest](
