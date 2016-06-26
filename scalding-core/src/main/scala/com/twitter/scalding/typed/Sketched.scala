@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits }
+import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits, Batched }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 
@@ -41,13 +41,19 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   def reducers = Some(numReducers)
 
   private lazy implicit val cms = CMS.monoid[Bytes](eps, delta, seed)
-  lazy val sketch: TypedPipe[CMS[Bytes]] =
+  lazy val sketch: TypedPipe[CMS[Bytes]] = {
+    // every 1000 items, compact.
+    lazy implicit val batchedSG = Batched.compactingSemigroup[CMS[Bytes]](1000)
     pipe
-      .map { case (k, _) => cms.create(Bytes(serialization(k))) }
+      .map { case (k, _) => ((), Batched(cms.create(Bytes(serialization(k))))) }
+      .sumByLocalKeys
+      // remove the Batched before going to the reducers
+      .map { case (_, batched) => batched.sum }
       .groupAll
       .sum
       .values
       .forceToDisk
+  }
 
   /**
    * Like a hashJoin, this joiner does not see all the values V at one time, only one at a time.
