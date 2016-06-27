@@ -990,18 +990,16 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     val destFields: Fields = ('key, 'value)
     val selfKV = raiseTo[(K, V)]
 
-    TypedPipeFactory({ (fd, mode) =>
-      checkMode(mode)
-
-      val msr = new TypedMapsideReduce[K, V](
-        flatMapFn.asInstanceOf[FlatMapFn[(K, V)]],
-        sg,
-        fields,
-        'key,
-        'value,
-        None)(tup2Setter)
-      TypedPipe.from[(K, V)](inpipe.eachTo(fields -> destFields) { _ => msr }, destFields)(fd, mode, tuple2Converter)
-    })
+    val msr = new TypedMapsideReduce[K, V](
+      flatMapFn.asInstanceOf[FlatMapFn[(K, V)]],
+      sg,
+      fields,
+      'key,
+      'value,
+      None)(tup2Setter)
+    TypedPipe.from[(K, V)](
+      inpipe.eachTo(fields -> destFields) { _ => msr },
+      destFields)(localFlowDef, mode, tuple2Converter)
   }
 
   override def toIterableExecution: Execution[Iterable[T]] =
