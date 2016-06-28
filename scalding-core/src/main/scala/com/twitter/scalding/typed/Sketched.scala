@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits }
+import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits, Batched }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 
@@ -44,9 +44,8 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   lazy val sketch: TypedPipe[CMS[Bytes]] =
     pipe
       .map { case (k, _) => cms.create(Bytes(serialization(k))) }
-      .groupAll
-      .sum
-      .values
+      .sum // sum everything to one value
+      .toTypedPipe
       .forceToDisk
 
   /**

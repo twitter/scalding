@@ -22,7 +22,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntry }
-import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
+import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
@@ -471,7 +471,18 @@ trait TypedPipe[+T] extends Serializable {
    * Reasonably common shortcut for cases of total associative/commutative reduction
    * returns a ValuePipe with only one element if there is any input, otherwise EmptyValue.
    */
-  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(groupAll.sum[U].values)
+  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = {
+    // every 1000 items, compact.
+    lazy implicit val batchedSG = Batched.compactingSemigroup[U](1000)
+    ComputedValue(map { t => ((), Batched[U](t)) }
+      .sumByLocalKeys
+      // remove the Batched before going to the reducers
+      .map { case (_, batched) => batched.sum }
+      .groupAll
+      .forceToReducers
+      .sum
+      .values)
+  }
 
   /**
    * Reasonably common shortcut for cases of associative/commutative reduction by Key
