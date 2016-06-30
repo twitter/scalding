@@ -138,12 +138,10 @@ object Grouped {
     }
 
   def valueConverter[V](optOrd: Option[Ordering[_ >: V]]): TupleConverter[V] =
-    optOrd.map { ord =>
-      ord match {
-        case _: OrderedSerialization[_] =>
-          TupleConverter.singleConverter[Boxed[V]].andThen(_.get)
-        case _ => TupleConverter.singleConverter[V]
-      }
+    optOrd.map {
+      case _: OrderedSerialization[_] =>
+        TupleConverter.singleConverter[Boxed[V]].andThen(_.get)
+      case _ => TupleConverter.singleConverter[V]
     }.getOrElse(TupleConverter.singleConverter[V])
 
   def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
@@ -207,21 +205,19 @@ sealed trait ReduceStep[K, V1] extends KeyedPipe[K] {
   protected def groupOpWithValueSort[V2](valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
     TypedPipeFactory({ (fd, mode) =>
       val pipe = Grouped.maybeBox[K, V1](keyOrdering, fd) { (tupleSetter, fields) =>
-        val (sortOpt, ts) = valueSort.map { vs =>
-          vs match {
-            case ordser: OrderedSerialization[V1] =>
-              // We get in here when we do a secondary sort
-              // and that sort is an ordered serialization
-              // We now need a boxed serializer for this type
-              // Then we set the comparator on the field, and finally we box the value with our tupleSetter
-              val (boxfn, boxordSer) = Grouped.getBoxFnAndOrder[V1](ordser, fd)
-              val valueF = new Fields("value")
-              valueF.setComparator("value", new CascadingBinaryComparator(boxordSer))
-              val ts2 = tupleSetter.asInstanceOf[TupleSetter[(K, Boxed[V1])]].contraMap { kv1: (K, V1) => (kv1._1, boxfn(kv1._2)) }
-              (Some(valueF), ts2)
-            case _ =>
-              (Some(Grouped.valueSorting(vs)), tupleSetter)
-          }
+        val (sortOpt, ts) = valueSort.map {
+          case ordser: OrderedSerialization[V1] =>
+            // We get in here when we do a secondary sort
+            // and that sort is an ordered serialization
+            // We now need a boxed serializer for this type
+            // Then we set the comparator on the field, and finally we box the value with our tupleSetter
+            val (boxfn, boxordSer) = Grouped.getBoxFnAndOrder[V1](ordser, fd)
+            val valueF = new Fields("value")
+            valueF.setComparator("value", new CascadingBinaryComparator(boxordSer))
+            val ts2 = tupleSetter.asInstanceOf[TupleSetter[(K, Boxed[V1])]].contraMap { kv1: (K, V1) => (kv1._1, boxfn(kv1._2)) }
+            (Some(valueF), ts2)
+          case vs =>
+            (Some(Grouped.valueSorting(vs)), tupleSetter)
         }.getOrElse((None, tupleSetter))
 
         mapped

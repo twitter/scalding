@@ -89,7 +89,7 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       } When {
         (pipes: List[RichPipe]) =>
           {
-            pipes(0)
+            pipes.head
               .joinWithSmaller('col1 -> 'col1, pipes(1))
               .map('col1 -> 'col1_transf) {
                 col1: String => col1 + "_transf"
@@ -112,7 +112,7 @@ class SourceListSpecTest extends WordSpec with Matchers with BddDsl {
       } When {
         (pipes: List[Pipe]) =>
           {
-            pipes(0)
+            pipes.head
               .joinWithSmaller('col1 -> 'col1, pipes(1))
               .map('col1 -> 'col1_transf) {
                 col1: String => col1 + "_transf"

@@ -204,7 +204,7 @@ object Matrix {
 trait WrappedPipe {
   def fields: Fields
   def pipe: Pipe
-  def writePipe(src: Source, outFields: Fields = Fields.NONE)(implicit fd: FlowDef, mode: Mode) {
+  def writePipe(src: Source, outFields: Fields = Fields.NONE)(implicit fd: FlowDef, mode: Mode): Unit = {
     val toWrite = if (outFields.isNone) pipe else pipe.rename(fields -> outFields)
     toWrite.write(src)
   }

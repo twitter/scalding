@@ -30,7 +30,7 @@ object DistinctByProps extends Properties("CoGrouped.DistinctBy") {
   }
   property("distinctBy to unit gives size 0 or 1") = forAll { (l: List[Int], fn: Int => Unit) =>
     val dsize = distinctBy(l)(fn).size
-    ((dsize == 0) && (l.size == 0)) || dsize == 1
+    ((dsize == 0) && l.isEmpty) || dsize == 1
   }
   property("distinctBy to different values never changes the list") = forAll { (l: List[Int]) =>
     var idx = 0

@@ -52,8 +52,11 @@ object JavaStreamEnrichments {
     }
     private[this] var pos = initPos
     def position: Int = pos
-    override def write(b: Int) { buffer(pos) = b.toByte; pos += 1 }
-    override def write(b: Array[Byte], off: Int, len: Int) {
+    override def write(b: Int): Unit = {
+      buffer(pos) = b.toByte
+      pos += 1
+    }
+    override def write(b: Array[Byte], off: Int, len: Int): Unit = {
       Array.copy(b, off, buffer, pos, len)
       pos += len
     }
@@ -241,8 +244,9 @@ object JavaStreamEnrichments {
           s.write(i >> 8)
           s.write(i)
         } else {
+          // the linter does not like us repeating ourselves here
           s.write(-1)
-          s.write(-1)
+          s.write(-1) // linter:ignore
           writeInt(i)
         }
       }

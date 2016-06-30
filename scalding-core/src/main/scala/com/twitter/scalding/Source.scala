@@ -210,7 +210,7 @@ abstract class Source extends java.io.Serializable {
   /*
    * This throws InvalidSourceException if this source is invalid.
    */
-  def validateTaps(mode: Mode): Unit = {}
+  def validateTaps(mode: Mode): Unit = {} // linter:ignore
 
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
@@ -276,9 +276,9 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[_ <: Config], output: Output) =
     new TupleEntryCollector {
-      override def add(te: TupleEntry) {}
-      override def add(t: CTuple) {}
-      protected def collect(te: TupleEntry) {}
+      override def add(te: TupleEntry): Unit = ()
+      override def add(t: CTuple): Unit = ()
+      protected def collect(te: TupleEntry): Unit = ()
     }
 
   def createResource(conf: Config) = true

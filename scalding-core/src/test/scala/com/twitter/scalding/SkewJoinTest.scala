@@ -62,7 +62,7 @@ object JoinTestHelper {
       .arg("sampleRate", sampleRate.toString)
       .arg("reducers", reducers.toString)
       .arg("replicationFactor", replicationFactor.toString)
-      .arg("replicator", replicator.toString)
+      .arg("replicator", replicator)
       .source(Tsv("input0"), generateInput(1000, 100))
       .source(Tsv("input1"), generateInput(100, 100))
       .sink[(Int, Int, Int, Int, Int, Int)](Tsv("output")) { outBuf => skewResult ++= outBuf }

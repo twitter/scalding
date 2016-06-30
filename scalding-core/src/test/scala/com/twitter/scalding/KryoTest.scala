@@ -117,8 +117,8 @@ class KryoTest extends WordSpec with Matchers {
         Moments(100.0), Monoid.plus(Moments(100), Moments(2)),
         AveragedValue(100, 32.0),
         // Serialize an instance of the HLL monoid
-        hllmon.apply(42),
-        Monoid.sum(List(1, 2, 3, 4).map { hllmon(_) }),
+        hllmon.toHLL(42),
+        Monoid.sum(List(1, 2, 3, 4).map { hllmon.toHLL(_) }),
         'hai)
         .asInstanceOf[List[AnyRef]]
       serializationRT(test) shouldBe test
@@ -126,8 +126,8 @@ class KryoTest extends WordSpec with Matchers {
       singleRT(new HyperLogLogMonoid(5)).bits shouldBe 5
     }
     "handle arrays" in {
-      def arrayRT[T](arr: Array[T]) {
-        serializationRT(List(arr))(0)
+      def arrayRT[T](arr: Array[T]): Unit = {
+        serializationRT(List(arr)).head
           .asInstanceOf[Array[T]].toList shouldBe (arr.toList)
       }
       arrayRT(Array(0))

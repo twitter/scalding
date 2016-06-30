@@ -125,7 +125,7 @@ trait HadoopMode extends Mode {
   def jobConf: Configuration
 
   override def newFlowConnector(conf: Config) = {
-    val asMap = conf.toMap.toMap[AnyRef, AnyRef]
+    val asMap = conf.toMap.toMap[AnyRef, AnyRef] // linter:ignore
     val jarKey = AppProps.APP_JAR_CLASS
 
     val finalMap = conf.getCascadingAppJar match {
@@ -181,7 +181,7 @@ trait HadoopMode extends Mode {
 
 trait CascadingLocal extends Mode {
   override def newFlowConnector(conf: Config) =
-    new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava)
+    new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava) // linter:ignore
 
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
@@ -241,7 +241,7 @@ case class HadoopTest(@transient conf: Configuration,
     writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, rndIdx))
   }
 
-  def finalize(src: Source) {
+  def finalize(src: Source): Unit = {
     /* The following `_.get` is only safe if `src` belongs to the source map.
      * This invariant is preserved by the `JobTest.sink` and `JobTest.runJob`
      * functions, and those functions have been documented accordingly to

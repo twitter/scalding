@@ -94,7 +94,7 @@ trait CoGroupable[K, +R] extends HasReducers with HasDescription with java.io.Se
 
     new CoGrouped[K, R2] {
       val inputs = self.inputs ++ smaller.inputs
-      val reducers = (self.reducers.toIterable ++ smaller.reducers.toIterable).reduceOption(_ max _)
+      val reducers = (self.reducers.iterator ++ smaller.reducers.iterator).reduceOption(_ max _)
       val descriptions: Seq[String] = self.descriptions ++ smaller.descriptions
       def keyOrdering = smaller.keyOrdering
 

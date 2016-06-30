@@ -85,11 +85,9 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * 4) Otherwise, ALL is used.
    */
   def defaultMode(fromFields: Fields, toFields: Fields): Fields = {
-    if (toFields.isArguments) {
-      //In this case we replace the input with the output
-      Fields.REPLACE
-    } else if (fromFields.isAll && toFields.isAll) {
-      // if you go from all to all, you must mean replace (ALL would fail at the cascading layer)
+    if (toFields.isArguments || (fromFields.isAll && toFields.isAll)) {
+      // 1. In this case we replace the input with the output or:
+      // 2. if you go from all to all, you must mean replace (ALL would fail at the cascading layer)
       Fields.REPLACE
     } else if (fromFields.size == 0) {
       //This is all the UNKNOWN, ALL, etc...
@@ -113,7 +111,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
 
   //Single entry fields:
-  implicit def unitToFields(u: Unit) = Fields.NONE
+  implicit def unitToFields(u: Unit) = Fields.NONE // linter:ignore
   implicit def intToFields(x: Int) = new Fields(new java.lang.Integer(x))
   implicit def integerToFields(x: java.lang.Integer) = new Fields(x)
   implicit def stringToFields(x: String) = new Fields(x)
@@ -135,7 +133,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     if (!avoid(guess)) {
       //We are good:
       guess
-    } else if (0 == trial) {
+    } else if (trial == 0) {
       newSymbol(avoid, guess, 1)
     } else {
       val newGuess = Symbol(guess.name + trial.toString)

@@ -125,6 +125,8 @@ case class TestCaseClassE(a: String) extends AnyVal
 
 case object TestObjectE extends SealedTraitTest
 
+case class TypedParameterCaseClass[A](v: A)
+
 object MyData {
   implicit def arbitraryTestCC: Arbitrary[MyData] = Arbitrary {
     for {
@@ -259,7 +261,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkManyExplicit(i)
   }
 
-  def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
+  def checkWithInputs[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Unit = {
     val rta = rt(a) // before we do anything ensure these don't throw
     val rtb = rt(b) // before we do anything ensure these don't throw
     val asize = Serialization.toBytes(a).length
@@ -277,7 +279,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     assert(oBufCompare(rta, rtb) === oBufCompare(a, b), "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
-  def checkAreSame[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]) {
+  def checkAreSame[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Unit = {
     val rta = rt(a) // before we do anything ensure these don't throw
     val rtb = rt(b) // before we do anything ensure these don't throw
     assert(oBufCompare(rta, a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
@@ -701,6 +703,15 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMa
     checkCollisions[Option[MacroOpaqueContainer]]
     check[List[MacroOpaqueContainer]]
     checkCollisions[List[MacroOpaqueContainer]]
+  }
+
+  def fn[A](implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] = {
+    primitiveOrderedBufferSupplier[TypedParameterCaseClass[A]]
+  }
+
+  test("Test out MacroOpaqueContainer inside a case class as an abstract type") {
+    fn[MacroOpaqueContainer]
+    primitiveOrderedBufferSupplier[(MacroOpaqueContainer, MacroOpaqueContainer)]
   }
 }
 

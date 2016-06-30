@@ -25,7 +25,7 @@ import com.twitter.scalding.serialization.OrderedSerialization
 
 object CaseClassOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeSymbol.asClass.isModuleClass && !tpe.typeConstructor.takesTypeArgs =>
+    case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeSymbol.asClass.isModuleClass =>
       CaseClassOrderedBuf(c)(buildDispatcher, tpe)
   }
 
@@ -39,7 +39,7 @@ object CaseClassOrderedBuf {
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
-          val fieldType = accessorMethod.returnType
+          val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod.name.toTermName, b)
         }.toList

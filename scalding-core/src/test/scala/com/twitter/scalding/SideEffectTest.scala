@@ -25,7 +25,7 @@ class Zip(args: Args) extends Job(args) {
   //import RichPipe._
   def createState = new {
     var lastLine: String = null
-    def release() {}
+    def release(): Unit = ()
   }
 
   val zipped = Tsv("line", ('line)).pipe
@@ -70,7 +70,7 @@ class ZipBuffer(args: Args) extends Job(args) {
   //import RichPipe._
   def createState = new {
     var lastLine: String = null
-    def release() {}
+    def release(): Unit = ()
   }
 
   val zipped = Tsv("line", ('line)).pipe

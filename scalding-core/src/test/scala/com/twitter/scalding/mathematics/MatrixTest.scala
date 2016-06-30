@@ -21,7 +21,7 @@ import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.Group
 
 object TUtil {
-  def printStack(fn: => Unit) {
+  def printStack(fn: => Unit): Unit = {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
   }
 }

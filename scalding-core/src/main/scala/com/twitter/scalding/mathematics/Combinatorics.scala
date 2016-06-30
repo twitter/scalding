@@ -172,7 +172,8 @@ object Combinatorics {
     // create as many single-column pipes as the number of weights
     val pipes = allColumns.zip(weights).map(x => {
       val (name, wt) = x
-      IterableSource((0.0 to result by wt), name).read
+      val points = Stream.iterate(0.0) { _ + wt }.takeWhile(_ <= result)
+      IterableSource(points, name).read
     }).zip(allColumns)
 
     val first = pipes.head
@@ -216,9 +217,10 @@ object Combinatorics {
    */
   def positiveWeightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     val allColumns = (1 to weights.size).map(x => Symbol("k" + x))
-    weightedSum(weights, result, error).filter(allColumns){
-      x: TupleEntry => (0 until allColumns.size).map(i => x.getDouble(i.asInstanceOf[java.lang.Integer]) != 0.0).reduceLeft(_ && _)
-    }
+    weightedSum(weights, result, error)
+      .filter(allColumns) { x: TupleEntry =>
+        (0 until allColumns.size).forall { i => x.getDouble(java.lang.Integer.valueOf(i)) != 0.0 }
+      }
   }
 
 }

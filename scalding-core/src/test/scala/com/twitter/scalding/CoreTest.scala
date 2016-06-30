@@ -100,7 +100,7 @@ class GroupRandomlyJobTest extends WordSpec with Matchers {
   import GroupRandomlyJob.NumShards
 
   "A GroupRandomlyJob" should {
-    val input = (0 to 10000).map { _.toString }.map { Tuple1(_) }
+    val input = (0 to 10000).map { i => Tuple1(i.toString) }
     JobTest(new GroupRandomlyJob(_))
       .source(Tsv("fakeInput"), input)
       .sink[(Int)](Tsv("fakeOutput")) { outBuf =>
@@ -610,11 +610,14 @@ class SizeAveStdSpec extends WordSpec with Matchers {
     }
     //Here is our input data:
     val input = (0 to 10000).map { i => (i.toString, r.nextDouble.toString + " " + powerLawRand.toString) }
-    val output = input.map { numline => numline._2.split(" ").map { _.toDouble } }
-      .map { vec => ((vec(0) * 4).toInt, vec(1)) }
-      .groupBy { tup => tup._1 }
+    val output = input
+      .map { numline =>
+        val vec = numline._2.split(" ").map(_.toDouble)
+        ((vec(0) * 4).toInt, vec(1))
+      }
+      .groupBy(_._1)
       .mapValues { tups =>
-        val all = tups.map { tup => tup._2.toDouble }.toList
+        val all = tups.map(_._2).toList
         val size = all.size.toLong
         val ave = all.sum / size
         //Compute the standard deviation:
@@ -1778,13 +1781,13 @@ class CounterJob(args: Args) extends Job(args) {
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) {
       case (name, age) if age > 18 =>
-        age_group_older_than_18.inc
+        age_group_older_than_18.inc()
         name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc: Int, age: Int) =>
-          reduce_hit.inc
+          reduce_hit.inc()
           acc + age
       }
     }
