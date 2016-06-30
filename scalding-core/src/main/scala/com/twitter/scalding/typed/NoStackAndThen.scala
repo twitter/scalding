@@ -35,12 +35,14 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
         case (NoStackWrap(fn), EmptyStack(fn2)) => NoStackMore(front, fn).andThen(fn2)
         case (NoStackWrap(fn), NonEmpty(h, tail)) => push(NoStackMore(front, fn), NoStackAndThen.NoStackWrap(h), tail)
         case (NoStackMore(first, tail), _) => push(front, first, NonEmpty(tail, toAndThen))
+        case (WithStackTrace(_, _), _) => sys.error("should be unreachable")
       }
     that match {
       case NoStackWrap(fn) => andThen(fn)
       case NoStackMore(head, tail) =>
         // casts needed for the tailrec, they can't cause runtime errors
         push(this, head.asInstanceOf[NoStackAndThen[Any, Any]], EmptyStack(tail))
+      case WithStackTrace(inner, stack) => WithStackTrace(andThen(inner), stack)
     }
   }
 }
@@ -80,13 +82,14 @@ object NoStackAndThen {
       toPush match {
         case NoStackWrap(fn) => NonEmpty(fn, rest)
         case NoStackMore(more, fn) => reversed(more, NonEmpty(fn, rest))
+        case WithStackTrace(_, _) => sys.error("should be unreachable")
       }
     @annotation.tailrec
     private def call(arg: Any, revstack: ReversedStack[Any, C]): C = revstack match {
       case EmptyStack(last) => last(arg)
       case NonEmpty(head, rest) => call(head(arg), rest)
     }
-    private lazy val revStack =
+    private lazy val revStack: ReversedStack[Any, C] =
       // casts needed for the tailrec, they can't cause runtime errors
       reversed(first, EmptyStack(andThenFn.asInstanceOf[(Any) => (C)]))
         .asInstanceOf[ReversedStack[Any, C]]

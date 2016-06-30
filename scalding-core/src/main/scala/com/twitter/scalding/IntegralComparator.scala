@@ -34,8 +34,8 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
   def isIntegral(boxed: AnyRef) = integralTypes(boxed.getClass)
 
   override def compare(a1: AnyRef, a2: AnyRef): Int = {
-    val a1IsNull = if (null == a1) 1 else 0
-    val a2IsNull = if (null == a2) 1 else 0
+    val a1IsNull = if (a1 == null) 1 else 0
+    val a2IsNull = if (a2 == null) 1 else 0
     if (a1IsNull + a2IsNull > 0) {
       //if a2IsNull, but a1IsNot, a2 is less:
       a2IsNull - a1IsNull
@@ -53,7 +53,7 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
   }
 
   override def hashCode(obj: AnyRef): Int = {
-    if (null == obj) {
+    if (obj == null) {
       0
     } else if (isIntegral(obj)) {
       obj.asInstanceOf[Number]

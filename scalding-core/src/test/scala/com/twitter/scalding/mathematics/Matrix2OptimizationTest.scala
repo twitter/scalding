@@ -46,58 +46,58 @@ class Matrix2OptimizationSpec extends WordSpec with Matchers {
   implicit val ord2: Ordering[(Int, Int)] = Ordering.Tuple2[Int, Int]
 
   def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): MatrixLiteral[Any, Any, Double] = MatrixLiteral(tpipe, sizeHint).asInstanceOf[MatrixLiteral[Any, Any, Double]]
-  def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, ring)
+  def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Product[Any, Any, Any, Double] = Product(left, right, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
 
   /**
    * Values used in tests
    */
   // ((A1(A2 A3))((A4 A5) A6)
-  val optimizedPlan = product(
+  val optimizedPlan = product( // linter:ignore
     product(literal(globM, FiniteHint(30, 35)),
       product(literal(globM, FiniteHint(35, 15)),
-        literal(globM, FiniteHint(15, 5)), true), true),
+        literal(globM, FiniteHint(15, 5)))),
     product(
       product(literal(globM, FiniteHint(5, 10)),
-        literal(globM, FiniteHint(10, 20)), true),
-      literal(globM, FiniteHint(20, 25)), true), true)
+        literal(globM, FiniteHint(10, 20))),
+      literal(globM, FiniteHint(20, 25))))
 
   val optimizedPlanCost = 1850 // originally 15125.0
 
   // A1(A2(A3(A4(A5 A6))))
-  val unoptimizedPlan = product(literal(globM, FiniteHint(30, 35)),
+  val unoptimizedPlan = product(literal(globM, FiniteHint(30, 35)), // linter:ignore
     product(literal(globM, FiniteHint(35, 15)),
       product(literal(globM, FiniteHint(15, 5)),
         product(literal(globM, FiniteHint(5, 10)),
           product(literal(globM, FiniteHint(10, 20)), literal(globM, FiniteHint(20, 25)))))))
 
-  val simplePlan = product(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25)), true)
+  val simplePlan = product(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25))) // linter:ignore
 
   val simplePlanCost = 750 //originally 26250
 
-  val combinedUnoptimizedPlan = sum(unoptimizedPlan, simplePlan)
+  val combinedUnoptimizedPlan = sum(unoptimizedPlan, simplePlan) // linter:ignore
 
-  val combinedOptimizedPlan = sum(optimizedPlan, simplePlan)
+  val combinedOptimizedPlan = sum(optimizedPlan, simplePlan) // linter:ignore
 
   val combinedOptimizedPlanCost = optimizedPlanCost + simplePlanCost
 
   // A1 * (A2 * (A3 * ( A4 + A4 ) * (A5 * (A6))))
 
-  val unoptimizedGlobalPlan = product(literal(globM, FiniteHint(30, 35)),
+  val unoptimizedGlobalPlan = product(literal(globM, FiniteHint(30, 35)), // linter:ignore
     product(literal(globM, FiniteHint(35, 15)),
       product(literal(globM, FiniteHint(15, 5)),
         product(sum(literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(5, 10))),
           product(literal(globM, FiniteHint(10, 20)), literal(globM, FiniteHint(20, 25)))))))
 
   // ((A1(A2 A3))(((A4 + A4) A5) A6)
-  val optimizedGlobalPlan = product(
+  val optimizedGlobalPlan = product( // linter:ignore
     product(literal(globM, FiniteHint(30, 35)),
       product(literal(globM, FiniteHint(35, 15)),
-        literal(globM, FiniteHint(15, 5)), true), true),
+        literal(globM, FiniteHint(15, 5)))),
     product(
       product(sum(literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(5, 10))),
-        literal(globM, FiniteHint(10, 20)), true),
-      literal(globM, FiniteHint(20, 25)), true), true)
+        literal(globM, FiniteHint(10, 20))),
+      literal(globM, FiniteHint(20, 25))))
 
   val productSequence = IndexedSeq(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 15)),
     literal(globM, FiniteHint(15, 5)), literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(10, 20)),
@@ -107,16 +107,16 @@ class Matrix2OptimizationSpec extends WordSpec with Matchers {
     literal(globM, FiniteHint(15, 5)), literal(globM, FiniteHint(5, 10)), literal(globM, FiniteHint(10, 20)),
     literal(globM, FiniteHint(20, 25))), IndexedSeq(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25))))
 
-  val planWithSum = product(literal(globM, FiniteHint(30, 35)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25))), true)
+  val planWithSum = product(literal(globM, FiniteHint(30, 35)), sum(literal(globM, FiniteHint(35, 25)), literal(globM, FiniteHint(35, 25)))) // linter:ignore
 
-  val g = literal(globM, FiniteHint(30, 30))
-  val g2 = product(g, g, true)
-  val g4 = product(g2, g2, true)
-  val optimizedGraph8 = product(g4, g4, true)
+  val g = literal(globM, FiniteHint(30, 30)) // linter:ignore
+  val g2 = product(g, g) // linter:ignore
+  val g4 = product(g2, g2) // linter:ignore
+  val optimizedGraph8 = product(g4, g4) // linter:ignore
 
   val unoptimizedGraphVectorPlan = (g ^ (5)) * literal(globM, FiniteHint(Long.MaxValue, 1))
 
-  val optimizedGraphVectorPlan = product(
+  val optimizedGraphVectorPlan = product( // linter:ignore
     product(
       literal(globM, FiniteHint(30, 30)),
       literal(globM, FiniteHint(30, 30))),
@@ -198,7 +198,7 @@ object Matrix2Props extends Properties("Matrix2") {
   implicit val ord1: Ordering[Int] = Ordering.Int
 
   def literal(tpipe: TypedPipe[(Int, Int, Double)], sizeHint: SizeHint): MatrixLiteral[Any, Any, Double] = MatrixLiteral(tpipe, sizeHint).asInstanceOf[MatrixLiteral[Any, Any, Double]]
-  def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double], optimal: Boolean = false): Product[Any, Any, Any, Double] = Product(left, right, ring)
+  def product(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Product[Any, Any, Any, Double] = Product(left, right, ring)
   def sum(left: Matrix2[Any, Any, Double], right: Matrix2[Any, Any, Double]): Sum[Any, Any, Double] = Sum(left, right, ring)
 
   /**
@@ -222,7 +222,7 @@ object Matrix2Props extends Properties("Matrix2") {
   def productChainGen(current: Int, target: Int, prevCol: Long, result: List[MatrixLiteral[Any, Any, Double]]): List[MatrixLiteral[Any, Any, Double]] = {
     if (current == target) result
     else {
-      val (randomMatrix, cols) = genLeaf((prevCol, 0))
+      val (randomMatrix, cols) = genLeaf((prevCol, 0)) // linter:ignore
       productChainGen(current + 1, target, cols, result ++ List(randomMatrix))
     }
   }
@@ -240,7 +240,7 @@ object Matrix2Props extends Properties("Matrix2") {
     p <- Gen.choose(1, 10)
     left <- genFormula(depth + 1)
     right <- genFormula(depth + 1)
-  } yield if (depth > 5) randomProduct(p) else (if (v > 0) randomProduct(p) else Sum(left, right, ring))
+  } yield if (depth > 5 || v > 0) randomProduct(p) else Sum(left, right, ring)
 
   def genFormula(depth: Int): Gen[Matrix2[Any, Any, Double]] =
     if (depth > 5)
@@ -261,8 +261,8 @@ object Matrix2Props extends Properties("Matrix2") {
     else {
       val genK = Gen.choose(i, j - 1)
       val k = genK.sample.getOrElse(i)
-      val X = generateRandomPlan(i, k, p)
-      val Y = generateRandomPlan(k + 1, j, p)
+      val X = generateRandomPlan(i, k, p) // linter:ignore
+      val Y = generateRandomPlan(k + 1, j, p) // linter:ignore
       Product(X, Y, ring)
     }
   }
@@ -316,6 +316,7 @@ object Matrix2Props extends Properties("Matrix2") {
           }
 
         }
+        case HadamardProduct(_, _, _) => sys.error("Hadamard unexpected here")
       }
     }
 
@@ -361,7 +362,7 @@ object Matrix2Props extends Properties("Matrix2") {
             left, right)
         }
         case Product(left @ MatrixLiteral(_, _), right @ Product(_, _, _, _), _, _) => {
-          val (cost, pLeft, pRight) = evaluateProduct(right, labels.right.get).get
+          val (cost, pLeft, pRight) = evaluateProduct(right, labels.right.get).get // linter:ignore
           // reflects optimize when k==i: p(i).sizeHint * (p(k).sizeHint * p(j).sizeHint)
           // diff is computed in the labeled tree - it measures "spread" of the tree
           // diff corresponds to (k - i) or (j - k - 1) in optimize: (k - i) * computeCosts(p, i, k) + (j - k - 1) * computeCosts(p, k + 1, j)
@@ -369,13 +370,13 @@ object Matrix2Props extends Properties("Matrix2") {
             left, pRight)
         }
         case Product(left @ Product(_, _, _, _), right @ MatrixLiteral(_, _), _, _) => {
-          val (cost, pLeft, pRight) = evaluateProduct(left, labels.left.get).get
+          val (cost, pLeft, pRight) = evaluateProduct(left, labels.left.get).get // linter:ignore
           Some(labels.left.get.diff * cost + (pLeft.sizeHint * (pRight.sizeHint * right.sizeHint)).total.get,
             pLeft, right)
         }
         case Product(left, right, _, _) => {
-          val (cost1, p1Left, p1Right) = evaluateProduct(left, labels.left.get).get
-          val (cost2, p2Left, p2Right) = evaluateProduct(right, labels.right.get).get
+          val (cost1, p1Left, p1Right) = evaluateProduct(left, labels.left.get).get // linter:ignore
+          val (cost2, p2Left, p2Right) = evaluateProduct(right, labels.right.get).get // linter:ignore
           Some(labels.left.get.diff * cost1 + labels.right.get.diff * cost2 + (p1Left.sizeHint * (p1Right.sizeHint * p2Right.sizeHint)).total.get,
             p1Left, p2Right)
         }

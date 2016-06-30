@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits }
+import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits, Batched }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 
@@ -44,9 +44,8 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   lazy val sketch: TypedPipe[CMS[Bytes]] =
     pipe
       .map { case (k, _) => cms.create(Bytes(serialization(k))) }
-      .groupAll
-      .sum
-      .values
+      .sum // sum everything to one value
+      .toTypedPipe
       .forceToDisk
 
   /**
@@ -81,7 +80,7 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   private def flatMapWithReplicas[W](pipe: TypedPipe[(K, W)])(fn: Int => Iterable[Int]) =
     pipe.cross(left.sketch).flatMap{
       case ((k, w), cms) =>
-        val maxPerReducer = (cms.totalCount / numReducers) * maxReducerFraction + 1
+        val maxPerReducer = ((cms.totalCount * maxReducerFraction) / numReducers) + 1
         val maxReplicas = (cms.frequency(Bytes(left.serialize(k))).estimate.toDouble / maxPerReducer)
         //if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
         //if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it

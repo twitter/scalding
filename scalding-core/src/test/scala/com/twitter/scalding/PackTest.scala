@@ -25,7 +25,9 @@ import scala.collection.mutable.Buffer
 class IntContainer {
   private var firstValue = 0
   def getFirstValue = firstValue
-  def setFirstValue(v: Int) { firstValue = v }
+  def setFirstValue(v: Int): Unit = {
+    firstValue = v
+  }
 
   @BeanProperty // Test the other syntax
   var secondValue = 0

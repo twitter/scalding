@@ -25,8 +25,7 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.prov
 
 object OrderedSerializationProviderImpl {
   def normalizedDispatcher(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if (!tpe.toString.contains(ImplicitOrderedBuf.macroMarker) && !(tpe.normalize == tpe)) =>
-      buildDispatcher(tpe.normalize)
+    case tpe if !(tpe.normalize == tpe) => buildDispatcher(tpe.normalize)
   }
 
   def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -60,19 +59,25 @@ object OrderedSerializationProviderImpl {
   def fallbackImplicitDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] =
     ImplicitOrderedBuf.dispatch(c)
 
-  private def dispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  // Outer dispatcher, do not do implcit for the outermost level, makes no sense there. Should just fail.
+  private def outerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = OrderedSerializationProviderImpl.dispatcher(c)
-
-    scaldingBasicDispatchers(c)(buildDispatcher).orElse(fallbackImplicitDispatcher(c)).orElse {
+    scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse {
       case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
     }
+  }
+
+  // Same as the outer dispatcher but we allow an implicit fallback for fields.
+  // So in essence it never fails to do a lookup
+  private def innerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    import c.universe._
+    scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse(fallbackImplicitDispatcher(c))
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
     import c.universe._
 
-    val b: TreeOrderedBuf[c.type] = dispatcher(c)(T.tpe)
+    val b: TreeOrderedBuf[c.type] = outerDispatcher(c)(T.tpe)
     val res = TreeOrderedBuf.toOrderedSerialization[T](c)(b)
     // println(res)
     res

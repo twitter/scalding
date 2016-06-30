@@ -110,7 +110,7 @@ trait ExecutionApp extends java.io.Serializable {
     (config, mode)
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     config(args) match {
       case (conf, mode) => job.waitFor(conf, mode).get
     }

@@ -106,7 +106,7 @@ class ExecutionTest extends WordSpec with Matchers {
       assert(res.isSuccess)
     }
     "lift to try on exception" in {
-      val res = ExecutionTestJobs
+      val res: Try[Nothing] = ExecutionTestJobs
         .wordCount2(TypedPipe.from(List("a", "b")))
         .map(_ => throw new RuntimeException("Something went wrong"))
         .liftToTry
@@ -268,6 +268,34 @@ class ExecutionTest extends WordSpec with Matchers {
       res.shouldSucceed()
       assert((first, second, third) == (1, 1, 1))
     }
+    "zip does not duplicate counters" in {
+      val c1 = Execution.withId { implicit uid =>
+        val stat = Stat("test")
+        val e1 = TypedPipe.from(0 until 100).map { x =>
+          stat.inc
+          x
+        }
+          .writeExecution(source.NullSink)
+
+        e1.zip(e1)
+      }
+        .getCounters.map { case (_, c) => c("test") }
+
+      val c2 = Execution.withId { implicit uid =>
+        val stat = Stat("test")
+        val e2 = TypedPipe.from(0 until 100).map { x =>
+          stat.inc
+          x
+        }
+          .writeExecution(source.NullSink)
+
+        e2.flatMap(Execution.from(_)).zip(e2)
+      }
+        .getCounters.map { case (_, c) => c("test") }
+
+      c1.shouldSucceed() should ===(100)
+      c2.shouldSucceed() should ===(100)
+    }
 
     "Running a large loop won't exhaust boxed instances" in {
       var timesEvaluated = 0
@@ -398,7 +426,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
     "block correctly" in {
       var seen = 0
-      def updateSeen(idx: Int) {
+      def updateSeen(idx: Int): Unit = {
         assert(seen === idx)
         seen += 1
       }

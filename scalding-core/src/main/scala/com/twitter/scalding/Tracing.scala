@@ -51,7 +51,7 @@ object Tracing {
    * the one time registration of "com.twitter.scalding" as a
    * tracing boundary in Cascading
    */
-  def init() { /* do nothing */ }
+  def init(): Unit = { /* do nothing */ }
 
   /**
    * Explicitly registers "com.twitter.scalding" as a Cascading
@@ -74,7 +74,7 @@ object Tracing {
    * Use reflection to register/unregister tracing boundaries so that cascading versions prior to 2.6 can be used
    * without completely breaking
    */
-  private def invokeStaticMethod(clazz: String, methodName: String, args: AnyRef*) {
+  private def invokeStaticMethod(clazz: String, methodName: String, args: AnyRef*): Unit = {
     try {
       val argTypes = args map (_.getClass())
       Class.forName(clazz).getMethod(methodName, argTypes: _*).invoke(null, args: _*)

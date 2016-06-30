@@ -39,7 +39,7 @@ case class SampleClassE(a: String, b: Boolean, c: Short, d: Int, e: Long, f: Flo
 case class SampleClassF(a: Option[Int])
 case class SampleClassG(a: java.util.Date)
 
-case class SampleClassFail(a: Option[Option[Int]])
+case class SampleClassFail(a: Option[Option[Int]]) // linter:ignore
 
 object MacroProperties extends Properties("TypeDescriptor.roundTrip") {
   def roundTrip[T: Arbitrary: TypeDescriptor]: Prop = forAll { t: T =>
@@ -87,17 +87,19 @@ class MacrosUnitTests extends WordSpec with Matchers {
   def mgConv[T](te: TupleEntry)(implicit conv: TupleConverter[T]): T = isMg(conv)(te)
   def mgSet[T](t: T)(implicit set: TupleSetter[T]): TupleEntry = new TupleEntry(isMg(set)(t))
 
-  def shouldRoundTrip[T: IsCaseClass: TupleSetter: TupleConverter](t: T) {
+  def shouldRoundTrip[T: IsCaseClass: TupleSetter: TupleConverter](t: T): Unit = {
     t shouldBe mgConv(mgSet(t))
   }
 
-  def shouldRoundTripOther[T: IsCaseClass: TupleSetter: TupleConverter](te: TupleEntry, t: T) {
+  def shouldRoundTripOther[T: IsCaseClass: TupleSetter: TupleConverter](te: TupleEntry, t: T): Unit = {
     val inter = mgConv(te)
     inter shouldBe t
     mgSet(inter) shouldBe te
   }
 
-  def canExternalize(t: AnyRef) { Externalizer(t).javaWorks shouldBe true }
+  def canExternalize(t: AnyRef): Unit = {
+    Externalizer(t).javaWorks shouldBe true
+  }
 
   "MacroGenerated TupleConverter" should {
     "Not compile for Option[Option[Int]]" in {
@@ -119,7 +121,8 @@ class MacrosUnitTests extends WordSpec with Matchers {
     "Generate the setter SampleClassF" in { Macros.caseClassTupleSetter[SampleClassF] }
     "Generate the setter SampleClassG" in { Macros.caseClassTupleSetterWithUnknown[SampleClassG] }
 
-    def doesJavaWork[T](implicit set: TupleSetter[T]) { canExternalize(isMg(set)) }
+    def doesJavaWork[T](implicit set: TupleSetter[T]): Unit =
+      canExternalize(isMg(set))
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
@@ -143,7 +146,8 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
     "Not generate a convertor for SampleClassFail" in { isMacroTupleConverterAvailable[SampleClassFail] shouldBe false }
 
-    def doesJavaWork[T](implicit conv: TupleConverter[T]) { canExternalize(isMg(conv)) }
+    def doesJavaWork[T](implicit conv: TupleConverter[T]): Unit =
+      canExternalize(isMg(conv))
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }
@@ -163,7 +167,8 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
     "Not generate a convertor for SampleClassFail" in { isMacroTypeDescriptorAvailable[SampleClassFail] shouldBe false }
 
-    def doesJavaWork[T](implicit conv: TypeDescriptor[T]) { canExternalize(isMg(conv)) }
+    def doesJavaWork[T](implicit conv: TypeDescriptor[T]): Unit =
+      canExternalize(isMg(conv))
     "be serializable for case class A" in { doesJavaWork[SampleClassA] }
     "be serializable for case class B" in { doesJavaWork[SampleClassB] }
     "be serializable for case class C" in { doesJavaWork[SampleClassC] }

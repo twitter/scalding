@@ -351,7 +351,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
    * beginning of block with access to expensive nonserializable state. The state object should
    * contain a function release() for resource management purpose.
    */
-  def using[C <: { def release() }](bf: => C) = new {
+  def using[C <: { def release(): Unit }](bf: => C) = new {
 
     /**
      * mapStream with state.
@@ -365,7 +365,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
       val b = new SideEffectBufferOp[Unit, T, C, X](
         (), bf,
         (u: Unit, c: C, it: Iterator[T]) => mapfn(c, it),
-        new Function1[C, Unit] with java.io.Serializable { def apply(c: C) { c.release() } },
+        new Function1[C, Unit] with java.io.Serializable { def apply(c: C): Unit = { c.release() } },
         outFields, conv, setter)
       every(pipe => new Every(pipe, inFields, b, defaultMode(inFields, outFields)))
     }

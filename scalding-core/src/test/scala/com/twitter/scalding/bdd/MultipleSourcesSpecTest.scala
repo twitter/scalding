@@ -125,7 +125,7 @@ class MultipleSourcesSpecTest extends WordSpec with Matchers with BddDsl {
       } When {
         (pipes: List[RichPipe]) =>
           {
-            pipes(0)
+            pipes.head
               .joinWithSmaller('col1 -> 'col1, pipes(1))
               .joinWithSmaller('col1 -> 'col1, pipes(2))
               .joinWithSmaller('col1 -> 'col1, pipes(3))

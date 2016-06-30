@@ -32,9 +32,9 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
 
   override def available = wraps.available
 
-  override def close() { wraps.close() }
+  override def close(): Unit = { wraps.close() }
 
-  override def mark(limit: Int) {
+  override def mark(limit: Int): Unit = {
     wraps.mark(limit)
     markPos = pos
   }
@@ -61,7 +61,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
     count
   }
 
-  override def reset() {
+  override def reset(): Unit = {
     wraps.reset()
     pos = markPos
   }
@@ -80,7 +80,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
   /**
    * This throws an exception if it can't set the position to what you give it.
    */
-  def seekToPosition(p: Long) {
+  def seekToPosition(p: Long): Unit = {
     if (p < pos) illegal(s"Can't seek backwards, at position $pos, trying to goto $p")
     wraps.skipFully(p - pos)
     pos = p

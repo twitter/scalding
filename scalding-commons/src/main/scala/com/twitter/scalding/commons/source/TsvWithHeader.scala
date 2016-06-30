@@ -78,7 +78,7 @@ class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
   }
 
   // TODO: move this method to make it a util function.
-  def writeToFile(filename: String, text: String)(implicit mode: Mode) {
+  def writeToFile(filename: String, text: String)(implicit mode: Mode): Unit = {
     mode match {
       case Hdfs(_, conf) => {
         try {

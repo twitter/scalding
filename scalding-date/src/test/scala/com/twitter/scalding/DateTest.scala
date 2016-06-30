@@ -193,7 +193,7 @@ class DateTest extends WordSpec {
       assert(DateRange("2010-10-31 12:00", RichDate.upperBound("2010-10-31 13")).each(Minutes(1)).size === 120)
     }
     "have each partition disjoint and adjacent" in {
-      def eachIsDisjoint(d: DateRange, dur: Duration) {
+      def eachIsDisjoint(d: DateRange, dur: Duration): Unit = {
         val dl = d.each(dur)
         assert(dl.zip(dl.tail).forall {
           case (da, db) =>

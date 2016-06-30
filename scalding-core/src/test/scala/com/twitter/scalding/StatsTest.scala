@@ -10,7 +10,7 @@ class StatsTestJob1(args: Args) extends Job(args) with CounterVerification {
 
   TypedPipe.from(TypedTsv[(String, Int)](args("input")))
     .map { kv =>
-      if (kv._2 != 0) nonZero.inc
+      if (kv._2 != 0) nonZero.inc()
       (kv._1.toLowerCase, kv._2)
     }
     .write(TypedTsv[(String, Int)](args("output")))
