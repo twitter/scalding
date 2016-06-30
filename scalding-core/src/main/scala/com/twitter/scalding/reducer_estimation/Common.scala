@@ -193,9 +193,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   private def estimate(flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
+    import com.twitter.scalding.HadoopConfigurationImplicits._
+
     val conf = step.getConfig
 
-    val stepNumReducers = conf.get(Config.HadoopNumReducers)
+    val stepNumReducers: Option[Int] = conf.getParallelism
     Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
 
       val clsLoader = Thread.currentThread.getContextClassLoader
@@ -229,10 +231,20 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       conf.setInt(EstimatorConfig.estimatedNumReducers, estimatedNumReducers.getOrElse(-1))
       conf.setInt(EstimatorConfig.cappedEstimatedNumReducersKey, cappedNumReducers.getOrElse(-1))
       // set number of reducers
-      cappedNumReducers.foreach { n => conf.setInt(Config.HadoopNumReducers, n) }
+      cappedNumReducers.foreach { n => conf.setParallelism(n) }
       // log in JobConf what was explicitly set by 'withReducers'
       if (reducersSetExplicitly(step)) {
-        conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
+        stepNumReducers match {
+          case Some(n) =>
+            conf.set(EstimatorConfig.originalNumReducers, n.toString)
+          case None =>
+            LOG.warn(
+              s"""
+                 |${Config.WithReducersSetExplicitly} is true, but no reducers set in configuration.
+                 |Not setting ${EstimatorConfig.originalNumReducers} in configuration.
+                 |This is an illegal state, but ignoring in order to avoid failing the entire job.
+               """.stripMargin)
+        }
       }
     }
   }

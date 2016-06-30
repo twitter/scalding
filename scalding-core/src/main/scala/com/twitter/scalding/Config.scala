@@ -24,7 +24,7 @@ import com.twitter.bijection.{ Base64String, Injection }
 
 import cascading.pipe.assembly.AggregateByProps
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowRuntimeProps, FlowStepStrategy }
-import cascading.property.AppProps
+import cascading.property.{ AppProps, ConfigDef => StepConfigDef }
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
@@ -358,8 +358,13 @@ trait Config extends Serializable {
       .toList
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
-  def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
-  def setNumReducers(n: Int): Config = this + (Config.HadoopNumReducers -> n.toString)
+  // TODO(rubanm): This should ideally check the mode (MR vs Tez)
+  def getNumReducers: Option[Int] =
+    get(Config.HadoopNumReducers).orElse(get(Config.CascadingGatherPartitions)).map(_.toInt)
+
+  /* Set both the Hadoop MR and general cascading config (to work on Tez) */
+  def setNumReducers(n: Int): Config =
+    this + (Config.HadoopNumReducers -> n.toString) + (Config.CascadingGatherPartitions -> n.toString)
 
   /** Set username from System.used for querying hRaven. */
   def setHRavenHistoryUserName: Config =
@@ -403,12 +408,18 @@ object Config {
 
   /**
    * Parameter that actually controls the number of reduce tasks.
-   * We use Cascading's common config key for this (instead of Hadoop's mapred.reduce.tasks),
-   * so that it works across different underlying fabrics like Hadoop MR, Tez, etc.
-   *
    * Be sure to set this in the JobConf for the *step* not the flow.
    */
-  val HadoopNumReducers = FlowRuntimeProps.GATHER_PARTITIONS
+  val HadoopNumReducers = "mapred.reduce.tasks"
+
+  /*
+   * We use Cascading's common config key for reduce parallelism (instead of Hadoop's mapred.reduce.tasks),
+   * so that it works across different underlying fabrics like Hadoop MR, Tez, etc.
+   *
+   * On Hadoop MR, HadoopNumReducers gets preference over CascadingGatherPartitions (see Cascading's HadoopFlowStep).
+   * On Tez, only CascadingGatherPartitions is checked (see Cascading's Hadoop2TezFlowStep).
+   */
+  val CascadingGatherPartitions = FlowRuntimeProps.GATHER_PARTITIONS
 
   /** Name of parameter to specify which class to use as the default estimator. */
   val ReducerEstimators = "scalding.reducer.estimator.classes"
@@ -575,4 +586,33 @@ object Config {
   @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
   @transient private[scalding] lazy val flowStepStrategiesSerializer = buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
   @transient private[scalding] lazy val argsSerializer = buildInj[Map[String, List[String]]]
+}
+
+object HadoopConfigurationImplicits {
+
+  implicit class ConfigurationWithParallelism(conf: Configuration) {
+
+    def getParallelism: Option[Int] = {
+      val mrValue = conf.get(Config.HadoopNumReducers)
+      val parallelism = if (mrValue == null)
+        conf.get(Config.CascadingGatherPartitions)
+      else mrValue
+      Option(parallelism).map(_.toInt)
+    }
+
+    def setParallelism(n: Int): Unit = {
+      conf.setInt(Config.HadoopNumReducers, n)
+      conf.setInt(Config.CascadingGatherPartitions, n)
+    }
+  }
+}
+
+object StepConfigDefImplicits {
+
+  implicit class StepConfigDefWithParallelism(configDef: StepConfigDef) {
+    def setParallelism(n: Int): Unit = {
+      configDef.setProperty(Config.HadoopNumReducers, n.toString)
+      configDef.setProperty(Config.CascadingGatherPartitions, n.toString)
+    }
+  }
 }
