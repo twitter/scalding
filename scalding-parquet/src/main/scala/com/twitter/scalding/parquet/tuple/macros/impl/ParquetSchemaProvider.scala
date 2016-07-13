@@ -22,9 +22,6 @@ object ParquetSchemaProvider {
       def createPrimitiveTypeField(primitiveType: Tree): Tree =
         q"""new _root_.org.apache.parquet.schema.PrimitiveType($repetition, $primitiveType, $fieldName)"""
 
-      def createListGroupType(innerFieldsType: Tree): Tree =
-        q"""new _root_.org.apache.parquet.schema.GroupType($REPETITION_REPEATED, "list", $innerFieldsType)"""
-
       fieldType match {
         case tpe if tpe =:= typeOf[String] =>
           createPrimitiveTypeField(q"_root_.org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY")
@@ -44,7 +41,7 @@ object ParquetSchemaProvider {
         case tpe if tpe.erasure =:= typeOf[List[Any]] || tpe.erasure =:= typeOf[Set[_]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           val innerFieldsType = matchField(innerType, "element", isOption = false)
-          q"_root_.org.apache.parquet.schema.ConversionPatterns.listType($repetition, $fieldName, ${createListGroupType(innerFieldsType)})"
+          q"_root_.org.apache.parquet.schema.ConversionPatterns.listOfElements($repetition, $fieldName, $innerFieldsType)"
         case tpe if tpe.erasure =:= typeOf[Map[_, Any]] =>
           val List(keyType, valueType) = tpe.asInstanceOf[TypeRefApi].args
           val keyFieldType = matchField(keyType, "key", isOption = false)
