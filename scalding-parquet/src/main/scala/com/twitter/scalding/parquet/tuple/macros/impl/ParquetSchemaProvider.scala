@@ -2,9 +2,10 @@ package com.twitter.scalding.parquet.tuple.macros.impl
 
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
-object ParquetSchemaProvider {
+class ParquetSchemaProvider(fieldRenamer: (String => String)) {
+
   def toParquetSchemaImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[String] = {
     import c.universe._
 
@@ -12,7 +13,8 @@ object ParquetSchemaProvider {
       c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
         This will mean the macro is operating on a non-resolved type.""")
 
-    def matchField(fieldType: Type, fieldName: String, isOption: Boolean): Tree = {
+    def matchField(fieldType: Type, originalFieldName: String, isOption: Boolean): Tree = {
+      val fieldName = fieldRenamer(originalFieldName)
       val REPETITION_REQUIRED = q"_root_.org.apache.parquet.schema.Type.Repetition.REQUIRED"
       val REPETITION_OPTIONAL = q"_root_.org.apache.parquet.schema.Type.Repetition.OPTIONAL"
       val REPETITION_REPEATED = q"_root_.org.apache.parquet.schema.Type.Repetition.REPEATED"
