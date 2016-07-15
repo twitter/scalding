@@ -23,11 +23,11 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
-      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-cascading scalding-parquet-scrooge scalding-parquet-scrooge-cascading"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.7
-      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
+      env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-cascading scalding-parquet-scrooge scalding-parquet-scrooge-cascading"
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
