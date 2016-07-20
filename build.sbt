@@ -306,12 +306,6 @@ lazy val scaldingDate = module("date")
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.1-wip-61")
 
-lazy val elephantbirdCascadingArtifact = cascadingVersion.split('.').head match {
-  case "2" => "elephant-bird-cascading2"
-  case "3" => "elephant-bird-cascading3"
-  case other => sys.error(s"Unsupported cascading major version: $other")
-}
-
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-127")
 
@@ -354,7 +348,7 @@ lazy val scaldingCommons = module("commons").settings(
     "com.twitter" %% "bijection-core" % bijectionVersion,
     "com.twitter" %% "algebird-core" % algebirdVersion,
     "com.twitter" %% "chill" % chillVersion,
-    "com.twitter.elephantbird" % elephantbirdCascadingArtifact % elephantbirdVersion,
+    "com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
     "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
     // TODO: split this out into scalding-thrift
@@ -567,7 +561,7 @@ lazy val scaldingJson = module("json").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
     "org.json4s" %% "json4s-native" % json4SVersion,
-    "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
+    "com.twitter.elephantbird" % "elephant-bird-cascading3" % elephantbirdVersion % "provided"
     )
   }
 ).dependsOn(scaldingCore)
