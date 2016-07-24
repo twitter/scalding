@@ -87,7 +87,7 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
    * between the previous and next vectors. This stores the result after
    * calculation.
    */
-  def measureConvergenceAndStore() {
+  def measureConvergenceAndStore(): Unit = {
     (previousVector - nextVector).
       mapWithIndex { case (value, index) => math.abs(value) }.
       sum.

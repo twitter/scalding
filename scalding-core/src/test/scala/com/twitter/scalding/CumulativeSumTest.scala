@@ -72,7 +72,7 @@ class CumulativeSumTest1 extends WordSpec {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A partitioned ranking cumulative sum job" should {
@@ -87,6 +87,6 @@ class CumulativeSumTest1 extends WordSpec {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

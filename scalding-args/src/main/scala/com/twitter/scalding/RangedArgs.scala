@@ -23,15 +23,15 @@ object RangedArgs {
 case class Range[T](lower: T, upper: T)(implicit ord: Ordering[T]) {
   assert(ord.lteq(lower, upper), "Bad range: " + lower + " > " + upper)
 
-  def assertLowerBound(min: T) {
+  def assertLowerBound(min: T): Unit = {
     assert(ord.lteq(min, lower), "Range out of bounds: " + lower + " < " + min)
   }
 
-  def assertUpperBound(max: T) {
+  def assertUpperBound(max: T): Unit = {
     assert(ord.gteq(max, upper), "Range out of bounds: " + upper + " > " + max)
   }
 
-  def assertBounds(min: T, max: T) {
+  def assertBounds(min: T, max: T): Unit = {
     assertLowerBound(min)
     assertUpperBound(max)
   }

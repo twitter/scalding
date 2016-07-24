@@ -110,7 +110,7 @@ class TypedSimilarityTest extends WordSpec with Matchers {
           dot(error, error) should be < 0.001
         }
         .run
-        .finish
+        .finish()
     }
     "compute dimsum cosine similarity" in {
       JobTest(new TypedDimsumCosineSimJob(_))
@@ -121,7 +121,7 @@ class TypedSimilarityTest extends WordSpec with Matchers {
           dot(error, error) should be < (0.01 * error.size)
         }
         .run
-        .finish
+        .finish()
     }
   }
 }

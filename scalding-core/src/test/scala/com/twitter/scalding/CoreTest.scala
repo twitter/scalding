@@ -48,7 +48,7 @@ class NumberJoinTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -77,7 +77,7 @@ class SpillingTest extends WordSpec with Matchers {
           outBuf.toSet shouldBe result
         }.run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -100,7 +100,7 @@ class GroupRandomlyJobTest extends WordSpec with Matchers {
   import GroupRandomlyJob.NumShards
 
   "A GroupRandomlyJob" should {
-    val input = (0 to 10000).map { _.toString }.map { Tuple1(_) }
+    val input = (0 to 10000).map { i => Tuple1(i.toString) }
     JobTest(new GroupRandomlyJob(_))
       .source(Tsv("fakeInput"), input)
       .sink[(Int)](Tsv("fakeOutput")) { outBuf =>
@@ -108,7 +108,7 @@ class GroupRandomlyJobTest extends WordSpec with Matchers {
         numShards shouldBe NumShards
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -132,7 +132,7 @@ class ShuffleJobTest extends WordSpec with Matchers {
         outBuf(0) shouldBe expectedShuffle
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -181,7 +181,7 @@ class MapToGroupBySizeSumMaxTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -210,7 +210,7 @@ class PartitionJobTest extends WordSpec with Matchers {
         outBuf.toMap shouldBe expectedOutput
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -253,7 +253,7 @@ class MRMTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -291,7 +291,7 @@ class JoinTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -332,7 +332,7 @@ class CollidingKeyJoinTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -372,7 +372,7 @@ class TinyJoinTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -409,7 +409,7 @@ class TinyCollisionJoinTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -449,7 +449,7 @@ class TinyThenSmallJoinTest extends WordSpec with Matchers with FieldConversions
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -491,7 +491,7 @@ class LeftJoinTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -534,7 +534,7 @@ class LeftJoinWithLargerTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -575,14 +575,14 @@ class MergeTest extends WordSpec with Matchers {
         "correctly merge two pipes" in {
           golden shouldBe outBuf.toMap
         }
-      }.
-      sink[(Double, Double)](Tsv("out2")) { outBuf =>
+      }
+      .sink[(Double, Double)](Tsv("out2")) { outBuf =>
         "correctly self merge" in {
           outBuf.toMap shouldBe (big.groupBy(_._1).mapValues{ iter => iter.map(_._2).max })
         }
-      }.
-      run.
-      finish
+      }
+      .run
+      .finish()
   }
 }
 
@@ -610,11 +610,14 @@ class SizeAveStdSpec extends WordSpec with Matchers {
     }
     //Here is our input data:
     val input = (0 to 10000).map { i => (i.toString, r.nextDouble.toString + " " + powerLawRand.toString) }
-    val output = input.map { numline => numline._2.split(" ").map { _.toDouble } }
-      .map { vec => ((vec(0) * 4).toInt, vec(1)) }
-      .groupBy { tup => tup._1 }
+    val output = input
+      .map { numline =>
+        val vec = numline._2.split(" ").map(_.toDouble)
+        ((vec(0) * 4).toInt, vec(1))
+      }
+      .groupBy(_._1)
       .mapValues { tups =>
-        val all = tups.map { tup => tup._2.toDouble }.toList
+        val all = tups.map(_._2).toList
         val size = all.size.toLong
         val ave = all.sum / size
         //Compute the standard deviation:
@@ -642,7 +645,7 @@ class SizeAveStdSpec extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -677,7 +680,7 @@ class DoubleGroupSpec extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -709,7 +712,7 @@ class GroupUniqueSpec extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -737,7 +740,7 @@ class DiscardTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -763,7 +766,7 @@ class HistogramTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -792,7 +795,7 @@ class ForceReducersTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -829,7 +832,7 @@ class ToListTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A NullListJob" should {
@@ -847,7 +850,7 @@ class ToListTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -877,7 +880,7 @@ class CrossTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -913,7 +916,7 @@ class GroupAllCrossTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -943,7 +946,7 @@ class SmallCrossTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -968,7 +971,7 @@ class TopKTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -999,7 +1002,7 @@ class ScanTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1028,7 +1031,7 @@ class TakeTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1056,7 +1059,7 @@ class DropTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1098,7 +1101,7 @@ class PivotTest extends WordSpec with Matchers with FieldConversions {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1143,7 +1146,7 @@ class IterableSourceTest extends WordSpec with Matchers with FieldConversions {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1166,7 +1169,7 @@ class HeadLastTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1188,7 +1191,7 @@ class HeadLastUnsortedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1212,7 +1215,7 @@ class MkStringToListTest extends WordSpec with Matchers with FieldConversions {
       }
       .run
       // This can't be run in Hadoop mode because we can't serialize the list to Tsv
-      .finish
+      .finish()
   }
 }
 
@@ -1234,7 +1237,7 @@ class InsertJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1264,7 +1267,7 @@ class FoldJobTest extends WordSpec with Matchers {
       }
       .run
       // This can't be run in Hadoop mode because we can't serialize the list to Tsv
-      .finish
+      .finish()
   }
 }
 
@@ -1292,7 +1295,7 @@ class InnerCaseTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1316,7 +1319,7 @@ class NormalizeTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1350,7 +1353,7 @@ class ForceToDiskTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1384,7 +1387,7 @@ class ItsATrapTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1460,7 +1463,7 @@ class TypedItsATrapTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A Typed AddTrap with many erroneous maps" should {
@@ -1481,7 +1484,7 @@ class TypedItsATrapTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1515,7 +1518,7 @@ class GroupAllToListTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1546,7 +1549,7 @@ class ToListGroupAllToListSpec extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
 
     JobTest(new ToListGroupAllToListTestJob(_))
       .source(TypedTsv[(Long, String)]("input"), List((1L, "us"), (1L, "gb"), (2L, "jp"), (3L, "jp"), (3L, "gb")))
@@ -1558,7 +1561,7 @@ class ToListGroupAllToListSpec extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1596,7 +1599,7 @@ class HangingTest extends Specification {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 */
@@ -1619,7 +1622,7 @@ class Function2Test extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1648,7 +1651,7 @@ class SampleWithReplacementTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1675,7 +1678,7 @@ class VerifyTypesJobTest extends WordSpec with Matchers {
           outBuf.toList should have size 2
         }
         .run
-        .finish
+        .finish()
 
     }
   }
@@ -1700,7 +1703,7 @@ class SortingJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1721,7 +1724,7 @@ class CollectJobTest extends WordSpec with Matchers {
         outBuf.toList shouldBe expectedOutput
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1742,7 +1745,7 @@ class FilterJobTest extends WordSpec with Matchers {
         outBuf.toList shouldBe expectedOutput
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1763,7 +1766,7 @@ class FilterNotJobTest extends WordSpec with Matchers {
         outBuf.toList shouldBe expectedOutput
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1778,13 +1781,13 @@ class CounterJob(args: Args) extends Job(args) {
     }
     .collect[(String, Int), String](('name, 'age) -> 'adultFirstNames) {
       case (name, age) if age > 18 =>
-        age_group_older_than_18.inc
+        age_group_older_than_18.inc()
         name.split(" ").head
     }
     .groupAll{
       _.reduce('age -> 'sum_of_ages) {
         (acc: Int, age: Int) =>
-          reduce_hit.inc
+          reduce_hit.inc()
           acc + age
       }
     }
@@ -1812,7 +1815,7 @@ class CounterJobTest extends WordSpec with Matchers {
             "reduce_hit" -> 2)
         }
         .run
-        .finish
+        .finish()
     }
   }
 }
@@ -1846,6 +1849,6 @@ class DailySuffixTsvTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

@@ -21,8 +21,8 @@ import java.util.Random
 import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
 import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import com.twitter.algebird.{ Aggregator, Monoid, Semigroup }
+import cascading.tuple.{ Fields, TupleEntry }
+import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
@@ -471,7 +471,18 @@ trait TypedPipe[+T] extends Serializable {
    * Reasonably common shortcut for cases of total associative/commutative reduction
    * returns a ValuePipe with only one element if there is any input, otherwise EmptyValue.
    */
-  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = ComputedValue(groupAll.sum[U].values)
+  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = {
+    // every 1000 items, compact.
+    lazy implicit val batchedSG = Batched.compactingSemigroup[U](1000)
+    ComputedValue(map { t => ((), Batched[U](t)) }
+      .sumByLocalKeys
+      // remove the Batched before going to the reducers
+      .map { case (_, batched) => batched.sum }
+      .groupAll
+      .forceToReducers
+      .sum
+      .values)
+  }
 
   /**
    * Reasonably common shortcut for cases of associative/commutative reduction by Key
@@ -891,8 +902,6 @@ class TypedPipeFactory[T] private (@transient val next: NoStackAndThen[(FlowDef,
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] = andThen(_.flatMap(f))
   override def map[U](f: T => U): TypedPipe[U] = andThen(_.map(f))
 
-  override def limit(count: Int) = andThen(_.limit(count))
-
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) =
     andThen(_.sumByLocalKeys[K, V])
 
@@ -992,18 +1001,16 @@ class TypedPipeInst[T] private[scalding] (@transient inpipe: Pipe,
     val destFields: Fields = ('key, 'value)
     val selfKV = raiseTo[(K, V)]
 
-    TypedPipeFactory({ (fd, mode) =>
-      checkMode(mode)
-
-      val msr = new TypedMapsideReduce[K, V](
-        flatMapFn.asInstanceOf[FlatMapFn[(K, V)]],
-        sg,
-        fields,
-        'key,
-        'value,
-        None)(tup2Setter)
-      TypedPipe.from[(K, V)](inpipe.eachTo(fields -> destFields) { _ => msr }, destFields)(fd, mode, tuple2Converter)
-    })
+    val msr = new TypedMapsideReduce[K, V](
+      flatMapFn.asInstanceOf[FlatMapFn[(K, V)]],
+      sg,
+      fields,
+      'key,
+      'value,
+      None)(tup2Setter)
+    TypedPipe.from[(K, V)](
+      inpipe.eachTo(fields -> destFields) { _ => msr },
+      destFields)(localFlowDef, mode, tuple2Converter)
   }
 
   override def toIterableExecution: Execution[Iterable[T]] =
@@ -1081,7 +1088,7 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         case (pipe, 1) => pipe
         case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
       }
-      .map(_.toPipe[U](fieldNames)(flowDef, mode, setter))
+      .map(_.toPipe[U](fieldNames)(flowDef, mode, setter)) // linter:ignore
       .toList
 
     if (merged.size == 1) {

@@ -27,7 +27,7 @@ import TDsl._
 import typed.MultiJoin
 
 object TUtil {
-  def printStack(fn: => Unit) {
+  def printStack(fn: => Unit): Unit = {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
   }
 }
@@ -53,7 +53,7 @@ class TupleAdderTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -87,7 +87,7 @@ class TypedPipeTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -116,7 +116,7 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -146,7 +146,7 @@ class TypedPipeJoinTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -189,7 +189,7 @@ class TypedPipeJoinKryoTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, Int)]].converter)
       .runHadoop // need hadoop to test serialization
-      .finish
+      .finish()
   }
 }
 class TypedPipeDistinctJob(args: Args) extends Job(args) {
@@ -210,7 +210,7 @@ class TypedPipeDistinctTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -233,7 +233,7 @@ class TypedPipeDistinctByTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -268,7 +268,7 @@ class TypedPipeGroupedDistinctJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -297,7 +297,7 @@ class TypedPipeHashJoinTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, (Int, Option[Int]))]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -332,15 +332,15 @@ class TypedPipeTypedTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
 class TypedWithOnCompleteJob(args: Args) extends Job(args) {
   val onCompleteMapperStat = Stat("onCompleteMapper")
   val onCompleteReducerStat = Stat("onCompleteReducer")
-  def onCompleteMapper() = onCompleteMapperStat.inc
-  def onCompleteReducer() = onCompleteReducerStat.inc
+  def onCompleteMapper() = onCompleteMapperStat.inc()
+  def onCompleteReducer() = onCompleteReducerStat.inc()
   // find repeated words ignoring case
   TypedText.tsv[String]("input")
     .map(_.toUpperCase)
@@ -369,7 +369,7 @@ class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -405,7 +405,7 @@ class TypedPipeWithOuterAndLeftJoinTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -531,7 +531,7 @@ class TypedPipeJoinCountTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -561,7 +561,7 @@ class TypedPipeCrossTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -593,7 +593,7 @@ class TypedJoinTakeTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -624,7 +624,7 @@ class TypedGroupAllTest extends WordSpec with Matchers {
         }
         .run
         .runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -644,7 +644,7 @@ class TSelfJoinTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -697,7 +697,7 @@ class TypedJoinWCTest extends WordSpec with Matchers {
           }
         }
         .run
-        .finish
+        .finish()
     }
   }
 }
@@ -718,7 +718,7 @@ class TypedLimitTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -739,7 +739,7 @@ class TypedFlattenTest extends WordSpec with Matchers {
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -772,7 +772,7 @@ class TypedMergeTest extends WordSpec with Matchers {
         idx += 1
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -799,7 +799,7 @@ class TypedShardTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -831,7 +831,7 @@ class TypedLocalSumTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -859,7 +859,7 @@ class TypedHeadTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -902,7 +902,7 @@ class TypedSortWithTakeTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -934,7 +934,7 @@ class TypedLookupJobTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -970,7 +970,7 @@ class TypedLookupReduceJobTest extends WordSpec with Matchers {
         }
       }(implicitly[TypeDescriptor[(Int, String)]].converter)
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -997,7 +997,7 @@ class TypedFilterTest extends WordSpec with Matchers {
           }
           .run
           .runHadoop
-          .finish
+          .finish()
       }
     }
   }
@@ -1027,7 +1027,7 @@ class TypedPartitionTest extends WordSpec with Matchers {
           }
           .run
           .runHadoop
-          .finish
+          .finish()
       }
     }
   }
@@ -1067,10 +1067,7 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-join" in {
           def groupMax(it: Seq[(Int, Int)]): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              val (k, v) = kvs.maxBy(_._2)
-              v
-            }.toMap
+            it.groupBy(_._1).map { case (_, kvs) => kvs.maxBy(_._2) }
 
           val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
           val d1 = groupMax(mk1)
@@ -1088,14 +1085,14 @@ class TypedMultiJoinJobTest extends WordSpec with Matchers {
               case (v0s, (k, v1, v2)) =>
                 v0s.map { (k, _, v1, v2) }
             }
-            .toList.sorted
+            .sorted
 
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1134,9 +1131,10 @@ class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int, Int, Int)]("output")) { outBuf =>
         "correctly do a multi-self-join" in {
           def group(it: Seq[(Int, Int)])(red: (Int, Int) => Int): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              kvs.map(_._2).reduce(red)
-            }.toMap
+            it.groupBy(_._1).map {
+              case (k, kvs) =>
+                (k, kvs.map(_._2).reduce(red))
+            }
 
           val d0 = mk0.groupBy(_._1).mapValues(_.map { case (_, v) => v })
           val d1 = group(mk1)(_ max _)
@@ -1154,14 +1152,14 @@ class TypedMultiSelfJoinJobTest extends WordSpec with Matchers {
               case (v0s, (k, v1, v2)) =>
                 v0s.map { (k, _, v1, v2) }
             }
-            .toList.sorted
+            .sorted
 
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1185,16 +1183,18 @@ class TypedMapGroupTest extends WordSpec with Matchers {
       .typedSink(TypedText.tsv[(Int, Int)]("output")) { outBuf =>
         "correctly do a mapGroup" in {
           def mapGroup(it: Seq[(Int, Int)]): Map[Int, Int] =
-            it.groupBy(_._1).mapValues { kvs =>
-              kvs.map { case (k, v) => k * v }.max
-            }.toMap
+            it.groupBy(_._1).map {
+              case (k, kvs) =>
+                (k, kvs.map { case (k, v) => k * v }.max)
+            }
+
           val correct = mapGroup(mk).toList.sorted
           outBuf should have size (correct.size)
-          outBuf.toList.sorted shouldBe correct
+          outBuf.sorted shouldBe correct
         }
       }
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1223,7 +1223,7 @@ class TypedSelfCrossTest extends WordSpec with Matchers {
       }
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1255,7 +1255,7 @@ class TypedSelfLeftCrossTest extends WordSpec with Matchers {
       }(implicitly[TypeDescriptor[(Int, Option[Int])]].converter)
       .run
       .runHadoop
-      .finish
+      .finish()
   }
 }
 
@@ -1278,7 +1278,7 @@ class JoinMapGroupJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1305,7 +1305,7 @@ class MapValueStreamNonEmptyIteratorTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1325,7 +1325,7 @@ class NullSinkJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }
 
@@ -1392,7 +1392,7 @@ object TypedSketchJoinTestHelper {
       .typedSink(TypedText.tsv[(Int, Int, Int)]("output-join")) { outBuf => innerResult ++= outBuf }
       .run
       .runHadoop
-      .finish
+      .finish()
 
     (sketchResult.toList.sorted, innerResult.toList.sorted)
   }

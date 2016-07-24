@@ -26,12 +26,16 @@ import org.apache.hadoop.mapred.JobConf
 import scala.util.Try
 
 object JobTest {
+
+  @deprecated(message = "Use the non-reflection based JobTest apply methods", since = "0.16.1")
   def apply(jobName: String) = {
     new JobTest((args: Args) => Job(jobName, args))
   }
+
   def apply(cons: (Args) => Job) = {
     new JobTest(cons)
   }
+
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
       manifest[T].runtimeClass
@@ -100,9 +104,6 @@ class JobTest(cons: (Args) => Job) {
   def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
-  def source(s: Source, iTuple: Iterable[Product]): JobTest =
-    source[Product](s, iTuple)(TupleSetter.ProductSetter)
-
   def source[T](s: Source, iTuple: Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
     sourceBuffer(s, iTuple)
 
@@ -169,7 +170,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   // This SITS is unfortunately needed to get around Specs
-  def finish: Unit = { () }
+  def finish(): Unit = { () }
 
   def validate(v: Boolean) = {
     validateJob = v
@@ -211,11 +212,11 @@ class JobTest(cons: (Args) => Job) {
     }
 
     if (validateJob) {
-      job.validate
+      job.validate()
     }
-    job.run
+    job.run()
     // Make sure to clean the state:
-    job.clear
+    job.clear()
 
     val next: Option[Job] = if (runNext) { job.next } else { None }
     next match {

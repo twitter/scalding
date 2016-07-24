@@ -62,7 +62,7 @@ case class HadoopPlatformJobTest(
   def inspectCompletedFlow(checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
     copy(flowCheckers = flowCheckers :+ checker)
 
-  private def createSources() {
+  private def createSources(): Unit = {
     dataToCreate foreach {
       case (location, lines) =>
         val tmpFile = File.createTempFile("hadoop_platform", "job_test")
@@ -83,12 +83,12 @@ case class HadoopPlatformJobTest(
     sourceWriters.foreach { cons => runJob(initJob(cons)) }
   }
 
-  private def checkSinks() {
+  private def checkSinks(): Unit = {
     LOG.debug("Executing sinks")
     sourceReaders.foreach { _(cluster.mode) }
   }
 
-  def run {
+  def run(): Unit = {
     System.setProperty("cascading.update.skip", "true")
     val job = initJob(cons)
     cluster.addClassSourceToClassPath(cons.getClass)
@@ -106,9 +106,9 @@ case class HadoopPlatformJobTest(
   private def initJob(cons: Args => Job): Job = cons(Mode.putMode(cluster.mode, new Args(argsMap)))
 
   @annotation.tailrec
-  private final def runJob(job: Job) {
-    job.run
-    job.clear
+  private final def runJob(job: Job): Unit = {
+    job.run()
+    job.clear()
     job.next match {
       case Some(nextJob) => runJob(nextJob)
       case None => ()

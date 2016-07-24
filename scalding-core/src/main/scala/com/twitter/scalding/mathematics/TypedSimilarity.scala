@@ -192,7 +192,7 @@ object TypedSimilarity extends Serializable {
         case (node1, weight1, norm1) =>
           rightit.iterator.flatMap {
             case (node2, weight2, norm2) =>
-              val weight = 1.0 / (norm1.toDouble * norm2.toDouble)
+              val weight = 1.0 / (norm1 * norm2)
               val prob = oversample * weight
               if (prob >= 1.0) {
                 // Small degree case, just output all of them:

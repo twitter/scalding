@@ -62,6 +62,6 @@ class CombinatoricsJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

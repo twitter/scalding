@@ -51,7 +51,7 @@ class AlgebraJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   val inputData2 = List((1, 2, 3, 5, 1.2), (1, 4, 5, 7, 0.1), (2, 1, 0, 7, 3.2))
@@ -65,6 +65,6 @@ class AlgebraJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

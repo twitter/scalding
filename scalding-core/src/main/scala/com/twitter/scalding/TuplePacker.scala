@@ -68,14 +68,14 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
    * seem to support a more type safe way of doing this.
    */
   @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
-  def validate {
+  def validate(): Unit = {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
     val missing = Dsl.asList(fields).find { f => !getSetters.contains(f.toString) }
 
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
   }
-  validate
+  validate()
 
   def getSetters = m.runtimeClass
     .getDeclaredMethods
@@ -89,14 +89,14 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   lazy val setters = getSetters
 
   override def apply(input: TupleEntry): T = {
-    val newInst = m.runtimeClass.newInstance()
+    val newInst = m.runtimeClass.newInstance().asInstanceOf[T]
     val fields = input.getFields
     (0 until fields.size).map { idx =>
       val thisField = fields.get(idx)
       val setMethod = setters(thisField.toString)
       setMethod.invoke(newInst, input.getObject(thisField))
     }
-    newInst.asInstanceOf[T]
+    newInst
   }
 }
 

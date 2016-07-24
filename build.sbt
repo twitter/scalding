@@ -19,7 +19,7 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
 }
 def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-val algebirdVersion = "0.12.0"
+val algebirdVersion = "0.12.1"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
 val bijectionVersion = "0.9.1"
@@ -108,6 +108,12 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
       else
         Seq()
   },
+
+  /**
+   * add linter for common scala issues:
+   * https://github.com/HairyFotr/linter
+   */
+  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.14"),
 
   // Enables full stack traces in scalatest
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
@@ -277,7 +283,7 @@ def youngestForwardCompatible(subProj: String) =
   Some(subProj)
     .filterNot(unreleasedModules.contains(_))
     .map {
-    s => "com.twitter" % ("scalding-" + s + "_2.10") % "0.15.0"
+    s => "com.twitter" %% (s"scalding-$s") % "0.16.0"
   }
 
 def module(name: String) = {

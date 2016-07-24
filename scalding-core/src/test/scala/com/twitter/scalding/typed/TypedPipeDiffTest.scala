@@ -1,10 +1,7 @@
 package com.twitter.scalding.typed
 
-import java.io.File
-import java.nio.file.Files
-
 import com.twitter.algebird.MapAlgebra
-import com.twitter.scalding.{ Config, Local }
+import com.twitter.scalding.TypedPipeChecker.InMemoryToListEnrichment
 import org.scalacheck.{ Arbitrary, Prop }
 import org.scalatest.prop.{ Checkers, PropertyChecks }
 import org.scalatest.{ FunSuite, PropSpec }
@@ -31,17 +28,7 @@ class NoOrderingHashCollisions(val x: String) {
   override def hashCode(): Int = 0
 }
 
-object TypedPipeRunner {
-  def runToList[T](output: TypedPipe[T]): List[T] =
-    output
-      .toIterableExecution
-      .waitFor(Config.default, Local(strictSources = true))
-      .get
-      .toList
-}
-
 class TypedPipeDiffTest extends FunSuite {
-  import com.twitter.scalding.typed.TypedPipeRunner._
 
   val left = List("hi", "hi", "bye", "foo", "bar")
   val right = List("hi", "bye", "foo", "baz")
@@ -68,7 +55,7 @@ class TypedPipeDiffTest extends FunSuite {
     val pipe2 = TypedPipe.from(right)
     val diff = TypedPipeDiff.diff(pipe1, pipe2)
 
-    assert(expectedSortedDiff === runToList(diff.toTypedPipe).sorted)
+    assert(expectedSortedDiff === diff.toTypedPipe.inMemoryToList.sorted)
   }
 
   // this lets us sort the results,
@@ -84,7 +71,7 @@ class TypedPipeDiffTest extends FunSuite {
 
     val diff = TypedPipeDiff.diffArrayPipes(pipe1, pipe2).map { case (arr, counts) => (arr.toSeq, counts) }
 
-    assert(expectedSortedArrDiff === sort(runToList(diff)))
+    assert(expectedSortedArrDiff === sort(diff.inMemoryToList))
   }
 
   test("diffWithoutOrdering works for objects with ordering and good hashcodes") {
@@ -92,7 +79,7 @@ class TypedPipeDiffTest extends FunSuite {
     val pipe2 = TypedPipe.from(right)
     val diff = TypedPipeDiff.diffByHashCode(pipe1, pipe2)
 
-    assert(expectedSortedDiff === runToList(diff).sorted)
+    assert(expectedSortedDiff === diff.inMemoryToList.sorted)
   }
 
   test("diffWithoutOrdering does not require ordering") {
@@ -100,14 +87,14 @@ class TypedPipeDiffTest extends FunSuite {
     val pipe2 = TypedPipe.from(right.map(new NoOrdering(_)))
     val diff = TypedPipeDiff.diffByHashCode(pipe1, pipe2)
 
-    assert(expectedSortedDiff === runToList(diff).map { case (nord, counts) => (nord.x, counts) }.sorted)
+    assert(expectedSortedDiff === diff.inMemoryToList.map { case (nord, counts) => (nord.x, counts) }.sorted)
   }
 
   test("diffWithoutOrdering works even with hash collisions") {
     val pipe1 = TypedPipe.from(left.map(new NoOrderingHashCollisions(_)))
     val pipe2 = TypedPipe.from(right.map(new NoOrderingHashCollisions(_)))
     val diff = TypedPipeDiff.diffByHashCode(pipe1, pipe2)
-    assert(expectedSortedDiff === runToList(diff).map { case (nord, counts) => (nord.x, counts) }.sorted)
+    assert(expectedSortedDiff === diff.inMemoryToList.map { case (nord, counts) => (nord.x, counts) }.sorted)
   }
 
   test("diffArrayPipesWithoutOrdering works for arrays of objects with no ordering") {
@@ -115,14 +102,13 @@ class TypedPipeDiffTest extends FunSuite {
     val pipe2 = TypedPipe.from(rightArr.map { arr => arr.map { b => new NoOrdering(b.toString) } })
     val diff = TypedPipeDiff.diffArrayPipes(pipe1, pipe2)
 
-    assert(expectedSortedArrDiff === sort(runToList(diff).map{ case (arr, counts) => (arr.map(_.x.toByte).toSeq, counts) }))
+    assert(expectedSortedArrDiff === sort(diff.inMemoryToList.map{ case (arr, counts) => (arr.map(_.x.toByte).toSeq, counts) }))
   }
 
 }
 
 object TypedPipeDiffLaws {
   import com.twitter.scalding.typed.TypedPipeDiff.Enrichments._
-  import com.twitter.scalding.typed.TypedPipeRunner._
 
   def checkDiff[T](left: List[T], right: List[T], diff: List[(T, (Long, Long))]): Boolean = {
     val noDuplicates = diff.size == diff.map(_._1).toSet.size
@@ -137,18 +123,18 @@ object TypedPipeDiffLaws {
   }
 
   def diffLaw[T: Ordering: Arbitrary]: Prop = Prop.forAll { (left: List[T], right: List[T]) =>
-    val diff = runToList(TypedPipe.from(left).diff(TypedPipe.from(right)).toTypedPipe)
+    val diff = TypedPipe.from(left).diff(TypedPipe.from(right)).toTypedPipe.inMemoryToList
     checkDiff(left, right, diff)
   }
 
   def diffArrayLaw[T](implicit arb: Arbitrary[List[Array[T]]], ct: ClassTag[T]): Prop = Prop.forAll { (left: List[Array[T]], right: List[Array[T]]) =>
-    val diff = runToList(TypedPipe.from(left).diffArrayPipes(TypedPipe.from(right)))
+    val diff = TypedPipe.from(left).diffArrayPipes(TypedPipe.from(right)).inMemoryToList
       .map { case (arr, counts) => (arr.toSeq, counts) }
     checkArrayDiff(left, right, diff)
   }
 
   def diffByGroupLaw[T: Arbitrary]: Prop = Prop.forAll { (left: List[T], right: List[T]) =>
-    val diff = runToList(TypedPipe.from(left).diffByHashCode(TypedPipe.from(right)))
+    val diff = TypedPipe.from(left).diffByHashCode(TypedPipe.from(right)).inMemoryToList
     checkDiff(left, right, diff)
   }
 

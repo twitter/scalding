@@ -49,7 +49,7 @@ class BlockJoinPipeTest extends WordSpec with Matchers {
     val in2 = List(("0", "1", "1"), ("1", "0", "2"), ("2", "4", "5"))
     val correctOutput = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
 
-    def runJobWithArguments(left: Int = 1, right: Int = 1, joiner: String = "i")(callback: Buffer[(Int, Int, Double)] => Unit) {
+    def runJobWithArguments(left: Int = 1, right: Int = 1, joiner: String = "i")(callback: Buffer[(Int, Int, Double)] => Unit): Unit = {
       JobTest(new InnerProductJob(_))
         .source(Tsv("input0"), in1)
         .source(Tsv("input1"), in2)
@@ -60,7 +60,7 @@ class BlockJoinPipeTest extends WordSpec with Matchers {
           callback(outBuf)
         }
         .run
-        .finish
+        .finish()
     }
 
     "correctly compute product with 1 left block and 1 right block" in {

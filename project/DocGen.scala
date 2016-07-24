@@ -36,7 +36,7 @@ object DocGen {
         Seq("-sourcepath", rootBase.getAbsolutePath, "-doc-source-url", docSourceUrl)
       },
       Unidoc.unidocDirectory := file(docDirectory),
-      gitRemoteRepo := "git@github.com:twitter/" + aggregateName + ".git",
+      gitRemoteRepo := "https://github.com/twitter/" + aggregateName + ".git",
       ghkeys.synchLocal <<= syncLocal
     )
 

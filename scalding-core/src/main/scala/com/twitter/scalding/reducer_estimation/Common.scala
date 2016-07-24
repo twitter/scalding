@@ -17,11 +17,27 @@ object EstimatorConfig {
   /** Output param: what the Reducer Estimator recommended, regardless of if it was used. */
   val estimatedNumReducers = "scalding.reducer.estimator.result"
 
+  /**
+   * Output param: same as estimatedNumReducers but with the cap specified by maxEstimatedReducersKey
+   * applied. Can be used to determine whether a cap was applied to the estimated number of reducers
+   * and potentially to trigger alerting / logging.
+   */
+  val cappedEstimatedNumReducersKey = "scalding.reducer.estimator.result.capped"
+
   /** Output param: what the original job config was. */
   val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
   /** Maximum number of history items to use for reducer estimation. */
   val maxHistoryKey = "scalding.reducer.estimator.max.history"
+
+  /**
+   * If we estimate more than this number of reducers,
+   * we will use this number instead of the estimated value
+   */
+  val maxEstimatedReducersKey = "scalding.reducer.estimator.max.estimated.reducers"
+
+  /* fairly arbitrary choice here -- you will probably want to configure this in your cluster defaults */
+  val defaultMaxEstimatedReducers = 5000
 
   def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 1)
 
@@ -98,7 +114,7 @@ trait HistoryReducerEstimator extends ReducerEstimator {
       case Success(h) =>
         LOG.info(s"${h.length} history entries found.")
         val estimate = estimateReducers(info, h)
-        LOG.info(s"Reducer estimate: ${estimate}")
+        LOG.info(s"Reducer estimate: $estimate")
         estimate
       case Failure(f) =>
         LOG.warn(s"Unable to fetch history in $getClass", f)
@@ -148,26 +164,39 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     // so we check that to determine if this is a map-only step.
     conf.getNumReduceTasks match {
       case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
-      case _ => estimate(flow, preds, step)
+      case _ =>
+        if (skipReducerEstimation(step)) {
+          LOG.info(
+            s"""
+               |Flow step ${step.getName} was configured with reducers
+               |set explicitly (${Config.WithReducersSetExplicitly}=true) and the estimator
+               |explicit override turned off (${Config.ReducerEstimatorOverride}=false). Skipping
+               |reducer estimation.
+             """.stripMargin)
+        } else {
+          estimate(flow, preds, step)
+        }
     }
   }
+
+  // whether the reducers have been set explicitly with `withReducers`
+  private def reducersSetExplicitly(step: FlowStep[JobConf]) =
+    step.getConfig.getBoolean(Config.WithReducersSetExplicitly, false)
+
+  // whether we should override explicitly-specified numReducers
+  private def overrideExplicitReducers(step: FlowStep[JobConf]) =
+    step.getConfig.getBoolean(Config.ReducerEstimatorOverride, false)
+
+  private def skipReducerEstimation(step: FlowStep[JobConf]) =
+    reducersSetExplicitly(step) && !overrideExplicitReducers(step)
 
   private def estimate(flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
     step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
+
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
-
-    // whether the reducers have been set explicitly with `withReducers`
-    val setExplicitly = conf.getBoolean(Config.WithReducersSetExplicitly, false)
-
-    // log in JobConf what was explicitly set by 'withReducers'
-    if (setExplicitly) conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
-
-    // whether we should override explicitly-specified numReducers
-    val overrideExplicit = conf.getBoolean(Config.ReducerEstimatorOverride, false)
-
-    Option(conf.get(Config.ReducerEstimators)).map { clsNames =>
+    Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
 
       val clsLoader = Thread.currentThread.getContextClassLoader
 
@@ -175,18 +204,35 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 
-      // try to make estimate
       val info = FlowStrategyInfo(flow, preds.asScala, step)
 
-      // if still None, make it '-1' to make it simpler to log
-      val numReducers = combinedEstimator.estimateReducers(info)
+      // get estimate
+      val estimatedNumReducers = combinedEstimator.estimateReducers(info)
 
-      // save the estimate in the JobConf which should be saved by hRaven
-      conf.setInt(EstimatorConfig.estimatedNumReducers, numReducers.getOrElse(-1))
+      // apply cap if needed
+      val cappedNumReducers = estimatedNumReducers.map { n =>
+        val configuredMax = conf.getInt(EstimatorConfig.maxEstimatedReducersKey, EstimatorConfig.defaultMaxEstimatedReducers)
 
+        if (n > configuredMax) {
+          LOG.warn(
+            s"""
+               |Reducer estimator estimated $n reducers, which is more than the configured maximum of $configuredMax.
+               |Will use $configuredMax instead.
+             """.stripMargin)
+          configuredMax
+        } else {
+          n
+        }
+      }
+
+      // save the estimate and capped estimate in the JobConf which should be saved by hRaven
+      conf.setInt(EstimatorConfig.estimatedNumReducers, estimatedNumReducers.getOrElse(-1))
+      conf.setInt(EstimatorConfig.cappedEstimatedNumReducersKey, cappedNumReducers.getOrElse(-1))
       // set number of reducers
-      if (!setExplicitly || overrideExplicit) {
-        numReducers.foreach(conf.setNumReduceTasks)
+      cappedNumReducers.foreach(conf.setNumReduceTasks)
+      // log in JobConf what was explicitly set by 'withReducers'
+      if (reducersSetExplicitly(step)) {
+        conf.set(EstimatorConfig.originalNumReducers, stepNumReducers)
       }
     }
   }

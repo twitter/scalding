@@ -94,17 +94,17 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
         outputBuffer.head shouldBe expectedDiff +- 0.00001
       }
       .run
-      .finish
+      .finish()
   }
 
-  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double], variance: Double) {
+  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double], variance: Double): Unit = {
     actual.zipWithIndex.foreach {
       case (value, i) =>
         value shouldBe (expected(i)) +- variance
     }
   }
 
-  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double]) {
+  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double]): Unit = {
     actual.zipWithIndex.foreach {
       case (value, i) =>
         value shouldBe (expected(i))

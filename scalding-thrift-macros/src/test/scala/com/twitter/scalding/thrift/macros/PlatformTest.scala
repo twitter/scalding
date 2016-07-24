@@ -47,7 +47,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     def g(idx: Int) = ScroogeGenerators.dataProvider[T](idx)
   }
 
-  def runCompareTest[T: OrderedSerialization](implicit iprov: InstanceProvider[T]) {
+  def runCompareTest[T: OrderedSerialization](implicit iprov: InstanceProvider[T]): Unit = {
     val input = (0 until 10000).map { idx =>
       iprov.g(idx % 50)
     }
@@ -61,7 +61,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
         out.toSet shouldBe expected.toSet
       }
-      .run
+      .run()
   }
 
   "ThriftStruct Test" should {

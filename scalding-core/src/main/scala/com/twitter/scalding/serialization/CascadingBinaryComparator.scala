@@ -53,14 +53,14 @@ object CascadingBinaryComparator {
     def reduce(it: TraversableOnce[Try[Unit]]): Try[Unit] =
       it.find(_.isFailure).getOrElse(Success(()))
 
+    def failure(s: String): Try[Unit] =
+      Failure(new RuntimeException("Cannot verify OrderedSerialization: " + s))
+
     def check(s: Splice): Try[Unit] = {
       val m = s.getKeySelectors.asScala
       val sortingSelectors = s.getSortingSelectors.asScala
 
-      def error(s: String): Try[Unit] =
-        Failure(new RuntimeException("Cannot verify OrderedSerialization: " + s))
-
-      if (m.isEmpty) error(s"Splice must have KeySelectors: $s")
+      if (m.isEmpty) failure(s"Splice must have KeySelectors: $s")
       else {
         reduce(m.map {
           case (pipename, fields) =>
@@ -70,7 +70,7 @@ object CascadingBinaryComparator {
              */
             if (fields.getComparators()(0).isInstanceOf[CascadingBinaryComparator[_]])
               Success(())
-            else error(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
+            else failure(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
         })
       }
     }
@@ -94,7 +94,7 @@ object CascadingBinaryComparator {
     else {
       val badSteps = missing.size
       val msg = missing.zipWithIndex.map { case (msg, idx) => s"<step$idx>$msg</step$idx>" }.mkString
-      error(s"There are $badSteps missing OrderedSerializations: $msg")
+      failure(s"There are $badSteps missing OrderedSerializations: $msg")
     }
   }
 }

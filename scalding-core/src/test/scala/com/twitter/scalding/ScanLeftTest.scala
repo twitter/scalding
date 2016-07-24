@@ -55,6 +55,6 @@ class ScanLeftTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

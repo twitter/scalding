@@ -373,8 +373,8 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
    * Trace(A B) = Trace(B A) so we optimize to choose the lowest cost item
    */
   override def trace(implicit mon: Monoid[V], ev1: =:=[R, C2]): Scalar2[V] = {
-    val (cost1, plan1) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]])
-    val (cost2, plan2) = Matrix2.optimize(
+    val (cost1, plan1) = Matrix2.optimize(this.asInstanceOf[Matrix2[Any, Any, V]]) // linter:ignore
+    val (cost2, plan2) = Matrix2.optimize( // linter:ignore
       Product(right.asInstanceOf[Matrix2[C, R, V]], left.asInstanceOf[Matrix2[R, C, V]], ring, None)
         .asInstanceOf[Matrix2[Any, Any, V]])
 
@@ -634,8 +634,8 @@ object Matrix2 {
       if (i == j) p(i)
       else {
         val k = splitMarkers((i, j))
-        val left = generatePlan(i, k)
-        val right = generatePlan(k + 1, j)
+        val left = generatePlan(i, k) // linter:ignore
+        val right = generatePlan(k + 1, j) // linter:ignore
         val (ring, joiner) = product.get
         Product(left, right, ring, Some(sharedMap))(joiner)
       }
@@ -677,8 +677,8 @@ object Matrix2 {
         case Sum(left, right, mon) => {
           val (lastLChain, lastCost1, ringL, joinerL) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2, ringR, joinerR) = optimizeBasicBlocks(right)
-          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL))
-          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR))
+          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL)) // linter:ignore
+          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR)) // linter:ignore
           (List(Sum(newLeft, newRight, mon)),
             lastCost1 + lastCost2 + cost1 + cost2,
             ringL.orElse(ringR),
@@ -687,8 +687,8 @@ object Matrix2 {
         case HadamardProduct(left, right, ring) => {
           val (lastLChain, lastCost1, ringL, joinerL) = optimizeBasicBlocks(left)
           val (lastRChain, lastCost2, ringR, joinerR) = optimizeBasicBlocks(right)
-          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL))
-          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR))
+          val (cost1, newLeft) = optimizeProductChain(lastLChain.toIndexedSeq, pair(ringL, joinerL)) // linter:ignore
+          val (cost2, newRight) = optimizeProductChain(lastRChain.toIndexedSeq, pair(ringR, joinerR)) // linter:ignore
           (List(HadamardProduct(newLeft, newRight, ring)),
             lastCost1 + lastCost2 + cost1 + cost2,
             ringL.orElse(ringR),
@@ -705,7 +705,7 @@ object Matrix2 {
       }
     }
     val (lastChain, lastCost, ring, joiner) = optimizeBasicBlocks(mf)
-    val (potentialCost, finalResult) = optimizeProductChain(lastChain.toIndexedSeq, pair(ring, joiner))
+    val (potentialCost, finalResult) = optimizeProductChain(lastChain.toIndexedSeq, pair(ring, joiner)) // linter:ignore
     (lastCost + potentialCost, finalResult)
   }
 }

@@ -26,7 +26,7 @@ class TypedFieldsTest extends WordSpec with Matchers {
     // the Opaque class has no comparator
 
     "throw an exception if a field is not comparable" in {
-      val thrown = the[FlowException] thrownBy untypedJob
+      val thrown = the[FlowException] thrownBy untypedJob()
       thrown.getMessage shouldBe "local step failed"
     }
 
@@ -44,20 +44,20 @@ class TypedFieldsTest extends WordSpec with Matchers {
           outMap("bar") shouldBe 6
         }
         .run
-        .finish
+        .finish()
 
     }
 
   }
 
-  def untypedJob {
+  def untypedJob(): Unit = {
     JobTest(new UntypedFieldsJob(_))
       .arg("input", "inputFile")
       .arg("output", "outputFile")
       .source(TextLine("inputFile"), List("0" -> "5,foo", "1" -> "6,bar", "2" -> "9,foo"))
       .sink[(Opaque, Int)](Tsv("outputFile")){ _ => }
       .run
-      .finish
+      .finish()
   }
 
 }

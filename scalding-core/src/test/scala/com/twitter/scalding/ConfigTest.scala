@@ -50,6 +50,16 @@ class ConfigTest extends WordSpec with Matchers {
       val (id, conf) = Config.empty.ensureUniqueId
       assert(conf.getUniqueIds === (Set(id)))
     }
+    "roundtrip Args" in {
+      val config = Config.empty
+      val args = Args(Array("--hello", "party people"))
+
+      assert(config.setArgs(args).getArgs === args)
+    }
+    "throw when Args has been manually modified" in {
+      val config = Config.empty + (Config.ScaldingJobArgsSerialized -> "  ")
+      intercept[RuntimeException](config.getArgs)
+    }
     "Default serialization should have tokens" in {
       Config.default.getCascadingSerializationTokens should not be empty
       Config.default.getCascadingSerializationTokens

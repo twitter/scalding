@@ -51,7 +51,7 @@ case class WritableSequenceFile[K <: Writable: Manifest, V <: Writable: Manifest
   with WritableSequenceFileScheme
   with LocalTapSource
   with TypedSink[(K, V)]
-  with TypedSource[(K, V)] {
+  with Mappable[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].runtimeClass.asInstanceOf[Class[_ <: Writable]]
@@ -73,14 +73,15 @@ object MultipleWritableSequenceFiles {
 }
 
 /**
- * This is only a TypedSource as sinking into multiple directories is not well defined
+ * This is only a TypedSource (which is a superclass of Mappable) as sinking into multiple directories
+ * is not well defined
  */
 case class MultipleWritableSequenceFiles[K <: Writable: Manifest, V <: Writable: Manifest](
   p: Seq[String], f: Fields)
   extends FixedPathSource(p: _*)
   with WritableSequenceFileScheme
   with LocalTapSource
-  with TypedSource[(K, V)] {
+  with Mappable[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].runtimeClass.asInstanceOf[Class[_ <: Writable]]

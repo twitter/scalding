@@ -25,7 +25,9 @@ import scala.collection.mutable.Buffer
 class IntContainer {
   private var firstValue = 0
   def getFirstValue = firstValue
-  def setFirstValue(v: Int) { firstValue = v }
+  def setFirstValue(v: Int): Unit = {
+    firstValue = v
+  }
 
   @BeanProperty // Test the other syntax
   var secondValue = 0
@@ -155,7 +157,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A ContainerToPopulationJob" should {
@@ -174,7 +176,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   val fatInputData = List((8, 13))
@@ -192,7 +194,7 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A FatContainerToPopulationJob" should {
@@ -207,6 +209,6 @@ class PackTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

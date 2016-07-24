@@ -68,6 +68,6 @@ class HistogramJobTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 }

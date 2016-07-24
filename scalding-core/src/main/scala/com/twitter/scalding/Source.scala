@@ -28,6 +28,8 @@ import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollecto
 
 import cascading.pipe.Pipe
 
+import org.apache.hadoop.mapred.InputFormat
+import org.apache.hadoop.mapred.InputSplit
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -76,9 +78,20 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
   // In the worst case if the flow plan is misconfigured,
   // openForRead on mappers should fail when using this tap.
   override def sourceConfInit(flow: FlowProcess[JobConf], conf: JobConf): Unit = {
-    conf.setInputFormat(classOf[cascading.tap.hadoop.io.MultiInputFormat])
+    conf.setInputFormat(classOf[InvalidInputFormat])
     super.sourceConfInit(flow, conf)
   }
+}
+
+/**
+ * Better error messaging for the occassion where an InvalidSourceTap does not
+ * fail in validation.
+ */
+private[scalding] class InvalidInputFormat extends InputFormat[Nothing, Nothing] {
+  override def getSplits(conf: JobConf, numSplits: Int): Nothing =
+    throw new InvalidSourceException("getSplits called on InvalidInputFormat")
+  override def getRecordReader(split: InputSplit, conf: JobConf, reporter: org.apache.hadoop.mapred.Reporter): Nothing =
+    throw new InvalidSourceException("getRecordReader called on InvalidInputFormat")
 }
 
 /*
@@ -131,7 +144,7 @@ abstract class Source extends java.io.Serializable {
   def sourceId: String = toString
 
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    checkFlowDefNotNull
+    checkFlowDefNotNull()
 
     //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String, Any]]
@@ -157,7 +170,7 @@ abstract class Source extends java.io.Serializable {
    * the next operation
    */
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    checkFlowDefNotNull
+    checkFlowDefNotNull()
 
     //insane workaround for scala compiler bug
     val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
@@ -174,7 +187,7 @@ abstract class Source extends java.io.Serializable {
     pipe
   }
 
-  protected def checkFlowDefNotNull(implicit flowDef: FlowDef, mode: Mode) {
+  protected def checkFlowDefNotNull()(implicit flowDef: FlowDef, mode: Mode): Unit = {
     assert(flowDef != null, "Trying to access null FlowDef while in mode: %s".format(mode))
   }
 
@@ -189,7 +202,7 @@ abstract class Source extends java.io.Serializable {
   /*
    * This throws InvalidSourceException if this source is invalid.
    */
-  def validateTaps(mode: Mode): Unit = {}
+  def validateTaps(mode: Mode): Unit = {} // linter:ignore
 
   @deprecated("replace with Mappable.toIterator", "0.9.0")
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
@@ -255,9 +268,9 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
     new TupleEntryCollector {
-      override def add(te: TupleEntry) {}
-      override def add(t: CTuple) {}
-      protected def collect(te: TupleEntry) {}
+      override def add(te: TupleEntry): Unit = ()
+      override def add(t: CTuple): Unit = ()
+      protected def collect(te: TupleEntry): Unit = ()
     }
 
   def createResource(conf: Config) = true

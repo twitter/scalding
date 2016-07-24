@@ -47,7 +47,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
           // The job will fail with an exception if the FlowProcess is unavailable.
         }
         .runHadoop
-        .finish
+        .finish()
     }
 
     "have no access to a FlowProcess when WrappedJoiner is not used" in {
@@ -59,7 +59,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
             // The job will fail with an exception if the FlowProcess is unavailable.
           }
           .runHadoop
-          .finish
+          .finish()
 
         fail("The test Job without WrappedJoiner should fail.")
       } catch {

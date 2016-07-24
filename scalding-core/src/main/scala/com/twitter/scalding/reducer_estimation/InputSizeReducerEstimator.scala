@@ -5,6 +5,8 @@ import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
 object InputSizeReducerEstimator {
+  private[this] val LOG = LoggerFactory.getLogger(this.getClass)
+
   val BytesPerReducer = "scalding.reducer.estimator.bytes.per.reducer"
   val defaultBytesPerReducer = 1L << 32 // 4 GB
 
@@ -18,22 +20,15 @@ object InputSizeReducerEstimator {
    */
   def getBytesPerReducer(conf: JobConf): Long =
     conf.getLongBytes(BytesPerReducer, defaultBytesPerReducer)
-}
-
-/**
- * Estimator that uses the input size and a fixed "bytesPerReducer" target.
- *
- * Bytes per reducer can be configured with configuration parameter, defaults to 4 GB.
- */
-class InputSizeReducerEstimator extends ReducerEstimator {
-
-  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   /**
-   * Figure out the total size of the input to the current step and set the number
-   * of reducers using the "bytesPerReducer" configuration parameter.
+   * Same as estimateReducers, except doesn't round or ceil the result.
+   * This is useful for composing with other estimation strategies that
+   * don't want to lose the fractional number of reducers. Especially
+   * helpful for when less than 1 reducer is needed, but this fraction
+   * will be multiplied by a scaling factor later.
    */
-  override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
+  def estimateReducersWithoutRounding(info: FlowStrategyInfo): Option[Double] = {
     Common.inputSizes(info.step) match {
       case Nil =>
         LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
@@ -45,10 +40,10 @@ class InputSizeReducerEstimator extends ReducerEstimator {
           InputSizeReducerEstimator.getBytesPerReducer(info.step.getConfig)
 
         val totalBytes = inputSizes.map(_._2).sum
-        val nReducers = (totalBytes.toDouble / bytesPerReducer).ceil.toInt max 1
+        val nReducers = totalBytes.toDouble / bytesPerReducer.toDouble
 
         lazy val logStr = inputSizes.map {
-          case (name, bytes) => s"   - ${name}\t${bytes}"
+          case (name, bytes) => s"   - $name\t$bytes"
         }.mkString("\n")
 
         LOG.info("\nInputSizeReducerEstimator" +
@@ -59,4 +54,18 @@ class InputSizeReducerEstimator extends ReducerEstimator {
 
         Some(nReducers)
     }
+  }
+
+}
+
+/**
+ * Estimator that uses the input size and a fixed "bytesPerReducer" target.
+ *
+ * Bytes per reducer can be configured with configuration parameter, defaults to 4 GB.
+ */
+class InputSizeReducerEstimator extends ReducerEstimator {
+  import InputSizeReducerEstimator._
+
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
+    estimateReducersWithoutRounding(info).map { _.ceil.toInt.max(1) }
 }

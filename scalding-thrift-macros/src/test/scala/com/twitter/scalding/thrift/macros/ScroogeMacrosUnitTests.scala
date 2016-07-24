@@ -16,7 +16,7 @@
 package com.twitter.scalding.thrift.macros
 
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.thrift.macros.scalathrift.TestLists
+import com.twitter.scalding.thrift.macros.scalathrift._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 
@@ -28,6 +28,15 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks 
   import Macros._
 
   "MacroGenerated TBaseOrderedSerialization" should {
+
+    "Should generate serializers" in {
+      Macros.scroogeOrdSer[TestTypes]
+      Macros.scroogeOrdSer[TestLists]
+      Macros.scroogeOrdSer[TestMaps]
+      Macros.scroogeOrdSer[TestOptionTypes]
+      Macros.scroogeOrdSer[A]
+    }
+
     "Should RT" in {
       forAll { a1: TestLists =>
         assert(oBufCompare(rt(a1), a1) == 0)

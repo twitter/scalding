@@ -40,7 +40,7 @@ trait BaseScaldingShell extends MainGenericRunner {
   /**
    * An instance of the Scala REPL the user will interact with.
    */
-  private var scaldingREPL: Option[ILoop] = None
+  protected var scaldingREPL: Option[ILoop] = None
 
   /**
    * An instance of the default configuration for the REPL
@@ -123,7 +123,7 @@ trait BaseScaldingShell extends MainGenericRunner {
    *
    * @param args from the command line.
    */
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val retVal = process(args)
     if (!retVal) {
       sys.exit(1)
@@ -173,7 +173,7 @@ trait BaseScaldingShell extends MainGenericRunner {
   private def addVirtualDirectoryToJar(
     dir: VirtualDirectory,
     entryPath: String,
-    jarStream: JarOutputStream) {
+    jarStream: JarOutputStream): Unit = {
     dir.foreach { file =>
       if (file.isDirectory) {
         // Recursively descend into subdirectories, adjusting the package name as we do.

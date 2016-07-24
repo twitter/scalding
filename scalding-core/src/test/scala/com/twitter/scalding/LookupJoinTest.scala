@@ -84,20 +84,16 @@ class LookupJoinedTest extends WordSpec with Matchers {
     implicit val ord: Ordering[(T, K, W)] = Ordering.by {
       _._1
     }
-    val serv = in1.groupBy(_._2).mapValues {
-      _.toList
-        .sorted
-        .scanLeft(None: Option[(T, K, W)]) { (old, newer) =>
-          old.map { case (_, _, w) => (newer._1, newer._2, Semigroup.plus(w, newer._3)) }
-            .orElse(Some(newer))
-        }
-        .filter {
-          _.isDefined
-        }
-        .map {
-          _.get
-        }
-    }.toMap // Force the map
+    val serv: Map[K, List[(T, K, W)]] = in1.groupBy(_._2).map {
+      case (k, v) =>
+        (k, v.toList
+          .sorted
+          .scanLeft(None: Option[(T, K, W)]) { (old, newer) =>
+            old.map { case (_, _, w) => (newer._1, newer._2, Semigroup.plus(w, newer._3)) }
+              .orElse(Some(newer))
+          }
+          .collect { case Some(v) => v })
+    }
 
     def lookup(t: T, k: K): Option[W] = {
       val ord = Ordering.by { tkw: (T, K, W) => tkw._1 }
@@ -133,7 +129,7 @@ class LookupJoinedTest extends WordSpec with Matchers {
           }
         .run
         //.runHadoop
-        .finish
+        .finish()
     }
   }
 }
@@ -210,7 +206,7 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
           }
         .run
         //.runHadoop
-        .finish
+        .finish()
     }
   }
 }

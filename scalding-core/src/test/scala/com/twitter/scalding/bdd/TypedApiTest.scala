@@ -20,11 +20,9 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
         List(("Joe", "M", 40), ("Sarah", "F", 22))
       } When {
         in: TypedPipe[(String, String, Int)] =>
-          in.map[(String, Double)] { person =>
-            person match {
-              case (name, "M", age) => (name, (1000.0 / (72 - age)).toDouble)
-              case (name, _, age) => (name, (1000.0 / (80 - age)).toDouble)
-            }
+          in.map[(String, Double)] {
+            case (name, "M", age) => (name, (1000.0 / (72 - age)))
+            case (name, _, age) => (name, (1000.0 / (80 - age)))
           }
       } Then {
         buffer: mutable.Buffer[(String, Double)] =>
@@ -37,11 +35,9 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
         List(UserInfo("Joe", "M", 40), UserInfo("Sarah", "F", 22))
       } When {
         in: TypedPipe[UserInfo] =>
-          in.map { person =>
-            person match {
-              case UserInfo(name, "M", age) => EstimatedContribution(name, (1000.0 / (72 - age)))
-              case UserInfo(name, _, age) => EstimatedContribution(name, (1000.0 / (80 - age)))
-            }
+          in.map {
+            case UserInfo(name, "M", age) => EstimatedContribution(name, (1000.0 / (72 - age)))
+            case UserInfo(name, _, age) => EstimatedContribution(name, (1000.0 / (80 - age)))
           }
       } Then {
         buffer: mutable.Buffer[EstimatedContribution] =>
@@ -103,8 +99,8 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
           List(UserWithAge("Joe", 40), UserWithAge("Sarah", 22)))
       } When {
         pipes: List[TypedPipe[_]] =>
-          val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
-          val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]]
+          val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]] // linter:ignore
+          val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]] // linter:ignore
 
           gender
             .groupBy(_.name)
@@ -128,8 +124,8 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
             List(("Joe", 40), ("Sarah", 22)))
         } When {
           pipes: List[TypedPipe[_]] =>
-            val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]]
-            val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]]
+            val gender = pipes(0).asInstanceOf[TypedPipe[UserWithGender]] // linter:ignore
+            val age = pipes(1).asInstanceOf[TypedPipe[UserWithAge]] // linter:ignore
 
             gender
               .groupBy(_.name)
@@ -159,7 +155,7 @@ class TypedApiTest extends WordSpec with Matchers with TBddDsl {
         List(("user1", true), ("user2", false))
       } When {
         pipes: List[TypedPipe[_]] =>
-          val withUserID = pipes(0).asInstanceOf[TypedPipe[(String, String)]]
+          val withUserID = pipes(0).asInstanceOf[TypedPipe[(String, String)]] // linter:ignore
           val withGender = pipes(1).asInstanceOf[TypedPipe[(String, String)]]
           val withAge = pipes(2).asInstanceOf[TypedPipe[(String, Int)]]
           val withIncome = pipes(3).asInstanceOf[TypedPipe[(String, Long)]]

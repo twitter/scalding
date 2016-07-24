@@ -30,7 +30,7 @@ class Tool extends Configured with HTool {
   var rootJob: Option[(Args) => Job] = None
 
   //  Allows you to set the job for the Tool to run
-  def setJobConstructor(jobc: (Args) => Job) {
+  def setJobConstructor(jobc: (Args) => Job): Unit = {
     if (rootJob.isDefined) {
       sys.error("Job is already defined")
     } else {
@@ -43,7 +43,7 @@ class Tool extends Configured with HTool {
     case None if args.positional.isEmpty =>
       throw ArgsException("Usage: Tool <jobClass> --local|--hdfs [args...]")
     case None => // has at least one arg
-      val jobName = args.positional(0)
+      val jobName = args.positional.head
       // Remove the job name from the positional arguments:
       val nonJobNameArgs = args + ("" -> args.positional.tail)
       Job(jobName, nonJobNameArgs)
@@ -82,7 +82,7 @@ class Tool extends Configured with HTool {
     */
     val jobName = job.getClass.getName
     @tailrec
-    def start(j: Job, cnt: Int) {
+    def start(j: Job, cnt: Int): Unit = {
       val successful = if (onlyPrintGraph) {
         val flow = j.buildFlow
         /*
@@ -120,15 +120,15 @@ class Tool extends Configured with HTool {
         flow.writeStepsDOT(thisStepsDot)
         true
       } else {
-        j.validate
-        j.run
+        j.validate()
+        j.run()
       }
-      j.clear
+      j.clear()
       //When we get here, the job is finished
       if (successful) {
         j.next match {
           case Some(nextj) => start(nextj, cnt + 1)
-          case None => Unit
+          case None => ()
         }
       } else {
         throw new RuntimeException("Job failed to run: " + jobName +
@@ -143,7 +143,7 @@ class Tool extends Configured with HTool {
 }
 
 object Tool {
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     try {
       ToolRunner.run(new JobConf, new Tool, ExpandLibJarsGlobs(args))
     } catch {

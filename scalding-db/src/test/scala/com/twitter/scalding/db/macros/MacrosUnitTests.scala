@@ -77,7 +77,11 @@ case class CaseClassWithDate(
 case class CaseClassWithOptions(
   id: Option[Int],
   @size(20) name: Option[String],
-  date_id: Option[Date])
+  date_id: Option[Date],
+  boolean_value: Option[Boolean],
+  short_value: Option[Short],
+  long_value: Option[Long],
+  double_value: Option[Double])
 
 case class InnerWithBadNesting(
   age: Int,
@@ -95,12 +99,12 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     override val resultSetExtractor = null
   }
 
-  def isColumnDefinitionAvailable[T](implicit proof: ColumnDefinitionProvider[T] = dummy.asInstanceOf[ColumnDefinitionProvider[T]]) {
+  def isColumnDefinitionAvailable[T](implicit proof: ColumnDefinitionProvider[T] = dummy.asInstanceOf[ColumnDefinitionProvider[T]]): Unit = {
     proof shouldBe a[MacroGenerated]
     proof.columns.isEmpty shouldBe false
   }
 
-  def isJDBCTypeInfoAvailable[T](implicit proof: DBTypeDescriptor[T] = dummy.asInstanceOf[DBTypeDescriptor[T]]) {
+  def isJDBCTypeInfoAvailable[T](implicit proof: DBTypeDescriptor[T] = dummy.asInstanceOf[DBTypeDescriptor[T]]): Unit = {
     proof shouldBe a[MacroGenerated]
     proof.columnDefn.columns.isEmpty shouldBe false
   }
@@ -329,7 +333,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     assert(CaseClassWithDate(99L, date1, date2) == converter(new TupleEntry(t)))
   }
 
-  "ResultSetExtractor for null values" should {
+  "ResultSetExtractor validation for nullable columns" should {
 
     val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
     val columnDef = typeDesc.columnDefn
@@ -341,22 +345,63 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(4)) thenReturn ("BOOLEAN")
+    when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(5)) thenReturn ("SMALLINT")
+    when(rsmd.isNullable(5)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(6)) thenReturn ("BIGINT")
+    when(rsmd.isNullable(6)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(7)) thenReturn ("DOUBLE")
+    when(rsmd.isNullable(7)) thenReturn (ResultSetMetaData.columnNullable)
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
+  }
+
+  "ResultSetExtractor when nullable values are not null" should {
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
+    val columnDef = typeDesc.columnDefn
 
     val rs = mock[ResultSet]
     when(rs.getInt("id")) thenReturn (26)
+    when(rs.wasNull) thenReturn (false)
     when(rs.getString("name")) thenReturn ("alice")
+    when(rs.wasNull) thenReturn (false)
     when(rs.getTimestamp("date_id")) thenReturn (new java.sql.Timestamp(1111L))
+    when(rs.wasNull) thenReturn (false)
+    when(rs.getBoolean("boolean_value")) thenReturn (true)
+    when(rs.wasNull) thenReturn (false)
+    when(rs.getInt("short_value")) thenReturn (2)
+    when(rs.wasNull) thenReturn (false)
+    when(rs.getLong("long_value")) thenReturn (2000L)
+    when(rs.wasNull) thenReturn (false)
+    when(rs.getDouble("double_value")) thenReturn (2.2)
+    when(rs.wasNull) thenReturn (false)
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
-      CaseClassWithOptions(Some(26), Some("alice"), Some(new Date(1111L))))
+      CaseClassWithOptions(Some(26), Some("alice"), Some(new Date(1111L)),
+        Some(true), Some(2), Some(2000L), Some(2.2)))
+  }
 
-    reset(rs)
+  "ResultSetExtractor when null values" should {
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithOptions]
+    val columnDef = typeDesc.columnDefn
+
+    val rs = mock[ResultSet]
     when(rs.getInt("id")) thenReturn (0) // jdbc returns 0 for null numeric values
+    when(rs.wasNull) thenReturn (true)
     when(rs.getString("name")) thenReturn (null)
+    when(rs.wasNull) thenReturn (true)
     when(rs.getString("date_id")) thenReturn (null)
+    when(rs.getBoolean("boolean_value")) thenReturn (false) // jdbc returns false for null boolean values
+    when(rs.wasNull) thenReturn (true)
+    when(rs.getInt("short_value")) thenReturn (0)
+    when(rs.wasNull) thenReturn (true)
+    when(rs.getLong("long_value")) thenReturn (0L)
+    when(rs.wasNull) thenReturn (true)
+    when(rs.getDouble("double_value")) thenReturn (0)
+    when(rs.wasNull) thenReturn (true)
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
-      CaseClassWithOptions(Some(0), None, None))
+      CaseClassWithOptions(None, None, None,
+        None, None, None, None))
   }
 
   "ResultSetExtractor for DB schema type mismatch" in {
@@ -370,6 +415,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(4)) thenReturn ("BOOLEAN")
+    when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(5)) thenReturn ("SMALLINT")
+    when(rsmd.isNullable(5)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(6)) thenReturn ("BIGINT")
+    when(rsmd.isNullable(6)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(7)) thenReturn ("DOUBLE")
+    when(rsmd.isNullable(7)) thenReturn (ResultSetMetaData.columnNullable)
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isFailure)
   }
@@ -385,6 +438,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.isNullable(2)) thenReturn (ResultSetMetaData.columnNullable)
     when(rsmd.getColumnTypeName(3)) thenReturn ("DATETIME")
     when(rsmd.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls) // mismatch
+    when(rsmd.getColumnTypeName(4)) thenReturn ("BOOLEAN")
+    when(rsmd.isNullable(4)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(5)) thenReturn ("SMALLINT")
+    when(rsmd.isNullable(5)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(6)) thenReturn ("BIGINT")
+    when(rsmd.isNullable(6)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(7)) thenReturn ("DOUBLE")
+    when(rsmd.isNullable(7)) thenReturn (ResultSetMetaData.columnNullable)
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isFailure)
   }

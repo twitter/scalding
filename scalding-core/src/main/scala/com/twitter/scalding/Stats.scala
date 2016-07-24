@@ -28,9 +28,9 @@ trait Stat extends java.io.Serializable {
    */
   def incBy(amount: Long): Unit
   /** increment by 1L */
-  def inc: Unit = incBy(1L)
+  def inc(): Unit = incBy(1L)
   /** increment by -1L (decrement) */
-  def dec: Unit = incBy(-1L)
+  def dec(): Unit = incBy(-1L)
   def key: StatKey
 }
 
@@ -89,13 +89,14 @@ object Stats {
     cascadingStats.getCounterValue(key.group, key.counter)
 
   // Returns a map of all custom counter names and their counts.
-  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] = {
-    val counts = for {
-      counter <- cascadingStats.getCountersFor(ScaldingGroup).asScala
-      value = getCounterValue(counter)
-    } yield (counter, value)
-    counts.toMap
-  }
+  def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] =
+    cascadingStats.getCountersFor(ScaldingGroup)
+      .asScala
+      .map { counter =>
+        val value = getCounterValue(counter)
+        (counter, value)
+      }
+      .toMap
 }
 
 /**
@@ -150,7 +151,7 @@ object RuntimeStats extends java.io.Serializable {
   }
 
   private[this] var prevFP: FlowProcess[_] = null
-  def addFlowProcess(fp: FlowProcess[_]) {
+  def addFlowProcess(fp: FlowProcess[_]): Unit = {
     if (!(prevFP eq fp)) {
       val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
       if (uniqueJobIdObj != null) {
@@ -179,7 +180,7 @@ object RuntimeStats extends java.io.Serializable {
     val id = UniqueID.getIDFor(flowDef)
     () => {
       val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
-      flowProcess.keepAlive
+      flowProcess.keepAlive()
     }
   }
 }

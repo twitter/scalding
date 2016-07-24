@@ -63,7 +63,7 @@ class FileSourceTest extends WordSpec with Matchers {
             }
         }
       .run
-      .finish
+      .finish()
   }
 
   "A WritableSequenceFile Source" should {
@@ -87,7 +87,7 @@ class FileSourceTest extends WordSpec with Matchers {
           }
       }
       .run
-      .finish
+      .finish()
   }
 
   "A MultipleTextLineFiles Source" should {
@@ -101,7 +101,7 @@ class FileSourceTest extends WordSpec with Matchers {
         }
       }
       .run
-      .finish
+      .finish()
   }
 
   "TextLine.toIterator" should {
@@ -326,7 +326,7 @@ object TestInvalidFileSource extends FileSource with Mappable[String] {
 
   val conf = new Configuration()
 
-  def pathIsGood(p: String) = false
+  def pathIsGood(p: String) = false // linter:ignore
   val hdfsMode: Hdfs = Hdfs(false, conf)
   def createHdfsReadTap = super.createHdfsReadTap(hdfsMode)
 }

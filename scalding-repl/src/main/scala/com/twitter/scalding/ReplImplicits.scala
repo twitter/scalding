@@ -42,35 +42,35 @@ trait BaseReplState {
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
    */
-  private[scalding] var storedHdfsMode: Option[Hdfs] = None
+  var storedHdfsMode: Option[Hdfs] = None
 
   /** Switch to Local mode */
-  def useLocalMode() {
+  def useLocalMode(): Unit = {
     mode = Local(false)
     printModeBanner()
   }
 
-  def useStrictLocalMode() {
+  def useStrictLocalMode(): Unit = {
     mode = Local(true)
     printModeBanner()
   }
 
   /** Switch to Hdfs mode */
-  private def useHdfsMode_() {
+  private def useHdfsMode_(): Unit = {
     storedHdfsMode match {
       case Some(hdfsMode) => mode = hdfsMode
       case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
   }
 
-  def useHdfsMode() {
+  def useHdfsMode(): Unit = {
     useHdfsMode_()
     customConfig -= mr1Key
     customConfig -= mr2Key
     printModeBanner()
   }
 
-  def useHdfsLocalMode() {
+  def useHdfsLocalMode(): Unit = {
     useHdfsMode_()
     customConfig += mr1Key -> mrLocal
     customConfig += mr2Key -> mrLocal
@@ -163,7 +163,7 @@ trait BaseReplState {
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
    */
-  def resetFlowDef() {
+  def resetFlowDef(): Unit = {
     flowDef = getEmptyFlowDef
   }
 

@@ -1,8 +1,10 @@
 package com.twitter.scalding.reducer_estimation
 
+import cascading.flow.FlowException
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import org.scalatest.{ Matchers, WordSpec }
+
 import scala.collection.JavaConverters._
 
 object HipJob {
@@ -99,8 +101,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (2)
+          conf.get(EstimatorConfig.originalNumReducers) should be (None)
         }
-        .run
+        .run()
     }
 
     "run with correct number of reducers when overriding set values" in {
@@ -115,8 +118,30 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (3)
+          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
         }
-        .run
+        .run()
+    }
+
+    "respect cap when estimated reducers is above the configured max" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (Config.ReducerEstimatorOverride -> "true") +
+        // 1 reducer per byte, should give us a large number
+        (InputSizeReducerEstimator.BytesPerReducer -> 1.toString) +
+        (EstimatorConfig.maxEstimatedReducersKey -> 10.toString)
+
+      HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.get(EstimatorConfig.estimatedNumReducers) should contain ("2496")
+          conf.get(EstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
+          conf.getNumReducers should contain (10)
+        }
+        .run()
+
     }
   }
 
@@ -133,7 +158,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (1)
         }
-        .run
+        .run()
     }
   }
 
@@ -149,7 +174,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val reducers = steps.map(_.getConfig.getInt(Config.HadoopNumReducers, 0)).toList
           reducers shouldBe List(3, 1, 1)
         }
-        .run
+        .run()
     }
   }
 
@@ -167,7 +192,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           val numReducers = conf.getNumReducers
           assert(!numReducers.isDefined || numReducers.get == 0, "Reducers should be 0")
         }
-        .run
+        .run()
     }
   }
 }

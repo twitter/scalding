@@ -49,20 +49,19 @@ object ScroogeOrderedBuf {
     val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType
       .declarations
       .filter(_.name.decoded.endsWith("Field "))
-      .collect{ case s: TermSymbol => s }
+      .collect { case s: TermSymbol => s }
       .filter(_.isStatic)
       .filter(_.isVal)
       .map { t =>
         val decodedName = t.name.decoded // Looks like "MethodNameField "
-        val cased = decodedName.take(1).toLowerCase ++ decodedName.drop(1) // "methodNameField "
-        cased.dropRight(6) //  (6 == "Field ".length) --> Drop the "Field " from the end to give methodName
+        decodedName.dropRight(6).toLowerCase //  These things end in "Field " , yes there is a space in there
       }.toList
 
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
       outerType
         .declarations
         .collect { case m: MethodSymbol => m }
-        .filter(m => fieldNames.contains(m.name.toTermName.toString))
+        .filter(m => fieldNames.contains(m.name.toTermName.toString.toLowerCase))
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
@@ -101,7 +100,7 @@ object ScroogeOrderedBuf {
         ProductLike.compare(c)(elementA, elementB)(elementData)
 
       override val lazyOuterVariables: Map[String, ctx.Tree] =
-        elementData.map(_._3.lazyOuterVariables).reduce(_ ++ _)
+        elementData.map(_._3.lazyOuterVariables).reduceLeftOption(_ ++ _).getOrElse(Map())
 
       override def length(element: Tree) =
         ProductLike.length(c)(element)(elementData)

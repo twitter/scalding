@@ -33,7 +33,7 @@ object EitherOrderedBuf {
     def freshT(id: String) = newTermName(c.fresh(id))
     val dispatcher = buildDispatcher
 
-    val leftType = outerType.asInstanceOf[TypeRefApi].args(0)
+    val leftType = outerType.asInstanceOf[TypeRefApi].args(0) // linter:ignore
     val rightType = outerType.asInstanceOf[TypeRefApi].args(1)
     val leftBuf: TreeOrderedBuf[c.type] = dispatcher(leftType)
     val rightBuf: TreeOrderedBuf[c.type] = dispatcher(rightType)

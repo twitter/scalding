@@ -30,7 +30,7 @@ trait HadoopPlatformTest extends BeforeAndAfterEach { this: Suite =>
 
   def initialize() = cluster.initialize()
 
-  override def beforeEach() {
+  override def beforeEach(): Unit = {
     cluster.synchronized {
       initialize()
     }
@@ -39,7 +39,7 @@ trait HadoopPlatformTest extends BeforeAndAfterEach { this: Suite =>
 
   //TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
   // get lost in the logging
-  override def afterEach() {
+  override def afterEach(): Unit = {
     try super.afterEach()
     finally {
       // Necessary because afterAll can be called from a different thread and we want to make sure that the state
