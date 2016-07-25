@@ -178,7 +178,7 @@ class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inpu
  * you get return this subgraph that will only filter the vertices when necessary
  */
 class GraphUnfilteredVertices[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
-  extends Graph(inputEdges, inputVertices) {
+  extends Graph[T, S, Q](inputEdges, inputVertices) {
   override def vertices = {
     val graphVertices = edges.flatMap(e => List(e.source, e.dest)).distinct
     inputVertices
@@ -195,7 +195,7 @@ class GraphUnfilteredVertices[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe
  * you get return this subgraph that will only filter the edges when necessary
  */
 class GraphUnfilteredEdges[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
-  extends Graph(inputEdges, inputVertices) {
+  extends Graph[T, S, Q](inputEdges, inputVertices) {
 
   override def edges =
     inputEdges
