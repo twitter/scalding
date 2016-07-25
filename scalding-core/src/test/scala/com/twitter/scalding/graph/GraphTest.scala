@@ -57,7 +57,7 @@ class GraphTest extends WordSpec with Matchers {
     }
 
     "collect neighbors sorted" in {
-      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighbors(true))
+      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighbors(true).vertices)
 
       val vertex = neighbors.find(_.id == 2L)
       assert(vertex.isDefined, "Found the vertex")
@@ -65,7 +65,7 @@ class GraphTest extends WordSpec with Matchers {
     }
 
     "collect neighbors ids sorted" in {
-      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighborIds(true))
+      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighborIds(true).vertices)
 
       val vertex = neighbors.find(_.id == 2L)
       assert(vertex.isDefined, "Found the vertex")

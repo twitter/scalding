@@ -19,7 +19,7 @@ import com.twitter.scalding.TypedPipe
 
 import scala.reflect.ClassTag
 
-class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]]) {
+class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])(implicit ord: Ordering[T]) {
   def edges: TypedPipe[Edge[T, S]] = inputEdges
   def vertices: TypedPipe[Vertex[T, Q]] = inputVertices
 
@@ -80,14 +80,14 @@ class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inpu
    * Collect only neighbor ids.
    * Optionally sort by Vertex
    */
-  def collectNeighborIds(sortNeighbors: Boolean = true): TypedPipe[Vertex[T, Neighbors[T]]] =
-    edges
-      .map{ edge => (edge.source, edge.dest) }
+  def collectNeighborIds(sortNeighbors: Boolean = true): Graph[T, S, Neighbors[T]] = {
+    val nbrs = edges
+      .map { edge => (edge.source, edge.dest) }
       .group
-      .mapGroup{
+      .mapGroup {
         case (vert, nbrs) =>
           val nbrsArray: Vertex[T, Neighbors[T]] = if (sortNeighbors) {
-            Vertex(vert, SortedNeighbors(nbrs.toArray.sorted))
+            Vertex(vert, SortedNeighbors(nbrs.toArray.sorted)(ord))
           } else {
             Vertex(vert, UnsortedNeighbors(nbrs.toArray))
           }
@@ -96,21 +96,24 @@ class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inpu
       }
       .values
 
+    Graph(edges, nbrs)
+  }
+
   /**
    * Collect all Neighbors of an Vertex.
    * Optionally sort by Vertex
    */
-  def collectNeighbors(sortNeighbors: Boolean = true): TypedPipe[Vertex[T, Neighbors[Vertex[T, Q]]]] =
-    edges
-      .map{ edge => (edge.dest, edge.source) }
+  def collectNeighbors(sortNeighbors: Boolean = true): Graph[T, S, Neighbors[Vertex[T, Q]]] = {
+    val nbrs = edges
+      .map { edge => (edge.dest, edge.source) }
       .join(vertices.groupBy(_.id))
       .toTypedPipe
-      .map{ case (dest, (source, vertex)) => (source, (dest, vertex)) }
+      .map { case (dest, (source, vertex)) => (source, (dest, vertex)) }
       .group
-      .mapGroup{
+      .mapGroup {
         case (id, vertexes) =>
           val nbrsArray: Vertex[T, Neighbors[Vertex[T, Q]]] = if (sortNeighbors) {
-            Vertex(id, SortedNeighbors(vertexes.toArray.sortBy(_._1).map(_._2)))
+            Vertex(id, SortedNeighbors(vertexes.toArray.sortBy(_._1).map(_._2))(Ordering.by(_.id)))
           } else {
             Vertex(id, UnsortedNeighbors(vertexes.toArray.map(_._2)))
           }
@@ -118,6 +121,9 @@ class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inpu
           Iterator.single(nbrsArray)
       }
       .values
+
+    Graph(edges, nbrs)
+  }
 
   /**
    * Returns each Vertex with all out going edges.
@@ -130,7 +136,7 @@ class Graph[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inpu
       .mapGroup{
         case (id, edgeList) =>
           val nbrsArray: Vertex[T, Neighbors[Edge[T, S]]] = if (sortNeighbors) {
-            Vertex(id, SortedNeighbors(edgeList.toArray.sortBy(_.dest)))
+            Vertex(id, SortedNeighbors(edgeList.toArray.sortBy(_.dest))(Ordering.by(_.dest)))
           } else {
             Vertex(id, UnsortedNeighbors(edgeList.toArray.sortBy(_.dest)))
           }
@@ -219,4 +225,7 @@ object Graph {
 
     new Graph(edges, vertices)
   }
+
+  def apply[T: Ordering: ClassTag, S, Q](edges: TypedPipe[Edge[T, S]], vertices: TypedPipe[Vertex[T, Q]]): Graph[T, S, Q] =
+    new Graph(edges, vertices)
 }
