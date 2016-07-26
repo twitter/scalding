@@ -3,9 +3,10 @@ package com.twitter.scalding.parquet.tuple.macros.impl
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding.parquet.tuple.scheme._
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
-object ParquetReadSupportProvider {
+class ParquetReadSupportProvider(schemaProvider: ParquetSchemaProvider) {
+
   private[this] sealed trait CollectionType
   private[this] case object NOT_A_COLLECTION extends CollectionType
   private[this] case object OPTION extends CollectionType
@@ -194,7 +195,7 @@ object ParquetReadSupportProvider {
     val groupConverter = buildGroupConverter(T.tpe, converters, converterGetters, convertersResetCalls,
       buildTupleValue(T.tpe, fieldValues))
 
-    val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
+    val schema = schemaProvider.toParquetSchemaImpl[T](ctx)
     val readSupport = q"""
       new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetReadSupport[$T]($schema) {
         override val tupleConverter: _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$T] = $groupConverter

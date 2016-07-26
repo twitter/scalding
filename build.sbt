@@ -32,17 +32,18 @@ val hbaseVersion = "0.94.10"
 val hravenVersion = "0.9.17.t05"
 val jacksonVersion = "2.4.2"
 val json4SVersion = "3.2.11"
-val paradiseVersion = "2.0.1"
+val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
 val protobufVersion = "2.4.1"
 val quasiquotesVersion = "2.0.1"
 val scalaCheckVersion = "1.12.2"
-val scalaTestVersion = "2.2.4"
+val scalaTestVersion = "2.2.6"
 val scalameterVersion = "0.6"
 val scroogeVersion = "3.20.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
+val macroCompatVersion = "1.1.1"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -401,13 +402,15 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("org.apache.parquet", "parquet-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
+    "org.scala-lang" % "scala-compiler" % scalaVersion,
     "org.apache.thrift" % "libthrift" % "0.7.0",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
+    "org.typelevel" %% "macro-compat" % macroCompatVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
 }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
