@@ -43,11 +43,11 @@ object RichPipe extends java.io.Serializable {
    * useful for cascading GroupBy/CoGroup pipes.
    */
   def setReducers(p: Pipe, reducers: Int): Pipe = {
-    import com.twitter.scalding.StepConfigDefImplicits._
+    import com.twitter.scalding.NodeConfigDefImplicits._
     if (reducers > 0) {
-      p.getStepConfigDef()
+      p.getNodeConfigDef()
         .setParallelism(reducers)
-      p.getStepConfigDef()
+      p.getNodeConfigDef()
         .setProperty(Config.WithReducersSetExplicitly, "true")
     } else if (reducers != -1) {
       throw new IllegalArgumentException(s"Number of reducers must be non-negative. Got: ${reducers}")

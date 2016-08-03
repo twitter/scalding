@@ -24,7 +24,7 @@ import com.twitter.bijection.{ Base64String, Injection }
 
 import cascading.pipe.assembly.AggregateByProps
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowRuntimeProps, FlowStepStrategy }
-import cascading.property.{ AppProps, ConfigDef => StepConfigDef }
+import cascading.property.{ AppProps, ConfigDef => NodeConfigDef }
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
@@ -604,9 +604,9 @@ object HadoopConfigurationImplicits {
   }
 }
 
-object StepConfigDefImplicits {
+object NodeConfigDefImplicits {
 
-  implicit class StepConfigDefWithParallelism(configDef: StepConfigDef) {
+  implicit class NodeConfigDefWithParallelism(configDef: NodeConfigDef) {
     def setParallelism(n: Int): Unit = {
       configDef.setProperty(Config.HadoopNumReducers, n.toString)
       configDef.setProperty(Config.CascadingGatherPartitions, n.toString)
