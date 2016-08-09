@@ -69,7 +69,7 @@ public class DistCacheEnabledHadoopPlanner extends HadoopPlanner {
           // mark as an anonymous checkpoint
           checkpointTap.getConfigDef().setProperty(ConfigDef.Mode.DEFAULT, "cascading.checkpoint", "true");
         } else {
-          makeTempTap(pipe.getName());
+          checkpointTap = makeTempTap(pipe.getName());
         }
       }
 
