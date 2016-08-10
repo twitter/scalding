@@ -32,18 +32,19 @@ val hbaseVersion = "0.94.10"
 val hravenVersion = "0.9.17.t05"
 val jacksonVersion = "2.4.2"
 val json4SVersion = "3.2.11"
-val paradiseVersion = "2.0.1"
+val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
 val protobufVersion = "2.4.1"
 val quasiquotesVersion = "2.0.1"
 val scalaCheckVersion = "1.12.2"
-val scalaTestVersion = "2.2.4"
+val scalaTestVersion = "2.2.6"
 val scalameterVersion = "0.6"
 val scroogeVersion = "3.20.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
 val junitInterfaceVersion = "0.11"
+val macroCompatVersion = "1.1.1"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -423,7 +424,8 @@ lazy val scaldingParquet = module("parquet").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion
+    "com.twitter" %% "chill-bijection" % chillVersion,
+    "org.typelevel" %% "macro-compat" % macroCompatVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
 }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingParquetCascading, scaldingHadoopTest % "test")

@@ -591,14 +591,17 @@ object Execution {
    * This allows you to run any cascading flowDef as an Execution.
    */
   private case class FlowDefExecution(result: (Config, Mode) => FlowDef) extends Execution[Unit] {
-    protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline(
+    protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      lazy val future =
         for {
           flowDef <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
           (id, jobStats) <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), Map(id -> ExecutionCounters.fromJobStats(jobStats))))
+        } yield ((), Map(id -> ExecutionCounters.fromJobStats(jobStats)))
+
+      Trampoline(cache.getOrElseInsert(conf, this, future))
+    }
   }
 
   /*
