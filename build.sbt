@@ -587,6 +587,7 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+    "org.scala-lang" % "scala-compiler" % scalaVersion,
     "com.twitter" %% "chill-algebird" % chillVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
