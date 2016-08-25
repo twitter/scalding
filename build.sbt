@@ -1,15 +1,12 @@
 import AssemblyKeys._
 import ReleaseTransformations._
+import ScroogeSBT.autoImport._
 import com.twitter.scrooge.ScroogeSBT
-import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import sbtassembly.Plugin._
 import scala.collection.JavaConverters._
-import scalariform.formatter.preferences._
 import scalding._
-
-import ScroogeSBT.autoImport._
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.10" => "2.10"
@@ -47,20 +44,20 @@ val macroCompatVersion = "1.1.1"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
+val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.7",
 
   crossScalaVersions := Seq("2.10.6", "2.11.7"),
 
-  ScalariformKeys.preferences := formattingPreferences,
-
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
   javacOptions in doc := Seq("-source", "1.6"),
 
   wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
+
+  scalafmtConfig := Some(file(".scalafmt")),
 
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",
@@ -217,9 +214,10 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
 
 lazy val scalding = Project(
   id = "scalding",
-  base = file("."),
-  settings = sharedSettings ++ DocGen.publishSettings
-).settings(
+  base = file(".")
+)
+.settings(sharedSettings ++ DocGen.publishSettings)
+.settings(
   test := {},
   publish := {}, // skip publishing for this root project.
   publishLocal := {}
@@ -267,13 +265,6 @@ lazy val scaldingAssembly = Project(
   scaldingSerialization
 )
 
-lazy val formattingPreferences = {
-  import scalariform.formatter.preferences._
-  FormattingPreferences().
-    setPreference(AlignParameters, false).
-    setPreference(PreserveSpaceBeforeArguments, true)
-}
-
 /**
  * This returns the youngest jar we released that is compatible with
  * the current.
@@ -289,10 +280,11 @@ def youngestForwardCompatible(subProj: String) =
 
 def module(name: String) = {
   val id = "scalding-%s".format(name)
-  Project(id = id, base = file(id), settings = sharedSettings ++ Seq(
-    Keys.name := id,
-    previousArtifact := youngestForwardCompatible(name))
-  )
+  Project(id = id, base = file(id))
+    .settings(sharedSettings)
+    .settings(
+      Keys.name := id,
+      previousArtifact := youngestForwardCompatible(name))
 }
 
 lazy val scaldingArgs = module("args")
@@ -569,9 +561,9 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
 // This one uses a different naming convention
 lazy val maple = Project(
   id = "maple",
-  base = file("maple"),
-  settings = sharedSettings
-).settings(
+  base = file("maple")
+).settings(sharedSettings)
+  .settings(
   name := "maple",
   previousArtifact := None,
   crossPaths := false,
@@ -590,9 +582,9 @@ lazy val maple = Project(
 
 lazy val executionTutorial = Project(
   id = "execution-tutorial",
-  base = file("tutorial/execution-tutorial"),
-  settings = sharedSettings
-).settings(
+  base = file("tutorial/execution-tutorial")
+).settings(sharedSettings)
+  .settings(
   name := "execution-tutorial",
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.scala-lang" % "scala-library" % scalaVersion,
