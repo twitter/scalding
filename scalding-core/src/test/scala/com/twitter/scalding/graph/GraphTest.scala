@@ -20,6 +20,7 @@ import com.twitter.scalding.typed.TypedPipe
 import org.scalatest.{ Matchers, WordSpec }
 
 class GraphTest extends WordSpec with Matchers {
+  import TypedPipeChecker._
 
   val graphPipe = List(
     (4L, 1L),
@@ -33,10 +34,14 @@ class GraphTest extends WordSpec with Matchers {
     (1L, 2L))
 
   val vertices = graphPipe.flatMap{ case (s, d) => List(s, d) }.distinct.map(s => Vertex(s, ()))
+
+  implicit val ord = Ordering.by[Vertex[Long, Unit], Long](_.id)
+
   val edges = graphPipe.map{ case (s, d) => Edge(s, d, ()) }
 
   "A Graph" should {
     val graph = new Graph(TypedPipe.from(edges), TypedPipe.from(vertices))
+
     "map vertices" in {
       val updatedGraph = graph.mapVertices{ case (Vertex(id, _)) => id }
       val mapped = TypedPipeChecker.inMemoryToList(updatedGraph.vertices)
@@ -45,19 +50,27 @@ class GraphTest extends WordSpec with Matchers {
 
     "map edges" in {
       val updatedGraph = graph.mapEdges{ case (Edge(source, dest, _)) => source }
-      val mapped = TypedPipeChecker.inMemoryToList(updatedGraph.edges)
+      val mapped = updatedGraph.edges.inMemoryToList
       mapped.foreach{ case (Edge(source, dest, attr)) => assert(source == attr) }
     }
 
     "join vertices" in {
       val newVertices = List(Vertex(1L, ()), Vertex(3L, ()))
       val updatedGraph = graph.joinVertices(TypedPipe.from(newVertices)){ case (id, _, _) => id }
-      val mapped = TypedPipeChecker.inMemoryToList(updatedGraph.vertices)
+      val mapped = updatedGraph.vertices.inMemoryToList
       mapped.foreach{ case (Vertex(id, attr)) => assert(id == attr) }
     }
 
+    "collect edges" in {
+      val neighbors = graph.collectEdges.vertices.inMemoryToList
+
+      val vertex = neighbors.find(_.id == 5L)
+      assert(vertex.isDefined, "Found the vertex")
+      assert(vertex.get.attr.neighbors.map(_.dest) === Array(2L, 3L, 6L))
+    }
+
     "collect neighbors sorted" in {
-      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighbors(true).vertices)
+      val neighbors = graph.collectNeighbors.mapVertices(_.attr.toSorted).vertices.inMemoryToList
 
       val vertex = neighbors.find(_.id == 2L)
       assert(vertex.isDefined, "Found the vertex")
@@ -65,11 +78,41 @@ class GraphTest extends WordSpec with Matchers {
     }
 
     "collect neighbors ids sorted" in {
-      val neighbors = TypedPipeChecker.inMemoryToList(graph.collectNeighborIds(true).vertices)
+      val neighbors = graph.collectNeighborIds.mapVertices(_.attr.toSorted).vertices.inMemoryToList
 
       val vertex = neighbors.find(_.id == 2L)
       assert(vertex.isDefined, "Found the vertex")
       assert(vertex.get.attr.neighbors === Array(1L, 4L))
+    }
+
+    "subgraph" in {
+      def filterEdges(triplet: EdgeTriplet[Long, Unit, Unit]) = triplet.edge.source == 5L
+      def vpred(vertex: Vertex[Long, Unit]) = (vertex.id == 5L) || (vertex.id == 2L)
+
+      val subgraph = graph.subgraph(filterEdges, vpred).edges.inMemoryToList
+
+      assert(subgraph.size == 1, "Only one edge")
+      assert(subgraph.head == Edge(5L, 2L, ()), "Only one edge")
+    }
+
+    "triplets" in {
+      val triplets = graph.triplets.inMemoryToList
+      val triplet = triplets.find(_.edge.source == 4L)
+      assert(triplet.isDefined, "Found the triplet")
+      assert(triplet.get === EdgeTriplet(Vertex(4L, ()), Vertex(1L, ()), Edge(4L, 1L, ())))
+    }
+
+    "mask" in {
+      val filteredGraph = graph.filterEdges(_.source == 5L)
+      val masked = graph.mask(filteredGraph).edges.inMemoryToList.sortBy(_.dest)
+
+      val expectedEdges = graphPipe
+        .filter{ case (s, _) => s == 5L }
+        .sortBy(_._2)
+        .map{ case (s, d) => Edge(s, d, ()) }
+
+      assert(masked.size == 3)
+      assert(masked === expectedEdges)
     }
   }
 }

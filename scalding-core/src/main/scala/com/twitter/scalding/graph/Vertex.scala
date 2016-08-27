@@ -15,6 +15,4 @@ limitations under the License.
 */
 package com.twitter.scalding.graph
 
-case class Vertex[T, S](id: T, attr: S)(implicit ord: Ordering[T]) extends Ordered[Vertex[T, _]] {
-  def compare(that: Vertex[T, _]) = ord.compare(id, that.id)
-}
+case class Vertex[T, S](id: T, attr: S)

@@ -15,4 +15,4 @@ limitations under the License.
 */
 package com.twitter.scalding.graph
 
-case class Edge[T: Ordering, S](source: T, dest: T, attr: S)
+case class Edge[T, S](source: T, dest: T, attr: S)

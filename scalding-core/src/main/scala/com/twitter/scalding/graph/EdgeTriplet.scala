@@ -15,4 +15,4 @@ limitations under the License.
 */
 package com.twitter.scalding.graph
 
-case class EdgeTriplet[T: Ordering, S, Q](source: Vertex[T, Q], dest: Vertex[T, Q], edge: Edge[T, S])
+case class EdgeTriplet[T, S, Q](source: Vertex[T, Q], dest: Vertex[T, Q], edge: Edge[T, S])

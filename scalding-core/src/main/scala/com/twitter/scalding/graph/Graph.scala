@@ -19,7 +19,14 @@ import com.twitter.scalding.TypedPipe
 
 import scala.reflect.ClassTag
 
-class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])(implicit ord: Ordering[T]) {
+/**
+ * General Graph Object that works on both Vertices and Edges.
+ * Graph supports extra data on both edges and vertices.
+ *
+ * @param inputEdges Directed Edges that make up the graph.
+ * @param inputVertices Vertices of the graph.
+ */
+class Graph[T: Ordering, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]]) {
   def edges: TypedPipe[Edge[T, S]] = inputEdges
   def vertices: TypedPipe[Vertex[T, Q]] = inputVertices
 
@@ -62,6 +69,18 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
     new Graph[T, S, VD2](edges, newVertices)
   }
 
+  /**
+    * Filtered the vertices of the graph.  Defer the edge filtering until necessary.
+    */
+  def filterVertices(filter: Vertex[T, Q] => Boolean) =
+    new GraphUnfilteredEdges[T, S, Q](edges, vertices.filter(filter))
+
+  /**
+    * Filtered the edges of the graph.  Defer the vertex filtering until necessary.
+    */
+  def filterEdges(filter: Edge[T, S] => Boolean) =
+    new GraphUnfilteredVertices[T, S, Q](edges.filter(filter), vertices)
+  
   def mapVertices[A](map: Vertex[T, Q] => A): Graph[T, S, A] =
     new Graph[T, S, A](edges, vertices.map{ vertex => Vertex(vertex.id, map(vertex)) })
 
@@ -77,22 +96,15 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
   }
 
   /**
-   * Collect only neighbor ids.
-   * Optionally sort by Vertex
+   * For all vertices collect their neighbors storing only ids.
    */
-  def collectNeighborIds(sortNeighbors: Boolean = true): Graph[T, S, Neighbors[T]] = {
+  def collectNeighborIds(implicit ct: ClassTag[T]): Graph[T, S, UnsortedNeighbors[T]] = {
     val nbrs = edges
-      .map { edge => (edge.source, edge.dest) }
+      .map{ edge => (edge.source, edge.dest) }
       .group
-      .mapGroup {
-        case (vert, nbrs) =>
-          val nbrsArray: Vertex[T, Neighbors[T]] = if (sortNeighbors) {
-            Vertex(vert, SortedNeighbors(nbrs.toArray.sorted)(ord))
-          } else {
-            Vertex(vert, UnsortedNeighbors(nbrs.toArray))
-          }
-
-          Iterator.single(nbrsArray)
+      .mapGroup{
+        case (vert, neighbors) =>
+          Iterator.single(Vertex(vert, UnsortedNeighbors(neighbors.toArray)))
       }
       .values
 
@@ -100,25 +112,18 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
   }
 
   /**
-   * Collect all Neighbors of an Vertex.
-   * Optionally sort by Vertex
+   * For all vertices collect their neighbors.
    */
-  def collectNeighbors(sortNeighbors: Boolean = true): Graph[T, S, Neighbors[Vertex[T, Q]]] = {
+  def collectNeighbors(implicit ct: ClassTag[T]): Graph[T, S, UnsortedNeighbors[Vertex[T, Q]]] = {
     val nbrs = edges
-      .map { edge => (edge.dest, edge.source) }
+      .map{ edge => (edge.dest, edge.source) }
       .join(vertices.groupBy(_.id))
       .toTypedPipe
-      .map { case (dest, (source, vertex)) => (source, (dest, vertex)) }
+      .map{ case (dest, (source, vertex)) => (source, (dest, vertex)) }
       .group
-      .mapGroup {
+      .mapGroup{
         case (id, vertexes) =>
-          val nbrsArray: Vertex[T, Neighbors[Vertex[T, Q]]] = if (sortNeighbors) {
-            Vertex(id, SortedNeighbors(vertexes.toArray.sortBy(_._1).map(_._2))(Ordering.by(_.id)))
-          } else {
-            Vertex(id, UnsortedNeighbors(vertexes.toArray.map(_._2)))
-          }
-
-          Iterator.single(nbrsArray)
+          Iterator.single(Vertex(id, UnsortedNeighbors(vertexes.toArray.map(_._2))))
       }
       .values
 
@@ -129,21 +134,18 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
    * Returns each Vertex with all out going edges.
    * Optionally sort the edges
    */
-  def collectEdges(sortNeighbors: Boolean = true): TypedPipe[Vertex[T, Neighbors[Edge[T, S]]]] =
-    edges
+  def collectEdges(implicit ct: ClassTag[T]): Graph[T, S, UnsortedNeighbors[Edge[T, S]]] = {
+    val vertices = edges
       .map{ edge => (edge.source, edge) }
       .group
       .mapGroup{
         case (id, edgeList) =>
-          val nbrsArray: Vertex[T, Neighbors[Edge[T, S]]] = if (sortNeighbors) {
-            Vertex(id, SortedNeighbors(edgeList.toArray.sortBy(_.dest))(Ordering.by(_.dest)))
-          } else {
-            Vertex(id, UnsortedNeighbors(edgeList.toArray.sortBy(_.dest)))
-          }
-
-          Iterator.single(nbrsArray)
+          Iterator.single(Vertex(id, UnsortedNeighbors(edgeList.toArray.sortBy(_.dest))))
       }
       .values
+
+    Graph(edges, vertices)
+  }
 
   /**
    * Filter the graph by the Edge and Vertex filters.
@@ -151,9 +153,12 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
   def subgraph(epred: EdgeTriplet[T, S, Q] => Boolean = _ => true, vpred: Vertex[T, Q] => Boolean = _ => true): Graph[T, S, Q] = {
     val newTriplets = triplets.filter(epred)
 
-    new Graph[T, S, Q](
+    new GraphUnfilteredEdges[T, S, Q](
       newTriplets.map(_.edge),
-      newTriplets.flatMap(trip => List(trip.source, trip.dest)).distinct(Ordering.by(_.id)).filter(vpred))
+      newTriplets
+        .flatMap(trip => List(trip.source, trip.dest))
+        .filter(vpred)
+        .distinct(Ordering.by(_.id)))
   }
 
   /**
@@ -181,9 +186,9 @@ class Graph[T: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices:
 /**
  * Sometimes working just on deges is required, in those cases we don't also want to
  * take the computational hit of filtering vertices by the updated edges.  In those cases
- * you get return this subgraph that will only filter the vertices when necessary
+ * you can return this subgraph that will only filter the vertices when necessary
  */
-class GraphUnfilteredVertices[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
+class GraphUnfilteredVertices[T: Ordering, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
   extends Graph[T, S, Q](inputEdges, inputVertices) {
   override def vertices = {
     val graphVertices = edges.flatMap(e => List(e.source, e.dest)).distinct
@@ -198,9 +203,9 @@ class GraphUnfilteredVertices[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe
 /**
  * Sometimes working just on vertices is required, in those cases we don't also want to
  * take the computational hit of filtering edges by the updated vertices.  In those cases
- * you get return this subgraph that will only filter the edges when necessary
+ * you can return this subgraph that will only filter the edges when necessary
  */
-class GraphUnfilteredEdges[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
+class GraphUnfilteredEdges[T: Ordering, S, Q](inputEdges: TypedPipe[Edge[T, S]], inputVertices: TypedPipe[Vertex[T, Q]])
   extends Graph[T, S, Q](inputEdges, inputVertices) {
 
   override def edges =
@@ -217,7 +222,10 @@ class GraphUnfilteredEdges[T: Ordering: ClassTag, S, Q](inputEdges: TypedPipe[Ed
 }
 
 object Graph {
-  def fromEdges[T: Ordering: ClassTag, S](edges: TypedPipe[Edge[T, S]]): Graph[T, S, Unit] = {
+  /**
+   * Generate a graph from a set of Directed Edges.
+   */
+  def fromEdges[T: Ordering, S](edges: TypedPipe[Edge[T, S]]): Graph[T, S, Unit] = {
     val vertices = edges
       .flatMap(e => List(e.source, e.dest))
       .distinct
@@ -226,6 +234,9 @@ object Graph {
     new Graph(edges, vertices)
   }
 
-  def apply[T: Ordering: ClassTag, S, Q](edges: TypedPipe[Edge[T, S]], vertices: TypedPipe[Vertex[T, Q]]): Graph[T, S, Q] =
+  /**
+   * Generate a graph from a set of Directed Edges and Vertices
+   */
+  def apply[T: Ordering, S, Q](edges: TypedPipe[Edge[T, S]], vertices: TypedPipe[Vertex[T, Q]]): Graph[T, S, Q] =
     new Graph(edges, vertices)
 }
