@@ -33,7 +33,7 @@ object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
 }
 
-trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate with HasColumnProjection {
+trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with HasColumnProjection {
 
   def mf: Manifest[T]
 
@@ -52,11 +52,13 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
 
     configWithProjection
   }
+}
 
+trait ParquetThriftBaseFileSource[T] extends FileSource with ParquetThriftBase[T] with SingleMappable[T] with TypedSink[T] {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 }
 
-trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
+trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBaseFileSource[T] {
 
   override def hdfsScheme = {
     // See docs in Parquet346TBaseScheme

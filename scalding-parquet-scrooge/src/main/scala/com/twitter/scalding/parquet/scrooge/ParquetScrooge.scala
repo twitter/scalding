@@ -2,11 +2,11 @@ package com.twitter.scalding.parquet.scrooge
 
 import cascading.scheme.Scheme
 import com.twitter.scalding._
-import com.twitter.scalding.parquet.thrift.ParquetThriftBase
+import com.twitter.scalding.parquet.thrift.ParquetThriftBaseFileSource
 import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 import com.twitter.scrooge.ThriftStruct
 
-trait ParquetScrooge[T <: ThriftStruct] extends ParquetThriftBase[T] {
+trait ParquetScrooge[T <: ThriftStruct] extends ParquetThriftBaseFileSource[T] {
 
   override def hdfsScheme = {
     // See docs in Parquet346ScroogeScheme
