@@ -3,14 +3,13 @@ package com.twitter.scalding.parquet.scrooge
 import java.io.File
 
 import com.twitter.scalding._
-import com.twitter.scalding.parquet.scrooge.thrift_java.test.{Address => TAddress}
+import com.twitter.scalding.parquet.scrooge.thrift_java.test.{ Address => TAddress }
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.Address
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.thrift.ThriftParquetReader
 
-import org.scalatest.{Matchers, WordSpec}
-
+import org.scalatest.{ Matchers, WordSpec }
 
 object PartitionedParquetScroogeTestSources {
   val path = "/a/path"
@@ -19,7 +18,7 @@ object PartitionedParquetScroogeTestSources {
 
 class PartitionedParquetScroogeWriteJob(args: Args) extends Job(args) {
   import PartitionedParquetScroogeTestSources._
-  val input = Seq( Address("123 Embarcadero", "94111"), Address("123 E 79th St", "10075"), Address("456 W 80th St", "10075") )
+  val input = Seq(Address("123 Embarcadero", "94111"), Address("123 E 79th St", "10075"), Address("456 W 80th St", "10075"))
 
   TypedPipe.from(input)
     .map { case Address(street, zipcode) => (zipcode, Address(street, zipcode)) }
