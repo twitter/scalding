@@ -14,7 +14,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 object PartitionedParquetScroogeTestSources {
   val path = "/a/path"
-  val partitionSource = PartitionParquetScrooge[String, Address](path, "%s")
+  val partitionSource = PartitionedParquetScroogeSource[String, Address](path, "%s")
 }
 
 class PartitionedParquetScroogeWriteJob(args: Args) extends Job(args) {
@@ -26,7 +26,7 @@ class PartitionedParquetScroogeWriteJob(args: Args) extends Job(args) {
     .write(partitionSource)
 }
 
-class PartitionParquetScroogeTests extends WordSpec with Matchers {
+class PartitionedParquetScroogeSourceTests extends WordSpec with Matchers {
   import PartitionedParquetScroogeTestSources._
 
   def validate(path: Path, expectedAddresses: TAddress*) = {
@@ -35,7 +35,7 @@ class PartitionParquetScroogeTests extends WordSpec with Matchers {
     Stream.continually(parquetReader.read).takeWhile(_ != null).toArray shouldBe expectedAddresses
   }
 
-  "PartitionParquetScrooge" should {
+  "PartitionedParquetScroogeSource" should {
     "write out partitioned scrooge objects" in {
       var job: Job = null;
       def buildJob(args: Args): Job = {

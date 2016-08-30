@@ -12,7 +12,7 @@ import org.scalatest.{ Matchers, WordSpec }
 
 object PartitionedParquetThriftTestSources {
   val path = "/a/path"
-  val partitionSource = PartitionParquetThrift[String, Address](path, "%s")
+  val partitionSource = PartitionedParquetThriftSource[String, Address](path, "%s")
 }
 
 class PartitionedParquetThriftWriteJob(args: Args) extends Job(args) {
@@ -24,7 +24,7 @@ class PartitionedParquetThriftWriteJob(args: Args) extends Job(args) {
     .write(partitionSource)
 }
 
-class PartitionParquetThriftTests extends WordSpec with Matchers {
+class PartitionedParquetThriftSourceTests extends WordSpec with Matchers {
   import PartitionedParquetThriftTestSources._
 
   def validate(path: Path, expectedAddresses: Address*) = {
@@ -33,7 +33,7 @@ class PartitionParquetThriftTests extends WordSpec with Matchers {
     Stream.continually(parquetReader.read).takeWhile(_ != null).toArray shouldBe expectedAddresses
   }
 
-  "PartitionParquetThrift" should {
+  "PartitionedParquetThriftSource" should {
     "write out partitioned thrift objects" in {
       var job: Job = null;
       def buildJob(args: Args): Job = {

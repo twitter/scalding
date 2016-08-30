@@ -13,18 +13,18 @@ import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
  * {{{
  * val data = MyThriftObject()
  * IterablePipe(data, flowDef, mode)
- *  .write(PartitionParquetThrift[(String, String), MyThriftObject](path, "%s/%s"))
+ *  .write(PartitionedParquetThriftSource[(String, String), MyThriftObject](path, "%s/%s"))
  * }}}
  *
  * For reading it produces a pair `(P, T)` where `P` is the partition data, `T` is the corresponding
  * thrift object. Below is an example.
  * {{{
  * val in: TypedPipe[(String, String), MyThriftObject] =
- * TypedPipe.from( PartitionParquetThrift[(String, String), MyThriftObject](path, "%s/%s") )
+ * TypedPipe.from( PartitionedParquetThriftSource[(String, String), MyThriftObject](path, "%s/%s") )
  * }}}
  *
  */
-case class PartitionParquetThrift[P, T <: ParquetThrift.ThriftBase](
+case class PartitionedParquetThriftSource[P, T <: ParquetThrift.ThriftBase](
   path: String, template: String, fields: Fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity))(implicit val mf: Manifest[T],
     val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
   extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {

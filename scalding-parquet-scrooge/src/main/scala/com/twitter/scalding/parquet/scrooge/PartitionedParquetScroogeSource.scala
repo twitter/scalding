@@ -15,18 +15,18 @@ import com.twitter.scrooge.ThriftStruct
  * {{{
  * val data = MyScroogeObject()
  * IterablePipe(data, flowDef, mode)
- *  .write(PartitionParquetScrooge[(String, String), MyScroogeObject](path, "%s/%s"))
+ *  .write(PartitionedParquetScroogeSource[(String, String), MyScroogeObject](path, "%s/%s"))
  * }}}
  *
  * For reading it produces a pair `(P, T)` where `P` is the partition data, `T` is the corresponding
  * scrooge object. Below is an example.
  * {{{
  * val in: TypedPipe[(String, String), MyScroogeObject] =
- * TypedPipe.from( PartitionParquetScrooge[(String, String), MyScroogeObject](path, "%s/%s") )
+ * TypedPipe.from( PartitionedParquetScroogeSource[(String, String), MyScroogeObject](path, "%s/%s") )
  * }}}
  *
  */
-case class PartitionParquetScrooge[P, T <: ThriftStruct](
+case class PartitionedParquetScroogeSource[P, T <: ThriftStruct](
   path: String, template: String, fields: Fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity))(implicit val mf: Manifest[T],
     val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
   extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {
