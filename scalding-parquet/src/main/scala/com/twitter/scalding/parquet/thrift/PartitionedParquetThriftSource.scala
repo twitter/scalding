@@ -11,9 +11,10 @@ import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
  * For writing it expects a pair of `(P, T)`, where `P` is the data used for partitioning and
  * `T` is the thrift object. Below is an example.
  * {{{
- * val data = MyThriftObject()
- * IterablePipe(data, flowDef, mode)
- *  .write(PartitionedParquetThriftSource[(String, String), MyThriftObject](path, "%s/%s"))
+ * val data: TypedPipe[MyThriftObject] = ???
+ * data.map{ obj =>
+ *   ( (obj.country, obj.city), obj)
+ * }.write(PartitionedParquetThriftSource[(String, String), MyThriftObject](path, "%s/%s"))
  * }}}
  *
  * For reading it produces a pair `(P, T)` where `P` is the partition data, `T` is the corresponding

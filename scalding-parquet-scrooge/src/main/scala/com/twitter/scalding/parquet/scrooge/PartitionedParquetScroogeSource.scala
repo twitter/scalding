@@ -13,9 +13,10 @@ import com.twitter.scrooge.ThriftStruct
  * For writing it expects a pair of `(P, T)`, where `P` is the data used for partitioning and
  * `T` is the scrooge object. Below is an example.
  * {{{
- * val data = MyScroogeObject()
- * IterablePipe(data, flowDef, mode)
- *  .write(PartitionedParquetScroogeSource[(String, String), MyScroogeObject](path, "%s/%s"))
+ * val data: TypedPipe[MyScroogeObject] = ???
+ * data.map { obj =>
+ *   ( (obj.country, obj.city), obj)
+ * }.write(PartitionedParquetScroogeSource[(String, String), MyScroogeObject](path, "%s/%s"))
  * }}}
  *
  * For reading it produces a pair `(P, T)` where `P` is the partition data, `T` is the corresponding
