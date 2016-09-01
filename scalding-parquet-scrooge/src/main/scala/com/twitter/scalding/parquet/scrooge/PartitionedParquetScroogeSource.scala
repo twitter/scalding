@@ -11,7 +11,8 @@ import com.twitter.scrooge.ThriftStruct
  * Scalding source to read or write partitioned Parquet scrooge data.
  *
  * For writing it expects a pair of `(P, T)`, where `P` is the data used for partitioning and
- * `T` is the scrooge object. Below is an example.
+ * `T` is the scrooge object. `P` must be either a String or a tuple of Strings.
+ * Below is an example.
  * {{{
  * val data: TypedPipe[MyScroogeObject] = ???
  * data.map { obj =>

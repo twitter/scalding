@@ -9,7 +9,8 @@ import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
  * Scalding source to read or write partitioned Parquet thrift data.
  *
  * For writing it expects a pair of `(P, T)`, where `P` is the data used for partitioning and
- * `T` is the thrift object. Below is an example.
+ * `T` is the thrift object. `P` must be either a String or a tuple of Strings.
+ * Below is an example.
  * {{{
  * val data: TypedPipe[MyThriftObject] = ???
  * data.map{ obj =>
