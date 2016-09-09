@@ -305,7 +305,7 @@ lazy val scaldingArgs = module("args")
 lazy val scaldingDate = module("date")
 
 lazy val cascadingVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.1.1-wip-61")
+  System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "3.2.0-wip-3")
 
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "3.0.0-wip-127")
