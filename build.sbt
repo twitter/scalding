@@ -44,7 +44,7 @@ val macroCompatVersion = "1.1.1"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = Project.defaultSettings ++ assemblySettings ++ Seq(
+val sharedSettings = assemblySettings ++ Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.7",
