@@ -745,10 +745,17 @@ object Execution {
   /**
    * This makes a constant execution that runs no job.
    * Note this is a lazy parameter that is evaluated every
-   * time run is called.
+   * time run is called and does so in the ExecutionContext
+   * given to run
    */
-  def from[T](t: => T): Execution[T] = fromTry(Try(t))
-  def fromTry[T](t: => Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
+  def from[T](t: => T): Execution[T] = fromFuture { implicit ec => Future(t) }
+  /**
+   * This evaluates the argument every time run is called, and does
+   * so in the ExecutionContext given to run
+   */
+  def fromTry[T](t: => Try[T]): Execution[T] = fromFuture { implicit ec =>
+    Future(t).flatMap(toFuture)
+  }
 
   /**
    * The call to fn will happen when the run method on the result is called.
