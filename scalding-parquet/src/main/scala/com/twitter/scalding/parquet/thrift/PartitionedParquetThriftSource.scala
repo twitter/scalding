@@ -1,9 +1,8 @@
 package com.twitter.scalding.parquet.thrift
 
 import cascading.scheme.Scheme
-import cascading.tuple.Fields
-import com.twitter.scalding.{ HadoopSchemeInstance, FixedPathSource, TupleConverter, TupleSetter }
 import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
+import com.twitter.scalding.{ FixedPathSource, HadoopSchemeInstance, TupleConverter, TupleSetter }
 
 /**
  * Scalding source to read or write partitioned Parquet thrift data.
@@ -26,10 +25,11 @@ import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
  * }}}
  *
  */
-case class PartitionedParquetThriftSource[P, T <: ParquetThrift.ThriftBase](
-  path: String, template: String, fields: Fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity))(implicit val mf: Manifest[T],
-    val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
+case class PartitionedParquetThriftSource[P, T <: ParquetThrift.ThriftBase](path: String, template: String)(implicit val mf: Manifest[T],
+  val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
   extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {
+
+  override val fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity)
 
   assert(
     fields.size == valueSetter.arity,

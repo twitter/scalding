@@ -1,7 +1,6 @@
 package com.twitter.scalding.parquet.scrooge
 
 import _root_.cascading.scheme.Scheme
-import _root_.cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.thrift.ParquetThriftBase
 import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
@@ -28,10 +27,11 @@ import com.twitter.scrooge.ThriftStruct
  * }}}
  *
  */
-case class PartitionedParquetScroogeSource[P, T <: ThriftStruct](
-  path: String, template: String, fields: Fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity))(implicit val mf: Manifest[T],
-    val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
+case class PartitionedParquetScroogeSource[P, T <: ThriftStruct](path: String, template: String)(implicit val mf: Manifest[T],
+  val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
   extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {
+
+  override val fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity)
 
   assert(
     fields.size == valueSetter.arity,
