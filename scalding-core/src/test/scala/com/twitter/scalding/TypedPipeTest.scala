@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{ FunSuite, Matchers, WordSpec }
 
 import com.twitter.scalding.source.TypedText
 // Use the scalacheck generators
@@ -118,6 +118,38 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         .runHadoop
         .finish()
     }
+  }
+}
+
+class TypedPipeSortByJob(args: Args) extends Job(args) {
+  TypedPipe.from(TypedText.tsv[(Int, Float, String)]("input"))
+    .groupBy(_._1)
+    .sortBy(_._2)
+    .mapValues(_._3)
+    .sum
+    .write(TypedText.tsv[(Int, String)]("output"))
+}
+
+class TypedPipeSortByTest extends FunSuite {
+  test("groups should not be disturbed by sortBy") {
+    JobTest(new TypedPipeSortByJob(_))
+      .source(TypedText.tsv[(Int, Float, String)]("input"),
+        List((0, 0.6f, "6"),
+          (0, 0.5f, "5"),
+          (0, 0.1f, "1"),
+          (1, 0.1f, "10"),
+          (1, 0.5f, "50"),
+          (1, 0.51f, "510")))
+      .sink[(Int, String)](TypedText.tsv[(Int, String)]("output")){ outputBuffer =>
+        val map = outputBuffer.toList.groupBy(_._1)
+        assert(map.size == 2, "should be two keys")
+        assert(map.forall { case (_, vs) => vs.size == 1 }, "only one key per value")
+        assert(map.get(0) == Some(List((0, "156"))), "key(0) is correct")
+        assert(map.get(1) == Some(List((1, "1050510"))), "key(1) is correct")
+      }
+      .run
+      .runHadoop
+      .finish()
   }
 }
 
