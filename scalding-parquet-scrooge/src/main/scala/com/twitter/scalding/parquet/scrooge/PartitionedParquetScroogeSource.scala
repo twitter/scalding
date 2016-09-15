@@ -6,6 +6,8 @@ import com.twitter.scalding.parquet.thrift.ParquetThriftBase
 import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
 import com.twitter.scrooge.ThriftStruct
 
+import scala.reflect.ClassTag
+
 /**
  * Scalding source to read or write partitioned Parquet scrooge data.
  *
@@ -27,7 +29,7 @@ import com.twitter.scrooge.ThriftStruct
  * }}}
  *
  */
-case class PartitionedParquetScroogeSource[P, T <: ThriftStruct](path: String, template: String)(implicit val mf: Manifest[T],
+case class PartitionedParquetScroogeSource[P, T <: ThriftStruct](path: String, template: String)(implicit val ct: ClassTag[T],
   val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
   extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {
 
