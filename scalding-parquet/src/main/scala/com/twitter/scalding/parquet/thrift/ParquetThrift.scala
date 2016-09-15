@@ -39,8 +39,8 @@ trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with H
 
   implicit def ct: ClassTag[T]
 
-  def config(implicit ct: ClassTag[T]): ParquetValueScheme.Config[T] = {
-    val clazz = implicitly[ClassTag[T]].runtimeClass.asInstanceOf[Class[T]]
+  def config: ParquetValueScheme.Config[T] = {
+    val clazz = ct.runtimeClass.asInstanceOf[Class[T]]
     val config = new ParquetValueScheme.Config[T].withRecordClass(clazz)
     val configWithFp = withFilter match {
       case Some(fp) => config.withFilterPredicate(fp)
