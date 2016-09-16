@@ -29,16 +29,19 @@ import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 import java.io.Serializable
 import org.apache.thrift.{ TBase, TFieldIdEnum }
 
+import scala.reflect.ClassTag
+
 object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
 }
 
-trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource with HasFilterPredicate with HasColumnProjection {
+trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with HasColumnProjection {
 
-  def mf: Manifest[T]
+  implicit def ct: ClassTag[T]
 
   def config: ParquetValueScheme.Config[T] = {
-    val config = new ParquetValueScheme.Config[T].withRecordClass(mf.runtimeClass.asInstanceOf[Class[T]])
+    val clazz = ct.runtimeClass.asInstanceOf[Class[T]]
+    val config = new ParquetValueScheme.Config[T].withRecordClass(clazz)
     val configWithFp = withFilter match {
       case Some(fp) => config.withFilterPredicate(fp)
       case None => config
@@ -52,11 +55,13 @@ trait ParquetThriftBase[T] extends FileSource with SingleMappable[T] with TypedS
 
     configWithProjection
   }
+}
 
+trait ParquetThriftBaseFileSource[T] extends FileSource with ParquetThriftBase[T] with SingleMappable[T] with TypedSink[T] {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 }
 
-trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] {
+trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBaseFileSource[T] {
 
   override def hdfsScheme = {
     // See docs in Parquet346TBaseScheme
@@ -108,13 +113,13 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBase[T] 
  */
 class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  dateRange: DateRange)(implicit override val ct: ClassTag[T])
   extends DailySuffixSource(path, dateRange) with ParquetThrift[T]
 
 class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
   path: String,
-  dateRange: DateRange)(implicit override val mf: Manifest[T])
+  dateRange: DateRange)(implicit override val ct: ClassTag[T])
   extends HourlySuffixSource(path, dateRange) with ParquetThrift[T]
 
-class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(implicit override val mf: Manifest[T])
+class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(implicit override val ct: ClassTag[T])
   extends FixedPathSource(paths: _*) with ParquetThrift[T]
