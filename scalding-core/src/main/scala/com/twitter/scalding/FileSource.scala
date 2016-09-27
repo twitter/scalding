@@ -385,7 +385,7 @@ trait SuccessFileSource extends FileSource {
    */
   override protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
     super
-     .goodHdfsPaths(hdfsMode)
+      .goodHdfsPaths(hdfsMode)
       // some paths deemed "good" may actually be empty, and hadoop's FileInputFormat
       // doesn't like that. So we filter them away here.
       .filter { p => FileSource.globHasNonHiddenPaths(p, hdfsMode.conf) }
