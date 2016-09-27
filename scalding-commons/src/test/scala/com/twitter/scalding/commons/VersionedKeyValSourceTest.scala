@@ -82,7 +82,6 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
           assert(outputBuffer.size === input.size)
-          val singleInj = implicitly[Injection[Int, Array[Byte]]]
           assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
@@ -96,7 +95,6 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
           assert(outputBuffer.size === input.size)
-          implicitly[Injection[Int, Array[Byte]]]
           assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
