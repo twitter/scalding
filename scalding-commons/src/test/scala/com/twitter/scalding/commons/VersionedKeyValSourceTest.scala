@@ -15,13 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding.commons.source
 
+import org.apache.hadoop.fs.Path
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
-import com.twitter.scalding.commons.datastores.VersionedStore;
+import com.twitter.scalding.commons.datastores.VersionedStore
 import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.{SequenceFileInputFormat, JobConf}
 
 import java.io.File
 // Use the scalacheck generators
@@ -36,6 +37,12 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   pipe
     .map{ k => (k, k) }
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
+}
+
+// Test version of SequenceFileInputFormat to get details on which
+// paths it will use
+class TestSequenceFileInputFormat extends SequenceFileInputFormat[Int, Int] {
+  def getPaths(conf: JobConf): Array[Path] = super.listStatus(conf).map(_.getPath)
 }
 
 class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
@@ -89,7 +96,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
           assert(outputBuffer.size === input.size)
-          val singleInj = implicitly[Injection[Int, Array[Byte]]]
+          implicitly[Injection[Int, Array[Byte]]]
           assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
@@ -136,6 +143,9 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
     versions foreach { v =>
       val p = store.createVersion(v)
       new File(p).mkdirs()
+      // create a part file here
+      new File(p + "/part-00000").createNewFile()
+      // and succeed
       store.succeedVersion(p)
     }
 
@@ -146,7 +156,25 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
    * Creates a VersionedKeyValSource using the provided version
    * and then validates it.
    */
-  private def validateVersion(path: String, version: Option[Long] = None) =
-    VersionedKeyValSource(path = path, sourceVersion = version)
-      .validateTaps(Hdfs(false, new JobConf()))
+  private def validateVersion(path: String, version: Option[Long] = None) = {
+    val store = VersionedKeyValSource(path = path, sourceVersion = version)
+    val conf: JobConf = new JobConf()
+    store.validateTaps(Hdfs(strict = false, conf))
+
+    // also validate the paths for the version
+    validateVersionPaths(path, version, store, conf)
+  }
+
+  def validateVersionPaths(path: String, version: Option[Long], store: VersionedKeyValSource[_, _], conf: JobConf): Unit = {
+    store.source.sourceConfInit(null, conf) // this sets up the splits needed for input format
+    val fileInputFormat = new TestSequenceFileInputFormat()
+    val paths = fileInputFormat.getPaths(conf)
+    version match {
+      case Some(ver) =>
+        // expect only the part file for the specified version
+        assert(paths.length == paths.count(_.toString.endsWith(ver + "/part-00000")))
+      case _ =>
+        assert(paths.count(_.toString.contains(path)) > 0)
+    }
+  }
 }
