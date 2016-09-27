@@ -275,7 +275,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   /*
    * Get all the set of valid paths based on source strictness.
    */
-  protected def goodHdfsPaths(hdfsMode: Hdfs) = {
+  protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
     hdfsMode match {
       //we check later that all the paths are good
       case Hdfs(true, _) => hdfsPaths
@@ -288,9 +288,6 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
     val taps =
       goodHdfsPaths(hdfsMode)
         .iterator
-        // some paths deemed "good" may actually be empty, and hadoop's FileInputFormat
-        // doesn't like that. So we filter them away here.
-        .filter { p => FileSource.globHasNonHiddenPaths(p, hdfsMode.conf) }
         .map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
         .toList
 
@@ -382,6 +379,17 @@ trait SequenceFileScheme extends SchemedSource {
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
     FileSource.globHasSuccessFile(p, conf)
+
+  /*
+   * Get all the set of valid paths based on source strictness.
+   */
+  override protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
+    super
+     .goodHdfsPaths(hdfsMode)
+      // some paths deemed "good" may actually be empty, and hadoop's FileInputFormat
+      // doesn't like that. So we filter them away here.
+      .filter { p => FileSource.globHasNonHiddenPaths(p, hdfsMode.conf) }
+  }
 }
 
 /**
