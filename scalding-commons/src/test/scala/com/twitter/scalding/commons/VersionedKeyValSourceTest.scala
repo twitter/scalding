@@ -173,7 +173,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       case Some(ver) =>
         // expect only the part file for the specified version
         assert(paths.length == paths.count(_.toString.endsWith(ver + "/part-00000")))
-      case _ =>
+      case None =>
         // when no version is specified, we get the most recent version's data
         val mostRecentVersion = store.source.getStore(conf).mostRecentVersion()
         assert(paths.length == paths.count(_.toString.endsWith(mostRecentVersion + "/part-00000")))
