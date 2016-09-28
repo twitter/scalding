@@ -371,7 +371,7 @@ trait SequenceFileScheme extends SchemedSource {
  * 2) Every matched, non-hidden file's parent directory contain a _SUCCESS file
  *
  * pathIsGood should still be considered just a best-effort test. There are still cases where this is
- * not a sufficient test for correctness. See <ticket>
+ * not a sufficient test for correctness. See https://github.com/twitter/scalding/issues/1602
  *
  * This does accept empty directories that contain a _SUCCESS file, which signals the directory is both
  * valid, and there is not data for that directory (you'll get an empty pipe).
@@ -380,9 +380,8 @@ trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
     FileSource.globHasSuccessFile(p, conf)
 
-  /*
-   * Get all the set of valid paths based on source strictness.
-   */
+  // we need to do some filtering on goodHdfsPaths to remove
+  // empty dirs that we consider "good" but don't want to ask hadoop's FileInputFormat to read.
   override protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
     super
       .goodHdfsPaths(hdfsMode)
