@@ -7,9 +7,6 @@ import com.twitter.scalding.commons.datastores.VersionedStore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
@@ -18,8 +15,10 @@ import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.scheme.Scheme;
 import cascading.tap.hadoop.Hfs;
 
+import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR;
+
 public class VersionedTap extends Hfs {
-  public static enum TapMode {SOURCE, SINK}
+  public enum TapMode {SOURCE, SINK}
 
   public Long version = null;
 
@@ -96,6 +95,7 @@ public class VersionedTap extends Hfs {
   public void sourceConfInit(FlowProcess<? extends Configuration> process, Configuration conf) {
     super.sourceConfInit(process, conf);
     conf.unset("mapred.input.dir"); // need this to unset any paths set in super.sourceConfInit
+    conf.unset(INPUT_DIR); // need this to unset any paths set in super.sourceConfInit
     Path fullyQualifiedPath = getFileSystem(conf).makeQualified(new Path(getSourcePath(conf)));
     HadoopUtil.addInputPath(conf, fullyQualifiedPath);
   }

@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.SinkCall;
@@ -33,7 +34,7 @@ public class KeyValueByteScheme extends WritableSequenceFile {
   public void sourceConfInit(FlowProcess<? extends Configuration> flowProcess,
       Tap<Configuration, RecordReader, OutputCollector> tap, Configuration conf) {
     super.sourceConfInit(flowProcess, tap, conf);
-    conf.setClass("mapred.input.format.class", VersionedSequenceFileInputFormat.class,
+    conf.setClass("mapred.input.format.class", SequenceFileInputFormat.class,
       org.apache.hadoop.mapred.InputFormat.class);
   }
 
