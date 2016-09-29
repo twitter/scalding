@@ -467,10 +467,10 @@ package com.twitter.scalding {
     }
 
     def complete(flowProcess: FlowProcess[_], call: AggregatorCall[X]): Unit = {
-      emit(flowProcess, call)
+      emit(call)
     }
 
-    def emit(flowProcess: FlowProcess[_], call: AggregatorCall[X]): Unit = {
+    def emit(call: AggregatorCall[X]): Unit = {
       call.getOutputCollector.add(set(call.getContext))
     }
   }

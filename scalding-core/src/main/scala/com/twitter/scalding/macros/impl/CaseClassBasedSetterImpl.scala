@@ -15,12 +15,8 @@
  */
 package com.twitter.scalding.macros.impl
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.{ Context, whitebox }
 import scala.util.{ Failure, Success }
-
-import com.twitter.scalding._
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
-import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
 /**
  * Helper class for generating setters from case class to
@@ -28,7 +24,7 @@ import com.twitter.bijection.macros.impl.IsCaseClassImpl
  */
 object CaseClassBasedSetterImpl {
 
-  def apply[T](c: Context)(container: c.TermName, allowUnknownTypes: Boolean,
+  def apply[T](c: whitebox.Context)(container: c.TermName, allowUnknownTypes: Boolean,
     fsetter: CaseClassFieldSetter)(implicit T: c.WeakTypeTag[T]): (Int, c.Tree) = {
     import c.universe._
 
@@ -54,7 +50,7 @@ object CaseClassBasedSetterImpl {
     case class OptionSetter(inner: SetterBuilder) extends SetterBuilder {
       def columns = inner.columns
       def setTree(value: Tree, offset: Int) = {
-        val someVal = newTermName(c.fresh("someVal"))
+        val someVal = TermName(c.freshName("someVal"))
         val someValTree = q"$someVal"
         q"""if($value.isDefined) {
           val $someVal = $value.get
@@ -69,7 +65,7 @@ object CaseClassBasedSetterImpl {
       def setTree(value: Tree, offset: Int) = {
         val setters = members.scanLeft((offset, Option.empty[Tree])) {
           case ((off, _), (access, sb)) =>
-            val cca = newTermName(c.fresh("access"))
+            val cca = TermName(c.freshName("access"))
             val ccaT = q"$cca"
             (off + sb.columns, Some(q"val $cca = ${access(value)}; ${sb.setTree(ccaT, off)}"))
         }
@@ -80,7 +76,7 @@ object CaseClassBasedSetterImpl {
 
     @annotation.tailrec
     def normalized(tpe: Type): Type = {
-      val norm = tpe.normalize
+      val norm = tpe.dealias
       if (!(norm =:= tpe))
         normalized(norm)
       else
@@ -111,7 +107,7 @@ object CaseClassBasedSetterImpl {
     }
     def expandMethod(outerTpe: Type): Vector[(Tree => Tree, Type)] =
       outerTpe
-        .declarations
+        .decls
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
           val fieldType = normalized(accessorMethod.returnType.asSeenFrom(outerTpe, outerTpe.typeSymbol.asClass))

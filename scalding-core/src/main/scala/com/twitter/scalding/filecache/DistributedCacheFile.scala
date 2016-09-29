@@ -105,8 +105,6 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
   }
 
   private[this] def addHdfs(conf: Configuration): CachedFile = {
-    HDistributedCache.createSymlink(conf)
-
     def makeQualifiedStr(path: String, conf: Configuration): URI =
       makeQualified(new Path(path), conf)
 
@@ -114,7 +112,7 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
       makeQualified(new Path(uri.toString), conf) // uri.toString because hadoop 0.20.2 doesn't take a URI
 
     def makeQualified(p: Path, conf: Configuration): URI =
-      p.makeQualified(p.getFileSystem(conf)).toUri // make sure we have fully-qualified URI
+      p.makeQualified(p.getFileSystem(conf).getUri, p.getFileSystem(conf).getWorkingDirectory).toUri
 
     val sourceUri =
       source match {

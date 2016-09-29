@@ -111,7 +111,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     def log2(x: Double) = scala.math.log(x) / scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm = new HyperLogLogMonoid(bits)
-    mapPlusMap(f) { (t: T) => hmm(t) } (fn)
+    mapPlusMap(f) { (t: T) => hmm.create(t) } (fn)
   }
 
   /**
