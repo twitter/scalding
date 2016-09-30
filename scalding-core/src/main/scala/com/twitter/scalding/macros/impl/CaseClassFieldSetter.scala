@@ -17,7 +17,7 @@
 package com.twitter.scalding.macros.impl
 
 import scala.language.experimental.macros
-import scala.reflect.macros.whitebox.Context
+import scala.reflect.macros.Context
 import scala.util.Try
 
 /**
