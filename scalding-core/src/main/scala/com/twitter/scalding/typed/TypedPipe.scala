@@ -1089,24 +1089,11 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
       }
       .map(_.toPipe[U](fieldNames)(flowDef, mode, setter)) // linter:ignore
-      .toList
 
-    if (merged.size == 1) {
-      // there is no actual merging here, no need to rename:
-      merged.head
-    } else {
-      merged.reduce[Pipe] {
-        case (left, right) =>
-          // special handling for cases where one side of the hashjoin is merged
-          // with the hashjoin result. Cascading no longer allows it,
-          // so we add a checkpoint to the join result as a workaround
-          if (RichPipe.isHashJoinedWithPipe(left, right))
-            new Merge(RichPipe.assignName(new Checkpoint(left)), RichPipe.assignName(right))
-          else if (RichPipe.isHashJoinedWithPipe(right, left))
-            new Merge(RichPipe.assignName(left), RichPipe.assignName(new Checkpoint(right)))
-          else
-            new Merge(RichPipe.assignName(left), RichPipe.assignName(right))
-      }
+    merged match {
+      case Nil => sys.error("we can never merge to create 0 pipes") // should never happen as we cannot create this without two incoming pipes
+      case h :: Nil => h
+      case h :: tail => RichPipe.mergeAvoidingHashes(h, tail)
     }
   }
 
