@@ -5,9 +5,10 @@ import com.twitter.scalding._
 import java.io.File
 import java.net.URI
 import java.nio.ByteBuffer
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 object URIHasher {
   private[this] final val HashFunc = MurmurHash128(1L)
@@ -111,8 +112,10 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
     def makeQualifiedURI(uri: URI, conf: Configuration): URI =
       makeQualified(new Path(uri.toString), conf) // uri.toString because hadoop 0.20.2 doesn't take a URI
 
-    def makeQualified(p: Path, conf: Configuration): URI =
-      p.makeQualified(p.getFileSystem(conf).getUri, p.getFileSystem(conf).getWorkingDirectory).toUri
+    def makeQualified(p: Path, conf: Configuration): URI = {
+      val fileSystem: FileSystem = p.getFileSystem(conf)
+      p.makeQualified(fileSystem.getUri, fileSystem.getWorkingDirectory).toUri
+    }
 
     val sourceUri =
       source match {
