@@ -26,13 +26,8 @@ import com.twitter.scalding.serialization.OrderedSerialization
 import java.util.{ Iterator => JIterator }
 import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.{ Matchers, WordSpec }
-import org.slf4j.{ LoggerFactory, Logger }
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
-import scala.math.Ordering
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -547,6 +542,46 @@ class ReadPathJob(args: Args) extends Job(args) {
     .write(NullSink)
 }
 
+// Based on a user job that fails in Cascading3 without fix: https://github.com/cwensel/cascading/pull/57
+// Results in a groupBy which inputs to a coGroup1. The groupBy and coGroup1 are used as inputs to
+// another coGroup2. Without this fix, the Cascading planner loses one of the Each operations between
+// this triangle.
+object GroupByCoGroupCoGroupTriangleJob {
+  val output = TypedTsv[(String, Int)]("output")
+
+  val inputData = List(("A", Seq(1, 2)), ("B", Seq(3, 4)), ("B", Seq(5, 6)), ("A", Seq(1, 2)))
+  val deleteList = List(1, 2)
+  val expectedOutput = List(("B", 3), ("B", 4), ("B", 5), ("B", 6))
+}
+
+class GroupByCoGroupCoGroupTriangleJob(args: Args) extends Job(args) {
+  import GroupByCoGroupCoGroupTriangleJob._
+
+  val inputTP = TypedPipe.from(inputData)
+  val deleteTP = TypedPipe.from(deleteList)
+
+  val groupedValues: TypedPipe[(String, Seq[Int])] =
+    inputTP
+      .groupBy(_._1)
+      .mapValueStream(x => x)
+      .values
+
+  val tuplesToDel =
+    groupedValues
+      .flatMap { case (str, seq) => seq.map { userId => (userId, str) } }
+      .join(deleteTP.asKeys)
+      .toTypedPipe
+      .map { case (userId, (name, _)) => (name, userId) }
+
+  groupedValues
+    .groupBy(_._1)
+    .leftJoin(tuplesToDel)
+    .filter { case (name, (_, isPartOfDeletedSet)) => isPartOfDeletedSet.isEmpty }
+    .values
+    .flatMap { case (tuple, _) => tuple._2.map { id => (tuple._1, id) } }
+    .write(output)
+}
+
 object PlatformTest {
   def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
@@ -777,7 +812,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val firstStepDescs = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
           val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
 
-          val expected = Set(276, 278, 279, 282, 283).map(linenum => /* WARNING: keep aligned with line numbers above */
+          val expected = Set(271, 273, 274, 277, 278).map(linenum => /* WARNING: keep aligned with line numbers above */
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
           firstStepDescSet should equal(expected)
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
@@ -909,7 +944,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val expectedDescs = Set("map stage - assign words to 1",
             "reduce stage - sum",
             "write") ++
-            Seq(263, 264, 266, 267, 268).map( /* WARNING: keep aligned with line numbers above */
+            Seq(258, 259, 261, 262, 263).map( /* WARNING: keep aligned with line numbers above */
               linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions).split(",").map(_.trim).toSet)
@@ -1011,6 +1046,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       }
 
       assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException]))
+    }
+  }
+
+  "A GroupByCoGroupCoGroupTriangle job" should {
+    import GroupByCoGroupCoGroupTriangleJob._
+
+    "do a groupBy along with two coGroups and not lose an Each operation" in {
+      HadoopPlatformJobTest(new GroupByCoGroupCoGroupTriangleJob(_), cluster)
+        .sink[(String, Int)]("output") { _.toList shouldBe expectedOutput }
+        .run()
     }
   }
 }
