@@ -5,8 +5,9 @@ import com.twitter.scalding._
 import java.io.File
 import java.net.URI
 import java.nio.ByteBuffer
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
+import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
 import org.apache.hadoop.fs.Path
 
 object URIHasher {
@@ -105,16 +106,16 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
   }
 
   private[this] def addHdfs(conf: Configuration): CachedFile = {
-    HDistributedCache.createSymlink(conf)
-
     def makeQualifiedStr(path: String, conf: Configuration): URI =
       makeQualified(new Path(path), conf)
 
     def makeQualifiedURI(uri: URI, conf: Configuration): URI =
       makeQualified(new Path(uri.toString), conf) // uri.toString because hadoop 0.20.2 doesn't take a URI
 
-    def makeQualified(p: Path, conf: Configuration): URI =
-      p.makeQualified(p.getFileSystem(conf)).toUri // make sure we have fully-qualified URI
+    def makeQualified(p: Path, conf: Configuration): URI = {
+      val fileSystem = p.getFileSystem(conf)
+      p.makeQualified(fileSystem.getUri, fileSystem.getWorkingDirectory).toUri
+    }
 
     val sourceUri =
       source match {
