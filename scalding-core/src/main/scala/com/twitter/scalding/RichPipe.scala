@@ -36,7 +36,26 @@ object RichPipe extends java.io.Serializable {
 
   def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
-  def assignName(p: Pipe) = new Pipe(getNextName, p)
+  private[scalding] val FormerNameBitLength = 12
+  private[scalding] val FormerAssignedPipeNamePattern = "^_pipe_([0-9]+).*$".r
+  private[scalding] val FromUuidPattern = "^.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-([0-9a-f]{12}).*$".r
+
+  // grab some bit of the previous pipe name to help walk up the graph across name assignments
+  private def getFormerNameBit(p: Pipe): String = p.getName match {
+    case FormerAssignedPipeNamePattern(pipeNumber) => pipeNumber
+    case FromUuidPattern(lastGroup) => lastGroup /* 12 characters */
+    case s if s.length > FormerNameBitLength => s.substring(s.length - FormerNameBitLength, s.length)
+    case s => s
+  }
+
+  /**
+   * Assign a new, guaranteed-unique name to the pipe.
+   * @param p a pipe, whose name should be changed
+   * @return a pipe with a new name which is guaranteed to be new and never re-assigned by this function
+   *
+   * Note: the assigned name includes a few characters from the former name to assisgit dift in debugging.
+   */
+  def assignName(p: Pipe): Pipe = new Pipe(getNextName + "-" + getFormerNameBit(p), p)
 
   private val REDUCER_KEY = "mapred.reduce.tasks"
   /**
