@@ -50,9 +50,9 @@ val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencie
 val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
   organization := "com.twitter",
 
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.11.8",
 
-  crossScalaVersions := Seq("2.10.6", "2.11.7"),
+  crossScalaVersions := Seq("2.10.6", scalaVersion.value),
 
   ScalariformKeys.preferences := formattingPreferences,
 
