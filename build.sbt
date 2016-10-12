@@ -526,7 +526,7 @@ lazy val scaldingSerialization = module("serialization").settings(
     "org.scala-lang" % "scala-reflect" % scalaVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
 },
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 )
 
 lazy val scaldingJson = module("json").settings(
@@ -612,7 +612,7 @@ lazy val scaldingDb = module("db").settings(
     "com.twitter" %% "bijection-macros" % bijectionVersion
   ) ++ (if(isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
 },
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingCore)
 
 lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
@@ -646,7 +646,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
   ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(
     scaldingCore,
     scaldingHadoopTest % "test",
