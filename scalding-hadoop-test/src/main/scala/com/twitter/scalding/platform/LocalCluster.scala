@@ -175,7 +175,7 @@ class LocalCluster(mutex: Boolean = true) {
   private def getFileForClass[T](clazz: Class[T]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
 
-  def mode: Mode = Mode(Args(Seq("--hadoop")), jobConf) // TODO: no longer require this version of Hadoop
+  def mode: Mode = Mode(Args(Seq("--autoCluster")), jobConf) // TODO: no longer require this version of Hadoop
 
   def putFile(file: File, location: String): Boolean = {
     val hdfsLocation = new Path(location)

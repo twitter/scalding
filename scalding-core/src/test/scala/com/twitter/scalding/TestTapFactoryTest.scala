@@ -23,7 +23,7 @@ class TestTapFactoryTest extends WordSpec with Matchers {
 
       the[IllegalArgumentException] thrownBy {
         createIllegalTap()
-      } should have message ("requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
+      } should have message ("Failed to create tap for: com.twitter.scalding.Tsv(path), with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
     }
   }
 }

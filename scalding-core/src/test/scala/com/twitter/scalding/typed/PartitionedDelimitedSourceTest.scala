@@ -53,17 +53,21 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
         .runHadoop
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
 
-      val directory = new File(testMode.getWritePathFor(singlePartition))
+      job.mode match {
+        case testMode: HadoopTest =>
+          val directory = new File(testMode.getWritePathFor(singlePartition))
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+          directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
 
-      val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
-      val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
+          val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
+          val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
-      aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
-      bSource.getLines.toList shouldBe Seq("Z,3")
+          aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
+          bSource.getLines.toList shouldBe Seq("Z,3")
+        case _ => ???
+      }
+
     }
   }
 }

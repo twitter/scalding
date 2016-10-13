@@ -71,7 +71,7 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable /* wi
     * JobTest.
     */
     val buffer = mode.buffers(src).fold(
-      throw new IllegalArgumentException("requirement failed: " + TestTapFactory.sourceNotFoundError.format(src))) {
+      throw new IllegalArgumentException(s"Failed to create tap for: ${src}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(src))) {
         case sourceBuffer =>
           if (readOrWrite == Write) {
             val buf = sourceBuffer

@@ -19,37 +19,38 @@ import java.io._
 import java.lang.reflect.Constructor
 import java.net.URI
 import java.util
-import java.util.{ Properties, UUID }
+import java.util.{Properties, UUID}
 
-import cascading.flow.hadoop.{ HadoopFlow, HadoopFlowConnector, HadoopFlowProcess }
+import cascading.flow.hadoop.{HadoopFlow, HadoopFlowConnector, HadoopFlowProcess}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.mapred.{JobConf, OutputCollector, RecordReader}
 import cascading.flow._
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.flow.planner.BaseFlowStep
 import cascading.property.AppProps
 import cascading.scheme.NullScheme
-import cascading.tap.{ SinkMode, Tap }
+import cascading.tap.{SinkMode, Tap}
 import cascading.tap.local.FileTap
-import cascading.tuple.{ Fields, Tuple, TupleEntryIterator }
+import cascading.tuple.{Fields, Tuple, TupleEntryIterator}
 import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.twitter.maple.tap.MemorySourceTap
-import com.twitter.scalding.filecache.{ CachedFile, LocallyCachedFile, UncachedFile }
+import com.twitter.scalding.filecache.{CachedFile, LocallyCachedFile, UncachedFile}
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.typed.MemorySink
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
-import scala.collection.mutable.{ Map => MMap }
-import scala.collection.mutable.{ Set => MSet }
-import scala.util.{ Failure, Success }
+import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{Set => MSet}
+import scala.util.{Failure, Success}
 import org.slf4j.LoggerFactory
 
-import scala.collection.{ Map, mutable }
+import scala.annotation.meta.param
+import scala.collection.{Map, mutable}
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -108,8 +109,7 @@ object Mode {
   def apply(args: Args, config: Configuration): Mode = {
     val strictSources = args.boolean("tool.partialok") == false
     if (!strictSources) {
-      // TODO we should do smarter logging here
-      println("[Scalding:INFO] using --tool.partialok. Missing log data won't cause errors.")
+      LOG.info("using --tool.partialok. Missing log data won't cause errors.")
     }
 
     lazy val autoMode = if (args.boolean("autoCluster")) {
@@ -433,7 +433,7 @@ trait HdfsStorageModeCommon extends StorageMode {
 
 }
 
-class HdfsTestStorageMode(strictSources: Boolean, override val jobConf: Configuration, pathAllocator: Source => String)
+class HdfsTestStorageMode(strictSources: Boolean, @transient override val jobConf: Configuration, @transient pathAllocator: Source => String)
   extends StorageMode with TestStorageMode with HdfsStorageModeCommon {
 
   override def createTap(schemedSource: SchemedSource, readOrWrite: AccessMode,
@@ -468,7 +468,7 @@ class LocalTestStorageMode extends TestStorageMode with LocalStorageModeCommon {
 /**
  * Any
  */
-class HdfsStorageMode(strictSources: Boolean, override val jobConf: Configuration) extends StorageMode with HdfsStorageModeCommon {
+class HdfsStorageMode(strictSources: Boolean, @transient override val jobConf: Configuration) extends StorageMode with HdfsStorageModeCommon {
   import StorageMode._
   override def fileExists(filename: String): Boolean = {
     val path = new Path(filename)
@@ -512,7 +512,7 @@ class HdfsStorageMode(strictSources: Boolean, override val jobConf: Configuratio
   }
 }
 
-class LegacyHadoopExecutionMode(mode: Mode, override val jobConf: Configuration) extends HadoopExecutionModeBase {
+class LegacyHadoopExecutionMode(mode: Mode, @transient override val jobConf: Configuration) extends HadoopExecutionModeBase {
 
   override protected def newFlowConnector(rawConf: util.Map[AnyRef, AnyRef]): FlowConnector = new HadoopFlowConnector(rawConf)
 
@@ -575,7 +575,7 @@ class LegacyHadoopExecutionMode(mode: Mode, override val jobConf: Configuration)
   }
 }
 
-case class LegacyHadoopMode(strictSources: Boolean, jobConf: Configuration) extends HadoopFamilyMode {
+case class LegacyHadoopMode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {
   val name = "hadoop"
 
   override val storageMode: StorageMode = new HdfsStorageMode(strictSources, jobConf)
@@ -591,16 +591,20 @@ case class Hdfs(strictSources: Boolean, jobConf: Configuration) extends ClusterM
   override val executionMode: ExecutionMode = new LegacyHadoopExecutionMode(this, jobConf)
 } */
 
-case class Local(strictSources: Boolean, dummyJobConf: Configuration) extends LocalMode {
+case class Local(strictSources: Boolean) extends LocalMode {
+
+  // this auxiliary ctor is provided for compatibility with the dynamic load made by Mode.apply
+  def this(strictSources:Boolean, @(transient @param) dummyJobConf: Configuration) = this(strictSources)
+
   val name = "local"
 
   override val storageMode: StorageMode = new LocalStorageMode(strictSources)
   override val executionMode: ExecutionMode = new CascadingLocalExecutionMode
 }
 
-object Local {
-  def apply(strictSources: Boolean): Local = new Local(strictSources, new Configuration)
-}
+//object Local {
+//  def apply(strictSources: Boolean): Local = new Local(strictSources, new Configuration)
+//}
 
 /**
  * Memory only testing for unit tests

@@ -15,33 +15,27 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, InputStream, OutputStream }
-import java.util.{ UUID, Properties }
+import java.io.{File, InputStream, OutputStream}
+import java.util.{Properties, UUID}
 
-import cascading.scheme.Scheme
-import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
-import cascading.scheme.hadoop.{
-  TextLine => CHTextLine,
-  TextDelimited => CHTextDelimited,
-  SequenceFile => CHSequenceFile
-}
+import cascading.scheme.{NullScheme, Scheme}
+import cascading.scheme.local.{TextDelimited => CLTextDelimited, TextLine => CLTextLine}
+import cascading.scheme.hadoop.{SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
-
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{ Semigroup, MapAlgebra }
-
+import com.twitter.algebird.{MapAlgebra, Semigroup}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
+import org.apache.hadoop.fs.{FileStatus, Path, PathFilter}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Failure, Success, Try}
 
 trait LocalSchemedSource {
   protected def localUnsupported = throw ModeException("Cascading local mode not supported for: " + toString)
@@ -391,6 +385,10 @@ trait SuccessFileSource extends FileSource {
  * Put another way, this runs a Hadoop tap outside of Hadoop in the Cascading local mode
  */
 trait LocalTapSource extends LocalSourceOverride {
+
+  override def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] =
+    new NullScheme[Properties, InputStream, OutputStream, AnyRef, AnyRef](hdfsScheme.getSourceFields, hdfsScheme.getSinkFields)
+
   override def createLocalReadTap(sinkMode: SinkMode): Tap[_, _, _] = {
     val taps = localPaths.map { p =>
       new LocalTap(p, Hadoop2SchemeInstance(hdfsScheme), sinkMode).asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
