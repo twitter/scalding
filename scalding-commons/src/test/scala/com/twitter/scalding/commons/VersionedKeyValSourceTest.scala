@@ -22,7 +22,7 @@ import com.twitter.scalding.commons.datastores.VersionedStore
 import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
-import org.apache.hadoop.mapred.{SequenceFileInputFormat, JobConf}
+import org.apache.hadoop.mapred.{ SequenceFileInputFormat, JobConf }
 
 import java.io.File
 // Use the scalacheck generators
@@ -157,7 +157,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
   private def validateVersion(path: String, version: Option[Long] = None) = {
     val store = VersionedKeyValSource(path = path, sourceVersion = version)
     val conf: JobConf = new JobConf()
-    store.validateTaps(Hdfs(strict = false, conf))
+    store.validateTaps(Mode(Args(Seq("--autoCluster", "--tool.partialok")), conf))
 
     // also validate the paths for the version
     validateVersionPaths(path, version, store, conf)

@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding.platform
 
 import com.twitter.scalding._
-
 import java.io.{ File, RandomAccessFile }
 import java.nio.channels.FileLock
 
@@ -25,6 +24,7 @@ import org.apache.hadoop.mapreduce.filecache.DistributedCache
 import org.apache.hadoop.fs.{ FileUtil, Path }
 import org.apache.hadoop.hdfs.MiniDFSCluster
 import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
+import org.apache.hadoop.yarn.server.MiniYARNCluster
 import org.slf4j.LoggerFactory
 import org.slf4j.impl.Log4jLoggerAdapter
 
@@ -43,7 +43,7 @@ class LocalCluster(mutex: Boolean = true) {
 
   private val LOG = LoggerFactory.getLogger(getClass)
 
-  private var hadoop: Option[(MiniDFSCluster, MiniMRCluster, JobConf)] = None
+  private var hadoop: Option[(MiniDFSCluster, MiniYARNCluster, JobConf)] = None
   private def getHadoop = hadoop.getOrElse(throw new Exception("Hadoop has not been initialized"))
 
   private def dfs = getHadoop._1
@@ -87,10 +87,15 @@ class LocalCluster(mutex: Boolean = true) {
     new File(System.getProperty("hadoop.log.dir")).mkdirs()
 
     val conf = new Configuration
-    val dfs = new MiniDFSCluster(conf, 4, true, null)
+    val dfs = new MiniDFSCluster.Builder(conf)
+      .numDataNodes(4)
+      .format(true)
+      .build()
+
     val fileSystem = dfs.getFileSystem
-    val cluster = new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
-    val mrJobConf = cluster.createJobConf()
+    val cluster = new MiniYARNCluster(fileSystem.getUri.toString, 1, 4, 1, 1)
+    val mrJobConf = new JobConf(cluster.getConfig)
+
     mrJobConf.setInt("mapred.submit.replication", 2)
     mrJobConf.set("mapred.map.max.attempts", "2")
     mrJobConf.set("mapred.reduce.max.attempts", "2")
@@ -170,7 +175,7 @@ class LocalCluster(mutex: Boolean = true) {
   private def getFileForClass[T](clazz: Class[T]): File =
     new File(clazz.getProtectionDomain.getCodeSource.getLocation.toURI)
 
-  def mode: Mode = Hdfs(true, jobConf)
+  def mode: Mode = Mode(Args(Seq("--hadoop")), jobConf) // TODO: no longer require this version of Hadoop
 
   def putFile(file: File, location: String): Boolean = {
     val hdfsLocation = new Path(location)
@@ -183,8 +188,8 @@ class LocalCluster(mutex: Boolean = true) {
   def shutdown(): Unit = {
     hadoop.foreach {
       case (dfs, mr, _) =>
+        mr.stop()
         dfs.shutdown()
-        mr.shutdown()
     }
     hadoop = None
     if (mutex) {

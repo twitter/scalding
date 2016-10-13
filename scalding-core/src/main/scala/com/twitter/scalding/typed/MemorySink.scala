@@ -32,20 +32,17 @@ import cascading.tuple.Tuple
  */
 class MemorySink[T] extends TypedSink[T] {
   private[this] val buf = Buffer[Tuple]()
-  private[this] val name: String = UUID.randomUUID.toString
+  private[this] val name: String = s"MemorySink{${UUID.randomUUID}}"
 
   // takes a copy as of NOW. Don't call this before the job has run
   def readResults: Iterable[T] =
     buf.iterator.map(_.getObject(0).asInstanceOf[T]).toList
 
   def setter[U <: T] = TupleSetter.asSubSetter(TupleSetter.singleSetter[T])
-  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe =
-    mode match {
-      case cl: CascadingLocal =>
-        val tap = new MemoryTap(new NullScheme(sinkFields, sinkFields), buf)
-        flowDef.addSink(name, tap)
-        flowDef.addTail(new Pipe(name, pipe))
-        pipe
-      case _ => sys.error("MemorySink only usable with cascading local")
-    }
+  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
+    val tap = mode.storageMode.createMemoryTap(Write, sinkFields, buf) // will reject service non non-local modes
+    flowDef.addSink(name, tap)
+    flowDef.addTail(new Pipe(name, pipe))
+    pipe
+  }
 }

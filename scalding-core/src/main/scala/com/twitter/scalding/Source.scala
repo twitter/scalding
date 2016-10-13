@@ -38,11 +38,6 @@ import org.apache.hadoop.mapred.RecordReader
 import scala.collection.JavaConverters._
 
 /**
- * thrown when validateTaps fails
- */
-class InvalidSourceException(message: String) extends RuntimeException(message)
-
-/**
  * InvalidSourceTap used in createTap method when we want to defer
  * the failures to validateTaps method.
  *
@@ -121,6 +116,9 @@ object Hadoop2SchemeInstance {
 object CastHfsTap {
   // The scala compiler has problems with the generics in Cascading
   def apply(tap: Hfs): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
+    tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
+
+  def apply(tap: Tap[_, _, _]): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] =
     tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]
 }
 
@@ -288,17 +286,13 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
 }
 
 trait BaseNullSource extends Source {
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     readOrWrite match {
-      case Read => throw new Exception("not supported, reading from null")
-      case Write => mode match {
-        case Hdfs(_, _) => new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
-        case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
-        case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
-      }
+      case Read => throw new UnsupportedOperationException("not supported, reading from null")
+      case Write => mode.storageMode.createNullTap
     }
-  }
 }
+
 /**
  * A source outputs nothing. It is used to drive execution of a task for side effect only.
  */

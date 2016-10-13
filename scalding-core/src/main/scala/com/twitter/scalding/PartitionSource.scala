@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.scheme.Scheme
 import cascading.tap.hadoop.Hfs
 import cascading.tap.hadoop.{ PartitionTap => HPartitionTap }
 import cascading.tap.local.FileTap
@@ -24,11 +25,13 @@ import cascading.tap.partition.Partition
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tuple.Fields
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 
 /**
  * This is a base class for partition-based output sources
  */
-abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) extends SchemedSource with HfsTapProvider {
+abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) extends SchemedSource with HfsTapProvider with LocalTapProvider {
 
   // The root path of the partitioned output.
   def basePath: String
@@ -41,31 +44,30 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
    * @param readOrWrite Describes if this source is being read from or written to.
    * @param mode The mode of the job. (implicit)
    *
-   * @returns A cascading PartitionTap.
+   * @return A cascading PartitionTap.
    */
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
-    readOrWrite match {
-      case Read => throw new InvalidSourceException("Using PartitionSource for input not yet implemented")
-      case Write => {
-        mode match {
-          case Local(_) => {
-            val localTap = new FileTap(localScheme, basePath, sinkMode)
-            openWritesThreshold match {
-              case Some(threshold) => new LPartitionTap(localTap, partition, threshold)
-              case None => new LPartitionTap(localTap, partition)
-            }
-          }
-          case hdfsMode @ Hdfs(_, _) => {
-            val hfsTap = createHfsTap(hdfsScheme, basePath, sinkMode)
-            getHPartitionTap(hfsTap)
-          }
-          case hdfsTest @ HadoopTest(_, _) => {
-            val hfsTap = createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), sinkMode)
-            getHPartitionTap(hfsTap)
-          }
-          case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
-        }
-      }
+    mode.storageMode.createTap(this, readOrWrite, mode, sinkMode)
+  }
+
+  override def createHdfsReadTap(strictSources: Boolean, conf: Configuration, mode: Mode, sinkMode: SinkMode): Tap[_, _, _] =
+    throw new InvalidSourceException("Using PartitionSource for input not yet implemented", new NotImplementedError)
+  override def createLocalReadTap(sinkMode: SinkMode): Tap[_, _, _] =
+    throw new InvalidSourceException("Using PartitionSource for input not yet implemented", new NotImplementedError)
+
+  override def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
+    val hfsTap = createHfsTap(hdfsScheme, hdfsWritePath, sinkMode)
+    openWritesThreshold match {
+      case Some(threshold) => new HPartitionTap(hfsTap, partition, threshold)
+      case None => new HPartitionTap(hfsTap, partition)
+    }
+  }
+
+  override def createLocalWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
+    val localTap = super.createLocalFileTap(basePath, sinkMode)
+    openWritesThreshold match {
+      case Some(threshold) => new LPartitionTap(localTap, partition, threshold)
+      case None => new LPartitionTap(localTap, partition)
     }
   }
 
@@ -79,32 +81,27 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
       throw new InvalidSourceException("basePath cannot be null for PartitionTap")
     }
   }
-
-  private[this] def getHPartitionTap(hfsTap: Hfs): HPartitionTap = {
-    openWritesThreshold match {
-      case Some(threshold) => new HPartitionTap(hfsTap, partition, threshold)
-      case None => new HPartitionTap(hfsTap, partition)
-    }
-  }
 }
 
 /**
  * An implementation of TSV output, split over a partition tap.
- *
- * tsvFields lets users explicitly specify which fields they want to see in
- * the TSV (allows user to discard path fields).
- *
- * apply assumes user wants a DelimitedPartition (the only
- * strategy bundled with Cascading).
- *
- * @param basePath The root path for the output.
- * @param delimiter The path delimiter, defaults to / to create sub-directory bins.
- * @param pathFields The set of fields to apply to the path.
- * @param writeHeader Flag to indicate that the header should be written to the file.
- * @param tsvFields The set of fields to include in the TSV output.
- * @param sinkMode How to handle conflicts with existing output.
  */
 object PartitionedTsv {
+  /**
+   *
+   * tsvFields lets users explicitly specify which fields they want to see in
+   * the TSV (allows user to discard path fields).
+   *
+   * apply assumes user wants a DelimitedPartition (the only
+   * strategy bundled with Cascading).
+   *
+   * @param basePath The root path for the output.
+   * @param delimiter The path delimiter, defaults to / to create sub-directory bins.
+   * @param pathFields The set of fields to apply to the path.
+   * @param writeHeader Flag to indicate that the header should be written to the file.
+   * @param tsvFields The set of fields to include in the TSV output.
+   * @param sinkMode How to handle conflicts with existing output.
+   */
   def apply(
     basePath: String,
     delimiter: String = "/",
@@ -135,17 +132,20 @@ case class PartitionedTsv(
 
 /**
  * An implementation of SequenceFile output, split over a partition tap.
- *
- * apply assumes user wants a DelimitedPartition (the only
- * strategy bundled with Cascading).
- *
- * @param basePath The root path for the output.
- * @param delimiter The path delimiter, defaults to / to create sub-directory bins.
- * @param pathFields The set of fields to apply to the path.
- * @param sequenceFields The set of fields to use for the sequence file.
- * @param sinkMode How to handle conflicts with existing output.
  */
 object PartitionedSequenceFile {
+  /**
+   * An implementation of SequenceFile output, split over a partition tap.
+   *
+   * apply assumes user wants a DelimitedPartition (the only
+   * strategy bundled with Cascading).
+   *
+   * @param basePath The root path for the output.
+   * @param delimiter The path delimiter, defaults to / to create sub-directory bins.
+   * @param pathFields The set of fields to apply to the path.
+   * @param sequenceFields The set of fields to use for the sequence file.
+   * @param sinkMode How to handle conflicts with existing output.
+   */
   def apply(
     basePath: String,
     delimiter: String = "/",

@@ -500,37 +500,9 @@ trait TypedPipe[+T] extends Serializable {
    * and then opens it after complete so that you can continue from that point
    */
   def forceToDiskExecution: Execution[TypedPipe[T]] = {
-    val cachedRandomUUID = java.util.UUID.randomUUID
-    lazy val inMemoryDest = new MemorySink[T]
+    val writeFn = { (conf: Config, mode: Mode) => (this, mode.storageMode.temporaryTypedSource[T].sink((conf))) }
 
-    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
-      // come up with unique temporary filename, use the config here
-      // TODO: refactor into TemporarySequenceFile class
-      val tmpDir = conf.get("hadoop.tmp.dir")
-        .orElse(conf.get("cascading.tmp.dir"))
-        .getOrElse("/tmp")
-
-      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
-      source.TypedSequenceFile[T](tmpSeq)
-
-    }
-    val writeFn = { (conf: Config, mode: Mode) =>
-      mode match {
-        case _: CascadingLocal => // Local or Test mode
-          (this, inMemoryDest)
-        case _: HadoopMode =>
-          (this, hadoopTypedSource(conf))
-      }
-    }
-
-    val readFn = { (conf: Config, mode: Mode) =>
-      mode match {
-        case _: CascadingLocal => // Local or Test mode
-          TypedPipe.from(inMemoryDest.readResults)
-        case _: HadoopMode =>
-          TypedPipe.from(hadoopTypedSource(conf))
-      }
-    }
+    val readFn = { (conf: Config, mode: Mode) => mode.storageMode.temporaryTypedSource[T].downstreamPipe((conf)) }
 
     Execution.write(writeFn, readFn)
   }

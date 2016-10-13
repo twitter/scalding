@@ -449,11 +449,7 @@ object Config {
   /**
    * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)
    */
-  def defaultFrom(mode: Mode): Config =
-    default ++ (mode match {
-      case m: HadoopMode => Config.fromHadoop(m.jobConf) - IoSerializationsKey
-      case _ => empty
-    })
+  def defaultFrom(mode: Mode): Config = default ++ mode.executionMode.defaultConfig
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*

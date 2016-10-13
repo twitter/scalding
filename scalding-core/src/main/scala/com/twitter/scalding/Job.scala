@@ -178,10 +178,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     AppProps.addApplicationFramework(null,
       String.format("scalding:%s", scaldingVersion))
 
-    val modeConf = mode match {
-      case h: HadoopMode => Config.fromHadoop(h.jobConf)
-      case _ => Config.empty
-    }
+    val modeConf = mode.executionMode.defaultConfig
 
     val init = base ++ modeConf
 
@@ -513,7 +510,7 @@ trait CounterVerification extends Job {
   def verifyCountersInTest: Boolean = true
 
   override def listeners: List[FlowListener] = {
-    if (this.mode.isInstanceOf[TestMode] && !this.verifyCountersInTest) {
+    if (this.mode.isTesting && !this.verifyCountersInTest) {
       super.listeners
     } else {
       super.listeners :+ new StatsFlowListener(this.verifyCounters)

@@ -54,13 +54,7 @@ case class IterableSource[+T](@transient iter: Iterable[T], inFields: Fields = F
     if (readOrWrite == Write) {
       sys.error("IterableSource is a Read-only Source")
     }
-    mode match {
-      case Local(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), asBuffer)
-      case Test(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), asBuffer)
-      case Hdfs(_, _) => hdfsTap
-      case HadoopTest(_, _) => hdfsTap
-      case _ => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
-    }
+    mode.storageMode.createMemoryTap(readOrWrite, fields, asBuffer)
   }
 
   /**

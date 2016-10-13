@@ -530,8 +530,8 @@ class CheckForFlowProcessInTypedJob(args: Args) extends Job(args) {
 case class BypassValidationSource(path: String) extends FixedTypedText[Int](TypedText.TAB, path) {
   override def validateTaps(mode: Mode): Unit = ()
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    (mode, readOrWrite) match {
-      case (hdfsMode: Hdfs, Read) => new InvalidSourceTap(Seq(path))
+    (mode.storageMode, readOrWrite) match {
+      case (_: HdfsStorageModeCommon, Read) => new InvalidSourceTap(Seq(path))
       case _ => super.createTap(readOrWrite)
     }
 }
@@ -585,7 +585,7 @@ class GroupByCoGroupCoGroupTriangleJob(args: Args) extends Job(args) {
 object PlatformTest {
   def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
-      case h: HadoopMode =>
+      case h: HadoopFamilyMode =>
         val config = h.jobConf
         config.setBoolean(Config.HashJoinAutoForceRight, autoForce)
       case _ => ()

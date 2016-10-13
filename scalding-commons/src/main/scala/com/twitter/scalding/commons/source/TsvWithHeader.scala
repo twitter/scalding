@@ -38,7 +38,7 @@ class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
 
   // make it lazy so as to only do once
   lazy val fieldsFromHeaderFile = {
-    val names = readFromFile(headerPath)
+    val names = mode.storageMode.readFromFile(headerPath)
       .split("\t")
       .toSeq
     new Fields(names: _*)
@@ -50,72 +50,17 @@ class TsvWithHeader(p: String, f: Fields = Fields.UNKNOWN)(implicit mode: Mode)
     f
   }
 
-  // TODO: move this method to make it a util function.
-  def readFromFile(filename: String)(implicit mode: Mode) = {
-    mode match {
-      case Hdfs(_, conf) => {
-        try {
-          val pt = new Path(filename)
-          val fs = pt.getFileSystem(conf)
-          fs.open(pt).readUTF
-        } catch {
-          case e: IOException => {
-            throw new RuntimeException(e)
-          }
-        }
-      }
-      // Local mode
-      case _ => {
-        try {
-          Files.toString(new File(filename), Charsets.UTF_8)
-        } catch {
-          case e: IOException => {
-            throw new RuntimeException(e)
-          }
-        }
-      }
-    }
-  }
+  @deprecated("please use mode.storageMode.readFromFile", "0.17.0")
+  def readFromFile(filename: String)(implicit mode: Mode): String = mode.storageMode.readFromFile(filename)
 
-  // TODO: move this method to make it a util function.
-  def writeToFile(filename: String, text: String)(implicit mode: Mode): Unit = {
-    mode match {
-      case Hdfs(_, conf) => {
-        try {
-          val pt = new Path(filename)
-          val fs = pt.getFileSystem(conf)
-          val br = new BufferedWriter(new OutputStreamWriter(fs.create(pt, true)))
-
-          br.write(text)
-          br.close()
-        } catch {
-          case e: IOException => {
-            throw new RuntimeException(e)
-          }
-        }
-      }
-      // Local mode
-      case _ => {
-        try {
-          val br = new BufferedWriter(
-            new OutputStreamWriter(new FileOutputStream(filename), "utf-8"))
-
-          br.write(text)
-          br.close()
-        } catch {
-          case e: IOException => {
-            throw new RuntimeException(e)
-          }
-        }
-      }
-    }
-  }
+  @deprecated("please use mode.storageMode.readFromFile", "0.17.0")
+  def writeToFile(filename: String, text: String)(implicit mode: Mode): Unit = mode.storageMode.writeToFile(filename, text)
 
   override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode) = {
     val ret = super.writeFrom(pipe)(flowDef, mode)
     val fieldNames = for (i <- (0 until fields.size)) yield fields.get(i).asInstanceOf[String]
     val headerFileText = fieldNames.mkString("\t")
-    writeToFile(headerPath, headerFileText)
+    mode.storageMode.writeToFile(headerPath, headerFileText)
     ret
   }
 }

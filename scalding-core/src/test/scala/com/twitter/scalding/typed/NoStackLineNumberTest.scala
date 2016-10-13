@@ -31,7 +31,7 @@ class NoStackLineNumberTest extends WordSpec {
     "actually get the no stack info" in {
       import Dsl._
       implicit val fd = new FlowDef
-      implicit val m = new Hdfs(false, new Configuration)
+      implicit val m = new LegacyHadoopMode(false, new Configuration)
 
       val pipeFut = com.twitter.example.scalding.typed.InAnotherPackage.buildF.map { tp =>
         tp.toPipe('a, 'b)

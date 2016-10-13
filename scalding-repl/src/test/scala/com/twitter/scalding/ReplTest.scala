@@ -34,10 +34,7 @@ class ReplTest extends WordSpec {
 
   def test() = {
 
-    val suffix = mode match {
-      case _: CascadingLocal => "local"
-      case _: HadoopMode => "hadoop"
-    }
+    val suffix = mode.name
     val testPath = "/tmp/scalding-repl/test/" + suffix + "/"
     val helloRef = List("Hello world", "Goodbye world")
 
@@ -60,7 +57,7 @@ class ReplTest extends WordSpec {
         assert(s.toString.contains("IterablePipe") || s.toString.contains("TypedPipeFactory"))
 
         val pipeName = mode match {
-          case m: HadoopMode => m.jobConf.get("hadoop.tmp.dir")
+          case m: HadoopFamilyMode => m.jobConf.get("hadoop.tmp.dir")
           case _ => "IterableSource"
         }
         assert(s.toPipe(Fields.ALL).toString.contains(pipeName))
@@ -187,9 +184,12 @@ class ReplTest extends WordSpec {
   }
 
   "REPL in Hadoop mode" should {
-    mode = Hdfs(strict = true, new JobConf)
+    mode = LegacyHadoopMode(strictSources = true, new JobConf)
     test()
   }
+
+  /* TODO: try to run REPL in Hadoop2-MR1, Tez, and/or Flink modes as well (to the extent all can be
+    loaded in the same classpath) */
 
   "findAllUpPath" should {
     val root = Files.createTempDirectory("scalding-repl").toFile

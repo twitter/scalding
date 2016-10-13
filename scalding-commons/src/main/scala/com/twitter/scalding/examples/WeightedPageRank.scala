@@ -86,8 +86,8 @@ class WeightedPageRank(args: Args) extends Job(args) {
    * read the pregenerated nodes file <'src_id, 'dst_ids, 'weights, 'mass_prior>
    */
   def getNodes(fileName: String) = {
-    mode match {
-      case Hdfs(_, conf) => {
+    mode.storageMode match {
+      case _: HdfsStorageModeCommon => {
         SequenceFile(fileName).read
           .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
             input: (Int, Array[Int], Array[Float], Double) => input
