@@ -114,7 +114,9 @@ object Mode {
     }
 
     lazy val autoMode = if (args.boolean("autoCluster")) {
-      KnownModeNames.toStream.map(ReallyAvailableModes.get).collect { case Some(ctor) => ctor }.headOption
+      KnownModeNames.toStream
+        .filterNot(_ == "local")
+        .map(ReallyAvailableModes.get).collect { case Some(ctor) => ctor }.headOption
     } else None
 
     lazy val requestedMode = KnownModeNames.find(args.boolean) // scanned in the order of KnownModesMap
