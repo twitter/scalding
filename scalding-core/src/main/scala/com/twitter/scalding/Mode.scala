@@ -86,6 +86,7 @@ object Mode {
     "hadoop2-mr1" -> "com.twitter.scalding.Hadoop2Mr1Mode",
     "hadoop2-tez" -> "com.twitter.scalding.Hadoop2TezMode",
     "hadoop1" -> "com.twitter.scalding.LegacyHadoopMode",
+    "hdfs" -> "com.twitter.scalding.LegacyHadoopMode",
     "flink" -> "com.twitter.scalding.FlinkMode")
 
   private def getModeConstructor(clazzName: String) =
