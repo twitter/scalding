@@ -91,22 +91,22 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable /* wi
 
   def createHdfsTap(readOrWrite: AccessMode, mode: TestMode, pathAllocator: Source => String,
     tapProvider: HfsTapProvider): Tap[_, _, _] = {
-    hdfsScheme.fold(throw new IllegalStateException("no available HDFS Scheme")) { scheme =>
+    readOrWrite match {
+      case Read => {
+        hdfsScheme.fold(throw new IllegalStateException("no available HDFS Scheme")) { scheme =>
 
-      readOrWrite match {
-        case Read => {
           val bufOpt = mode.buffers(src)
           bufOpt.map(buffer => {
             val buffer = bufOpt.get
             val fields = sourceFields
             (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf, _, _]]
           })
-            .getOrElse(tapProvider.createHfsTap(scheme, pathAllocator(src), sinkMode))
+            .getOrElse(tapProvider.createHdfsWriteTap(pathAllocator(src), sinkMode))
         }
+      }
 
-        case Write => {
-          tapProvider.createHfsTap(scheme, pathAllocator(src), sinkMode)
-        }
+      case Write => {
+        tapProvider.createHdfsWriteTap(pathAllocator(src), sinkMode)
       }
     }
   }

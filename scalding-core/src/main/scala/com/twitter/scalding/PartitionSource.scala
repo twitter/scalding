@@ -43,7 +43,6 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
    *
    * @param readOrWrite Describes if this source is being read from or written to.
    * @param mode The mode of the job. (implicit)
-   *
    * @return A cascading PartitionTap.
    */
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
@@ -55,16 +54,17 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
   override def createLocalReadTap(sinkMode: SinkMode): Tap[_, _, _] =
     throw new InvalidSourceException("Using PartitionSource for input not yet implemented", new NotImplementedError)
 
-  override def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
-    val hfsTap = createHfsTap(hdfsScheme, hdfsWritePath, sinkMode)
+  override def createHdfsWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = {
+    val hfsTap = createHfsTap(hdfsScheme, path, sinkMode)
     openWritesThreshold match {
       case Some(threshold) => new HPartitionTap(hfsTap, partition, threshold)
       case None => new HPartitionTap(hfsTap, partition)
     }
   }
 
-  override def createLocalWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
-    val localTap = super.createLocalFileTap(basePath, sinkMode)
+  override def localWritePath: String = basePath
+  override def createLocalWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = {
+    val localTap = super.createLocalFileTap(localScheme, path, sinkMode)
     openWritesThreshold match {
       case Some(threshold) => new LPartitionTap(localTap, partition, threshold)
       case None => new LPartitionTap(localTap, partition)

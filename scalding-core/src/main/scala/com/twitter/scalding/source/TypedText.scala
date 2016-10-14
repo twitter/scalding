@@ -80,14 +80,15 @@ trait TypedTextDelimited[T] extends SchemedSource with Mappable[T] with TypedSin
   override def sinkFields = typeDescriptor.fields
   override def sourceFields = typeDescriptor.fields
 
-  override def localScheme =
-    new CLTextDelimited(typeDescriptor.fields, false, false, separator.str, strict, null /* quote */ ,
-      typeDescriptor.fields.getTypesClasses, safe)
+  override def localScheme: LocalSchemeInstance.SchemeType =
+    LocalSchemeInstance(new CLTextDelimited(typeDescriptor.fields, false, false, separator.str, strict, null /* quote */ ,
+      typeDescriptor.fields.getTypesClasses, safe))
 
-  override def hdfsScheme =
-    HadoopSchemeInstance(new CHTextDelimited(typeDescriptor.fields, null /* compression */ , false, false,
-      separator.str, strict, null /* quote */ ,
-      typeDescriptor.fields.getTypesClasses, safe).asInstanceOf[Scheme[_, _, _, _, _]])
+  override def hdfsScheme: HadoopSchemeInstance.SchemeType =
+    HadoopSchemeInstance(
+      new CHTextDelimited(typeDescriptor.fields, null /* compression */ , false, false,
+        separator.str, strict, null /* quote */ ,
+        typeDescriptor.fields.getTypesClasses, safe).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 class TimePathTypedText[T](sep: TypedSep, path: String)(implicit dr: DateRange, td: TypeDescriptor[T])

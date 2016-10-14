@@ -15,12 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{File, InputStream, OutputStream}
-import java.util.{Properties, UUID}
+import java.io.{ File, InputStream, OutputStream }
+import java.util.{ Properties, UUID }
 
-import cascading.scheme.{NullScheme, Scheme}
-import cascading.scheme.local.{TextDelimited => CLTextDelimited, TextLine => CLTextLine}
-import cascading.scheme.hadoop.{SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine}
+import cascading.scheme.{ NullScheme, Scheme }
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
@@ -28,20 +28,20 @@ import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{MapAlgebra, Semigroup}
+import com.twitter.algebird.{ MapAlgebra, Semigroup }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, Path, PathFilter}
+import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait LocalSchemedSource {
   protected def localUnsupported = throw ModeException("Cascading local mode not supported for: " + toString)
 
   /** The scheme to use if the source is local. */
-  def localScheme: Scheme[Properties, InputStream, OutputStream, _, _] = localUnsupported
+  def localScheme: LocalSchemeInstance.SchemeType = localUnsupported
 
   /** The path to use if the source is local. */
   def localPaths: Iterable[String] = localUnsupported
@@ -54,7 +54,7 @@ trait HdfsSchemedSource {
   protected def hdfsUnsupported = throw ModeException("Cascading HDFS storage mode not supported for: " + toString)
 
   /** The scheme to use if the source is on hdfs. */
-  def hdfsScheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _] = hdfsUnsupported
+  def hdfsScheme: HadoopSchemeInstance.SchemeType = hdfsUnsupported
 
   /** The path to use if the source is local. */
   def hdfsPaths: Iterable[String] = hdfsUnsupported
@@ -83,13 +83,14 @@ abstract class SchemedSource extends Source with LocalSchemedSource with HdfsSch
 
 trait HfsTapProvider extends HdfsSchemedSource {
 
-  private[scalding] def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
+  protected def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String, sinkMode: SinkMode): Hfs =
     new Hfs(
       Hadoop2SchemeInstance(scheme),
       path, sinkMode)
 
-  def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = createHfsTap(hdfsScheme, hdfsWritePath, sinkMode)
+  def createHdfsWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = createHfsTap(hdfsScheme, path, sinkMode)
+  final def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = createHdfsWriteTap(hdfsWritePath, sinkMode)
 
   /**
    * Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
@@ -152,9 +153,8 @@ trait HfsTapProvider extends HdfsSchemedSource {
 }
 
 trait LocalTapProvider extends LocalSchemedSource {
-  // TODO support strict in Local
-
-  protected def createLocalFileTap(path: String, sinkMode: SinkMode): FileTap = new FileTap(localScheme, path, sinkMode)
+  protected final def createLocalFileTap(scheme: Scheme[Properties, InputStream, OutputStream, _, _],
+    path: String, sinkMode: SinkMode): FileTap = new FileTap(scheme, path, sinkMode)
 
   /**
    * Creates a local tap.
@@ -165,7 +165,7 @@ trait LocalTapProvider extends LocalSchemedSource {
   def createLocalReadTap(sinkMode: SinkMode): Tap[_, _, _] = {
     val taps = localPaths.map {
       p: String =>
-        CastFileTap(createLocalFileTap(p, sinkMode))
+        CastFileTap(createLocalFileTap(localScheme, p, sinkMode))
     }.toList
 
     taps match {
@@ -175,9 +175,8 @@ trait LocalTapProvider extends LocalSchemedSource {
     }
   }
 
-  def createLocalWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
-    createLocalFileTap(localWritePath, sinkMode)
-  }
+  def createLocalWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = createLocalFileTap(localScheme, path, sinkMode)
+  final def createLocalWriteTap(sinkMode: SinkMode): Tap[_, _, _] = createLocalWriteTap(localWritePath, sinkMode)
 
   def validateLocalTap(strictSources: Boolean): Unit = {
     val files = localPaths.map{ p => new java.io.File(p) }
@@ -334,7 +333,7 @@ trait DelimitedScheme extends SchemedSource {
   val safe = true
 
   //These should not be changed:
-  override def localScheme = new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
+  override def localScheme = LocalSchemeInstance(new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe))
 
   override def hdfsScheme = {
     assert(

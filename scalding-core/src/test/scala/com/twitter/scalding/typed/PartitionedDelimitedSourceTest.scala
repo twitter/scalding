@@ -53,7 +53,6 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
         .runHadoop
         .finish()
 
-
       job.mode match {
         case testMode: HadoopTest =>
           val directory = new File(testMode.getWritePathFor(singlePartition))

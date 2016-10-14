@@ -36,17 +36,17 @@ trait PartitionSchemedOps extends SchemedSource with HfsTapProvider with LocalTa
 
   override def createLocalReadTap(sinkMode: SinkMode): Tap[_, _, _] =
     {
-      val localTap = super.createLocalFileTap(localWritePath, SinkMode.REPLACE)
+      val localTap = super.createLocalFileTap(localScheme, localWritePath, SinkMode.REPLACE)
       new LocalPartitionTap(localTap, makePartition, SinkMode.UPDATE)
     }
 
-  override def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
-    val hfsTap = createHfsTap(hdfsScheme, hdfsWritePath, SinkMode.REPLACE)
+  override def createHdfsWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = {
+    val hfsTap = createHfsTap(hdfsScheme, path, SinkMode.REPLACE)
     new HdfsPartitionTap(hfsTap, makePartition, SinkMode.UPDATE)
   }
 
-  override def createLocalWriteTap(sinkMode: SinkMode): Tap[_, _, _] = {
-    val localTap = super.createLocalFileTap(localWritePath, SinkMode.REPLACE)
+  override def createLocalWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = {
+    val localTap = super.createLocalFileTap(localScheme, path, SinkMode.REPLACE)
     new LocalPartitionTap(localTap, makePartition, SinkMode.UPDATE)
   }
 }

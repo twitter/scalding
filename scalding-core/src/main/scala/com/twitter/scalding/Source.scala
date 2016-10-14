@@ -103,14 +103,24 @@ case object Write extends AccessMode
 // declaration leaves some type parameters underspecified.  Fill in the type
 // parameters with wildcards so the Scala compiler doesn't complain.
 
-object HadoopSchemeInstance {
+object LocalSchemeInstance {
+  type SchemeType = Scheme[Properties, InputStream, OutputStream, _, _]
+
   def apply(scheme: Scheme[_, _, _, _, _]) =
-    scheme.asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+    scheme.asInstanceOf[SchemeType]
+}
+
+object HadoopSchemeInstance {
+  type SchemeType = Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]
+  def apply(scheme: Scheme[_, _, _, _, _]) =
+    scheme.asInstanceOf[SchemeType]
 }
 
 object Hadoop2SchemeInstance {
+  type SchemeType = Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]
+
   def apply(scheme: Scheme[_, _, _, _, _]) =
-    scheme.asInstanceOf[Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _]]
+    scheme.asInstanceOf[SchemeType]
 }
 
 object CastHfsTap {
