@@ -15,14 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.{ OutputStream, InputStream, Serializable }
-import java.util.Random
+import java.io.{ InputStream, OutputStream, Serializable }
+import java.util.{ Random, UUID }
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Checkpoint, Each, Pipe, Merge }
+import cascading.pipe.{ Checkpoint, Each, Merge, Pipe }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
+import com.twitter.scalding.StorageMode.TemporarySource
 import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding._
@@ -500,11 +501,39 @@ trait TypedPipe[+T] extends Serializable {
    * and then opens it after complete so that you can continue from that point
    */
   def forceToDiskExecution: Execution[TypedPipe[T]] = {
-    val writeFn = { (conf: Config, mode: Mode) => (this, mode.storageMode.temporaryTypedSource[T].sink((conf))) }
+    val tempSourceUuid = UUID.randomUUID
 
-    val readFn = { (conf: Config, mode: Mode) => mode.storageMode.temporaryTypedSource[T].downstreamPipe((conf)) }
+    val thisPipe = this
+    class ForceToDiskExecution {
+      var temporarySource: Option[TemporarySource[T]] = None
 
-    Execution.write(writeFn, readFn)
+      def writeFn(conf: Config, mode: Mode) = {
+        val ts = mode.storageMode.temporaryTypedSource[T]
+        temporarySource = Some(ts)
+        (thisPipe, ts.sink(conf))
+      }
+
+      def readFn(conf: Config, mode: Mode) = {
+        temporarySource.fold(
+          throw new IllegalStateException("readFn() called before writeFn()"))(ts => ts.downstreamPipe((conf)))
+      }
+
+      def toExecution = Execution.write(writeFn _, readFn _)
+
+      /* Major assumption: when readFn gets called, the (conf, mode) arguments are the same than
+        when writeFn got called.
+
+        This is critical to getting the same instance of TemporarySource[T] (of which we really cannot know the
+        concrete type, which is the Mode's private business) from writeFn to readFn.
+
+        The TypedPipeDiffTest test is a good canary for breakage here.
+
+        TODO: open question. Are there any threading issues wrt to the chronology of calling writeFn then readFn? Should
+        "temporarySource" be protected?
+      */
+    }
+
+    (new ForceToDiskExecution).toExecution
   }
 
   /**
@@ -1089,8 +1118,10 @@ case class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: Str
     val pipe = typedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
     RichPipe.setPipeDescriptions(pipe, List(description))
   }
+
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
     WithDescriptionTypedPipe(typedPipe.cross(tiny), description)
+
   override def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     WithDescriptionTypedPipe(typedPipe.flatMap(f), description)
 }
@@ -1102,8 +1133,11 @@ case class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: Str
  */
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
   def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
+
   def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
+
   def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
+
   def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
 }
 

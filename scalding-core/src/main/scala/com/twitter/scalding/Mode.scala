@@ -333,8 +333,9 @@ class CascadingLocalExecutionMode extends ExecutionMode {
 
 trait TestStorageMode extends StorageMode {
   import StorageMode._
+
   def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
-    lazy val inMemoryDest = new typed.MemorySink[T]
+    lazy val inMemoryDest = new MemorySink[T]
 
     override def sink(conf: Config): TypedSink[T] = inMemoryDest
 
