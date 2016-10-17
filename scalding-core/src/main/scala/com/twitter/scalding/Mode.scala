@@ -19,38 +19,39 @@ import java.io._
 import java.lang.reflect.Constructor
 import java.net.URI
 import java.util
-import java.util.{ Properties, UUID }
+import java.util.{Properties, UUID}
 
-import cascading.flow.hadoop.{ HadoopFlow, HadoopFlowConnector, HadoopFlowProcess }
+import cascading.flow.hadoop.{HadoopFlow, HadoopFlowConnector, HadoopFlowProcess}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.mapred.{JobConf, OutputCollector, RecordReader}
 import cascading.flow._
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.flow.planner.BaseFlowStep
 import cascading.property.AppProps
 import cascading.scheme.NullScheme
-import cascading.tap.{ SinkMode, Tap }
+import cascading.tap.{SinkMode, Tap}
 import cascading.tap.local.FileTap
-import cascading.tuple.{ Fields, Tuple, TupleEntryIterator }
+import cascading.tuple.{Fields, Tuple, TupleEntryIterator}
 import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.twitter.maple.tap.MemorySourceTap
-import com.twitter.scalding.filecache.{ CachedFile, LocallyCachedFile, UncachedFile }
+import com.twitter.scalding.StorageMode.TemporarySource
+import com.twitter.scalding.filecache.{CachedFile, LocallyCachedFile, UncachedFile}
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.typed.MemorySink
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
-import scala.collection.mutable.{ Map => MMap }
-import scala.collection.mutable.{ Set => MSet }
-import scala.util.{ Failure, Success }
+import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{Set => MSet}
+import scala.util.{Failure, Success}
 import org.slf4j.LoggerFactory
 
 import scala.annotation.meta.param
-import scala.collection.{ Map, mutable }
+import scala.collection.{Map, mutable}
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -337,14 +338,6 @@ class CascadingLocalExecutionMode extends ExecutionMode {
 trait TestStorageMode extends StorageMode {
   import StorageMode._
 
-  def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
-    lazy val inMemoryDest = new MemorySink[T]
-
-    override def sink(conf: Config): TypedSink[T] = inMemoryDest
-
-    override def downstreamPipe(conf: Config): TypedPipe[T] = TypedPipe.from[T](inMemoryDest.readResults)
-  }
-
   private var fileSet = Set[String]()
   def registerTestFiles(files: Iterable[String]) = fileSet = files.toSet
   override def fileExists(filename: String): Boolean = fileSet.contains(filename)
@@ -376,6 +369,15 @@ trait LocalStorageModeCommon extends StorageMode {
     } catch {
       case e: IOException => throw new RuntimeException(e)
     }
+
+  def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
+    lazy val inMemoryDest = new MemorySink[T]
+
+    override def sink(conf: Config): TypedSink[T] = inMemoryDest
+
+    override def downstreamPipe(conf: Config): TypedPipe[T] = TypedPipe.from[T](inMemoryDest.readResults)
+  }
+
 }
 
 class LocalStorageMode(strictSources: Boolean) extends TestStorageMode with LocalStorageModeCommon {
@@ -408,6 +410,26 @@ trait HdfsStorageModeCommon extends StorageMode {
       new MemorySourceTap(tupleBuffer.asJava, fields)
     else
       throw new UnsupportedOperationException(s"on non-Local storage mode, cannot build MemoryTap for ${readOrWrite} operation")
+
+
+  def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
+    val cachedRandomUUID = java.util.UUID.randomUUID
+
+    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
+      // come up with unique temporary filename, use the config here
+      // TODO: refactor into TemporarySequenceFile class
+      val tmpDir = conf.get("hadoop.tmp.dir")
+        .orElse(conf.get("cascading.tmp.dir"))
+        .getOrElse("/tmp")
+
+      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
+      source.TypedSequenceFile[T](tmpSeq)
+    }
+
+    override def sink(conf: Config): TypedSink[T] = hadoopTypedSource(conf: Config)
+
+    override def downstreamPipe(conf: Config): TypedPipe[T] = TypedPipe.from[T](hadoopTypedSource(conf))
+  }
 
   def createNullTap: Tap[_, _, _] = new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
 
@@ -454,6 +476,7 @@ class HdfsTestStorageMode(strictSources: Boolean, @transient override val jobCon
     }
 
   def validateTap(schemedSource: SchemedSource): Unit = () // no path validation in test mode
+
 }
 
 class LocalTestStorageMode extends TestStorageMode with LocalStorageModeCommon {
@@ -495,25 +518,6 @@ class HdfsStorageMode(strictSources: Boolean, @transient override val jobConf: C
       case htp: HfsTapProvider => htp.validateHdfsTap(strictSources, jobConf)
       case _ => throw new ModeException("Cascading HDFS storage mode not supported for: " + schemedSource.toString)
     }
-
-  def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
-    val cachedRandomUUID = java.util.UUID.randomUUID
-
-    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
-      // come up with unique temporary filename, use the config here
-      // TODO: refactor into TemporarySequenceFile class
-      val tmpDir = conf.get("hadoop.tmp.dir")
-        .orElse(conf.get("cascading.tmp.dir"))
-        .getOrElse("/tmp")
-
-      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
-      source.TypedSequenceFile[T](tmpSeq)
-    }
-
-    override def sink(conf: Config): TypedSink[T] = hadoopTypedSource(conf: Config)
-
-    override def downstreamPipe(conf: Config): TypedPipe[T] = TypedPipe.from[T](hadoopTypedSource(conf))
-  }
 }
 
 class LegacyHadoopExecutionMode(mode: Mode, @transient override val jobConf: Configuration) extends HadoopExecutionModeBase {
