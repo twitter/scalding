@@ -16,42 +16,39 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io._
-import java.lang.reflect.Constructor
-import java.net.URI
+import java.nio.charset.Charset
+import java.nio.file.{ Files, Paths }
 import java.util
-import java.util.{Properties, UUID}
+import java.util.{ Properties, UUID }
 
-import cascading.flow.hadoop.{HadoopFlow, HadoopFlowConnector, HadoopFlowProcess}
+import cascading.flow.hadoop.{ HadoopFlowConnector, HadoopFlowProcess }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.mapred.{JobConf, OutputCollector, RecordReader}
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
 import cascading.flow._
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.flow.planner.BaseFlowStep
 import cascading.property.AppProps
 import cascading.scheme.NullScheme
-import cascading.tap.{SinkMode, Tap}
-import cascading.tap.local.FileTap
-import cascading.tuple.{Fields, Tuple, TupleEntryIterator}
-import com.google.common.base.Charsets
-import com.google.common.io.Files
+import cascading.tap.{ SinkMode, Tap }
+import cascading.tuple.{ Fields, Tuple, TupleEntryIterator }
 import com.twitter.maple.tap.MemorySourceTap
 import com.twitter.scalding.StorageMode.TemporarySource
-import com.twitter.scalding.filecache.{CachedFile, LocallyCachedFile, UncachedFile}
+import com.twitter.scalding.filecache.{ CachedFile, UncachedFile }
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.typed.MemorySink
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
-import scala.collection.mutable.{Map => MMap}
-import scala.collection.mutable.{Set => MSet}
-import scala.util.{Failure, Success}
+import scala.collection.mutable.{ Map => MMap }
+import scala.collection.mutable.{ Set => MSet }
+import scala.util.{ Failure, Success }
 import org.slf4j.LoggerFactory
 
 import scala.annotation.meta.param
-import scala.collection.{Map, mutable}
+import scala.collection.{ Map, mutable }
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -354,7 +351,7 @@ trait LocalStorageModeCommon extends StorageMode {
 
   def readFromFile(filename: String): String =
     try {
-      Files.toString(new File(filename), Charsets.UTF_8)
+      new String(Files.readAllBytes(Paths.get(filename)), Charset.forName("UTF-8"))
     } catch {
       case e: IOException =>
         throw new RuntimeException(e)
@@ -362,8 +359,7 @@ trait LocalStorageModeCommon extends StorageMode {
 
   def writeToFile(filename: String, text: String): Unit =
     try {
-      val br = new BufferedWriter(
-        new OutputStreamWriter(new FileOutputStream(filename), Charsets.UTF_8))
+      val br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), Charset.forName("UTF-8")))
       br.write(text)
       br.close()
     } catch {
@@ -410,7 +406,6 @@ trait HdfsStorageModeCommon extends StorageMode {
       new MemorySourceTap(tupleBuffer.asJava, fields)
     else
       throw new UnsupportedOperationException(s"on non-Local storage mode, cannot build MemoryTap for ${readOrWrite} operation")
-
 
   def temporaryTypedSource[T]: TemporarySource[T] = new TemporarySource[T] {
     val cachedRandomUUID = java.util.UUID.randomUUID
