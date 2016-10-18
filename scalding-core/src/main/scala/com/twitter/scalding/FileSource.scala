@@ -292,7 +292,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
         .toList
 
     taps match {
-      case Nil => new IterableSource[Any](Nil).createTap(Read)(hdfsMode).asInstanceOf[Tap[JobConf, _, _]]
+      case Nil => new IterableSource[Any](Nil, Fields.ALL).createTap(Read)(hdfsMode).asInstanceOf[Tap[JobConf, _, _]]
       case one :: Nil => one
       case many => new ScaldingMultiSourceTap(many)
     }
