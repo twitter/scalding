@@ -59,6 +59,8 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
 
           directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
 
+          /* Warning: the naming convention of the parts is a fabric-specific implementation detail.
+            This works on Hadoop... today. It won't on Tez. */
           val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
           val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
