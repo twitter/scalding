@@ -48,6 +48,7 @@ val thriftVersion = "0.7.0"
 val junitVersion = "4.10"
 val junitInterfaceVersion = "0.11"
 val macroCompatVersion = "1.1.1"
+val guavaVersion = "14.0.1" // caution: guava [16.0,) is incompatible with hadoop-commons 2.6.0
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -331,7 +332,9 @@ lazy val scaldingCore = module("core").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "cascading" % "cascading-core" % cascadingVersion,
     "cascading" % "cascading-hadoop" % cascadingVersion % "provided", // TODO: investigate whether can get rid of this. Perhaps depend on cascading-hadoop2-io (common to all) instead ?
-    "cascading" % "cascading-local" % cascadingVersion,
+    "cascading" % "cascading-local" % cascadingVersion
+      exclude("com.google.guava", "guava"),
+    "com.google.guava" % "guava" % guavaVersion % "provided",
     "com.twitter" % "chill-hadoop" % chillVersion,
     "com.twitter" % "chill-java" % chillVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
@@ -559,6 +562,8 @@ lazy val scaldingHRaven = module("hraven").settings(
       exclude("com.sun.jdmk", "jmxtools")
       exclude("com.sun.jmx", "jmxri")
 
+      exclude("com.google.guava", "guava")
+      
       // These transitive dependencies of hRaven cause conflicts when
       // running scalding-hraven/*assembly and aren't needed
       // for the part of the hRaven API that we use anyway
@@ -596,6 +601,7 @@ lazy val scaldingRepl = module("repl")
         exclude("com.google.guava", "guava"),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "unprovided"
         exclude("com.google.guava", "guava"),
+      "com.google.guava" % "guava" % guavaVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
@@ -638,7 +644,8 @@ lazy val scaldingJdbc = module("jdbc").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
       exclude("com.google.guava", "guava"),
-    "cascading" % "cascading-hadoop" % cascadingVersion % "provided",
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided"
+      exclude("com.google.guava", "guava"),    
     "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
     "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
   )
@@ -649,11 +656,13 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion
       exclude("com.google.guava", "guava"),
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion
+      exclude("com.google.guava", "guava"),
     "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests"
+      exclude("com.google.guava", "guava"),
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
     "cascading" % "cascading-hadoop" % cascadingVersion,
     "org.scala-lang" % "scala-compiler" % scalaVersion,
@@ -740,11 +749,13 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test"
       exclude("com.google.guava", "guava"),
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
+    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test"
+      exclude("com.google.guava", "guava"),
     "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests"
+      exclude("com.google.guava", "guava"),
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
   ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
