@@ -45,6 +45,9 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
   import Dsl._
   import JsonLine._
 
+  private val outFields = new Fields("json")
+  override def sinkFields = outFields
+
   override def transformForWrite(pipe: Pipe) = pipe.mapTo(fields -> 'json) {
     t: TupleEntry => mapper.writeValueAsString(TupleConverter.ToMap(t))
   }
