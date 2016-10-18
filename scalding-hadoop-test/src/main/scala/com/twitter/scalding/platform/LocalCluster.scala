@@ -86,15 +86,16 @@ class LocalCluster(mutex: Boolean = true) {
     }
     new File(System.getProperty("hadoop.log.dir")).mkdirs()
 
-    val conf = new Configuration
-    val dfs = new MiniDFSCluster.Builder(conf)
+    val clusterConfiguration = new Configuration()
+
+    val dfs = new MiniDFSCluster.Builder(clusterConfiguration)
       .numDataNodes(4)
       .format(true)
       .build()
 
     val fileSystem = dfs.getFileSystem
     val cluster = new MiniYARNCluster(fileSystem.getUri.toString, 1, 4, 1, 1)
-    val mrJobConf = new JobConf(cluster.getConfig)
+    val mrJobConf = new JobConf(fileSystem.getConf)
 
     mrJobConf.setInt("mapred.submit.replication", 2)
     mrJobConf.set("mapred.map.max.attempts", "2")
