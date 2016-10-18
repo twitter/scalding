@@ -644,8 +644,8 @@ lazy val scaldingJdbc = module("jdbc").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
       exclude("com.google.guava", "guava"),
-    "cascading" % "cascading-hadoop" % cascadingVersion % "provided"
-      exclude("com.google.guava", "guava"),    
+    "cascading" % "cascading-hadoop" % cascadingVersion % "provided,test"
+      exclude("com.google.guava", "guava"),
     "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
     "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
   )
