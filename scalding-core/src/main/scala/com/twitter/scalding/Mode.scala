@@ -668,7 +668,10 @@ case class HadoopTest(@transient jobConf: Configuration,
   /** Looks up a local path to write the given source to */
   def getWritePathFor(src: Source): String = {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
-    writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.toString.replaceAll("[/\\\\\\$ .\\(\\)]", "_") + "_", rndIdx))
+    writePaths.getOrElseUpdate(src, allocateNewPath(basePath +
+      src.toString
+        .replaceAll("[/\\\\\\$ .\\(\\),;:\t\\[\\]\\+]", "_")
+        .replaceAll("_+","_") + "_", rndIdx))
   }
 
   def finalize(src: Source): Unit = {
