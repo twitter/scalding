@@ -599,6 +599,8 @@ lazy val scaldingRepl = module("repl")
       "org.scala-lang" % "scala-reflect" % scalaVersion,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
         exclude("com.google.guava", "guava"),
+      "cascading" % "cascading-hadoop" % cascadingVersion % "test",
+      
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "unprovided"
         exclude("com.google.guava", "guava"),
       "com.google.guava" % "guava" % guavaVersion,
