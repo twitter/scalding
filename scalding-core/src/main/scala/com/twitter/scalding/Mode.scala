@@ -659,11 +659,16 @@ case class HadoopTest(@transient jobConf: Configuration,
   }
 
   private val thisTestID = UUID.randomUUID
-  private val basePath = "/tmp/scalding/%s/".format(thisTestID)
-  // Looks up a local path to write the given source to
+  private lazy val basePath = {
+    val r = s"/tmp/scalding/${thisTestID}/"
+    new File(r).mkdirs()
+    r
+  }
+
+  /** Looks up a local path to write the given source to */
   def getWritePathFor(src: Source): String = {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
-    writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.getClass.getName, rndIdx))
+    writePaths.getOrElseUpdate(src, allocateNewPath(basePath + src.toString.replaceAll("[/\\\\\\$ .\\(\\)]", "_") + "_", rndIdx))
   }
 
   def finalize(src: Source): Unit = {
