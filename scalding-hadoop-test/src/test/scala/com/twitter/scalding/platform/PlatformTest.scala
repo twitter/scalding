@@ -437,6 +437,22 @@ object PlatformTest {
   }
 }
 
+class TestEmptySource extends FileSource with Mappable[(String, Long)] with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
+  override def converter[U >: (String, Long)] =
+    TupleConverter.asSuperConverter[(String, Long), U](implicitly[TupleConverter[(String, Long)]])
+}
+
+// Tests the scenario where you have no data present in the directory pointed to by a source typically
+// due to the directory being empty (but for a _SUCCESS file)
+// We test out that this shouldn't result in a Cascading planner error during {@link Job.buildFlow}
+class EmptyDataJob(args: Args) extends Job(args) {
+  TypedPipe.from(new TestEmptySource)
+    .map { case (s, l) => s }
+    .write(TypedTsv[String]("output"))
+}
+
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
 // This is useful given that the Hadoop MiniMRCluster and MiniDFSCluster spew a ton of logging.
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
@@ -697,6 +713,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
         .sink[String]("output") { _.toList shouldBe data }
+        .run()
+    }
+  }
+
+  "An EmptyData source" should {
+    "read from empty source and write to output without errors" in {
+      HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
         .run()
     }
   }
