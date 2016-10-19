@@ -199,6 +199,12 @@ class JobTest(cons: (Args) => Job) {
     cons(Mode.putMode(testMode, args))
   }
 
+  protected def jobMode(job: Job): TestMode =
+    job.mode match {
+      case m: TestMode => m
+      case _ => throw new IllegalArgumentException("The Job is not running under a TestMode. Has this job been created from this initJob() method?") // shouldn't happen
+    }
+
   @tailrec
   private final def runJob(job: Job, runNext: Boolean): Unit = {
     // Disable automatic cascading update
@@ -222,17 +228,7 @@ class JobTest(cons: (Args) => Job) {
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None => {
-        job.mode match {
-          case hadoopTest @ HadoopTest(_, _) => {
-            /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
-             * "keys" in the `sourceMap`.  Do not change the following line unless
-             * you also modify the `finalize` function accordingly.
-             */
-            // The sinks are written to disk, we need to clean them up:
-            sinkSet.foreach{ hadoopTest.finalize(_) }
-          }
-          case _ => ()
-        }
+        jobMode(job).finalize(sinkSet)
         // Now it is time to check the test conditions:
         callbacks.foreach { cb => cb() }
         statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }

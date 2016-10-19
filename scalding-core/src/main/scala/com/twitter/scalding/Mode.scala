@@ -621,6 +621,15 @@ trait TestMode extends Mode {
   def buffers: Source => Option[Buffer[Tuple]]
 
   def registerTestFiles(files: Iterable[String]): Unit = storageMode.registerTestFiles(files)
+
+  /**
+    * Perform any closing activity required on a set of sinks, if any
+    *
+    * Note: this is typically used for test purposes.
+    *
+    * @param sinks a list of sinks to visit and on which to perform post-job activity
+    */
+  def finalize(sinks: Iterable[Source]): Unit = ()
 }
 
 case class Test(override val buffers: (Source) => Option[Buffer[Tuple]]) extends LocalMode with TestMode {
@@ -674,7 +683,7 @@ case class HadoopTest(@transient jobConf: Configuration,
         .replaceAll("_+","_") + "_", rndIdx))
   }
 
-  def finalize(src: Source): Unit = {
+  private def finalizeSink(src: Source): Unit = {
     /* The following `_.get` is only safe if `src` belongs to the source map.
      * This invariant is preserved by the `JobTest.sink` and `JobTest.runJob`
      * functions, and those functions have been documented accordingly to
@@ -694,6 +703,12 @@ case class HadoopTest(@transient jobConf: Configuration,
     //Clean up this data off the disk
     new File(path).delete()
     writePaths -= src
+  }
+
+  override def finalize(sinks: Iterable[Source]): Unit = {
+    sinks.foreach(finalizeSink)
+    // since all files finalized already, this should be empty now.
+    new File(basePath).delete
   }
 
 }
