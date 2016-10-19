@@ -437,7 +437,7 @@ object PlatformTest {
   }
 }
 
-class TestEmptySource extends FileSource with Mappable[(String, Long)] {
+class TestEmptySource extends FileSource with Mappable[(String, Long)] with SuccessFileSource {
   override def hdfsPaths: Iterable[String] = Iterable.empty
   override def localPaths: Iterable[String] = Iterable.empty
   override def converter[U >: (String, Long)] =
