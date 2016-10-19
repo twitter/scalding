@@ -478,9 +478,9 @@ class LocalTestStorageMode extends TestStorageMode with LocalStorageModeCommon {
 
   override def createTap(schemedSource: SchemedSource, readOrWrite: AccessMode, mode: Mode, sinkMode: SinkMode): Tap[_, _, _] =
     (mode, readOrWrite) match {
-      case (testMode: TestMode, Read)  =>
+      case (testMode: TestMode, Read) =>
         TestTapFactory(schemedSource, schemedSource.localScheme.getSourceFields, sinkMode).createLocalTap(readOrWrite, testMode)
-      case (testMode: TestMode, Write)  =>
+      case (testMode: TestMode, Write) =>
         TestTapFactory(schemedSource, schemedSource.localScheme.getSinkFields, sinkMode).createLocalTap(readOrWrite, testMode)
       case _ =>
         throw new UnsupportedOperationException("LocalTestStorageMode cannot create test tap in a non-testing mode")

@@ -15,28 +15,28 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{File, InputStream, OutputStream}
-import java.util.{Properties, UUID}
+import java.io.{ File, InputStream, OutputStream }
+import java.util.{ Properties, UUID }
 
-import cascading.tuple.{Tuple => CTuple}
-import cascading.scheme.{NullScheme, Scheme}
-import cascading.scheme.local.{TextDelimited => CLTextDelimited, TextLine => CLTextLine}
-import cascading.scheme.hadoop.{SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine}
+import cascading.tuple.{ Tuple => CTuple }
+import cascading.scheme.{ NullScheme, Scheme }
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
 import cascading.tap.hadoop.Hfs
 import cascading.tap.MultiSourceTap
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tap.local.FileTap
-import cascading.tuple.{Fields, Tuple}
+import cascading.tuple.{ Fields, Tuple }
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{MapAlgebra, Semigroup}
+import com.twitter.algebird.{ MapAlgebra, Semigroup }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, Path, PathFilter}
+import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 trait LocalSchemedSource {
   protected def localUnsupported = throw ModeException("Cascading local mode not supported for: " + toString)
@@ -90,7 +90,7 @@ trait HfsTapProvider extends HdfsSchemedSource {
       Hadoop2SchemeInstance(scheme),
       path, sinkMode)
 
-  def createHdfsWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = createHfsTap(hdfsScheme, path, sinkMode).asInstanceOf[Tap[_,_,_]]
+  def createHdfsWriteTap(path: String, sinkMode: SinkMode): Tap[_, _, _] = createHfsTap(hdfsScheme, path, sinkMode).asInstanceOf[Tap[_, _, _]]
   final def createHdfsWriteTap(sinkMode: SinkMode): Tap[_, _, _] = createHdfsWriteTap(hdfsWritePath, sinkMode)
 
   /**
@@ -307,7 +307,6 @@ trait TextSourceScheme extends SchemedSource {
 }
 
 trait TextLineScheme extends TextSourceScheme with SingleMappable[String] with TypedSink[String] {
-
 
   //In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
