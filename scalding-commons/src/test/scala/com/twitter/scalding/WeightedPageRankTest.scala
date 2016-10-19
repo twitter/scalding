@@ -20,12 +20,19 @@ import org.scalatest.{ Matchers, WordSpec }
 class WeightedPageRankSpec extends WordSpec with Matchers {
   "Weighted PageRank job" should {
     var idx = 0
+
     JobTest(new com.twitter.scalding.examples.WeightedPageRank(_))
       .arg("pwd", ".")
       .arg("weighted", "true")
       .arg("maxiterations", "1")
       .arg("jumpprob", "0.1")
       .source(Tsv("./nodes"), List((1, "2,3", "1,2", 0.26), (2, "3", "1", 0.54), (3, "", "", 0.2)))
+      /* NOTE: in Hadoop mode, WeightedPageRank NORMALLY operates over SequenceFiles, not Tsv. However, we cannot
+        access the mode at this time (as it's decided by the "useHadoop = true" flag below), so we have to pick a
+         source type. We choose Tsv, and we expect WeightedPageRank to notice that despite working in Hadoop mode, we
+         use a Tsv source
+         */
+
       .source(Tsv("./numnodes"), List((3)))
       .source(Tsv("./pagerank_0"), List((1, 0.086), (2, 0.192), (3, 0.722)))
       .typedSink(TypedTsv[Double]("./totaldiff")) { ob =>
