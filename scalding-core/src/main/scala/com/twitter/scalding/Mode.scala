@@ -623,12 +623,12 @@ trait TestMode extends Mode {
   def registerTestFiles(files: Iterable[String]): Unit = storageMode.registerTestFiles(files)
 
   /**
-    * Perform any closing activity required on a set of sinks, if any
-    *
-    * Note: this is typically used for test purposes.
-    *
-    * @param sinks a list of sinks to visit and on which to perform post-job activity
-    */
+   * Perform any closing activity required on a set of sinks, if any
+   *
+   * Note: this is typically used for test purposes.
+   *
+   * @param sinks a list of sinks to visit and on which to perform post-job activity
+   */
   def finalize(sinks: Iterable[Source]): Unit = ()
 }
 
@@ -679,8 +679,8 @@ case class HadoopTest(@transient jobConf: Configuration,
     val rndIdx = new java.util.Random().nextInt(1 << 30)
     writePaths.getOrElseUpdate(src, allocateNewPath(basePath +
       src.toString
-        .replaceAll("[/\\\\\\$ .\\(\\),;:\t\\[\\]\\+]", "_")
-        .replaceAll("_+","_") + "_", rndIdx))
+      .replaceAll("[/\\\\\\$ .\\(\\),;:\t\\[\\]\\+]", "_")
+      .replaceAll("_+", "_") + "_", rndIdx))
   }
 
   private def finalizeSink(src: Source): Unit = {
