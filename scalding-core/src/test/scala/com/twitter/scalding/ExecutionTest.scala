@@ -233,32 +233,7 @@ class ExecutionTest extends WordSpec with Matchers {
       mode shouldBe a[LocalMode]
     }
 
-    "parse args correctly (legacy hdfs)" in {
-      val (conf1, mode) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hdfs"))
-
-      mode shouldBe a[LegacyHadoopMode]
-      val hconf = mode.asInstanceOf[LegacyHadoopMode].jobConf
-
-      conf1.get("mapred.reduce.tasks") should contain ("110")
-      conf1.getArgs.boolean("test") shouldBe true
-      hconf.get("mapred.reduce.tasks") shouldBe "110"
-    }
-    "parse args correctly (hadoop1) " in {
-      val (conf1, mode) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hadoop1"))
-
-      mode shouldBe a[LegacyHadoopMode]
-      val hconf = mode.asInstanceOf[LegacyHadoopMode].jobConf
-
-      conf1.get("mapred.reduce.tasks") should contain ("110")
-      conf1.getArgs.boolean("test") shouldBe true
-      hconf.get("mapred.reduce.tasks") shouldBe "110"
-    }
-
-    "parse args correctly (autoCluster) " in {
-      val (conf1, mode) = parser.config(Array("--test", "--autoCluster"))
-
-      mode shouldBe a[ClusterMode] // Can be anything that's available in the classpath.
-    }
+    /* Hadoop-specific code moved to ExecutionHadoopExtraTest */
 
   }
   "An ExecutionJob" should {

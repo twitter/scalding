@@ -16,13 +16,13 @@ package com.twitter.scalding.typed
 
 import java.io.File
 
-import scala.io.{ Source => ScalaSource }
-
+import com.twitter.scalding._
 import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.scalding._
-
+import scala.io.{ Source => ScalaSource }
 import TDsl._
+
+/* moved here due to chicken-and-egg situation with scalding-core */
 
 object PartitionedTextLineTestSources {
   val singlePartition = PartitionedTextLine[String]("out", "%s")
@@ -60,7 +60,7 @@ class PartitionedTextLineTest extends WordSpec with Matchers {
         .runHadoop
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      val testMode = job.mode.asInstanceOf[HadoopFamilyTestMode]
 
       val directory = new File(testMode.getWritePathFor(singlePartition))
       println(directory)
@@ -88,7 +88,7 @@ class PartitionedTextLineTest extends WordSpec with Matchers {
         .runHadoop
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      val testMode = job.mode.asInstanceOf[HadoopFamilyTestMode]
 
       val directory = new File(testMode.getWritePathFor(multiplePartition))
       println(directory)

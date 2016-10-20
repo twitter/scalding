@@ -49,8 +49,17 @@ val junitVersion = "4.10"
 val junitInterfaceVersion = "0.11"
 val macroCompatVersion = "1.1.1"
 val guavaVersion = "14.0.1" // caution: guava [16.0,) is incompatible with hadoop-commons 2.6.0
+val mockitoVersion = "1.8.5"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
+
+lazy val testLibraryDependencies = Seq(
+  "org.mockito" % "mockito-all" % mockitoVersion % "test",
+  "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
+  "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+  "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
+  "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
+)
 
 val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformSettings ++ Seq(
   organization := "com.twitter",
@@ -67,13 +76,7 @@ val sharedSettings = Project.defaultSettings ++ assemblySettings ++ scalariformS
 
   wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
 
-  libraryDependencies ++= Seq(
-    "org.mockito" % "mockito-all" % "1.8.5" % "test",
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
-    "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test",
-    "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
-  ),
+  libraryDependencies ++= testLibraryDependencies,
 
   resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
@@ -361,29 +364,52 @@ lazy val scaldingCore = module("core").settings(
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ) .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
-lazy val scaldingFabricHadoop = module("fabric-tez").settings(
-  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-    "cascading" % "cascading-hadoop" % cascadingVersion) ++
+lazy val scaldingCoreFabricTests = module("core-fabric-tests").settings(
+  libraryDependencies <++= (scalaVersion) { scalaVersion =>
+    testLibraryDependencies.map (m => m.copy(configurations = None)) ++
+      providedCascadingHadoopDependencies ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingCore)
+).dependsOn(scaldingCore,
+  scaldingCore % "test->compile",
+  scaldingCore % "test->test",
+  scaldingCore % "compile->test" )
+
+
+lazy val scaldingFabricHadoop = module("fabric-hadoop").settings(
+  libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion
+      exclude("com.google.guava", "guava"),
+    "com.google.guava" % "guava" % guavaVersion,
+    "cascading" % "cascading-hadoop" % cascadingVersion) ++
+    (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+
+  testOptions := Seq(Tests.Filter( (name:String) => { println(s"filtering for test: ${name}"); true }))
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test" )
+
 
 lazy val scaldingFabricHadoop2Mr1 = module("fabric-hadoop2-mr1").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion
+      exclude("com.google.guava", "guava"),
+    "com.google.guava" % "guava" % guavaVersion,
     "cascading" % "cascading-hadoop2-mr1" % cascadingVersion) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingCore)
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test")
 
 lazy val scaldingFabricTez = module("fabric-tez").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion
+      exclude("com.google.guava", "guava"),
     "org.apache.tez" % "tez-api" % tezVersion,
     "org.apache.tez" % "tez-mapreduce" % tezVersion,
     "org.apache.tez" % "tez-dag" % tezVersion,
     "cascading" % "cascading-hadoop2-tez" % cascadingVersion) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingCore)
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test" )
 
 lazy val scaldingFabricFlink = module("fabric-flink").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
@@ -398,7 +424,7 @@ lazy val scaldingFabricFlink = module("fabric-flink").settings(
   ) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingCore)
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test")
 
 lazy val defaultScaldingFabric = scaldingFabricHadoop
 

@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import java.io._
+import java.lang.reflect.Constructor
 import java.nio.charset.Charset
 import java.nio.file.{ Files, Paths }
 import java.util
@@ -77,32 +78,63 @@ object Mode {
   }
 
   val KnownModesMap = Seq(
-    /* The modes are referenced by class *names* to avoid tightly coupling all the jars together. Mode must be loadable
-    whether one of these is missing or not.
+    /* The modes are referenced by class *names* to avoid tightly coupling all the jars together. This class, Mode,
+    must be loadable whether one of these is missing or not (it is unlikely all can be loaded at the same time)
      */
     "local" -> "com.twitter.scalding.Local",
     "hadoop2-mr1" -> "com.twitter.scalding.Hadoop2Mr1Mode",
-    "hadoop2-tez" -> "com.twitter.scalding.Hadoop2TezMode",
+    "hadoop2-tez" -> "com.twitter.scalding.TezMode", "tez" -> "com.twitter.scalding.TezMode",
     "hadoop1" -> "com.twitter.scalding.LegacyHadoopMode",
     "hdfs" -> "com.twitter.scalding.LegacyHadoopMode",
     "flink" -> "com.twitter.scalding.FlinkMode")
 
-  private def getModeConstructor(clazzName: String) =
+  val KnownTestModesMap = Seq(
+    "local-test" -> "com.twitter.scalding.Test",
+    "hadoop1-test" -> "com.twitter.scalding.HadoopTest",
+    "hadoop2-mr1-test" -> "com.twitter.scalding.Hadoop2Mr1TestMode",
+    "tez-test" -> "com.twitter.scalding.TezTestMode",
+    "flink-test" -> "com.twitter.scalding.FlinkTestMode")
+  // TODO: define hadoop2-mr1 (easy), tez and flink (less easy) classes.
+
+  private def getModeConstructor[M <: Mode](clazzName: String, types: Class[_]*) =
     try {
-      val clazz: Class[Mode] = Class.forName(clazzName).asInstanceOf[Class[Mode]]
-      val ctor = clazz.getConstructor(classOf[Boolean], classOf[Configuration])
+      val clazz: Class[M] = Class.forName(clazzName).asInstanceOf[Class[M]]
+      val ctor = clazz.getConstructor(types: _*)
       Some(ctor)
     } catch {
       case ncd: ClassNotFoundException => None
     }
 
-  private lazy val ReallyAvailableModes = KnownModesMap.map {
-    case (modeName, clazzName) =>
-      (modeName, getModeConstructor(clazzName))
-  }.collect { case (modeName, Some(ctor)) => (modeName, ctor) }.toMap
+  private def filterKnownModes[M <: Mode](clazzNames: Iterable[(String, String)], types: Class[_]*): Map[String, Constructor[M]] =
+    clazzNames.map {
+      case (modeName, clazzName) =>
+        (modeName, getModeConstructor[M](clazzName, types: _*))
+    }.collect { case (modeName, Some(ctor)) => (modeName, ctor) }.toMap
+
+  private val RegularModeTypes = Seq(classOf[Boolean], classOf[Configuration])
+
+  private lazy val ReallyAvailableModes = filterKnownModes[Mode](KnownModesMap, RegularModeTypes: _*)
 
   lazy private val KnownModesDict = KnownModesMap.toMap
   val KnownModeNames = KnownModesMap.map(_._1) // same order as KnownModesMap (priorities)
+
+  private val TestModeTypes = Seq(classOf[Configuration], classOf[(Source) => Option[Buffer[Tuple]]])
+  private lazy val ReallyAvailableTestModes = filterKnownModes[TestMode](KnownTestModesMap, TestModeTypes: _*)
+
+  def test(modeName: String, config: Configuration, bufferMap: (Source) => Option[Buffer[Tuple]]): TestMode = {
+
+    val modeCtor = KnownTestModesMap
+      .filter { case (flag, _) => (flag == modeName) || ((modeName == "anyCluster-test") && (flag != "local-test")) }
+      .map { case (flag, _) => ReallyAvailableTestModes.get(flag) }
+      .collect { case Some(ctor) => ctor }
+      .headOption
+      .orElse(
+        KnownTestModesMap
+          .map { case (flag, _) => ReallyAvailableTestModes.get(flag) }
+          .collect { case Some(ctor) => ctor }
+          .headOption)
+    construct[TestMode](modeCtor, config, bufferMap)
+  }
 
   // This should be passed ALL the args supplied after the job name
   def apply(args: Args, config: Configuration): Mode = {
@@ -117,18 +149,24 @@ object Mode {
         .map(ReallyAvailableModes.get).collect { case Some(ctor) => ctor }.headOption
     } else None
 
+    val ctorFinder = (clazzName: String) => getModeConstructor[Mode](clazzName, RegularModeTypes: _*)
+
     lazy val requestedMode = KnownModeNames.find(args.boolean) // scanned in the order of KnownModesMap
-    lazy val requestedModeCtor = requestedMode.flatMap(KnownModesDict.get).flatMap(getModeConstructor)
+    lazy val requestedModeCtor = requestedMode.flatMap(KnownModesDict.get).flatMap(ctorFinder)
 
     lazy val explicitModeClazzName = args.optional("modeClass") // use this to supply a custom Mode class from the command line
-    lazy val explicitModeClazzCtor = explicitModeClazzName.flatMap(getModeConstructor)
+    lazy val explicitModeClazzCtor = explicitModeClazzName.flatMap(ctorFinder)
 
     val modeCtor = explicitModeClazzCtor.orElse(autoMode).orElse(requestedModeCtor)
 
+    construct(modeCtor, boolean2Boolean(strictSources): AnyRef, config)
+  }
+
+  private def construct[M <: Mode](modeCtor: Option[Constructor[M]], args: AnyRef*): M = {
     modeCtor match {
       case Some(ctor) =>
         try {
-          ctor.newInstance(boolean2Boolean(strictSources): AnyRef, config)
+          ctor.newInstance(args: _*)
         } catch {
           case ncd: ClassNotFoundException => {
             throw new ModeLoadException("Failed to load Scalding Mode class (missing runtime jar?) " + ctor, ncd)
@@ -270,8 +308,9 @@ trait HadoopFamilyMode extends ClusterMode {
  * The "HadoopMode" is actually an alias for "a mode running on a fabric that ultimately runs using an execution
  * engine compatible with some of the Hadoop technology stack (may or may not include Hadoop 1.x, YARN, etc.)
  */
-trait HadoopExecutionModeBase extends ExecutionMode {
+trait HadoopExecutionModeBase[ConfigType <: Configuration] extends ExecutionMode {
   def jobConf: Configuration
+  def mode: Mode
 
   override def getHashJoinAutoForceRight: Boolean = {
     val config = Config.fromHadoop(jobConf)
@@ -299,13 +338,15 @@ trait HadoopExecutionModeBase extends ExecutionMode {
   protected def newFlowConnector(rawConf: java.util.Map[AnyRef, AnyRef]): FlowConnector
   override def newFlowConnector(conf: Config) = newFlowConnector(enrichConfig(conf).asJava)
 
-  protected def newFlowProcess(conf: JobConf): FlowProcess[JobConf]
+  protected def newFlowProcess(conf: ConfigType): FlowProcess[ConfigType]
+
+  protected def defaultConfiguration: ConfigType
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
-    val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
-    val conf = new JobConf(true) // initialize the default config
+    val htap = tap.asInstanceOf[Tap[ConfigType, _, _]]
     // copy over Config
+    val conf = defaultConfiguration
     config.toMap.foreach { case (k, v) => conf.set(k, v) }
 
     val fp = newFlowProcess(conf)
@@ -315,6 +356,68 @@ trait HadoopExecutionModeBase extends ExecutionMode {
   }
 
   override def defaultConfig: Config = Config.fromHadoop(jobConf) - Config.IoSerializationsKey
+
+  override def newFlow(config: Config, flowDef: FlowDef): Flow[_] = {
+    val flow = super.newFlow(config, flowDef)
+
+    applyDescriptionsOnSteps(flow)
+    applyReducerEstimationStrategies(flow, config)
+    /* NOTE: it is not yet known whether the descriptions and the Reducer Estimation Strategies are *relevant* for
+      non-MR engines (Tez, Flink).
+      TODO: If they are, the actual way to convey these results *to* the fabric are not yet plugged in.
+       */
+
+    flow
+  }
+
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+    if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
+  }
+
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
+    val conf = step.getConfig
+    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
+      conf.set(Config.StepDescriptions, descriptionString)
+    })
+  }
+
+  def applyDescriptionsOnSteps(flow: Flow[_]): Unit = {
+    val flowSteps = flow.getFlowSteps.asScala
+    flowSteps.foreach {
+      case baseFlowStep: BaseFlowStep[JobConf @unchecked] =>
+        updateStepConfigWithDescriptions(baseFlowStep)
+    }
+  }
+
+  def applyReducerEstimationStrategies(flow: Flow[_], config: Config): Unit = {
+
+    // if any reducer estimators have been set, register the step strategy
+    // which instantiates and runs them
+
+    val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
+
+    val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
+      case Success(fn) => fn(mode, config)
+      case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
+    }
+
+    val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
+
+    optionalFinalStrategy.foreach { strategy =>
+      flow.setFlowStepStrategy(strategy)
+    }
+
+    config.getFlowListeners.foreach {
+      case Success(fn) => flow.addListener(fn(mode, config))
+      case Failure(e) => throw new Exception("Failed to decode flow listener", e)
+    }
+
+    config.getFlowStepListeners.foreach {
+      case Success(fn) => flow.addStepListener(fn(mode, config))
+      case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
+    }
+  }
+
 }
 
 class CascadingLocalExecutionMode extends ExecutionMode {
@@ -517,85 +620,6 @@ class HdfsStorageMode(strictSources: Boolean, @transient override val jobConf: C
     }
 }
 
-class LegacyHadoopExecutionMode(mode: Mode, @transient override val jobConf: Configuration) extends HadoopExecutionModeBase {
-
-  override protected def newFlowConnector(rawConf: util.Map[AnyRef, AnyRef]): FlowConnector = new HadoopFlowConnector(rawConf)
-
-  override protected def newFlowProcess(conf: JobConf): FlowProcess[JobConf] = new HadoopFlowProcess(conf)
-
-  override def newFlow(config: Config, flowDef: FlowDef): Flow[_] = {
-    val flow = super.newFlow(config, flowDef)
-
-    applyDescriptionsOnSteps(flow)
-    applyReducerEstimationStrategies(flow, config)
-    flow
-  }
-
-  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
-    if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
-  }
-
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
-    val conf = step.getConfig
-    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
-      conf.set(Config.StepDescriptions, descriptionString)
-    })
-  }
-
-  def applyDescriptionsOnSteps(flow: Flow[_]): Unit = {
-    val flowSteps = flow.getFlowSteps.asScala
-    flowSteps.foreach {
-      case baseFlowStep: BaseFlowStep[JobConf @unchecked] =>
-        updateStepConfigWithDescriptions(baseFlowStep)
-    }
-  }
-
-  def applyReducerEstimationStrategies(flow: Flow[_], config: Config): Unit = {
-
-    // if any reducer estimators have been set, register the step strategy
-    // which instantiates and runs them
-
-    val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
-
-    val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
-      case Success(fn) => fn(mode, config)
-      case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
-    }
-
-    val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
-
-    optionalFinalStrategy.foreach { strategy =>
-      flow.setFlowStepStrategy(strategy)
-    }
-
-    config.getFlowListeners.foreach {
-      case Success(fn) => flow.addListener(fn(mode, config))
-      case Failure(e) => throw new Exception("Failed to decode flow listener", e)
-    }
-
-    config.getFlowStepListeners.foreach {
-      case Success(fn) => flow.addStepListener(fn(mode, config))
-      case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
-    }
-  }
-}
-
-case class LegacyHadoopMode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {
-  val name = "hadoop"
-
-  override val storageMode: StorageMode = new HdfsStorageMode(strictSources, jobConf)
-  override val executionMode: ExecutionMode = new LegacyHadoopExecutionMode(this, jobConf)
-}
-
-/* @deprecated("please use LegacyHadoopMode instead, or let Mode.apply decide", "0.17.0")
-case class Hdfs(strictSources: Boolean, jobConf: Configuration) extends ClusterMode {
-  @deprecated("please use jobConf", "0.17.0")
-  def conf = jobConf
-
-  override val storageMode: StorageMode = new HdfsStorageMode(strictSources, jobConf)
-  override val executionMode: ExecutionMode = new LegacyHadoopExecutionMode(this, jobConf)
-} */
-
 case class Local(strictSources: Boolean) extends LocalMode {
 
   // this auxiliary ctor is provided for compatibility with the dynamic load made by Mode.apply
@@ -633,6 +657,12 @@ trait TestMode extends Mode {
 }
 
 case class Test(override val buffers: (Source) => Option[Buffer[Tuple]]) extends LocalMode with TestMode {
+
+  /* this is the ctor that is found via reflection by @{link Mode.test} */
+  def this(unused: Configuration, buffers: (Source) => Option[Buffer[Tuple]]) = {
+    this(buffers)
+  }
+
   val strictSources = false
   val name = "local-test"
 
@@ -640,16 +670,7 @@ case class Test(override val buffers: (Source) => Option[Buffer[Tuple]]) extends
   override val executionMode: ExecutionMode = new CascadingLocalExecutionMode
 }
 
-case class HadoopTest(@transient jobConf: Configuration,
-  @transient override val buffers: Source => Option[Buffer[Tuple]])
-  extends HadoopFamilyMode with TestMode {
-
-  val strictSources = false
-  val name = "hadoop-test"
-
-  override val storageMode: TestStorageMode = new HdfsTestStorageMode(false, jobConf, this.getWritePathFor)
-  override val executionMode: ExecutionMode = new LegacyHadoopExecutionMode(this, jobConf)
-
+trait HadoopFamilyTestMode extends HadoopFamilyMode with TestMode {
   // This is a map from source.toString to disk path
   private val writePaths = MMap[Source, String]()
   private val allPaths = MSet[String]()
@@ -669,7 +690,7 @@ case class HadoopTest(@transient jobConf: Configuration,
 
   private val thisTestID = UUID.randomUUID
   private lazy val basePath = {
-    val r = s"/tmp/scalding/${thisTestID}/"
+    val r = s"/tmp/scalding/${name}-${thisTestID}/"
     new File(r).mkdirs()
     r
   }

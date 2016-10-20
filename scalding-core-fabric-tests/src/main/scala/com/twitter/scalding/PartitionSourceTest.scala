@@ -16,18 +16,18 @@ limitations under the License.
 
 package com.twitter.scalding
 
-import java.io.File
-import scala.io.{ Source => ScalaSource }
+/* (temporarily?) moved from scalding-core due to chicken-and-egg dependency situation */
 
-import org.scalatest.{ Matchers, WordSpec }
+import java.io.File
 
 import cascading.tap.SinkMode
-import cascading.tuple.Fields
-import cascading.tuple.TupleEntry
-import cascading.util.Util
 import cascading.tap.partition.Partition
+import cascading.tuple.{ Fields, TupleEntry }
+import cascading.util.Util
+import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv }
+import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv, _ }
+import scala.io.{ Source => ScalaSource }
 
 object PartitionSourceTestHelpers {
   import Dsl._
@@ -53,7 +53,8 @@ object PartitionSourceTestHelpers {
 class DelimitedPartitionTestJob(args: Args) extends Job(args) {
   import PartitionSourceTestHelpers._
   try {
-    Tsv("input", ('col1, 'col2)).read.write(DelimitedPartitionedTsv)
+    Tsv("input", ('col1, 'col2)).read
+      .write(DelimitedPartitionedTsv)
   } catch {
     case e: Exception => e.printStackTrace()
   }
@@ -94,20 +95,23 @@ class DelimitedPartitionSourceTest extends WordSpec with Matchers {
 
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2)), input)
-        .runHadoop
+        .runWithMinicluster
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      job.mode match {
+        case testMode: HadoopFamilyTestMode =>
 
-      val directory = new File(testMode.getWritePathFor(DelimitedPartitionedTsv))
+          val directory = new File(testMode.getWritePathFor(DelimitedPartitionedTsv))
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+          directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
 
-      val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
-      val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
+          val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
+          val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
 
-      aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
-      bSource.getLines.toSeq shouldBe Seq("B\t3")
+          aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
+          bSource.getLines.toSeq shouldBe Seq("B\t3")
+        case _ => ???
+      }
     }
   }
 }
@@ -128,20 +132,22 @@ class CustomPartitionSourceTest extends WordSpec with Matchers {
 
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2, 'col3)), input)
-        .runHadoop
+        .runWithMinicluster
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      job.mode match {
+        case testMode: HadoopFamilyTestMode =>
+          val directory = new File(testMode.getWritePathFor(CustomPartitionedTsv))
 
-      val directory = new File(testMode.getWritePathFor(CustomPartitionedTsv))
+          directory.listFiles().map({ _.getName() }).toSet shouldBe Set("{A}->{x}", "{B}->{y}")
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("{A}->{x}", "{B}->{y}")
+          val aSource = ScalaSource.fromFile(new File(directory, "{A}->{x}/part-00000-00000"))
+          val bSource = ScalaSource.fromFile(new File(directory, "{B}->{y}/part-00000-00001"))
 
-      val aSource = ScalaSource.fromFile(new File(directory, "{A}->{x}/part-00000-00000"))
-      val bSource = ScalaSource.fromFile(new File(directory, "{B}->{y}/part-00000-00001"))
-
-      aSource.getLines.toSeq shouldBe Seq("A\tx\t1", "A\tx\t2")
-      bSource.getLines.toSeq shouldBe Seq("B\ty\t3")
+          aSource.getLines.toSeq shouldBe Seq("A\tx\t1", "A\tx\t2")
+          bSource.getLines.toSeq shouldBe Seq("B\ty\t3")
+        case _ => ???
+      }
     }
   }
 }
@@ -163,20 +169,24 @@ class PartialPartitionSourceTest extends WordSpec with Matchers {
 
       JobTest(buildJob(_))
         .source(Tsv("input", ('col1, 'col2, 'col3)), input)
-        .runHadoop
+        .runWithMinicluster
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      job.mode match {
+        case testMode: HadoopFamilyTestMode =>
+          val directory = new File(testMode.getWritePathFor(PartialPartitionedTsv))
 
-      val directory = new File(testMode.getWritePathFor(PartialPartitionedTsv))
+          directory.listFiles().map({
+            _.getName()
+          }).toSet shouldBe Set("A", "B")
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+          val aSource = ScalaSource.fromFile(new File(directory, "A/x/part-00000-00000"))
+          val bSource = ScalaSource.fromFile(new File(directory, "B/y/part-00000-00001"))
 
-      val aSource = ScalaSource.fromFile(new File(directory, "A/x/part-00000-00000"))
-      val bSource = ScalaSource.fromFile(new File(directory, "B/y/part-00000-00001"))
-
-      aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
-      bSource.getLines.toSeq shouldBe Seq("B\t3")
+          aSource.getLines.toSeq shouldBe Seq("A\t1", "A\t2")
+          bSource.getLines.toSeq shouldBe Seq("B\t3")
+        case _ => ???
+      }
     }
   }
 }

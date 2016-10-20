@@ -5,6 +5,8 @@ import scala.concurrent.{ ExecutionContext => SExecutionContext, _ }
 import SExecutionContext.Implicits.global
 
 object InAnotherPackage {
+  /* this object is used in NoStackLineNumberTest */
+
   def buildF: Future[TypedPipe[(Int, Int)]] = {
     Future {
       TypedPipe.from(List(1, 2, 3, 4, 555, 3))
