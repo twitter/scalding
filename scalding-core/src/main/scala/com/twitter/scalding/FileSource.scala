@@ -15,33 +15,24 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, InputStream, OutputStream }
-import java.util.{ UUID, Properties }
+import java.io.{ InputStream, OutputStream }
+import java.util.{ Properties, UUID }
 
 import cascading.scheme.Scheme
-import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
-import cascading.scheme.hadoop.{
-  TextLine => CHTextLine,
-  TextDelimited => CHTextDelimited,
-  SequenceFile => CHSequenceFile
-}
+import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.tap.{ MultiSourceTap, SinkMode, Tap }
 import cascading.tap.hadoop.Hfs
-import cascading.tap.MultiSourceTap
-import cascading.tap.SinkMode
-import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
-
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{ Semigroup, MapAlgebra }
-
+import com.twitter.algebird.{ MapAlgebra, Semigroup }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector
-import org.apache.hadoop.mapred.RecordReader
+import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.slf4j.LoggerFactory
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -119,6 +110,32 @@ object AcceptAllPathFilter extends PathFilter {
 }
 
 object FileSource {
+  val LOG = LoggerFactory.getLogger(this.getClass)
+
+  val VerboseFileSourceLoggingKey = "com.twitter.scalding.filesource.verbose.logging"
+
+  def verboseLogEnabled(conf: Configuration): Boolean = conf.getBoolean(VerboseFileSourceLoggingKey, false)
+
+  def ifVerboseLog(conf: Configuration)(msgFn: => String): Unit = {
+    if (verboseLogEnabled(conf)) {
+      val stack = new RuntimeException()
+        .getStackTrace
+        .iterator
+        .drop(1) // skip this method
+        .mkString("\n")
+
+      // evaluate call by name param once
+      val msg = msgFn
+
+      LOG.info(
+        s"""
+          |***FileSource Verbose Log***
+          |$stack
+          |
+          |$msg
+        """.stripMargin)
+    }
+  }
 
   def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
     val path = new Path(glob)
@@ -133,7 +150,22 @@ object FileSource {
    * @return whether globPath contains non hidden files
    */
   def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, HiddenFileFilter).isEmpty
+    val res = glob(globPath, conf, HiddenFileFilter)
+
+    ifVerboseLog(conf) {
+      val allFiles = glob(globPath, conf, AcceptAllPathFilter).mkString("\n")
+      val matched = res.mkString("\n")
+      s"""
+         |globHasNonHiddenPaths:
+         |globPath: $globPath
+         |all files matching globPath, using HiddenFileFilter:
+         |$matched
+         |all files matching globPath, w/o filtering:
+         |$allFiles
+        """.stripMargin
+    }
+
+    res.nonEmpty
   }
 
   /**
@@ -142,7 +174,9 @@ object FileSource {
    */
   def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
 
-    val dirs = glob(globPath, conf, AcceptAllPathFilter)
+    val allFiles = glob(globPath, conf, AcceptAllPathFilter)
+
+    val dirs = allFiles
       .iterator
       .filter { fileStatus =>
         // ignore hidden *directories*
@@ -171,6 +205,19 @@ object FileSource {
     val dirStatuses = MapAlgebra.sumByKey(dirs)(Semigroup.from((x, y) => x || y))
 
     val invalid = dirStatuses.isEmpty || dirStatuses.exists { case (dir, containsSuccessFile) => !containsSuccessFile }
+
+    ifVerboseLog(conf) {
+      val dirStatusesStr = dirStatuses.mkString("\n")
+      val allFilesStr = allFiles.mkString("\n")
+      s"""
+        |globHasSuccessFile:
+        |globPath: $globPath
+        |directory has success file?:
+        |$dirStatusesStr
+        |all files matching globPath:
+        |$allFilesStr
+      """.stripMargin
+    }
 
     !invalid
   }

@@ -59,7 +59,6 @@ object RichPipeSpecification extends Properties("RichPipe") {
       (newNum > basePipeNumber) && ap.getName.endsWith(s"-${lastGroup}")
   }
 
-
   property("assignName carries over the over the old number "
     + "if it was already an assigned name carrying bits from a UUID") = forAll(posNum[Int], uuid) {
     (oldNum: Int, uuid: UUID) =>
