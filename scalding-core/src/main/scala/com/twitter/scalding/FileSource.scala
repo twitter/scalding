@@ -112,16 +112,15 @@ object AcceptAllPathFilter extends PathFilter {
 object FileSource {
   val LOG = LoggerFactory.getLogger(this.getClass)
 
-  val VerboseFileSourceLoggingKey = "com.twitter.scalding.filesource.verbose.logging"
+  private[this] def verboseLogEnabled(conf: Configuration): Boolean =
+    conf.getBoolean(Config.VerboseFileSourceLoggingKey, false)
 
-  def verboseLogEnabled(conf: Configuration): Boolean = conf.getBoolean(VerboseFileSourceLoggingKey, false)
-
-  def ifVerboseLog(conf: Configuration)(msgFn: => String): Unit = {
+  private[this] def ifVerboseLog(conf: Configuration)(msgFn: => String): Unit = {
     if (verboseLogEnabled(conf)) {
-      val stack = new RuntimeException()
+      val stack = Thread.currentThread
         .getStackTrace
         .iterator
-        .drop(1) // skip this method
+        .drop(2) // skip getStackTrace and ifVerboseLog
         .mkString("\n")
 
       // evaluate call by name param once
