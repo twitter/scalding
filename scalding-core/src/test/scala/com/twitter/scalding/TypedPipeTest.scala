@@ -808,6 +808,158 @@ class TypedMergeTest extends WordSpec with Matchers {
   }
 }
 
+class TypedHashAndMergeJob(args: Args) extends Job(args) {
+  val tp = TypedPipe.from(TypedText.tsv[String]("input"))
+  val tp2 = TypedPipe.from(TypedText.tsv[(String, Int)]("mixin"))
+
+  val x = tp.groupBy(x => x)
+    .hashJoin(tp2.group)
+    .values
+    .map { case (s, i) => s"${s}-${i}" }
+
+  (x ++ tp)
+    .write(TypedText.tsv[String]("output"))
+}
+
+class TypedHashAndMergeTest extends WordSpec with Matchers {
+  import Dsl._
+  "A TypedMergeJob" should {
+    var idx = 0
+    JobTest(new TypedHashAndMergeJob(_))
+      .source(TypedText.tsv[String]("input"), List(Tuple1("abc"), Tuple1("def"), Tuple1("ghi")))
+      .source(TypedText.tsv[(String, Int)]("mixin"), List("def" -> 2, "ghi" -> 3))
+      .typedSink(TypedText.tsv[String]("output")) { outBuf =>
+        (idx + ": correctly run despite a hash-merge situation") in { /* which isn't straightforward in Cascading */
+          outBuf.toSet shouldBe Set("def-2", "ghi-3", "abc", "def", "ghi")
+        }
+        idx += 1
+      }
+      .runHadoop
+      .finish()
+  }
+}
+
+trait TypedComplexHashAndMergeJobBase {
+  def ta: TypedPipe[String]
+  def taXb: TypedPipe[String]
+  def tc: TypedPipe[String]
+  def td: TypedPipe[String]
+  def tdXe: TypedPipe[String]
+}
+
+class TypedComplexHashAndMergeJob(args: Args ,
+                                  fieldsToMerge: Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])])
+  extends Job(args) with TypedComplexHashAndMergeJobBase {
+
+  override def name: String = super.name + " (" + fieldsToMerge.map(_._1).mkString(" ++ ") + ")"
+
+  val ta = TypedPipe.from(TypedText.tsv[String]("a"))
+  val tb = TypedPipe.from(TypedText.tsv[(String, Int)]("b"))
+
+  val tc = TypedPipe.from(TypedText.tsv[String]("c"))
+  val td = TypedPipe.from(TypedText.tsv[String]("d"))
+  val te = TypedPipe.from(TypedText.tsv[(String, Int)]("e"))
+
+  val taXb: TypedPipe[String] = ta.groupBy(x => x).hashJoin(tb.group).values.map { case (s, i) => s"${s}→${i}" }
+  val tdXe: TypedPipe[String] = td.groupBy(x => x).hashJoin(te.group).values.map { case (s, i) => s"${s}⇒${i}" }
+
+  fieldsToMerge.map(_._2(this)).reduce(_ ++ _)
+    .write(TypedText.tsv[String]("output"))
+}
+
+class TypedComplexHashAndMergeTest extends WordSpec with Matchers {
+  import Dsl._
+
+  val fields = Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])](
+    ("a", _.ta),
+    ("a∩b", _.taXb),
+    ("c", _.tc),
+    ("d",  _.td),
+    ("d∩e", _.tdXe))
+
+  val selection = fields.permutations.take(3) // Take'em all if you need to prove all permutations work equally (kind of slow, and internally we do use commutativity)
+
+  selection.foreach(perm => {
+    val permName = perm.map(_._1).mkString(" ++ ")
+
+    s"A TypedComplexHashAndMergeJob ${permName}" should {
+      var idx = 0
+
+      JobTest(new TypedComplexHashAndMergeJob(_: Args, perm))
+        .source(TypedText.tsv[String]("a"), List(Tuple1("a1"), Tuple1("a2"), Tuple1("a3"), Tuple1("a4")))
+        .source(TypedText.tsv[(String, Int)]("b"), List("a2" -> 2, "a3" -> 3, "a6" -> 6, "d2" -> 7, "d3" -> 8))
+        .source(TypedText.tsv[String]("c"), List(Tuple1("c1"), Tuple1("c2")))
+        .source(TypedText.tsv[String]("d"), List(Tuple1("d1"), Tuple1("d2"), Tuple1("d3"), Tuple1("d4")))
+        .source(TypedText.tsv[(String, Int)]("e"), List("d2" -> 4, "d3" -> 5, "a2" -> 9))
+        .typedSink(TypedText.tsv[String]("output")) { outBuf =>
+          (s"${idx}: correctly run despite a hash-merge situation") in {
+            /* which isn't straightforward in Cascading */
+
+            outBuf.toSet shouldBe Set("a1", "a2", "a3", "a4", "a2→2", "a3→3",
+              "c1", "c2", "d1", "d2", "d3", "d4", "d2⇒4", "d3⇒5")
+          }
+          idx += 1
+        }
+        .runWithoutNext(true) // .runHadoop but we don't want the hadoop thing to run everything at once.
+        .finish()
+    }
+  })
+}
+
+class TypedTwistedHashAndMergeJob(args: Args) extends Job(args) {
+  /* The purpose of this job is to find a complex case where TypedPipe#mergeAvoidingHashes might fail to stop */
+
+  val ta = TypedPipe.from(TypedText.tsv[String]("a"))
+  val tb = TypedPipe.from(TypedText.tsv[(String, Int)]("b"))
+
+  val td = TypedPipe.from(TypedText.tsv[String]("d"))
+  val te = TypedPipe.from(TypedText.tsv[(String, Int)]("e"))
+
+  val taXb: TypedPipe[String] = ta.groupBy(x => x).hashJoin(tb.group).values.map { case (s, i) => s"${s}→${i}" }
+  val tdXe: TypedPipe[String] = td.groupBy(x => x).hashJoin(te.group).values.map { case (s, i) => s"${s}⇒${i}" }
+
+  val taXbXe: TypedPipe[String] = taXb.groupBy(_.split("→").head).hashJoin(te.group).values.map { case (s, i) => s"${s}→${i}" }
+  val tdXeXb: TypedPipe[String] = tdXe.groupBy(_.split("⇒").head).hashJoin(tb.group).values.map { case (s, i) => s"${s}⇒${i}" }
+
+  val twistA = taXbXe.map(x => {
+    val y = x.split("→", 1)
+    (y.head, y.tail)
+  }).group
+
+  val twistB = tdXeXb.map(x => {
+    val y = x.split("⇒", 1)
+    (y.head, y.tail)
+  }).group
+
+  val twistAB: TypedPipe[String] = twistA.hashJoin(twistB).values.map { case (a,b) => a + "≡" + b }
+  val twistBA: TypedPipe[String] = twistB.hashJoin(twistA).values.map { case (a,b) => a + "≢" + b }
+
+  (taXbXe ++ tdXeXb ++ twistAB ++ twistBA)
+    .write(TypedText.tsv[String]("output"))
+}
+
+class TypedTwistedHashAndMergeTest extends WordSpec with Matchers {
+  import Dsl._
+
+  s"A TypedTwistedHashAndMergeTest" should {
+    var idx = 0
+
+    JobTest(new TypedTwistedHashAndMergeJob(_: Args))
+      .source(TypedText.tsv[String]("a"), List(Tuple1("a1"), Tuple1("a2"), Tuple1("a3"), Tuple1("a4")))
+      .source(TypedText.tsv[(String, Int)]("b"), List("a2" -> 2, "a3" -> 3, "a6" -> 6, "d2" -> 7, "d3" -> 8))
+      .source(TypedText.tsv[String]("d"), List(Tuple1("d1"), Tuple1("d2"), Tuple1("d3"), Tuple1("d4")))
+      .source(TypedText.tsv[(String, Int)]("e"), List("d2" -> 4, "d3" -> 5, "a2" -> 9))
+      .typedSink(TypedText.tsv[String]("output")) { outBuf =>
+        (s"${idx}: correctly run despite a hash-merge situation") in {
+          outBuf.toSet shouldBe Set("d2⇒4⇒7", "d3⇒5⇒8", "a2→2→9")
+        }
+        idx += 1
+      }
+      .runHadoop
+      .finish()
+  }
+}
+
 class TypedShardJob(args: Args) extends Job(args) {
   (TypedPipe.from(TypedText.tsv[String]("input")) ++
     (TypedPipe.empty.map { _ => "hey" }) ++
