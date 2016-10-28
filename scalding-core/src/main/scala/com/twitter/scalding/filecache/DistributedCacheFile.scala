@@ -7,7 +7,7 @@ import java.net.URI
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
+import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
 import org.apache.hadoop.fs.Path
 
 object URIHasher {
