@@ -58,24 +58,27 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
 
       job.mode match {
         case testMode: HadoopFamilyTestMode =>
-          val directory = new File(testMode.getWritePathFor(singlePartition))
+          import TestFileUtil._
+          val directory = RichDirectory(testMode.getWritePathFor(singlePartition))
 
-          directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
+          println(s"looking at ${directory}")
+
+          directory.list shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
 
           /* The naming convention of the parts is a fabric-specific implementation detail. */
 
-          val aDir = new File(directory, "A")
-          val aFiles = aDir.listFiles().map({ _.getName() }).toSet
+          val aDir = RichDirectory(directory, "A")
+          val aFiles = aDir.fileNameSetExSuccess
           aFiles.size shouldBe 1
-          aFiles.filter(_.startsWith("part-")) shouldBe 1
+          aDir.partFiles.size shouldBe 1
 
-          val bDir = new File(directory, "B")
-          val bFiles = bDir.listFiles().map({ _.getName() }).toSet
+          val bDir = RichDirectory(directory, "B")
+          val bFiles = bDir.fileNameSetExSuccess
           bFiles.size shouldBe 1
-          bFiles.filter(_.startsWith("part-")) shouldBe 1
+          bDir.partFiles.size shouldBe 1
 
-          val aSource = ScalaSource.fromFile(new File(aDir, aFiles.head))
-          val bSource = ScalaSource.fromFile(new File(bDir, bFiles.head))
+          val aSource = ScalaSource.fromFile(new File(aDir.dir, aDir.partFiles.head))
+          val bSource = ScalaSource.fromFile(new File(bDir.dir, bDir.partFiles.head))
 
           aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
           bSource.getLines.toList shouldBe Seq("Z,3")
