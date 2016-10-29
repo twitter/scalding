@@ -100,8 +100,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
             "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -116,8 +116,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
             "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -133,8 +133,8 @@ class ReduceOperationsTest extends WordSpec with Matchers {
             "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
             "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
           val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
