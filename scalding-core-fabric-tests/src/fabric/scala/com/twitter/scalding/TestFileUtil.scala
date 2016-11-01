@@ -10,15 +10,17 @@ object TestFileUtil {
   import scala.language.implicitConversions
 
   case class RichDirectory(dir: File) {
-    lazy val allFiles = dir.listFiles
+    import RichDirectory._
+    lazy val allFiles = dir.listFiles.toSet
 
-    lazy val fileNameSet = allFiles.map(_.getName).toSet
+    lazy val fileNameSet = allFiles.map(_.getName)
+      .filterNot(isFileNameOfCrcFile)
 
-    def fileNameSetExSuccess = fileNameSet.filterNot(_ == "_SUCCESS")
+    def fileNameSetExSuccess = fileNameSet - "_SUCCESS"
 
     def partFiles = fileNameSet.filter(_.startsWith("part-"))
 
-    def list = dir.list
+    def list = dir.list.toSet
     def listFiles = allFiles
 
     implicit def backToFile = dir
@@ -30,6 +32,12 @@ object TestFileUtil {
     def apply(dirname: String): RichDirectory = RichDirectory(new File(dirname))
     def apply(parent: File, dirname: String): RichDirectory = RichDirectory(new File(parent, dirname))
     def apply(parent: RichDirectory, dirname: String): RichDirectory = RichDirectory(new File(parent.dir, dirname))
+
+    private val CrcPattern = "^[.](.*?)[.]crc$".r
+    def isFileNameOfCrcFile(filename: String) = {
+      val m = CrcPattern.findFirstMatchIn(filename)
+      m.isEmpty
+    }
   }
 }
 

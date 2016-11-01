@@ -44,17 +44,21 @@ class PartitionedParquetThriftSourceTests extends WordSpec with Matchers {
         .runHadoop
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      job.mode match {
+        case testMode: HadoopFamilyTestMode =>
+          val directory = new File(testMode.getWritePathFor(partitionSource))
 
-      val directory = new File(testMode.getWritePathFor(partitionSource))
+          directory.listFiles().map({
+            _.getName()
+          }).toSet shouldBe Set("94111", "10075")
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("94111", "10075")
-
-      // check that the partitioning is done correctly by zipcode
-      validate(new Path(directory.getPath + "/94111/part-00000-00000-m-00000.parquet"),
-        new Address("123 Embarcadero", "94111"))
-      validate(new Path(directory.getPath + "/10075/part-00000-00001-m-00000.parquet"),
-        new Address("123 E 79th St", "10075"), new Address("456 W 80th St", "10075"))
+          // check that the partitioning is done correctly by zipcode
+          validate(new Path(directory.getPath + "/94111/part-00000-00000-m-00000.parquet"),
+            new Address("123 Embarcadero", "94111"))
+          validate(new Path(directory.getPath + "/10075/part-00000-00001-m-00000.parquet"),
+            new Address("123 E 79th St", "10075"), new Address("456 W 80th St", "10075"))
+        case _ => ???
+      }
     }
   }
 }

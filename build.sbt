@@ -5,11 +5,12 @@ import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import sbtassembly.Plugin._
+
 import scala.collection.JavaConverters._
 import scalariform.formatter.preferences._
 import scalding._
-
 import ScroogeSBT.autoImport._
+import sbt.Keys._
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.10" => "2.10"
@@ -385,8 +386,9 @@ lazy val scaldingFabricHadoop = module("fabric-hadoop").settings(
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
 
-  testOptions := Seq(Tests.Filter( (name:String) => { println(s"filtering for test: ${name}"); true }))
-).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test" )
+  unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"
+
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "test->compile,test->test,compile->test" )
 
 
 lazy val scaldingFabricHadoop2Mr1 = module("fabric-hadoop2-mr1").settings(
@@ -396,7 +398,8 @@ lazy val scaldingFabricHadoop2Mr1 = module("fabric-hadoop2-mr1").settings(
     "com.google.guava" % "guava" % guavaVersion,
     "cascading" % "cascading-hadoop2-mr1" % cascadingVersion) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+  unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"
 ).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test")
 
 lazy val scaldingFabricTez = module("fabric-tez").settings(
@@ -408,7 +411,8 @@ lazy val scaldingFabricTez = module("fabric-tez").settings(
     "org.apache.tez" % "tez-dag" % tezVersion,
     "cascading" % "cascading-hadoop2-tez" % cascadingVersion) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+  unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"
 ).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test" )
 
 lazy val scaldingFabricFlink = module("fabric-flink").settings(
@@ -423,7 +427,8 @@ lazy val scaldingFabricFlink = module("fabric-flink").settings(
     "org.apache.flink" %% "flink-clients" % flinkVersion // cascading-flink, written in java, depends on flink-clients which is written in scala.
   ) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
-  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+  unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"
 ).dependsOn(scaldingCore, scaldingCoreFabricTests % "compile->test")
 
 lazy val defaultScaldingFabric = scaldingFabricHadoop

@@ -1,8 +1,11 @@
 package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
+import org.scalatest.{ Matchers, WordSpec }
 
-class FileSourceHadoopExtraTest extends FileSourceTest {
+class FileSourceHadoopExtraTest /* logically extends FileSourceTest */ extends WordSpec with Matchers {
+  import Dsl._
+
   def makeClusterMode(strictSources: Boolean) =
     Mode(Args(Seq("--autoCluster") ++ (if (strictSources) Seq[String]() else Seq("--tool.partialok"))), new Configuration)
 
