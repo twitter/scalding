@@ -128,11 +128,7 @@ object Mode {
       .map { case (flag, _) => ReallyAvailableTestModes.get(flag) }
       .collect { case Some(ctor) => ctor }
       .headOption
-      .orElse(
-        KnownTestModesMap
-          .map { case (flag, _) => ReallyAvailableTestModes.get(flag) }
-          .collect { case Some(ctor) => ctor }
-          .headOption)
+
     construct[TestMode](modeCtor, config, bufferMap)
   }
 
