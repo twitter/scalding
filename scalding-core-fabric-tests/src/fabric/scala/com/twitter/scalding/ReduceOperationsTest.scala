@@ -27,7 +27,8 @@ class SortWithTakeJob(args: Args) extends Job(args) {
       }
       .map('top_items -> 'top_items) {
         //used to test that types are correct
-        topItems: List[(Long, Double)] => topItems
+        topItems: List[(Long, Double)] => topItems.toString /* TSV can't encode complex types
+          fake TSV for in-memory Local tests can get away with this, but this'll fail on a real fabric test */
       }
       .project('key, 'top_items)
       .write(Tsv("output0"))
@@ -87,21 +88,23 @@ class ApproximateUniqueCountJob(args: Args) extends Job(args) {
   }
 }
 
-class ReduceOperationsTest extends WordSpec with Matchers {
+
+
+class ListsLongDoubleUtil extends WordSpec with Matchers {
   import Dsl._
   val inputData = List(("a", 2L, 3.0), ("a", 3L, 3.0), ("a", 1L, 3.5), ("b", 1L, 6.0), ("b", 2L, 5.0), ("b", 3L, 4.0), ("b", 4L, 3.0), ("b", 5L, 2.0), ("b", 6L, 1.0))
 
   "A sortWithTake job" should {
     JobTest(new SortWithTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
-      .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
+      .sink[(String, String /* representing List[(Long, Double)] */)](Tsv("output0")) { buf =>
         "grouped list" in {
-          val whatWeWant: Map[String, String] = Map(
+          val whatWeWant = Map(
             "a" -> List((1L, 3.5), (3L, 3.0), (2L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
-          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          val whatWeGet = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -110,14 +113,14 @@ class ReduceOperationsTest extends WordSpec with Matchers {
   "A sortedTake job" should {
     JobTest(new SortedTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
-      .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
+      .sink[(String, String /* representing List[(Long, Double)] */)](Tsv("output0")) { buf =>
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
             "a" -> List((1L, 3.5), (2L, 3.0), (3L, 3.0)).toString,
             "b" -> List((1L, 6.0), (2L, 5.0), (3L, 4.0), (4L, 3.0), (5L, 2.0)).toString)
-          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          val whatWeGet = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
@@ -127,14 +130,14 @@ class ReduceOperationsTest extends WordSpec with Matchers {
   "A sortedReverseTake job" should {
     JobTest(new SortedReverseTakeJob(_))
       .source(Tsv("input0", ('key, 'item_id, 'score)), inputData)
-      .sink[(String, List[(Long, Double)])](Tsv("output0")) { buf =>
+      .sink[(String, String /* representing List[(Long, Double)] */)](Tsv("output0")) { buf =>
         "grouped list" in {
           val whatWeWant: Map[String, String] = Map(
             "a" -> List((3L, 3.0), (2L, 3.0), (1L, 3.5)).toString,
             "b" -> List((6L, 1.0), (5L, 2.0), (4L, 3.0), (3L, 4.0), (2L, 5.0)).toString)
-          val whatWeGet: Map[String, List[(Long, Double)]] = buf.toMap
-          whatWeGet.get("a").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
-          whatWeGet.get("b").map(_.toString).getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
+          val whatWeGet = buf.toMap
+          whatWeGet.get("a").getOrElse("apples") shouldBe (whatWeWant.get("a").getOrElse("oranges"))
+          whatWeGet.get("b").getOrElse("apples") shouldBe (whatWeWant.get("b").getOrElse("oranges"))
         }
       }
       .runHadoop
