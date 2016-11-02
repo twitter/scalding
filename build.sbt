@@ -258,32 +258,46 @@ lazy val scalding = Project(
   scaldingThriftMacros
 )
 
-lazy val scaldingAssembly = Project(
-  id = "scalding-assembly",
-  base = file("assembly"),
-  settings = sharedSettings
-).settings(
-  test := {},
-  publish := {}, // skip publishing for this root project.
-  publishLocal := {}
-).aggregate(
-  scaldingArgs,
-  scaldingDate,
-  scaldingCore,
-  scaldingFabricHadoop,
-  scaldingCommons,
-  scaldingAvro,
-  scaldingParquet,
-  scaldingParquetCascading,
-  scaldingParquetScrooge,
-  scaldingParquetScroogeCascading,
-  scaldingHRaven,
-  scaldingRepl,
-  scaldingJson,
-  scaldingJdbc,
-  maple,
-  scaldingSerialization
-)
+def scaldingAssemblyOfFabric(fabricName: Option[String], fabricProject: Project): Project =
+  Project(
+    id = "scalding-assembly" + fabricName.map("-"+_).getOrElse(""),
+    base = file("assembly"),
+    settings = sharedSettings
+  ).settings(
+    target := baseDirectory.value / ("target" + fabricName.map("-"+_).getOrElse("")),
+    test := {},
+    publish := {}, // skip publishing for this root project.
+    publishLocal := {}
+  ).aggregate(
+    scaldingArgs,
+    scaldingDate,
+    scaldingCore,
+    scaldingFabricHadoop,
+    scaldingCommons,
+    scaldingAvro,
+    scaldingParquet,
+    scaldingParquetCascading,
+    scaldingParquetScrooge,
+    scaldingParquetScroogeCascading,
+    scaldingHRaven,
+    scaldingRepl,
+    scaldingJson,
+    scaldingJdbc,
+    maple,
+    scaldingSerialization,
+    fabricProject
+  )
+
+lazy val scaldingAssembly = scaldingAssemblyOfFabric(None, defaultScaldingFabric)
+
+lazy val scaldingAssemblyHadoop = scaldingAssemblyOfFabric(Some("hadoop"), scaldingFabricHadoop)
+
+lazy val scaldingAssemblyHadoop2Mr1 = scaldingAssemblyOfFabric(Some("hadoop2-mr1"), scaldingFabricHadoop2Mr1)
+
+lazy val scaldingAssemblyTez = scaldingAssemblyOfFabric(Some("tez"), scaldingFabricTez)
+
+lazy val scaldingAssemblyFlink = scaldingAssemblyOfFabric(Some("flink"), scaldingFabricFlink)
+
 
 lazy val formattingPreferences = {
   import scalariform.formatter.preferences._
