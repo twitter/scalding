@@ -239,7 +239,7 @@ lazy val scalding = Project(
   scaldingFabricHadoop,
   scaldingFabricHadoop2Mr1,
   scaldingFabricTez,
-  // scaldingFabricFlink, // not yet ready
+  scaldingFabricFlink, // not yet ready
   scaldingCommons,
   scaldingAvro,
   scaldingParquet,

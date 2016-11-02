@@ -39,6 +39,14 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.10.6
+      env: BUILD="base" TEST_TARGET="scalding-core-fabric-tests scalding-fabric-hadoop scalding-fabric-hadoop2-mr1 scalding-fabric-tez scalding-fabric-flink"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.11.7
+      env: BUILD="base" TEST_TARGET="scalding-core-fabric-tests scalding-fabric-hadoop scalding-fabric-hadoop2-mr1 scalding-fabric-tez scalding-fabric-flink"
+      script: "scripts/run_test.sh"
+
+    - scala: 2.10.6
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
