@@ -388,7 +388,7 @@ lazy val scaldingFabricHadoop = module("fabric-hadoop").settings(
 
   unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"
 
-).dependsOn(scaldingCore, scaldingCoreFabricTests % "test->compile,test->test,compile->test" )
+).dependsOn(scaldingCore, scaldingCoreFabricTests % "test->compile,test->test,compile->test")
 
 
 lazy val scaldingFabricHadoop2Mr1 = module("fabric-hadoop2-mr1").settings(
@@ -523,7 +523,8 @@ lazy val scaldingParquet = module("parquet").settings(
 }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingParquetCascading,
     scaldingHadoopTest % "test", // TODO: address possible discrepancy if default fabric != hadoop
-    scaldingParquetFixtures % "test->test")
+    scaldingParquetFixtures % "test->test",
+    defaultScaldingFabric % "test,provided")
 
 lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   .settings(ScroogeSBT.newSettings:_*)
