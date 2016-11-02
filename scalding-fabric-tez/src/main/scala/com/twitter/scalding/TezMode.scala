@@ -16,7 +16,22 @@ class TezExecutionMode(override val mode: Mode, @transient override val jobConf:
 
   protected def defaultConfiguration: TezConfiguration = new TezConfiguration(true) // initialize the default config
 
-  protected def newFlowProcess(conf: TezConfiguration): FlowProcess[TezConfiguration] = new Hadoop2TezFlowProcess(conf)
+  val TezGatherPartitionNum = "cascading.flow.runtime.gather.partitions.num"
+
+  protected def newFlowProcess(conf: TezConfiguration): FlowProcess[TezConfiguration] = {
+    val ownrednum = Option(conf.get(TezGatherPartitionNum))
+
+    val confToUse = ownrednum match {
+      case Some(value) => conf // User already specified the Gather Partitions parameters in Tez terms; no override needed.
+      case None => {
+        val newConf = new TezConfiguration(conf)
+        newConf.set(TezGatherPartitionNum, Option(conf.get(Config.HadoopNumReducers)).getOrElse("2"))
+        newConf
+      }
+    }
+
+    new Hadoop2TezFlowProcess(confToUse)
+  }
 }
 
 case class TezMode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {
