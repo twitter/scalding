@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import java.util
 
-import cascading.flow.{FlowConnector, FlowProcess}
+import cascading.flow.{ FlowConnector, FlowProcess }
 import cascading.tuple.Tuple
 import com.dataartisans.flink.cascading.FlinkConnector
 import com.dataartisans.flink.cascading.runtime.util.FlinkFlowProcess
@@ -27,7 +27,7 @@ case class FlinkMode(strictSources: Boolean, @transient jobConf: Configuration) 
 }
 
 case class FlinkTestMode(@transient jobConf: Configuration,
-                         @transient override val buffers: Source => Option[Buffer[Tuple]])
+  @transient override val buffers: Source => Option[Buffer[Tuple]])
   extends HadoopFamilyTestMode {
 
   val strictSources = false

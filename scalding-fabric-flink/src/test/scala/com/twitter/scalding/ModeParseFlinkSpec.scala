@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class ModeParseFlinkSpec extends WordSpec with Matchers {
   "Parsing for Hadoop" should {
