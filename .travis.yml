@@ -89,6 +89,42 @@ matrix:
       - "scripts/test_matrix_tutorials.sh"
 
     - scala: 2.10.6
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="hadoop"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.11.7
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="hadoop"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.10.6
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="hadoop2-mr1"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.11.7
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="hadoop2-mr1"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.10.6
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="tez"
       script:
       - "scripts/run_test.sh"
@@ -99,6 +135,24 @@ matrix:
 
     - scala: 2.11.7
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="tez"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.10.6
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="flink"
+      script:
+      - "scripts/run_test.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_tutorials.sh"
+      - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"
+      - "scripts/test_matrix_tutorials.sh"
+
+    - scala: 2.11.7
+      env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl" SCALD_FABRIC_SUFFIX="flink"
       script:
       - "scripts/run_test.sh"
       - "scripts/build_assembly_no_test.sh scalding-assembly-${SCALD_FABRIC_SUFFIX}"

@@ -431,6 +431,7 @@ lazy val scaldingFabricTez = module("fabric-tez").settings(
 
 lazy val scaldingFabricFlink = module("fabric-flink").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
+    "com.google.guava" % "guava" % guavaVersion,
     "com.data-artisans" % "cascading-flink" % cascadingFlinkVersion
       exclude ("org.clapper", "grizzled-slf4j_2.10")
       exclude ("org.clapper", "grizzled-slf4j_2.11")
