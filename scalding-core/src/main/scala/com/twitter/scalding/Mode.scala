@@ -696,7 +696,7 @@ trait HadoopFamilyTestMode extends HadoopFamilyMode with TestMode {
     val rndIdx = new java.util.Random().nextInt(1 << 30)
     writePaths.getOrElseUpdate(src, allocateNewPath(basePath +
       src.toString
-      .replaceAll("[/\\\\\\$ .\\(\\),;:\t\\[\\]\\+]", "_")
+      .replaceAll("[/\\\\\\$ .\\(\\),;:\t\\[\\]\\+'\"]", "_")
       .replaceAll("_+", "_") + "_", rndIdx))
   }
 
