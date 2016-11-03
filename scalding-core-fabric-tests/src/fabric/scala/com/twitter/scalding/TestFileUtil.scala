@@ -13,11 +13,14 @@ object TestFileUtil {
     import RichDirectory._
     lazy val allFiles = dir.listFiles.toSet
 
-    lazy val fileNameSet = allFiles.map(_.getName)
-      .filterNot(isFileNameOfCrcFile)
+    lazy val rawFileNames = allFiles.map(_.getName)
+
+    lazy val fileNameSet = rawFileNames.filterNot(isFileNameOfCrcFile)
 
     def fileNameSetExSuccess = fileNameSet - "_SUCCESS"
 
+    /* The naming convention of the parts is a fabric-specific implementation detail. However,
+     * they tend to start with part- */
     def partFiles = fileNameSet.filter(_.startsWith("part-"))
 
     def list = dir.list.toSet
@@ -36,7 +39,7 @@ object TestFileUtil {
     private val CrcPattern = "^[.](.*?)[.]crc$".r
     def isFileNameOfCrcFile(filename: String) = {
       val m = CrcPattern.findFirstMatchIn(filename)
-      m.isEmpty
+      !m.isEmpty
     }
   }
 }

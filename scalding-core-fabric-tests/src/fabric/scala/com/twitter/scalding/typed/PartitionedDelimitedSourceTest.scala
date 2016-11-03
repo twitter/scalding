@@ -61,11 +61,9 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
           import TestFileUtil._
           val directory = RichDirectory(testMode.getWritePathFor(singlePartition))
 
-          println(s"looking at ${directory}")
+          // println(s"looking at ${directory}")
 
           directory.list shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
-
-          /* The naming convention of the parts is a fabric-specific implementation detail. */
 
           val aDir = RichDirectory(directory, "A")
           val aFiles = aDir.fileNameSetExSuccess
