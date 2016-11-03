@@ -65,6 +65,7 @@ FABRIC_SUFFIX=if ENV['SCALD_FABRIC_SUFFIX']
     "-"+ ENV['SCALD_FABRIC_SUFFIX']
   else
     ""
+  end
 
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
