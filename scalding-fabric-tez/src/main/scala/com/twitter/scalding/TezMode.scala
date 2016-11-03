@@ -2,8 +2,8 @@ package com.twitter.scalding
 
 import java.util
 
-import cascading.flow.{ FlowConnector, FlowProcess }
-import cascading.flow.tez.{ Hadoop2TezFlowConnector, Hadoop2TezFlowProcess }
+import cascading.flow.{FlowConnector, FlowProcess}
+import cascading.flow.tez.{Hadoop2TezFlowConnector, Hadoop2TezFlowProcess}
 import cascading.tuple.Tuple
 import org.apache.hadoop.conf.Configuration
 import org.apache.tez.dag.api.TezConfiguration
@@ -32,6 +32,14 @@ class TezExecutionMode(override val mode: Mode, @transient override val jobConf:
 
     new Hadoop2TezFlowProcess(confToUse)
   }
+
+  override private[scalding] def setupCounterCreation(conf: Config): Config =
+    conf + (CounterImpl.CounterImplClass -> classOf[TezFlowPCounterImpl].getCanonicalName)
+}
+
+private[scalding] case class TezFlowPCounterImpl(fp: Hadoop2TezFlowProcess, statKey: StatKey) extends CounterImpl {
+  private[this] val cntr = fp.getReporter.getCounter(statKey.group, statKey.counter)
+  override def increment(amount: Long): Unit = cntr.increment(amount)
 }
 
 case class TezMode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {

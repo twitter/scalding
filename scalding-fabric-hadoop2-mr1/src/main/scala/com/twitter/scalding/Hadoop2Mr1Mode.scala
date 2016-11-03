@@ -18,7 +18,17 @@ class Hadoop2Mr1ExecutionMode(override val mode: Mode, @transient override val j
   protected def defaultConfiguration: JobConf = new JobConf(true) // initialize the default config
 
   override protected def newFlowProcess(conf: JobConf): FlowProcess[JobConf] = new HadoopFlowProcess(conf)
+
+  override private[scalding] def setupCounterCreation(conf: Config): Config =
+    conf + (CounterImpl.CounterImplClass -> classOf[Hadoop2Mr1FlowPCounterImpl].getCanonicalName)
 }
+
+private[scalding] case class Hadoop2Mr1FlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
+  override def increment(amount: Long): Unit = cntr.increment(amount)
+}
+
+
 
 case class Hadoop2Mr1Mode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {
   val name = "hadoop2-mr1"

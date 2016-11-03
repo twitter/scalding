@@ -17,6 +17,9 @@ class FlinkExecutionMode(override val mode: Mode, @transient override val jobCon
   protected def defaultConfiguration: Configuration = new Configuration(true) // initialize the default config
 
   protected def newFlowProcess(conf: Configuration): FlowProcess[Configuration] = new FlinkFlowProcess(conf)
+
+  /* FIXME: how are stats counters to be ported to Flink? Is there any need to do something different? */
+
 }
 
 case class FlinkMode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {

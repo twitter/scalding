@@ -1,10 +1,13 @@
 package com.twitter.scalding
 
-import cascading.flow.{ Flow, FlowListener, FlowDef, FlowProcess }
-import cascading.flow.hadoop.HadoopFlowProcess
+import java.lang.reflect.Constructor
+
+import cascading.flow.{Flow, FlowDef, FlowListener, FlowProcess}
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
-import org.slf4j.{ Logger, LoggerFactory }
+
+import org.slf4j.{Logger, LoggerFactory}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.ref.WeakReference
@@ -48,24 +51,32 @@ object StatKey {
 }
 
 private[scalding] object CounterImpl {
-  def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
-    fp match {
-      case hFP: HadoopFlowProcess => HadoopFlowPCounterImpl(hFP, statKey)
-      case _ => GenericFlowPCounterImpl(fp, statKey)
+  val CounterImplClass = "scalding.stats.counter.impl.class"
+
+  def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl = {
+    /* TODO: comment this stuff. */
+    val klassName = Option(fp.getStringProperty(CounterImplClass)).getOrElse(sys.error(CounterImplClass+" property is missing"))
+
+    val memo = scala.collection.mutable.Map[String, Constructor[CounterImpl]]()
+    val ctor = memo.synchronized {
+      memo.getOrElse(klassName,
+        {
+          val klass = Class.forName(klassName).asInstanceOf[Class[CounterImpl]]
+          val ctor = klass.getConstructor(classOf[FlowProcess[_]], classOf[StatKey])
+          memo.put(klassName, ctor)
+          ctor
+        })
     }
+    ctor.newInstance(fp, statKey)
+  }
 }
 
-sealed private[scalding] trait CounterImpl {
+private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
 
 private[scalding] case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
   override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
-}
-
-private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
-  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
-  override def increment(amount: Long): Unit = cntr.increment(amount)
 }
 
 object Stat {

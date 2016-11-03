@@ -200,6 +200,14 @@ trait ExecutionMode extends java.io.Serializable {
   private[scalding] def getHashJoinAutoForceRight: Boolean = false
 
   private[scalding] def defaultConfig: Config = Config.empty
+
+  /**
+    * @return a Config which includes the class name to use for creating Statistics Counters.
+    *         Please see the comment in CounterImpl for details (this is really fabric implementation details)
+    */
+  private[scalding] def setupCounterCreation(fp: Config): Config =
+    fp + (CounterImpl.CounterImplClass -> classOf[GenericFlowPCounterImpl].getCanonicalName)
+
 }
 
 trait StorageMode extends java.io.Serializable {
@@ -304,7 +312,8 @@ trait HadoopFamilyMode extends ClusterMode {
  * The "HadoopMode" is actually an alias for "a mode running on a fabric that ultimately runs using an execution
  * engine compatible with some of the Hadoop technology stack (may or may not include Hadoop 1.x, YARN, etc.)
  */
-trait HadoopExecutionModeBase[ConfigType <: Configuration] extends ExecutionMode {
+trait HadoopExecutionModeBase[ConfigType <: Configuration]
+  extends ExecutionMode {
   def jobConf: Configuration
   def mode: Mode
 
@@ -354,7 +363,9 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration] extends ExecutionMode
   override def defaultConfig: Config = Config.fromHadoop(jobConf) - Config.IoSerializationsKey
 
   override def newFlow(config: Config, flowDef: FlowDef): Flow[_] = {
-    val flow = super.newFlow(config, flowDef)
+    val conf2 = setupCounterCreation(config)
+
+    val flow = super.newFlow(conf2, flowDef)
 
     applyDescriptionsOnSteps(flow)
     applyReducerEstimationStrategies(flow, config)
@@ -414,6 +425,7 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration] extends ExecutionMode
     }
   }
 
+
 }
 
 class CascadingLocalExecutionMode extends ExecutionMode {
@@ -440,7 +452,6 @@ trait TestStorageMode extends StorageMode {
 }
 
 trait LocalStorageModeCommon extends StorageMode {
-
   def createMemoryTap(createMemoryTap: AccessMode, fields: Fields, tupleBuffer: mutable.Buffer[Tuple]): Tap[_, _, _] =
     new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), tupleBuffer)
 

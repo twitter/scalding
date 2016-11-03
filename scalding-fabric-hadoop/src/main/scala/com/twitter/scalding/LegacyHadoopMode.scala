@@ -19,13 +19,23 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Buffer
 import scala.util.{ Failure, Success }
 
-/* TODO: move me into scalding-fabric-hadoop! */
-class LegacyHadoopExecutionMode(override val mode: Mode, @transient override val jobConf: Configuration) extends HadoopExecutionModeBase[JobConf] {
+
+
+class LegacyHadoopExecutionMode(override val mode: Mode,
+                                @transient override val jobConf: Configuration)
+  extends HadoopExecutionModeBase[JobConf] {
 
   override protected def newFlowConnector(rawConf: util.Map[AnyRef, AnyRef]): FlowConnector = new HadoopFlowConnector(rawConf)
   protected def defaultConfiguration: JobConf = new JobConf(true) // initialize the default config
 
-  override protected def newFlowProcess(conf: JobConf): FlowProcess[JobConf] = new HadoopFlowProcess(conf)
+  override protected def newFlowProcess(conf: JobConf): HadoopFlowProcess = new HadoopFlowProcess(conf)
+
+  override private[scalding] def setupCounterCreation(conf: Config): Config =
+    conf + (CounterImpl.CounterImplClass -> classOf[HadoopFlowPCounterImpl].getCanonicalName)
+}
+private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
+  override def increment(amount: Long): Unit = cntr.increment(amount)
 }
 
 class LegacyHadoopModeCommon(override val strictSources: Boolean, @transient override val jobConf: Configuration) extends HadoopFamilyMode {
