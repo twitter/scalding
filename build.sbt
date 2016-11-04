@@ -25,9 +25,11 @@ val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
 val bijectionVersion = "0.9.1"
 val cascadingAvroVersion = "2.1.2"
-val cascadingFlinkVersion = "0.3.0"
+
+val flinkVersion = "1.1.3" // 1.1.3 not compatible with cascading-flink 0.3.0 which isn't compatible with cascading 3.2-wip
+val cascadingFlinkVersion = "0.4.0-SNAPSHOT" // definitely not ready for prime time while a -SNAPSHOT
+
 val tezVersion = "0.8.2"
-val flinkVersion = "1.0.3"
 val chillVersion = "0.7.3"
 val elephantbirdVersion = "4.14"
 val hadoopLzoVersion = "0.4.19"
@@ -239,7 +241,7 @@ lazy val scalding = Project(
   scaldingFabricHadoop,
   scaldingFabricHadoop2Mr1,
   scaldingFabricTez,
-  scaldingFabricFlink, // not yet ready
+  // scaldingFabricFlink, // not yet ready for prime time
   scaldingCommons,
   scaldingAvro,
   scaldingParquet,
@@ -418,12 +420,14 @@ lazy val scaldingFabricHadoop2Mr1 = module("fabric-hadoop2-mr1").settings(
 
 lazy val scaldingFabricTez = module("fabric-tez").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion
-      exclude("com.google.guava", "guava"),
-    "org.apache.tez" % "tez-api" % tezVersion,
-    "org.apache.tez" % "tez-mapreduce" % tezVersion,
-    "org.apache.tez" % "tez-dag" % tezVersion,
-    "cascading" % "cascading-hadoop2-tez" % cascadingVersion) ++
+      "com.google.guava" % "guava" % guavaVersion) ++
+    Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+      "org.apache.tez" % "tez-api" % tezVersion,
+      "org.apache.tez" % "tez-mapreduce" % tezVersion,
+      "org.apache.tez" % "tez-dag" % tezVersion,
+      "cascading" % "cascading-hadoop2-tez" % cascadingVersion
+    ).map(_.exclude("com.google.guava", "guava")) ++
     (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq())
   }, addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
   unmanagedSourceDirectories in Test += baseDirectory.value / ".." / "scalding-core-fabric-tests" / "src" / "fabric" / "scala"

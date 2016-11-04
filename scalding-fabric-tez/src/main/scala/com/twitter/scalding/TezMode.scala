@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import java.util
 
-import cascading.flow.{ FlowConnector, FlowProcess }
+import cascading.flow.{ FlowConnector, FlowProcess, FlowRuntimeProps }
 import cascading.flow.tez.{ Hadoop2TezFlowConnector, Hadoop2TezFlowProcess }
 import cascading.tuple.Tuple
 import org.apache.hadoop.conf.Configuration
@@ -16,16 +16,15 @@ class TezExecutionMode(override val mode: Mode, @transient override val jobConf:
 
   protected def defaultConfiguration: TezConfiguration = new TezConfiguration(true) // initialize the default config
 
-  val TezGatherPartitionNum = "cascading.flow.runtime.gather.partitions.num"
-
   protected def newFlowProcess(conf: TezConfiguration): FlowProcess[TezConfiguration] = {
-    val ownrednum = Option(conf.get(TezGatherPartitionNum))
+    val ownrednum = Option(conf.get(FlowRuntimeProps.GATHER_PARTITIONS))
 
     val confToUse = ownrednum match {
       case Some(value) => conf // User already specified the Gather Partitions parameters in Tez terms; no override needed.
       case None => {
         val newConf = new TezConfiguration(conf)
-        newConf.set(TezGatherPartitionNum, Option(conf.get(Config.HadoopNumReducers)).getOrElse("2"))
+        newConf.set(FlowRuntimeProps.GATHER_PARTITIONS, Option(conf.get(Config.HadoopNumReducers))
+          .getOrElse("4")) /* TEZ FIXME: ensure a better managed way of dealing with this */
         newConf
       }
     }
@@ -33,8 +32,15 @@ class TezExecutionMode(override val mode: Mode, @transient override val jobConf:
     new Hadoop2TezFlowProcess(confToUse)
   }
 
-  override private[scalding] def setupCounterCreation(conf: Config): Config =
-    conf + (CounterImpl.CounterImplClass -> classOf[TezFlowPCounterImpl].getCanonicalName)
+  override private[scalding] def setupCounterCreation(conf: Config): Config = {
+    val nconf = conf - CounterImpl.CounterImplClass - FlowRuntimeProps.GATHER_PARTITIONS +
+      (CounterImpl.CounterImplClass -> classOf[TezFlowPCounterImpl].getCanonicalName) +
+      (FlowRuntimeProps.GATHER_PARTITIONS -> "4") /* TEZ FIXME: ensure a better managed way of dealing with this */
+
+    println(s"using ${FlowRuntimeProps.GATHER_PARTITIONS} -> ${nconf.get(FlowRuntimeProps.GATHER_PARTITIONS)}")
+    nconf
+  }
+
 }
 
 private[scalding] case class TezFlowPCounterImpl(fp: Hadoop2TezFlowProcess, statKey: StatKey) extends CounterImpl {

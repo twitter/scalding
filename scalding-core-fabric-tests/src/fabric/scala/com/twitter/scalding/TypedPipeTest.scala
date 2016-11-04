@@ -393,7 +393,7 @@ class TypedPipeWithOnCompleteTest extends WordSpec with Matchers {
     JobTest(new TypedWithOnCompleteJob(_))
       .source(TypedText.tsv[String]("input"), inputText.split("\\s+").map(Tuple1(_)))
       .counter("onCompleteMapper") { cnt => "have onComplete called on mapper" in { assert(cnt == 1) } }
-      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { assert(cnt == 1) } }
+      .counter("onCompleteReducer") { cnt => "have onComplete called on reducer" in { assert(cnt == 1) } }  /* FIXME TEZ: this one fails because we don't (YET?) control the number of Gathers per node, equiv. of .withReducers */
       .sink[String](TypedText.tsv[String]("output")) { outbuf =>
         "have the correct output" in {
           val correct = inputText.split("\\s+").map(_.toUpperCase).groupBy(x => x).filter(_._2.size > 1).keys.toList.sorted
@@ -1534,6 +1534,8 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
 }
 
 class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
+    /* FIXME TEZ: this seems to give trouble to the TezRuleRegistry, in rule RemoveMalformedHashJoinNodeTransformer */
+
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
