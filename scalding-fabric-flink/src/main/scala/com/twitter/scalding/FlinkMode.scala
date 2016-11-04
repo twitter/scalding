@@ -18,7 +18,7 @@ class FlinkExecutionMode(override val mode: Mode, @transient override val jobCon
 
   protected def newFlowProcess(conf: Configuration): FlowProcess[Configuration] = new FlinkFlowProcess(conf)
 
-  /* FIXME: how are stats counters to be ported to Flink? Is there any need to do something different? */
+  /* FIXME: how are stats counters to be ported to Flink? Is there any need to do something different? Using the generic approach for now */
 
 }
 

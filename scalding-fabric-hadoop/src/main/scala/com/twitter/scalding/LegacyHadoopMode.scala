@@ -1,28 +1,17 @@
 package com.twitter.scalding
 
-import java.io.File
 import java.util
-import java.util.UUID
 
 import cascading.flow._
 import cascading.flow.hadoop.{ HadoopFlowConnector, HadoopFlowProcess }
-import cascading.flow.planner.BaseFlowStep
 import cascading.tuple.Tuple
-import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
-import scala.collection.JavaConverters._
-import scala.collection.mutable.{ Map => MMap }
-import scala.collection.mutable.{ Set => MSet }
 
-import scala.annotation.tailrec
 import scala.collection.mutable.Buffer
-import scala.util.{ Failure, Success }
-
-
 
 class LegacyHadoopExecutionMode(override val mode: Mode,
-                                @transient override val jobConf: Configuration)
+  @transient override val jobConf: Configuration)
   extends HadoopExecutionModeBase[JobConf] {
 
   override protected def newFlowConnector(rawConf: util.Map[AnyRef, AnyRef]): FlowConnector = new HadoopFlowConnector(rawConf)
@@ -34,6 +23,10 @@ class LegacyHadoopExecutionMode(override val mode: Mode,
     conf + (CounterImpl.CounterImplClass -> classOf[HadoopFlowPCounterImpl].getCanonicalName)
 }
 private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+  def this(fp: FlowProcess[_], statKey: StatKey) { // this alternate ctor is the one that will actually be used at runtime
+    this(CounterImpl.upcast[HadoopFlowProcess](fp), statKey)
+  }
+
   private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
   override def increment(amount: Long): Unit = cntr.increment(amount)
 }

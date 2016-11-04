@@ -24,11 +24,13 @@ class Hadoop2Mr1ExecutionMode(override val mode: Mode, @transient override val j
 }
 
 private[scalding] case class Hadoop2Mr1FlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+  def this(fp: FlowProcess[_], statKey: StatKey) { // this alternate ctor is the one that will actually be used at runtime
+    this(CounterImpl.upcast[HadoopFlowProcess](fp), statKey)
+  }
+
   private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
   override def increment(amount: Long): Unit = cntr.increment(amount)
 }
-
-
 
 case class Hadoop2Mr1Mode(strictSources: Boolean, @transient jobConf: Configuration) extends HadoopFamilyMode {
   val name = "hadoop2-mr1"

@@ -19,10 +19,8 @@ import java.io._
 import java.lang.reflect.Constructor
 import java.nio.charset.Charset
 import java.nio.file.{ Files, Paths }
-import java.util
 import java.util.{ Properties, UUID }
 
-import cascading.flow.hadoop.{ HadoopFlowConnector, HadoopFlowProcess }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
@@ -189,7 +187,9 @@ trait ExecutionMode extends java.io.Serializable {
    * Create a new Flow using the default FlowConnector, and ensure any fabric-specific flow configuration is complete.
    */
   def newFlow(config: Config, flowDef: FlowDef): Flow[_] = {
-    val flowcon = newFlowConnector(config)
+    val conf2 = setupCounterCreation(config)
+
+    val flowcon = newFlowConnector(conf2)
     val flow = flowcon.connect(flowDef)
     flow
   }
@@ -202,9 +202,9 @@ trait ExecutionMode extends java.io.Serializable {
   private[scalding] def defaultConfig: Config = Config.empty
 
   /**
-    * @return a Config which includes the class name to use for creating Statistics Counters.
-    *         Please see the comment in CounterImpl for details (this is really fabric implementation details)
-    */
+   * @return a Config which includes the class name to use for creating Statistics Counters.
+   *         Please see the comment in CounterImpl for details (this is really fabric implementation details)
+   */
   private[scalding] def setupCounterCreation(fp: Config): Config =
     fp + (CounterImpl.CounterImplClass -> classOf[GenericFlowPCounterImpl].getCanonicalName)
 
@@ -363,9 +363,7 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration]
   override def defaultConfig: Config = Config.fromHadoop(jobConf) - Config.IoSerializationsKey
 
   override def newFlow(config: Config, flowDef: FlowDef): Flow[_] = {
-    val conf2 = setupCounterCreation(config)
-
-    val flow = super.newFlow(conf2, flowDef)
+    val flow = super.newFlow(config, flowDef)
 
     applyDescriptionsOnSteps(flow)
     applyReducerEstimationStrategies(flow, config)
@@ -381,7 +379,7 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration]
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }
 
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
+  private def updateStepConfigWithDescriptions(step: BaseFlowStep[ConfigType]): Unit = {
     val conf = step.getConfig
     getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
       conf.set(Config.StepDescriptions, descriptionString)
@@ -391,7 +389,7 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration]
   def applyDescriptionsOnSteps(flow: Flow[_]): Unit = {
     val flowSteps = flow.getFlowSteps.asScala
     flowSteps.foreach {
-      case baseFlowStep: BaseFlowStep[JobConf @unchecked] =>
+      case baseFlowStep: BaseFlowStep[ConfigType @unchecked] =>
         updateStepConfigWithDescriptions(baseFlowStep)
     }
   }
@@ -424,7 +422,6 @@ trait HadoopExecutionModeBase[ConfigType <: Configuration]
       case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
     }
   }
-
 
 }
 
