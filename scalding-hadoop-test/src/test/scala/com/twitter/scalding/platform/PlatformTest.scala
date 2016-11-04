@@ -435,11 +435,16 @@ object PlatformTest {
   }
 }
 
-class TestEmptySource(val fields: Fields = new Fields("customNamedOffset", "customNamedLine")) extends FileSource with Mappable[(String, Long)] with SuccessFileSource {
+class TestTypedEmptySource extends FileSource with TextSourceScheme with Mappable[(Long, String)] with SuccessFileSource {
   override def hdfsPaths: Iterable[String] = Iterable.empty
   override def localPaths: Iterable[String] = Iterable.empty
-  override def converter[U >: (String, Long)] =
-    TupleConverter.asSuperConverter[(String, Long), U](implicitly[TupleConverter[(String, Long)]])
+  override def converter[U >: (Long, String)] =
+    TupleConverter.asSuperConverter[(Long, String), U](implicitly[TupleConverter[(Long, String)]])
+}
+
+class TestFieldsEmptySource(val fields: Fields = new Fields("customNamedOffset", "customNamedLine")) extends FileSource with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
   override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(fields, CHTextLine.DEFAULT_CHARSET).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
@@ -447,14 +452,14 @@ class TestEmptySource(val fields: Fields = new Fields("customNamedOffset", "cust
 // due to the directory being empty (but for a _SUCCESS file)
 // We test out that this shouldn't result in a Cascading planner error during {@link Job.buildFlow}
 class EmptyDataJob(args: Args) extends Job(args) {
-  TypedPipe.from(new TestEmptySource)
-    .map { case (s, l) => s }
+  TypedPipe.from(new TestTypedEmptySource)
+    .map { case (offset, line) => line }
     .write(TypedTsv[String]("output"))
 }
 
 class FieldsEmptyDataJob(args: Args) extends Job(args) {
-  val x = new TestEmptySource(new Fields("offset1", "line1")).read
-  val y = new TestEmptySource(new Fields("offset2", "line2")).read
+  val x = new TestFieldsEmptySource(new Fields("offset1", "line1")).read
+  val y = new TestFieldsEmptySource(new Fields("offset2", "line2")).read
 
   // Empty sources can return an empty MemoryTap
   // Here we are testing that this MemoryTap has the right Fields setup in it.
