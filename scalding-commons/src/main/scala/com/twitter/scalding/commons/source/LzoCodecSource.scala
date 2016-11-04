@@ -27,8 +27,8 @@ import com.twitter.bijection.Injection
 object LzoCodecSource {
   def apply[T](paths: String*)(implicit passedInjection: Injection[T, Array[Byte]]) =
     new LzoCodec[T] {
-      val hdfsPaths = paths
-      val localPaths = paths
+      override val hdfsPaths = paths
+      override val localPaths = paths
       val boxed = Externalizer(passedInjection)
       override def injection = boxed.get
     }

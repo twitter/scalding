@@ -46,7 +46,7 @@ object CodecSource {
   def apply[T](paths: String*)(implicit codec: Injection[T, Array[Byte]]) = new CodecSource[T](paths)
 }
 
-class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
+class CodecSource[T] private (override val hdfsPaths: Seq[String], val maxFailures: Int = 0)(implicit @transient injection: Injection[T, Array[Byte]])
   extends FileSource
   with Mappable[T]
   with LocalTapSource {
@@ -56,7 +56,7 @@ class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int =
   lazy val field = new Fields(fieldSym.name)
   val injectionBox = Externalizer(injection andThen BytesWritableCodec.get)
 
-  def localPaths = hdfsPaths
+  override def localPaths = hdfsPaths
 
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](TupleConverter.singleConverter[T])
   override def hdfsScheme =

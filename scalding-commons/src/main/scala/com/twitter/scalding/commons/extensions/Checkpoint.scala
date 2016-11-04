@@ -156,8 +156,8 @@ object Checkpoint {
   // Returns a format for the checkpoint.  The format of the source is
   // determined by the flag --checkpoint.format, and defaults to SequenceFile.
   private def getFormat(checkpointName: String)(implicit args: Args, mode: Mode): String = {
-    val defaultFormat = mode match {
-      case Hdfs(_, _) | HadoopTest(_, _) => "sequencefile"
+    val defaultFormat = mode.storageMode match {
+      case _: HdfsStorageModeCommon => "sequencefile"
       case _ => "tsv"
     }
     CheckpointArg(checkpointName, "format").value.getOrElse(defaultFormat).toLowerCase

@@ -42,7 +42,7 @@ trait BaseReplState {
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
    */
-  var storedHdfsMode: Option[Hdfs] = None
+  var storedHdfsMode: Option[ClusterMode] = None
 
   /** Switch to Local mode */
   def useLocalMode(): Unit = {
@@ -82,13 +82,13 @@ trait BaseReplState {
       case localMode: Local => {
         (localMode.toString, System.getProperty("user.dir"))
       }
-      case hdfsMode: Hdfs => {
+      case hdfsMode: HadoopFamilyMode => {
         val defaultFs = FileSystem.get(hdfsMode.jobConf)
         val m = customConfig.get(mr2Key) match {
           case Some("local") =>
-            s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strict})"
+            s"${hdfsMode.getClass.getSimpleName}Local(${hdfsMode.strictSources})"
           case _ =>
-            s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strict})"
+            s"${hdfsMode.getClass.getSimpleName}(${hdfsMode.strictSources})"
         }
         (m, defaultFs.getWorkingDirectory.toString)
       }
@@ -99,7 +99,7 @@ trait BaseReplState {
 
   private def modeHadoopConf: Configuration = {
     mode match {
-      case hdfsMode: Hdfs => hdfsMode.jobConf
+      case hdfsMode: HadoopFamilyMode => hdfsMode.jobConf
       case _ => new Configuration(false)
     }
   }

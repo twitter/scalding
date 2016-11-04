@@ -54,11 +54,11 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  */
 case class PartitionedTextLine[P](
   path: String, template: String, encoding: String = TextLine.DEFAULT_CHARSET)(implicit val valueSetter: TupleSetter[String], val valueConverter: TupleConverter[(Long, String)],
-    val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends SchemedSource with TypedSink[(P, String)] with Mappable[(P, (Long, String))] with HfsTapProvider
-  with java.io.Serializable {
+    val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
+  extends PartitionSchemedOps with TypedSink[(P, String)] with Mappable[(P, (Long, String))] with java.io.Serializable {
 
   // The partition fields, offset by the value arity.
-  val partitionFields =
+  override val partitionFields =
     PartitionUtil.toFields(valueSetter.arity, valueSetter.arity + partitionSetter.arity)
 
   // Create the underlying scheme and explicitly set the sink fields to be only the specified fields
@@ -88,27 +88,6 @@ case class PartitionedTextLine[P](
    */
   override def sinkFields: Fields =
     PartitionUtil.toFields(0, valueSetter.arity + partitionSetter.arity)
-
-  /** Creates the taps for local and hdfs mode.*/
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    mode match {
-      case Local(_) => {
-        val fileTap = new FileTap(localScheme, path, SinkMode.REPLACE)
-        new LocalPartitionTap(fileTap, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
-          .asInstanceOf[Tap[_, _, _]]
-      }
-      case Hdfs(_, _) => {
-        val hfs = createHfsTap(hdfsScheme, path, SinkMode.REPLACE)
-        new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
-          .asInstanceOf[Tap[_, _, _]]
-      }
-      case hdfsTest @ HadoopTest(_, _) => {
-        val hfs = createHfsTap(hdfsScheme, hdfsTest.getWritePathFor(this), SinkMode.REPLACE)
-        new PartitionTap(hfs, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
-          .asInstanceOf[Tap[_, _, _]]
-      }
-      case _ => TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
-    }
 
   /**
    * Combine both the partition and value converter to extract the data from a flat cascading tuple

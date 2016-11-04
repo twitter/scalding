@@ -125,7 +125,7 @@ object HRavenHistoryService extends HistoryService {
     def findMatchingJobStep(pastFlow: Flow) =
       pastFlow.getJobs.asScala.find { step =>
         try {
-          step.getConfiguration.get("cascading.flow.step.num").toInt == stepNum
+          step.getConfiguration.get("cascading.flow.step.num").toInt == stepNum.toInt
         } catch {
           case _: NumberFormatException => false
         }

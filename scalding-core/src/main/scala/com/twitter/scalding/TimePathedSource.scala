@@ -146,11 +146,15 @@ abstract class MostRecentGoodSource(p: String, dr: DateRange, t: TimeZone)
   override def toString =
     "MostRecentGoodSource(" + p + ", " + dr + ", " + t + ")"
 
-  override protected def goodHdfsPaths(hdfsMode: Hdfs) = getPathStatuses(hdfsMode.jobConf)
-    .toList
-    .reverse
-    .find(_._2)
-    .map(_._1)
+  /*
+   * Get all the set of valid paths based on source strictness.
+   */
+  override protected def goodHdfsPaths(strictSources: Boolean, conf: Configuration): Iterable[String] =
+    getPathStatuses(conf)
+      .toList
+      .reverse
+      .find(_._2)
+      .map(_._1)
 
   override def hdfsReadPathsAreGood(conf: Configuration) = getPathStatuses(conf)
     .exists(_._2)

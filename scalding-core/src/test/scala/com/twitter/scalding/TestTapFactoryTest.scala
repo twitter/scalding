@@ -1,7 +1,8 @@
 package com.twitter.scalding
 
-import cascading.tap.Tap
+import cascading.tap.{ SinkMode, Tap }
 import cascading.tuple.{ Fields, Tuple }
+
 import scala.collection.mutable.Buffer
 import org.scalatest.{ Matchers, WordSpec }
 
@@ -18,11 +19,11 @@ class TestTapFactoryTest extends WordSpec with Matchers {
       val testTapFactory = TestTapFactory(testSource, new Fields())
 
       def createIllegalTap(): Tap[Any, Any, Any] =
-        testTapFactory.createTap(Read)(testMode).asInstanceOf[Tap[Any, Any, Any]]
+        testMode.storageMode.createTap(testSource, Read, testMode, SinkMode.UPDATE).asInstanceOf[Tap[Any, Any, Any]]
 
       the[IllegalArgumentException] thrownBy {
         createIllegalTap()
-      } should have message ("requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
+      } should have message ("Failed to create tap for: com.twitter.scalding.Tsv(path), with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
     }
   }
 }

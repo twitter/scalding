@@ -61,6 +61,12 @@ BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
 VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
 SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
 
+FABRIC_SUFFIX=if ENV['SCALD_FABRIC_SUFFIX'] 
+    "-"+ ENV['SCALD_FABRIC_SUFFIX']
+  else
+    ""
+  end
+
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
 #linux
@@ -262,7 +268,7 @@ end
 
 if (!CONFIG["jar"])
   #what jar has all the dependencies for this job
-  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly-#{SCALDING_VERSION}.jar"
+  CONFIG["jar"] = repo_root + "/scalding-core/target/scala-#{SHORT_SCALA_VERSION}/scalding-core-assembly#{FABRIC_SUFFIX}-#{SCALDING_VERSION}.jar"
 end
 
 #Check that we can find the jar:

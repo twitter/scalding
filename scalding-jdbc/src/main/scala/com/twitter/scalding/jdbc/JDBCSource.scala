@@ -16,9 +16,9 @@ limitations under the License.
 
 package com.twitter.scalding.jdbc
 
-import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
+import com.twitter.scalding._
 import cascading.jdbc.JDBCTap
-import cascading.tap.Tap
+import cascading.tap.{ SinkMode, Tap }
 import cascading.tuple.Fields
 
 /**
@@ -45,7 +45,7 @@ import cascading.tuple.Fields
  * @author Oscar Boykin
  * @author Kevin Lin
  */
-abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
+abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver with HfsTapProvider {
 
   // Override the following three members when you extend this class
   val tableName: TableName
@@ -91,10 +91,14 @@ abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
     }
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
-    mode match {
-      case Hdfs(_, _) => createJDBCTap.asInstanceOf[Tap[_, _, _]]
-      // TODO: support Local mode here, and better testing.
-      case _ => TestTapFactory(this, fields).createTap(readOrWrite)
+    (mode, mode.storageMode) match {
+      case (_, _: HdfsStorageModeCommon) =>
+        createJDBCTap.asInstanceOf[Tap[_, _, _]]
+
+      case (testMode: TestMode, _: LocalStorageModeCommon) =>
+        TestTapFactory(this, fields).createLocalTap(readOrWrite: AccessMode, testMode)
+
+      case _ => ??? // TODO: support Local mode here, and better testing.
     }
 
   // Generate SQL statement to create the DB table if not existing.

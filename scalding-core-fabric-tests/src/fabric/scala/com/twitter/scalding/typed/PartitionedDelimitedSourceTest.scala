@@ -16,12 +16,14 @@ package com.twitter.scalding.typed
 
 import java.io.File
 
-import scala.io.{ Source => ScalaSource }
-
+import com.twitter.scalding._
+import com.twitter.scalding.source.TypedText
 import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.scalding._
+import scala.io.{ Source => ScalaSource }
 import TDsl._
+
+/* Moved from scalding-core due to fabric-specific code */
 
 object PartitionedDelimitedTestSources {
   val singlePartition = PartitionedCsv[String, (String, String)]("out", "%s")
@@ -29,7 +31,8 @@ object PartitionedDelimitedTestSources {
 
 class PartitionedDelimitedWriteJob(args: Args) extends Job(args) {
   import PartitionedDelimitedTestSources._
-  TypedCsv[(String, String, String)]("in")
+
+  TypedText.csv[(String, String, String)]("in")
     .map { case (v1, v2, v3) => (v1, (v2, v3)) }
     .write(singlePartition)
 }
@@ -49,21 +52,37 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
       }
 
       JobTest(buildJob(_))
-        .source(TypedCsv[(String, String, String)]("in"), input)
-        .runHadoop
+        .source(TypedText.csv[(String, String, String)]("in"), input)
+        .runWithMinicluster
         .finish()
 
-      val testMode = job.mode.asInstanceOf[HadoopTest]
+      job.mode match {
+        case testMode: HadoopFamilyTestMode =>
+          import TestFileUtil._
+          val directory = RichDirectory(testMode.getWritePathFor(singlePartition))
 
-      val directory = new File(testMode.getWritePathFor(singlePartition))
+          // println(s"looking at ${directory}")
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+          directory.list shouldBe Set("A", "B") // this proves the partition strategy WAS applied.
 
-      val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
-      val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
+          val aDir = RichDirectory(directory, "A")
+          val aFiles = aDir.fileNameSetExSuccess
+          aFiles.size shouldBe 1
+          aDir.partFiles.size shouldBe 1
 
-      aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
-      bSource.getLines.toList shouldBe Seq("Z,3")
+          val bDir = RichDirectory(directory, "B")
+          val bFiles = bDir.fileNameSetExSuccess
+          bFiles.size shouldBe 1
+          bDir.partFiles.size shouldBe 1
+
+          val aSource = ScalaSource.fromFile(new File(aDir.dir, aDir.partFiles.head))
+          val bSource = ScalaSource.fromFile(new File(bDir.dir, bDir.partFiles.head))
+
+          aSource.getLines.toList shouldBe Seq("X,1", "Y,2")
+          bSource.getLines.toList shouldBe Seq("Z,3")
+        case _ => ???
+      }
+
     }
   }
 }

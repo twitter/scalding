@@ -15,23 +15,24 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import org.scalatest.WordSpec
-
-import com.twitter.scalding._
-import scala.concurrent.{ ExecutionContext => SExecutionContext, _ }
-import SExecutionContext.Implicits.global
-import scala.concurrent.duration.{ Duration => SDuration }
+/* moved from scalding-core due to a chicken-and-egg situation */
 
 import cascading.flow.FlowDef
+import com.twitter.scalding._
 import org.apache.hadoop.conf.Configuration
+import org.scalatest.WordSpec
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{ Duration => SDuration }
+import scala.concurrent.{ ExecutionContext => SExecutionContext, _ }
+import Dsl._
 
 class NoStackLineNumberTest extends WordSpec {
 
   "No Stack Shouldn't block getting line number info" should {
     "actually get the no stack info" in {
-      import Dsl._
       implicit val fd = new FlowDef
-      implicit val m = new Hdfs(false, new Configuration)
+      implicit val m = Mode.test("anyCluster-test", new Configuration, (_: Source) => None)
 
       val pipeFut = com.twitter.example.scalding.typed.InAnotherPackage.buildF.map { tp =>
         tp.toPipe('a, 'b)

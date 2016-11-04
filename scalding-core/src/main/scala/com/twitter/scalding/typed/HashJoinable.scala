@@ -71,7 +71,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
 
     // if the user has turned off auto force right, we fall back to the old behavior and
     //just return the mapped pipe
-    if (!getHashJoinAutoForceRight(mode) || isSafeToSkipForceToDisk(mappedPipe)) mappedPipe
+    if (!mode.executionMode.getHashJoinAutoForceRight || isSafeToSkipForceToDisk(mappedPipe)) mappedPipe
     else mappedPipe.forceToDisk
   }
 
@@ -119,12 +119,4 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case _ => false
     }
 
-  private def getHashJoinAutoForceRight(mode: Mode): Boolean = {
-    mode match {
-      case h: HadoopMode =>
-        val config = Config.fromHadoop(h.jobConf)
-        config.getHashJoinAutoForceRight
-      case _ => false //default to false
-    }
-  }
 }

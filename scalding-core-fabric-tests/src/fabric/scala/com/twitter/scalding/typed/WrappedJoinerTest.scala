@@ -1,12 +1,13 @@
-package com.twitter.scalding
+package com.twitter.scalding.typed
+
+import java.util.{ Iterator => JIterator }
 
 import cascading.flow.FlowException
 import cascading.pipe.CoGroup
-import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
+import cascading.pipe.joiner.{ InnerJoin, JoinerClosure }
 import cascading.tuple.Tuple
+import com.twitter.scalding._
 import org.scalatest.{ Matchers, WordSpec }
-
-import java.util.{ Iterator => JIterator }
 
 class CheckFlowProcessJoiner(uniqueID: UniqueID) extends InnerJoin {
   override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
@@ -46,7 +47,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
         .sink[(Int, String)](Tsv("output")) { outBuf =>
           // The job will fail with an exception if the FlowProcess is unavailable.
         }
-        .runHadoop
+        .runWithMinicluster
         .finish()
     }
 
@@ -58,7 +59,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
           .sink[(Int, String)](Tsv("output")) { outBuf =>
             // The job will fail with an exception if the FlowProcess is unavailable.
           }
-          .runHadoop
+          .runWithMinicluster
           .finish()
 
         fail("The test Job without WrappedJoiner should fail.")

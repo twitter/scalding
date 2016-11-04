@@ -94,67 +94,66 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
   override def validateTaps(mode: Mode): Unit = {
     // if a version is explicitly supplied, ensure that it exists
     sourceVersion.foreach { version =>
-      mode match {
-        case hadoopMode: HadoopMode => {
-          val store = source.getStore(new JobConf(hadoopMode.jobConf))
+      mode.storageMode match {
+        case hdfs: HdfsStorageModeCommon =>
+          val store = source.getStore(new JobConf(hdfs.jobConf))
 
           if (!store.hasVersion(version)) {
             throw new InvalidSourceException(
-              "Version %s does not exist. Currently available versions are: %s"
-                .format(version, store.getAllVersions))
+              s"Version ${version} does not exist. Currently available versions are: ${store.getAllVersions}")
           }
-        }
 
         case _ => throw new IllegalArgumentException(
-          "VersionedKeyValSource does not support mode %s. Only HadoopMode is supported"
-            .format(mode))
+          s"VersionedKeyValSource does not support mode ${mode}. Only HadoopMode is supported")
       }
     }
   }
 
   def resourceExists(mode: Mode): Boolean =
     mode match {
-      case Test(buffers) => {
-        buffers(this) map { !_.isEmpty } getOrElse false
-      }
-      case HadoopTest(conf, buffers) => {
-        buffers(this) map { !_.isEmpty } getOrElse false
-      }
-      case _ => {
-        val conf = new JobConf(mode.asInstanceOf[HadoopMode].jobConf)
+      case testMode: TestMode =>
+        testMode.buffers(this).exists(_.nonEmpty)
+
+      case h: HadoopFamilyMode =>
+        val conf = new JobConf(h.jobConf)
         source.resourceExists(conf)
-      }
+
+      case _ => throw new IllegalArgumentException(
+        s"VersionedKeyValSource does not support mode ${mode}. Only HadoopMode is supported")
     }
 
   def sinkExists(mode: Mode): Boolean =
     sinkVersion match {
       case Some(version) =>
         mode match {
-          case Test(buffers) =>
-            buffers(this) map { !_.isEmpty } getOrElse false
+          case testMode: TestMode =>
+            testMode.buffers(this).exists(_.nonEmpty)
 
-          case HadoopTest(conf, buffers) =>
-            buffers(this) map { !_.isEmpty } getOrElse false
-
-          case m: HadoopMode =>
+          case m: HadoopFamilyMode =>
             val conf = new JobConf(m.jobConf)
             val store = sink.getStore(conf)
             store.hasVersion(version)
-          case _ => sys.error(s"Unknown mode $mode")
+
+          case _ => throw new IllegalArgumentException(
+            s"VersionedKeyValSource does not support mode ${mode}. Only HadoopMode is supported")
         }
       case None => false
     }
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     import com.twitter.scalding.CastHfsTap
-    mode match {
-      case Hdfs(_strict, _config) =>
+
+    (mode, mode.storageMode) match {
+      case (_, _: HdfsStorageModeCommon) =>
         readOrWrite match {
           case Read => CastHfsTap(source)
           case Write => CastHfsTap(sink)
         }
-      case _ =>
-        TestTapFactory(this, hdfsScheme).createTap(readOrWrite)
+
+      case (testMode: TestMode, _: LocalStorageModeCommon) =>
+        TestTapFactory(this, fields).createLocalTap(readOrWrite: AccessMode, testMode)
+
+      case _ => ??? // TODO: support Local mode here, and better testing.
     }
   }
 

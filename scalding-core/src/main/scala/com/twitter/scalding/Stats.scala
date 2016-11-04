@@ -1,14 +1,18 @@
 package com.twitter.scalding
 
-import cascading.flow.{ Flow, FlowListener, FlowDef, FlowProcess }
-import cascading.flow.hadoop.HadoopFlowProcess
+import java.lang.reflect.Constructor
+
+import cascading.flow.{ Flow, FlowDef, FlowListener, FlowProcess }
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
+
 import org.slf4j.{ Logger, LoggerFactory }
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.ref.WeakReference
 import scala.util.Try
+import scala.reflect.runtime.universe._
 
 /*
  * This can be a bit tricky to use, but it is important that incBy and inc
@@ -48,24 +52,76 @@ object StatKey {
 }
 
 private[scalding] object CounterImpl {
-  def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
-    fp match {
-      case hFP: HadoopFlowProcess => HadoopFlowPCounterImpl(hFP, statKey)
-      case _ => GenericFlowPCounterImpl(fp, statKey)
+  val CounterImplClass = "scalding.stats.counter.impl.class"
+
+  /*
+  Note: knowing which counter implementation class to use is a fabric-dependent question. Prior to Cascading 3, the
+  question of "which fabric" was easy: it was either Local or Hadoop, and both types were available wherever Scalding
+  is loaded.
+
+  We cannot have access to the fabric's Mode / ExecutionMode implementation, because instantiating counters happens
+  at clusterside runtime, not planning time[*]. The FlowProcess[_] detailed type typically also depends on the fabric,
+  with exceptions: Legacy Hadoop (1.x) and Hadoop2-MR1 use the same FlowProcess implementation class name,
+  HadoopFlowProcess.
+  Anyway, we can't use pattern-matching on the specific FlowProcess[_] type, as this would require scalding-core to
+  know about specific fabric implementation details, which it can no longer do (post-Cascading 3).
+
+  Solution found for now:
+    1. the fabric-specific ExecutionMode is responsible for setting the class name of the appropriate counter
+    implementation in a config key (named CounterImplClass above)
+    2. clusterside, CounterImpl$ retrieves this class name and uses reflection to instanciate the correct counter
+    implementation.
+
+
+  [*] even if Mode was accessible at runtime, it'd require a pervasive addition of (possibly implicit) parameters
+    whenever a join between pipes is possible, which would cause significant changes to the API
+
+   */
+  def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl = {
+    /* TODO: comment this stuff. */
+    val klassName = Option(fp.getStringProperty(CounterImplClass)).getOrElse(sys.error(CounterImplClass + " property is missing"))
+
+    val memo = scala.collection.mutable.Map[String, Constructor[CounterImpl]]()
+    val ctor = memo.synchronized {
+      memo.getOrElse(klassName,
+        {
+          val klass = Class.forName(klassName).asInstanceOf[Class[CounterImpl]]
+          val ctor = klass.getConstructor(classOf[FlowProcess[_]], classOf[StatKey])
+          memo.put(klassName, ctor)
+          ctor
+        })
     }
+    ctor.newInstance(fp, statKey)
+  }
+
+  private[scalding] def upcast[T <: FlowProcess[_]](fp: FlowProcess[_])(implicit ev: TypeTag[T]): T = fp match {
+    case hfp: T @unchecked if (ev == typeTag[T]) => hfp // see below
+    case _ => throw new IllegalArgumentException(s"Provided flow process instance ${fp} should have been of type ${ev}")
+
+    /* note: we jump through the additioanl hoop of passing implicit ev:TypeTag[T] and verifying the equality as
+       due to the JVM's type erasure, we can't tell the difference between a T and a FlowProcess[_] at runtime. */
+  }
+
 }
 
-sealed private[scalding] trait CounterImpl {
+private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
 
 private[scalding] case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
-  override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
-}
+  /* Note: most other CounterImpl implementations will need to provide an alternate constructor matching the above
+  signature. Suggested definition:
 
-private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
-  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
-  override def increment(amount: Long): Unit = cntr.increment(amount)
+  private[scalding] case class MyFlowPCounterImpl(fp: MyFlowProcess, statKey: StatKey) extends CounterImpl {
+    def this(fp: FlowProcess[_], statKey: StatKey) { // this alternate ctor is the one that will actually be used at runtime
+      this(CounterImpl.upcast[MyFlowProcess](fp), statKey)
+    }
+    override def increment(amount: Long): Unit = ???
+  }
+
+   */
+
+  override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
 }
 
 object Stat {

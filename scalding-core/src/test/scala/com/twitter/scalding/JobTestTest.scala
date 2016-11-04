@@ -34,6 +34,7 @@ class JobTestTest extends WordSpec with Matchers {
       the[IllegalArgumentException] thrownBy {
         runJobTest()
       } should have message (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(requiredSource))
+
     }
   }
 }

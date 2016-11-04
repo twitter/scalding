@@ -39,17 +39,6 @@ trait ExecutionContext {
 
   import ExecutionContext._
 
-  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
-    if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
-  }
-
-  private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
-    val conf = step.getConfig
-    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
-      conf.set(Config.StepDescriptions, descriptionString)
-    })
-  }
-
   final def buildFlow: Try[Flow[_]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
     // [error]
@@ -71,51 +60,12 @@ trait ExecutionContext {
 
       // identify the flowDef
       val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-      val flow = mode.newFlowConnector(configWithId).connect(flowDef)
+      val flow = mode.newFlow(configWithId, flowDef)
+
       if (config.getRequireOrderedSerialization) {
         // This will throw, but be caught by the outer try if
         // we have groupby/cogroupby not using OrderedSerializations
         CascadingBinaryComparator.checkForOrderedSerialization(flow).get
-      }
-
-      flow match {
-        case hadoopFlow: HadoopFlow =>
-          val flowSteps = hadoopFlow.getFlowSteps.asScala
-          flowSteps.foreach {
-            case baseFlowStep: BaseFlowStep[JobConf] =>
-              updateStepConfigWithDescriptions(baseFlowStep)
-          }
-        case _ => // descriptions not yet supported in other modes
-      }
-
-      // if any reducer estimators have been set, register the step strategy
-      // which instantiates and runs them
-      mode match {
-        case _: HadoopMode =>
-          val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
-
-          val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
-            case Success(fn) => fn(mode, configWithId)
-            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
-          }
-
-          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
-
-          optionalFinalStrategy.foreach { strategy =>
-            flow.setFlowStepStrategy(strategy)
-          }
-
-          config.getFlowListeners.foreach {
-            case Success(fn) => flow.addListener(fn(mode, configWithId))
-            case Failure(e) => throw new Exception("Failed to decode flow listener", e)
-          }
-
-          config.getFlowStepListeners.foreach {
-            case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
-          }
-
-        case _ => ()
       }
 
       Success(flow)

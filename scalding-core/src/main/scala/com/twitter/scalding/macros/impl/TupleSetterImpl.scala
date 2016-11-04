@@ -39,8 +39,11 @@ object TupleSetterImpl {
     val tupTerm = newTermName(c.fresh("tup"))
     val (finalIdx, set) = CaseClassBasedSetterImpl(c)(tupTerm, allowUnknownTypes, TupleFieldSetter)
 
+    // We generate with @SuppressWarnings(...OptionPartial) as IF we have option types, we'll get
+    // a { if (foo.isDefined) do(foo.get) else other } structure (justified as this is perf-sensitive code)
     val res = q"""
     new _root_.com.twitter.scalding.TupleSetter[$T] with _root_.com.twitter.bijection.macros.MacroGenerated {
+      @_root_.java.lang.SuppressWarnings(_root_.scala.Array("org.brianmckenna.wartremover.warts.OptionPartial"))
       override def apply(t: $T): _root_.cascading.tuple.Tuple = {
         val $tupTerm = _root_.cascading.tuple.Tuple.size($finalIdx)
         $set

@@ -83,18 +83,27 @@ class WeightedPageRank(args: Args) extends Job(args) {
   }
 
   /**
+   * Build a source of the appropriate type based on the operation mode (see also the comment in {@link WeightedPageRankSpec})
+   */
+  protected def nodeSource(fileName: String): Source =
+    mode.storageMode match {
+      case _: HdfsTestStorageMode => Tsv(fileName) // special for the benefit of WeightedPageRankSpec
+      case _: HdfsStorageModeCommon => SequenceFile(fileName) // any other HDFS
+      case _ => Tsv(fileName)
+    }
+
+  /**
    * read the pregenerated nodes file <'src_id, 'dst_ids, 'weights, 'mass_prior>
    */
   def getNodes(fileName: String) = {
-    mode match {
-      case Hdfs(_, conf) => {
-        SequenceFile(fileName).read
-          .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
-            input: (Int, Array[Int], Array[Float], Double) => input
-          }
+    nodeSource(fileName) match {
+      case source: SequenceFile => { // or any type that directly support Array[Int] as a field type
+        source.read.mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
+          input: (Int, Array[Int], Array[Float], Double) => input
+        }
       }
-      case _ => {
-        Tsv(fileName).read
+      case source: DelimitedScheme => {
+        source.read
           .mapTo((0, 1, 2, 3) -> ('src_id, 'dst_ids, 'weights, 'mass_prior)) {
             input: (Int, String, String, Double) =>
               {
@@ -116,6 +125,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
               }
           }
       }
+      case _ => ??? // TODO: implement other types (or add recognition in the cases above)
     }
   }
 
