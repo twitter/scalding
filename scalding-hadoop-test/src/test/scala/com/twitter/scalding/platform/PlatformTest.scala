@@ -15,24 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
-import cascading.flow.FlowException
-import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
-import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple }
+import java.util.{Iterator => JIterator}
 
+import cascading.flow.FlowException
+import cascading.pipe.joiner.{InnerJoin, JoinerClosure}
+import cascading.scheme.Scheme
+import cascading.scheme.hadoop.{TextLine => CHTextLine}
+import cascading.tap.Tap
+import cascading.tuple.{Fields, Tuple}
 import com.twitter.scalding._
-import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
 import com.twitter.scalding.serialization.OrderedSerialization
-import java.util.{ Iterator => JIterator }
-import org.scalacheck.{ Arbitrary, Gen }
-import org.scalatest.{ Matchers, WordSpec }
-import org.slf4j.{ LoggerFactory, Logger }
+import com.twitter.scalding.source.{FixedTypedText, NullSink, TypedText}
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
-import scala.math.Ordering
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -437,11 +435,12 @@ object PlatformTest {
   }
 }
 
-class TestEmptySource extends FileSource with Mappable[(String, Long)] with SuccessFileSource {
+class TestEmptySource(val fields: Fields = new Fields("customNamedOffset", "customNamedLine")) extends FileSource with Mappable[(String, Long)] with SuccessFileSource {
   override def hdfsPaths: Iterable[String] = Iterable.empty
   override def localPaths: Iterable[String] = Iterable.empty
   override def converter[U >: (String, Long)] =
     TupleConverter.asSuperConverter[(String, Long), U](implicitly[TupleConverter[(String, Long)]])
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(fields, CHTextLine.DEFAULT_CHARSET).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 // Tests the scenario where you have no data present in the directory pointed to by a source typically
@@ -451,6 +450,19 @@ class EmptyDataJob(args: Args) extends Job(args) {
   TypedPipe.from(new TestEmptySource)
     .map { case (s, l) => s }
     .write(TypedTsv[String]("output"))
+}
+
+class FieldsEmptyDataJob(args: Args) extends Job(args) {
+  val x = new TestEmptySource(new Fields("offset1", "line1")).read
+  val y = new TestEmptySource(new Fields("offset2", "line2")).read
+
+  // Empty sources can return an empty MemoryTap
+  // Here we are testing that this MemoryTap has the right Fields setup in it.
+  // joinWithSmaller triggers the issue we are testing, specially that 'line1 and 'line2
+  // are available in the MemoryTaps according to the planner. Previous we had used Fields.All
+  // and we get the error that field 'line1 and field 'line2 cannot be found in UNKNOWN fields
+  x.joinWithSmaller('line1 -> 'line2, y)
+    .write(Tsv("output"))
 }
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
@@ -720,6 +732,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
   "An EmptyData source" should {
     "read from empty source and write to output without errors" in {
       HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
+        .run()
+    }
+  }
+
+  "A FieldsEmptyData source" should {
+    "read from empty source and write to output without errors" in {
+      HadoopPlatformJobTest(new FieldsEmptyDataJob(_), cluster)
         .run()
     }
   }
