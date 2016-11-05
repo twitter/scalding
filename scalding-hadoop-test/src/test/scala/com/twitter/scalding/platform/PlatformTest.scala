@@ -134,32 +134,6 @@ class MultipleGroupByJob(args: Args) extends Job(args) {
 
 }
 
-class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
-  TypedPipe.from[String](List("word1", "word1", "word2"))
-    .withDescription("map stage - assign words to 1")
-    .map { w => (w, 1L) }
-    .group
-    .withDescription("reduce stage - sum")
-    .sum
-    .withDescription("write")
-    .write(TypedTsv[(String, Long)]("output"))
-}
-
-class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
-  PlatformTest.setAutoForceRight(mode, true)
-
-  val x = TypedPipe.from[(Int, Int)](List((1, 1)))
-  val y = TypedPipe.from[(Int, String)](List((1, "first")))
-  val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
-
-  x.hashJoin(y) // this triggers an implicit that somehow pushes the line number to the next one
-    .withDescription("hashJoin")
-    .leftJoin(z)
-    .withDescription("leftJoin")
-    .values
-    .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
-}
-
 class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
   PlatformTest.setAutoForceRight(mode, true)
 
@@ -561,7 +535,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(155, 157, 158, 161, 162).map { i =>
+          val lines = List(16, 18, 19, 22, 24).map { i =>
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
           }
           firstStep should include ("leftJoin")
@@ -697,8 +671,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
             "reduce stage - sum",
             "write",
             // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:143)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:147)")
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:30)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:34)")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
           descs.foreach { d =>
