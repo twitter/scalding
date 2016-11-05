@@ -535,7 +535,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(16, 18, 19, 22, 24).map { i =>
+          val lines = List(16, 18, 19, 22, 23).map { i =>
             s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:$i"
           }
           firstStep should include ("leftJoin")
