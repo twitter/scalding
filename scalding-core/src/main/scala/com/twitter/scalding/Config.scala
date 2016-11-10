@@ -370,6 +370,14 @@ trait Config extends Serializable {
       .map(_.toBoolean)
       .getOrElse(false)
 
+  /**
+   * Set to true to enable very verbose logging during FileSource's validation and planning.
+   * This can help record what files were present / missing at runtime. Should only be enabled
+   * for debugging.
+   */
+  def setVerboseFileSourceLogging(b: Boolean): Config =
+    this + (VerboseFileSourceLoggingKey -> b.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -397,6 +405,7 @@ object Config {
   val FlowListeners: String = "scalding.observability.flowlisteners"
   val FlowStepListeners: String = "scalding.observability.flowsteplisteners"
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
+  val VerboseFileSourceLoggingKey = "scalding.filesource.verbose.logging"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
