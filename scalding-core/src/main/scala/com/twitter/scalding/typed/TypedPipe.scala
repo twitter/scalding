@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import java.io.{ OutputStream, InputStream, Serializable }
-import java.util.Random
+import java.util.{ Random, UUID }
 
 import cascading.flow.FlowDef
 import cascading.pipe.{ Each, Pipe }
@@ -503,14 +503,18 @@ trait TypedPipe[+T] extends Serializable {
     val cachedRandomUUID = java.util.UUID.randomUUID
     lazy val inMemoryDest = new MemorySink[T]
 
-    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
-      // come up with unique temporary filename, use the config here
-      // TODO: refactor into TemporarySequenceFile class
+    def temporaryPath(conf: Config, uuid: UUID): String = {
       val tmpDir = conf.get("hadoop.tmp.dir")
         .orElse(conf.get("cascading.tmp.dir"))
         .getOrElse("/tmp")
 
-      val tmpSeq = tmpDir + "/scalding/snapshot-" + cachedRandomUUID + ".seq"
+      tmpDir + "/scalding/snapshot-" + uuid + ".seq"
+    }
+
+    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
+      // come up with unique temporary filename, use the config here
+      // TODO: refactor into TemporarySequenceFile class
+      val tmpSeq = temporaryPath(conf, cachedRandomUUID)
       source.TypedSequenceFile[T](tmpSeq)
 
     }
@@ -532,7 +536,16 @@ trait TypedPipe[+T] extends Serializable {
       }
     }
 
-    Execution.write(writeFn, readFn)
+    val filesToDeleteFn = { (conf: Config, mode: Mode) =>
+      mode match {
+        case _: CascadingLocal => // Local or Test mode
+          Set[String]()
+        case _: HadoopMode =>
+          Set(temporaryPath(conf, cachedRandomUUID))
+      }
+    }
+
+    Execution.write(writeFn, readFn, filesToDeleteFn)
   }
 
   /**

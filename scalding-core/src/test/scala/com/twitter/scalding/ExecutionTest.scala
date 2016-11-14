@@ -16,21 +16,20 @@ limitations under the License.
 package com.twitter.scalding
 
 import com.twitter.algebird.monad.Reader
-
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization
+import java.nio.file.{FileSystems, Files, Path}
+import java.util
 
-import java.nio.file.FileSystems
-import java.nio.file.Path
+import org.scalatest.{Matchers, WordSpec}
 
-import org.scalatest.{ Matchers, WordSpec }
-
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import scala.concurrent.{Await, Future, Promise, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.Random
-import scala.util.{ Try, Success, Failure }
-
+import scala.util.{Failure, Success, Try}
 import ExecutionContext._
+import com.twitter.scalding.Execution.TempFileCleanup
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
@@ -57,15 +56,45 @@ object ExecutionTestJobs {
 
     (source.mapValues(_ * 2) ++ (source.mapValues(_ * 3))).toIterableExecution
   }
+
+  def writeExecutionWithTempFile(tempFile: String, testData: List[String]): Execution[List[String]] = {
+    val writeFn = { (conf: Config, mode: Mode) =>
+      (TypedPipe.from(testData), TypedTsv[String](tempFile))
+    }
+    val readFn = { (conf: Config, mode: Mode) =>
+      testData
+    }
+
+    val filesToDeleteFn = { (conf: Config, mode: Mode) =>
+      Set(tempFile)
+    }
+
+    Execution.write(writeFn, readFn, filesToDeleteFn)
+  }
 }
 
-class WordCountEc(args: Args) extends ExecutionJob[Unit](args) {
-  def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
+abstract class TestExecutionJob[+T](args: Args) extends ExecutionJob[T](args) {
   // In tests, classloader issues with sbt mean we should not
   // really use threads, so we run immediately
   override def concurrentExecutionContext = new scala.concurrent.ExecutionContext {
     def execute(r: Runnable) = r.run
     def reportFailure(t: Throwable) = ()
+  }
+}
+
+class WordCountEc(args: Args) extends TestExecutionJob[Unit](args) {
+  def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
+}
+
+class ExecutionWithTempFiles(args: Args, tempFile: String, testData: List[String]) extends TestExecutionJob[List[String]](args) {
+  override def execution = ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
+}
+
+class ZippedExecutionWithTempFiles(args: Args, tempFileOne: String, tempFileTwo: String, testDataOne: List[String], testDataTwo: List[String]) extends TestExecutionJob[(List[String], List[String])](args) {
+  override def execution = {
+    val executionOne = ExecutionTestJobs.writeExecutionWithTempFile(tempFileOne, testDataOne)
+    val executionTwo = ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo)
+    executionOne.zip(executionTwo)
   }
 }
 
@@ -84,6 +113,18 @@ class ExecutionTest extends WordSpec with Matchers {
       val r = ex.waitFor(Config.default, Local(true))
       assert(r.isFailure)
     }
+  }
+
+  def getShutdownHooks: Seq[Thread] = {
+    // The list of attached shutdown hooks are not accessible normally, so we must use reflection to get them
+    val clazz = Class.forName("java.lang.ApplicationShutdownHooks")
+    val hooksField = clazz.getDeclaredField("hooks")
+    hooksField.setAccessible(true)
+    hooksField.get(null).asInstanceOf[util.IdentityHashMap[Thread, Thread]].asScala.keys.toSeq
+  }
+
+  def isTempFileCleanupHook(hook: Thread): Boolean = {
+    classOf[TempFileCleanup].isAssignableFrom(hook.getClass)
   }
 
   "An Execution" should {
@@ -251,6 +292,66 @@ class ExecutionTest extends WordSpec with Matchers {
     }
   }
   "Executions" should {
+    "shutdown hook should clean up temporary files" in {
+      val tempFileOne = Files.createTempDirectory("scalding-execution-test")
+      val tempFileTwo = Files.createTempDirectory("scalding-execution-test")
+      val mode = Test(Map())
+
+      Files.exists(tempFileOne) should be(true)
+      Files.exists(tempFileTwo) should be(true)
+
+      val cleanupThread = TempFileCleanup(Seq(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
+      cleanupThread.run()
+
+      Files.exists(tempFileOne) should be(false)
+      Files.exists(tempFileTwo) should be(false)
+    }
+
+    "clean up temporary files on exit" in {
+      val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testData = List("a", "b", "c")
+      getShutdownHooks.foreach { hook: Thread =>
+        isTempFileCleanupHook(hook) should be(false)
+      }
+
+      ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData).shouldSucceed()
+
+      // This is hacky, but there's a small chance that the new cleanup hook isn't registered by the time we get here
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe defined
+
+      cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup should contain theSameElementsAs Set(tempFile)
+      cleanupHook.get.run()
+      // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
+      Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
+    }
+
+    "clean up temporary files on exit with a zip" in {
+      val tempFileOne = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val tempFileTwo = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testDataOne = List("a", "b", "c")
+      val testDataTwo = List("x", "y", "z")
+      getShutdownHooks.foreach { hook: Thread =>
+        isTempFileCleanupHook(hook) should be(false)
+      }
+
+      ExecutionTestJobs.writeExecutionWithTempFile(tempFileOne, testDataOne)
+        .zip(ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo)).shouldSucceed()
+
+      // This is hacky, but there's a small chance that the new cleanup hook isn't registered by the time we get here
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe defined
+
+      cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup should contain theSameElementsAs Set(tempFileOne, tempFileTwo)
+      cleanupHook.get.run()
+      // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
+      Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
+    }
+
     "evaluate once per run" in {
       var first = 0
       var second = 0
