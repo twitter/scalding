@@ -338,7 +338,7 @@ object Execution {
     type Counters = Map[Long, ExecutionCounters]
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
     private[this] val toWriteCache = new FutureCache[(Config, ToWrite), Counters]
-    protected[EvalCache] val filesToCleanup = mutable.Set[String]()
+    private[this] val filesToCleanup = mutable.Set[String]()
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
@@ -346,7 +346,7 @@ object Execution {
       val self = this
       new EvalCache {
         override protected[EvalCache] val messageQueue: LinkedBlockingQueue[EvalCache.FlowDefAction] = self.messageQueue
-        override protected[EvalCache] val filesToCleanup: mutable.Set[String] = self.filesToCleanup
+        override def addFilesToCleanup(files: TraversableOnce[String]): Unit = self.addFilesToCleanup(files)
         override def start(): Unit = sys.error("Invalid to start child EvalCache")
         override def finished(mode: Mode): Unit = sys.error("Invalid to finish child EvalCache")
       }
@@ -433,7 +433,9 @@ object Execution {
       res: => Future[(T, Counters)]): Future[(T, Counters)] =
       getOrElseInsertWithFeedback(cfg, ex, res)._2
 
-    def addFilesToCleanup(files: TraversableOnce[String]): Unit = filesToCleanup ++= files
+    def addFilesToCleanup(files: TraversableOnce[String]): Unit = filesToCleanup.synchronized {
+      filesToCleanup ++= files
+    }
   }
 
   private case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
