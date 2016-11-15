@@ -39,8 +39,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 
 * [**Getting Started**](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [Scalding Wiki](https://github.com/twitter/scalding/wiki)
 * [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References. Prefer using this as it's always up to date.
-* [**REPL in Wonderland**](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) a hands-on tour of the
-  scalding REPL requiring only git and java installed.
+* [**REPL in Wonderland**](tutorial/WONDERLAND.md) a hands-on tour of the scalding REPL requiring only git and java installed.
 * [**Runnable tutorials**](https://github.com/twitter/scalding/tree/master/tutorial) in the source.
 * The API Reference, including many example Scalding snippets:
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
