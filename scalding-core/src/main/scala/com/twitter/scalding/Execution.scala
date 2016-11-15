@@ -338,7 +338,7 @@ object Execution {
     type Counters = Map[Long, ExecutionCounters]
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
     private[this] val toWriteCache = new FutureCache[(Config, ToWrite), Counters]
-    private[this] val filesToCleanup = mutable.Set[String]()
+    protected[EvalCache] val filesToCleanup = mutable.Set[String]()
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
@@ -346,6 +346,7 @@ object Execution {
       val self = this
       new EvalCache {
         override protected[EvalCache] val messageQueue: LinkedBlockingQueue[EvalCache.FlowDefAction] = self.messageQueue
+        override protected[this] val filesToCleanup: mutable.Set[String] = self.filesToCleanup
         override def start(): Unit = sys.error("Invalid to start child EvalCache")
         override def finished(mode: Mode): Unit = sys.error("Invalid to finish child EvalCache")
       }
