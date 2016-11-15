@@ -2,9 +2,6 @@ language: scala
 jdk: oraclejdk7
 sudo: false
 before_install: umask 0022
-cache:
-  directories:
-   - $HOME/.scalding.dep.cache
 script:
   - scripts/testValidator.sh
 addons:
