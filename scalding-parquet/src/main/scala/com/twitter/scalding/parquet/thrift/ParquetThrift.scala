@@ -22,9 +22,9 @@ import com.twitter.scalding.parquet.{
   StrictColumnProjectionString,
   DeprecatedColumnProjectionString,
   HasColumnProjection,
-  HasFilterPredicate,
-  ParquetValueScheme
+  HasFilterPredicate
 }
+import com.twitter.scalding.parquet.cascading.ParquetValueScheme
 import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 import java.io.Serializable
 import org.apache.thrift.{ TBase, TFieldIdEnum }

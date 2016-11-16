@@ -114,6 +114,124 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
+  /**
+   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
+   * Splice.
+   */
+  def isSourcePipe(pipe: Pipe): Boolean = {
+    pipe.getParent == null &&
+      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
+      (!pipe.isInstanceOf[Splice])
+  }
+
+  def getPreviousPipe(p: Pipe): Option[Pipe] = {
+    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
+    else None
+  }
+
+  /*
+   * If hashJoinPipe represents a hashjoin, this method checks if
+   * hashJoinOperandPipe is one of the two sides in that hashjoin.
+   */
+  def isHashJoinedWithPipe(hashJoinPipe: Pipe, hashJoinOperandPipe: Pipe): Boolean = {
+    // collects all Eachs ending with a non-Each
+    @annotation.tailrec
+    def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] =
+      p match {
+        case p if isSourcePipe(p) =>
+          collect :+ p
+        case each: Each =>
+          getChainOfEachs(each.getPrevious.head, collect :+ each)
+        // we don't use a special Pipe subtype for the assignName method
+        // and we can't. all Pipe types need to be defined in cascading
+        // because cascading assumes it knows all the Pipe subtypes
+        // and fails to match any others (think of it as a sealed trait)
+        // So we handle all special types before checking for the assignName case
+        case other @ (hj: HashJoin) =>
+          collect ++ getJoinedPipeSet(hj)
+        case other @ (_: Checkpoint | _: Operator | _: Splice /* except HashJoin*/ | _: SubAssembly) =>
+          collect :+ other
+        case renamedPipe: Pipe =>
+          // this is the assignName case
+          getChainOfEachs(renamedPipe.getPrevious.head, collect :+ renamedPipe)
+      }
+
+    def getJoinedPipeSet(p: HashJoin): Set[Pipe] =
+      p.getPrevious match {
+        case a @ Array(_, _) =>
+          // collect nodes up the left and right sides
+          a.flatMap { p => getChainOfEachs(p) }.toSet
+        case other =>
+          throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
+      }
+
+    hashJoinPipe match {
+      case hj: HashJoin =>
+        getJoinedPipeSet(hj).intersect(getChainOfEachs(hashJoinOperandPipe).toSet).nonEmpty
+      case m: Merge =>
+        m.getPrevious // gets all merged pipes
+          .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
+      case e: Each =>
+        getPreviousPipe(e)
+          .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
+      case other =>
+        false
+    }
+  }
+
+  /**
+   * Special handling for cases where one side of the hashjoin is merged
+   *  with the hashjoin result. Cascading no longer allows it (as of 3.0),
+   *  so we insert checkpoints and/or intermediate merge stages as appropriate
+   *
+   * @param head the first pipe to be merged
+   * @param tail a list of other pipes to be merged within the first
+   *
+   * @return an updated list of pipes, which can safely be merged
+   */
+  private[scalding] def mergeAvoidingHashes(head: Pipe, tail: List[Pipe]): Pipe = {
+
+    // we make use of the fact that the pipe merge operation is not just associative but also commutative
+    val pipes = head :: tail
+    val (colliding, uncolliding) = pipes.partition(p => pipes.exists(o => (o != p) && isHashJoinedWithPipe(p, o)))
+
+    val (innerColliding, innerUncolliding) = colliding.partition(p =>
+      colliding.exists(o => (o != p) && (isHashJoinedWithPipe(p, o) || isHashJoinedWithPipe(o, p))))
+    /* innerUncolliding pipes collide with some pipes in the uncolliding set, but don't collide with one another.
+     It is fine to lump them and merge them together before merging with the 'uncolliding' set.
+
+      innerColliding pipes collide with one another and must each be checkpointed before use in the general merge.
+     */
+    val safedInnerColliding = innerColliding.map(new Checkpoint(_))
+    val safedInnerUncolliding =
+      if (innerUncolliding.isEmpty) Nil
+      else List(new Checkpoint(mergeAvoidingNameClashes(innerUncolliding.head, innerUncolliding.tail)))
+
+    val reassembled = safedInnerColliding ::: safedInnerUncolliding ::: uncolliding
+    mergeAvoidingNameClashes(reassembled.head, reassembled.tail)
+  }
+
+  /**
+   * Cascading Merge does not support having multiple incoming pipes with the same name.
+   * Selectively rename pipes to avoid naming conflicts.
+   *
+   * @param head the first pipe to be merged (or checkpointed)
+   * @param tail a list of other pipes to be merged within the first
+   * @return a Merge of input pipes with any name clashes removed, or the input pipe if there was only one
+   */
+  private[scalding] def mergeAvoidingNameClashes(head: Pipe, tail: List[Pipe]): Pipe = tail match {
+    case Nil => head // avoid generating new Merge(pipes.head)
+    case _ =>
+      val (result, buf) = tail.foldLeft((List[Pipe](head), Set[String](head.getName))) {
+        case ((result, names), p) =>
+          if (names.contains(p.getName))
+            (assignName(p) :: result, names) /* no need to add the new name to names: assignName is guaranteed unique
+                                               and never assigned again */
+          else (p :: result, names + p.getName)
+      }
+      new Merge(result: _*)
+  }
+
 }
 
 /**
@@ -125,6 +243,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   // We need this for the implicits
   import Dsl._
   import RichPipe.assignName
+  import RichPipe.isHashJoinedWithPipe
 
   /**
    * Rename the current pipe
@@ -229,15 +348,22 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Merge or Concatenate several pipes together with this one:
    */
-  def ++(that: Pipe): Pipe = {
-    if (this.pipe == that) {
-      // Cascading fails on self merge:
-      // solution by Jack Guo
-      new Merge(assignName(this.pipe), assignName(new Each(that, new Identity)))
-    } else {
-      new Merge(assignName(this.pipe), assignName(that))
+  def ++(that: Pipe): Pipe =
+    (this.pipe, that) match {
+      case (a, b) if a == b =>
+        // Cascading fails on self merge:
+        // solution by Jack Guo
+        new Merge(assignName(a), assignName(new Each(b, new Identity)))
+      // special handling for cases where one side of the hashjoin is merged
+      // with the hashjoin result. Cascading no longer allows it,
+      // so we add a checkpoint to the join result as a workaround
+      case (a, b) if isHashJoinedWithPipe(a, b) =>
+        new Merge(assignName(new Checkpoint(a)), assignName(b))
+      case (a, b) if isHashJoinedWithPipe(b, a) =>
+        new Merge(assignName(a), assignName(new Checkpoint(b)))
+      case (a, b) =>
+        new Merge(assignName(a), assignName(b))
     }
-  }
 
   /**
    * Group all tuples down to one reducer.

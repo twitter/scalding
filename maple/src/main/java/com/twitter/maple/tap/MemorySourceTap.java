@@ -46,7 +46,7 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
         }
 
         @Override
-        public void sourceConfInit(FlowProcess<JobConf> flowProcess,
+        public void sourceConfInit(FlowProcess<? extends JobConf> flowProcess,
             Tap<JobConf, RecordReader<TupleWrapper, NullWritable>, Void> tap, JobConf conf) {
             FileInputFormat.setInputPaths(conf, this.id);
             conf.setInputFormat(TupleMemoryInputFormat.class);
@@ -54,13 +54,13 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
         }
 
         @Override
-        public void sinkConfInit(FlowProcess<JobConf> flowProcess,
+        public void sinkConfInit(FlowProcess<? extends JobConf> flowProcess,
             Tap<JobConf, RecordReader<TupleWrapper, NullWritable>, Void> tap, JobConf conf) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public void sourcePrepare( FlowProcess<JobConf> flowProcess, SourceCall<Object[],
+        public void sourcePrepare( FlowProcess<? extends JobConf> flowProcess, SourceCall<Object[],
             RecordReader<TupleWrapper, NullWritable>> sourceCall ) {
             sourceCall.setContext( new Object[ 2 ] );
 
@@ -69,7 +69,7 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
         }
 
         @Override
-        public boolean source(FlowProcess<JobConf> flowProcess, SourceCall<Object[],
+        public boolean source(FlowProcess<? extends JobConf> flowProcess, SourceCall<Object[],
             RecordReader<TupleWrapper, NullWritable>> sourceCall) throws IOException {
             TupleWrapper key = (TupleWrapper) sourceCall.getContext()[ 0 ];
             NullWritable value = (NullWritable) sourceCall.getContext()[ 1 ];
@@ -84,13 +84,13 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
         }
 
         @Override
-        public void sourceCleanup( FlowProcess<JobConf> flowProcess, SourceCall<Object[],
+        public void sourceCleanup( FlowProcess<? extends JobConf> flowProcess, SourceCall<Object[],
             RecordReader<TupleWrapper, NullWritable>> sourceCall ) {
             sourceCall.setContext( null );
         }
 
         @Override
-        public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Void, Void> sinkCall ) throws IOException {
+        public void sink(FlowProcess<? extends JobConf> flowProcess, SinkCall<Void, Void> sinkCall ) throws IOException {
             throw new UnsupportedOperationException("Not supported.");
         }
 
@@ -127,7 +127,7 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
     }
 
     @Override
-    public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader<TupleWrapper,
+    public TupleEntryIterator openForRead( FlowProcess<? extends JobConf> flowProcess, RecordReader<TupleWrapper,
         NullWritable> input ) throws IOException {
         // input may be null when this method is called on the client side or cluster side when accumulating
         // for a HashJoin

@@ -120,7 +120,7 @@ object HRavenHistoryService extends HistoryService {
    */
   def fetchPastJobDetails(step: FlowStep[JobConf], max: Int): Try[Seq[JobDetails]] = {
     val conf = step.getConfig
-    val stepNum = step.getStepNum
+    val stepNum = step.getID
 
     def findMatchingJobStep(pastFlow: Flow) =
       pastFlow.getJobs.asScala.find { step =>

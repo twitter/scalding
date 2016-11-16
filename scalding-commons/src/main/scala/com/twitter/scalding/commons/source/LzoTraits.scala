@@ -22,7 +22,7 @@ import cascading.scheme.Scheme
 import org.apache.thrift.TBase
 import com.google.protobuf.Message
 import com.twitter.bijection.Injection
-import com.twitter.elephantbird.cascading2.scheme._
+import com.twitter.elephantbird.cascading3.scheme._
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }

@@ -29,6 +29,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.ParquetWriter;
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeReadSupport;
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeRecordConverter;
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeWriteSupport;
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.StringAndBinary;
 import org.apache.parquet.thrift.ThriftParquetReader;
 

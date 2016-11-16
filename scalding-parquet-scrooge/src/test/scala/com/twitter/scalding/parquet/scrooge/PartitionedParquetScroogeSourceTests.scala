@@ -3,6 +3,7 @@ package com.twitter.scalding.parquet.scrooge
 import java.io.File
 
 import com.twitter.scalding._
+import com.twitter.scalding.parquet.cascading.scrooge.{ ScroogeReadSupport, ScroogeRecordConverter }
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.Address
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

@@ -15,6 +15,7 @@
  */
 package com.twitter.scalding.parquet.scrooge;
 
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeWriteSupport;
 import com.twitter.scrooge.ThriftStruct;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.ParquetOutputFormat;

@@ -18,7 +18,7 @@ package com.twitter.scalding {
   import cascading.operation._
   import cascading.tuple._
   import cascading.flow._
-  import cascading.pipe.assembly.AggregateBy
+  import cascading.pipe.assembly.{ AggregateBy, AggregateByProps }
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
@@ -286,15 +286,25 @@ package com.twitter.scalding {
   }
 
   object MapsideCache {
-    val DEFAULT_CACHE_SIZE = 100000
-    val SIZE_CONFIG_KEY = AggregateBy.AGGREGATE_BY_THRESHOLD
     val ADAPTIVE_CACHE_KEY = "scalding.mapsidecache.adaptive"
+    val DEFAULT_CACHE_SIZE = 100000
+    val CASCADING2_SIZE_CONFIG_KEY = Config.CascadingAggregateByThreshold
+    val CASCADING3_SIZE_CONFIG_KEY = AggregateByProps.AGGREGATE_BY_CAPACITY
 
-    private def getCacheSize(fp: FlowProcess[_]): Int =
-      Option(fp.getStringProperty(SIZE_CONFIG_KEY))
-        .filterNot { _.isEmpty }
-        .map { _.toInt }
-        .getOrElse(DEFAULT_CACHE_SIZE)
+    def getCacheSize(fp: FlowProcess[_]): Int = {
+      def getInt(k: String): Option[Int] = Option(fp.getStringProperty(k)).filterNot(_.isEmpty).map(_.toInt)
+      val cascading2Property = getInt(CASCADING2_SIZE_CONFIG_KEY)
+      val cascading3Property = getInt(CASCADING3_SIZE_CONFIG_KEY)
+      // we support both old and new properties for backward compatibility
+      // and pick the max of the two, when both exist
+      val sizeFromProperty = (cascading2Property, cascading3Property) match {
+        case (Some(a), Some(b)) => Some(Ordering[Int].max(a, b))
+        case (None, None) => None
+        case (Some(a), _) => Some(a)
+        case (_, Some(b)) => Some(b)
+      }
+      sizeFromProperty.getOrElse(DEFAULT_CACHE_SIZE)
+    }
 
     def apply[K, V: Semigroup](cacheSize: Option[Int], flowProcess: FlowProcess[_]): MapsideCache[K, V] = {
       val size = cacheSize.getOrElse{ getCacheSize(flowProcess) }

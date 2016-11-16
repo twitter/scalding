@@ -25,6 +25,7 @@ import cascading.scheme.NullScheme
 
 import java.io.{ Serializable, InputStream, OutputStream }
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -50,7 +51,7 @@ object TestTapFactory extends Serializable {
     new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
-class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
+class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable with HfsTapProvider {
   def sourceFields: Fields =
     hdfsScheme.map { _.getSourceFields }.getOrElse(sys.error("No sourceFields defined"))
 
@@ -93,12 +94,12 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
               val fields = sourceFields
               (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf, _, _]]
             } else {
-              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
+              CastHfsTap(createHfsTap(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
             }
           }
           case Write => {
             val path = hdfsTest.getWritePathFor(src)
-            CastHfsTap(new Hfs(hdfsScheme.get, path, sinkMode))
+            CastHfsTap(createHfsTap(hdfsScheme.get, path, sinkMode))
           }
         }
       case _ => {

@@ -88,13 +88,13 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case eachPipe: Each =>
         if (canSkipEachOperation(eachPipe.getOperation)) {
           //need to recurse down to see if parent pipe is ok
-          getPreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe))
+          RichPipe.getPreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe))
         } else false
       case _: Checkpoint => true
       case _: GroupBy => true
       case _: CoGroup => true
       case _: Every => true
-      case p if isSourcePipe(p) => true
+      case p if RichPipe.isSourcePipe(p) => true
       case _ => false
     }
 
@@ -126,20 +126,5 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         config.getHashJoinAutoForceRight
       case _ => false //default to false
     }
-  }
-
-  private def getPreviousPipe(p: Pipe): Option[Pipe] = {
-    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
-    else None
-  }
-
-  /**
-   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
-   * Splice.
-   */
-  private def isSourcePipe(pipe: Pipe): Boolean = {
-    pipe.getParent == null &&
-      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
-      (!pipe.isInstanceOf[Splice])
   }
 }

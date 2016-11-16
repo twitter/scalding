@@ -18,6 +18,7 @@
  */
 package com.twitter.scalding.parquet.scrooge;
 
+import com.twitter.scalding.parquet.cascading.scrooge.ScroogeReadSupport;
 import org.apache.parquet.hadoop.thrift.ParquetThriftInputFormat;
 
 /**

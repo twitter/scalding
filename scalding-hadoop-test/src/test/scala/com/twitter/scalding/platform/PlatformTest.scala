@@ -37,26 +37,147 @@ class InAndOutJob(args: Args) extends Job(args) {
 }
 
 object TinyJoinAndMergeJob {
-  val peopleInput = TypedTsv[Int]("input1")
-  val peopleData = List(1, 2, 3, 4)
+  val joinInput1 = TypedTsv[Int]("input1")
+  val joinData1 = List(1, 2, 3, 4)
 
-  val messageInput = TypedTsv[Int]("input2")
-  val messageData = List(1, 2, 3)
+  val joinInput2 = TypedTsv[Int]("input2")
+  val joinData2 = List(1, 2, 3)
+
+  val mergerInput = TypedTsv[Int]("input3")
+  val mergerData = List(1, 2, 3, 4)
 
   val output = TypedTsv[(Int, Int)]("output")
+  val output2 = TypedTsv[(Int, Int)]("output2")
   val outputData = List((1, 2), (2, 2), (3, 2), (4, 1))
 }
 
 class TinyJoinAndMergeJob(args: Args) extends Job(args) {
   import TinyJoinAndMergeJob._
 
-  val people = peopleInput.read.mapTo(0 -> 'id) { v: Int => v }
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
 
-  val messages = messageInput.read
+  val joinedData = joinInput2.read
     .mapTo(0 -> 'id) { v: Int => v }
-    .joinWithTiny('id -> 'id, people)
+    .joinWithTiny('id -> 'id, input1)
 
-  (messages ++ people).groupBy('id) { _.size('count) }.write(output)
+  val mergerData = mergerInput.read.mapTo(0 -> 'id) { v: Int => v }
+
+  (mergerData ++ joinedData).groupBy('id) { _.size('count) }.write(output)
+}
+
+// Verifies fix for https://github.com/cwensel/cascading/pull/53
+class MergeTwoSinksForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+  val input2 = joinInput2.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val merged = (input1 ++ input2).groupBy('id) { _.size('count) }
+
+  merged
+    .project('id, 'count)
+    .forceToDisk
+    .write(output)
+
+  merged
+    .write(output2)
+}
+
+class MergeTwoSinksForceToDiskTypedJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+  val input2 = TypedPipe.from(joinInput2)
+
+  val merged = (input1 ++ input2).asKeys.group.size.map { case (k, v) => (k, v.toInt) }
+
+  merged
+    .forceToDisk
+    .write(output)
+
+  merged
+    .write(output2)
+}
+
+class TinyJoinAndSelfMergeJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
+
+  // merging the output of a hashjoin with one of its inputs is
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
+  (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeJob, but with ++ merge operation order swapped
+class TinyJoinAndSelfMergeJob2(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .flatMapTo('id -> 'id) { v: Int => Some(v) } // test Each traversal
+
+  // merging the output of a hashjoin with one of its inputs is
+  // no longer supported in cascading3.
+  // scalding should put in a explicit checkpoint
+  // and this should pass
+  (input1 ++ joined).groupBy('id) { _.size('count) }.write(output)
+}
+
+class TinyJoinAndSelfMergeForceToDiskJob(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = joinInput1.read.mapTo(0 -> 'id) { v: Int => v }
+
+  val joined = joinInput2.read
+    .mapTo(0 -> 'id) { v: Int => v }
+    .joinWithTiny('id -> 'id, input1)
+    .forceToDisk
+  // user supplied forceToDisk in addition to the one scalding
+  // adds under the hood
+
+  (joined ++ input1).groupBy('id) { _.size('count) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeJob, but using typed api
+class TinyJoinAndSelfMergeJobTyped(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+
+  val joined = TypedPipe.from(joinInput2)
+    .asKeys
+    .hashJoin(input1.asKeys)
+    .keys
+
+  (joined ++ input1).asKeys.size.map { case (k, v) => (k, v.toInt) }.write(output)
+}
+
+// same as TinyJoinAndSelfMergeForceToDiskJob, but using typed api
+class TinyJoinAndSelfMergeForceToDiskJobTyped(args: Args) extends Job(args) {
+  import TinyJoinAndMergeJob._
+
+  val input1 = TypedPipe.from(joinInput1)
+
+  val joined = TypedPipe.from(joinInput2)
+    .asKeys
+    .hashJoin(input1.asKeys)
+    .keys
+    .forceToDisk
+  // user supplied forceToDisk in addition to the one scalding
+  // adds under the hood
+
+  (joined ++ input1).asKeys.size.map { case (k, v) => (k, v.toInt) }.write(output)
 }
 
 object TsvNoCacheJob {
@@ -398,6 +519,46 @@ class ReadPathJob(args: Args) extends Job(args) {
     .write(NullSink)
 }
 
+// Based on a user job that fails in Cascading3 without fix: https://github.com/cwensel/cascading/pull/57
+// Results in a groupBy which inputs to a coGroup1. The groupBy and coGroup1 are used as inputs to
+// another coGroup2. Without this fix, the Cascading planner loses one of the Each operations between
+// this triangle.
+object GroupByCoGroupCoGroupTriangleJob {
+  val output = TypedTsv[(String, Int)]("output")
+
+  val inputData = List(("A", Seq(1, 2)), ("B", Seq(3, 4)), ("B", Seq(5, 6)), ("A", Seq(1, 2)))
+  val deleteList = List(1, 2)
+  val expectedOutput = List(("B", 3), ("B", 4), ("B", 5), ("B", 6))
+}
+
+class GroupByCoGroupCoGroupTriangleJob(args: Args) extends Job(args) {
+  import GroupByCoGroupCoGroupTriangleJob._
+
+  val inputTP = TypedPipe.from(inputData)
+  val deleteTP = TypedPipe.from(deleteList)
+
+  val groupedValues: TypedPipe[(String, Seq[Int])] =
+    inputTP
+      .groupBy(_._1)
+      .mapValueStream(x => x)
+      .values
+
+  val tuplesToDel =
+    groupedValues
+      .flatMap { case (str, seq) => seq.map { userId => (userId, str) } }
+      .join(deleteTP.asKeys)
+      .toTypedPipe
+      .map { case (userId, (name, _)) => (name, userId) }
+
+  groupedValues
+    .groupBy(_._1)
+    .leftJoin(tuplesToDel)
+    .filter { case (name, (_, isPartOfDeletedSet)) => isPartOfDeletedSet.isEmpty }
+    .values
+    .flatMap { case (tuple, _) => tuple._2.map { id => (tuple._1, id) } }
+    .write(output)
+}
+
 object PlatformTest {
   def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
@@ -464,13 +625,142 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "merge and joinWithTiny shouldn't duplicate data" in {
       HadoopPlatformJobTest(new TinyJoinAndMergeJob(_), cluster)
-        .source(peopleInput, peopleData)
-        .source(messageInput, messageData)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .source(mergerInput, mergerData)
         .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+        }
         .run()
     }
   }
 
+
+  "A MergeTwoSinksForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and write to two sinks with forceToDisk" in {
+      HadoopPlatformJobTest(new MergeTwoSinksForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet == outputData.toSet }
+        .sink(output2) { _.toSet == outputData.toSet }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 4
+        }
+        .run()
+    }
+  }
+
+  "A MergeTwoSinksForceToDiskTypedJob" should {
+    import TinyJoinAndMergeJob._
+
+    "merge and write to two sinks with forceToDisk" in {
+      HadoopPlatformJobTest(new MergeTwoSinksForceToDiskTypedJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet == outputData.toSet }
+        .sink(output2) { _.toSet == outputData.toSet }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 4
+        }
+        .run()
+    }
+  }
+
+  "A TinyJoinAndSelfMergeJob" should {
+    import TinyJoinAndMergeJob._
+
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run()
+    }
+  }
+
+  "A TinyJoinAndSelfMergeJob2" should {
+    import TinyJoinAndMergeJob._
+
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJob2(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run()
+    }
+  }
+
+  "A TinyJoinAndSelfMergeForceToDiskJob" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with explicit forceToDisk" in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJob(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+          // user supplied forceToDisk should not add a third step
+        }
+        .run()
+    }
+  }
+
+  "A TinyJoinAndSelfMergeJobTyped" should {
+    import TinyJoinAndMergeJob._
+
+    "work correctly without explicit forceToDisk " in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeJobTyped(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+        }
+        .run()
+    }
+  }
+
+  "A TinyJoinAndSelfMergeForceToDiskJobTyped" should {
+    import TinyJoinAndMergeJob._
+
+    "run correctly with explicit forceToDisk" in {
+      HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJobTyped(_), cluster)
+        .source(joinInput1, joinData1)
+        .source(joinInput2, joinData2)
+        .sink(output) {
+          _.toSet shouldBe (outputData.toSet)
+        }
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 2
+          // two steps given we auto checkpoint before the merge
+          // user supplied forceToDisk should not add a third step
+        }
+        .run()
+    }
+  }
+  
   "A TsvNoCacheJob" should {
     import TsvNoCacheJob._
 
@@ -788,6 +1078,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       }
 
       assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException]))
+    }
+  }
+
+  "A GroupByCoGroupCoGroupTriangle job" should {
+    import GroupByCoGroupCoGroupTriangleJob._
+
+    "do a groupBy along with two coGroups and not lose an Each operation" in {
+      HadoopPlatformJobTest(new GroupByCoGroupCoGroupTriangleJob(_), cluster)
+        .sink[(String, Int)]("output") { _.toList shouldBe expectedOutput }
+        .run()
     }
   }
 }

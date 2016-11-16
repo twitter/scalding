@@ -19,7 +19,7 @@ import java.io.{ OutputStream, InputStream, Serializable }
 import java.util.Random
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Each, Pipe }
+import cascading.pipe.{ Checkpoint, Each, Pipe, Merge }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
@@ -1089,13 +1089,11 @@ final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) ext
         case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
       }
       .map(_.toPipe[U](fieldNames)(flowDef, mode, setter)) // linter:ignore
-      .toList
 
-    if (merged.size == 1) {
-      // there is no actual merging here, no need to rename:
-      merged.head
-    } else {
-      new cascading.pipe.Merge(merged.map(RichPipe.assignName): _*)
+    merged match {
+      case Nil => sys.error("we can never merge to create 0 pipes") // should never happen as we cannot create this without two incoming pipes
+      case h :: Nil => h
+      case h :: tail => RichPipe.mergeAvoidingHashes(h, tail)
     }
   }
 
