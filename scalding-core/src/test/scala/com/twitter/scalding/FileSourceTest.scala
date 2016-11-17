@@ -204,8 +204,8 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/05/") shouldBe false
     }
 
-    "accept a single directory glob with only _SUCCESS and ignored files" in {
-      pathIsGood("test_data/2013/05/*") shouldBe true
+    "reject a single directory glob with only _SUCCESS and ignored files" in {
+      pathIsGood("test_data/2013/05/*") shouldBe false
     }
 
     "accept a directory with data and _SUCCESS in it when specified as a glob" in {
@@ -216,8 +216,8 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/04/") shouldBe false
     }
 
-    "accept a directory with only _SUCCESS when specified as a glob" in {
-      pathIsGood("test_data/2013/06/*") shouldBe true
+    "reject a directory with only _SUCCESS when specified as a glob" in {
+      pathIsGood("test_data/2013/06/*") shouldBe false
     }
 
     "reject a directory with only _SUCCESS when specified without a glob" in {
@@ -232,8 +232,9 @@ class FileSourceTest extends WordSpec with Matchers {
       pathIsGood("test_data/2013/{04,08}/*") shouldBe true
     }
 
-    "accept a multi-dir glob if all matched non-hidden directories have _SUCCESS files, even when some are empty" in {
-      pathIsGood("test_data/2013/{04,05,06}/*") shouldBe true
+    "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while dirs with " +
+      "hidden ones don't" in {
+      pathIsGood("test_data/2013/{04,05}/*") shouldBe true
     }
 
     // NOTE: this is an undesirable limitation of SuccessFileSource, and is encoded here
