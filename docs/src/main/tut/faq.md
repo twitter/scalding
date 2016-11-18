@@ -35,14 +35,6 @@ In your sbt script, set `local min=$(( $mem / 2 ))`
 
 # Writing Jobs
 
-### How do I perform windowed calculations (for example, moving average) in Scalding?
-
-You want to use `GroupBuilder.scanLeft`.  A `scanLeft` is like a `foldLeft` except that you output each intermediate value.  Both of these functions are part of the standard Scala library as well. [See StackOverflow for `scanLeft` examples](http://stackoverflow.com/questions/6799441/in-scala-how-do-i-keep-track-of-running-totals-without-using-var).  For the specific example of moving averages in Scalding, see the [cascading-user group discussion](https://groups.google.com/forum/?fromgroups#!topic/cascading-user/CTYOjlHs6xE).
-
-### How do I read a single reduced value from a pipe?
-
-You can't do that.  Instead you should use RichPipe.crossWithTiny to efficiently do a cartesian product of a small set of values to a larger set.  The small set might be a single output, from say `pipe.groupAll { _.size }`.  Alternatively, you might kick off a subsequent job in `Job.next`, and use `Source.readAtSubmitter` to read the value before you get going (or even in `Job.next` to see if you need to kick off the next job).
-
 ### How do I make simple records for use in my scalding job?
 
 We recommend cases classes **defined outside of your Job**. Case classes defined inside your job capture an $outer member variable that references the job that is wasteful for serialization. If you are having stack overflows during case class serialization this is likely your problem. If you have a use case this doesn't cover, email the cascading-user list or mention [@scalding](http://twitter.com/scalding). Dealing with serialization issues well in systems like Hadoop is tricky, and we're still improving our approaches.
@@ -96,7 +88,7 @@ override def config(implicit m: Mode): Map[AnyRef,AnyRef] = {
 
 ### What if I have more than 22 fields in my data-set?
 
-**Warning: this answer refers to the DEPRECATED Fields API.**
+**TODO: this answer refers to the DEPRECATED Fields API.**
 
 Many of the examples (e.g. in the `tutorial/` directory) show that the fields argument is specified as a Scala Tuple when reading a delimited file. However Scala Tuples are currently limited to a maximum of 22 elements. To read-in a data-set with more than 22 fields, you can use a List of Symbols as fields specifier. E.g.
 
