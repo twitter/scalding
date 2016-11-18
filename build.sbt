@@ -674,20 +674,19 @@ def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
     case _ => (true, Seq(
       scaldingArgs,
       scaldingDate,
-      scaldingCore,
-      // scaldingCommons, // build error
-      scaldingAvro,
-      scaldingParquet,
-      scaldingParquetScrooge,
-      // scaldingHRaven, // Missing dependency.
-      scaldingRepl,
-      scaldingJson,
-      scaldingJdbc,
-      scaldingDb,
-      maple,
-      executionTutorial,
-      scaldingSerialization,
-      scaldingThriftMacros
+      scaldingCore
+      // scaldingCommons,
+      // scaldingAvro,
+      // scaldingParquet,
+      // scaldingParquetScrooge,
+      // scaldingHRaven,
+      // scaldingRepl,
+      // scaldingJson,
+      // scaldingJdbc,
+      // scaldingDb,
+      // maple,
+      // scaldingSerialization,
+      // scaldingThriftMacros
     ))
   }
 
