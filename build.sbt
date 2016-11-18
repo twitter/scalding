@@ -672,7 +672,22 @@ def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
   CrossVersion.partialVersion(sv) match {
     case Some((2, 10)) => (false, Nil)
     case _ => (true, Seq(
-      scaldingCore
+      scaldingArgs,
+      scaldingDate,
+      scaldingCore,
+      // scaldingCommons, // build error
+      scaldingAvro,
+      scaldingParquet,
+      scaldingParquetScrooge,
+      // scaldingHRaven, // Missing dependency.
+      scaldingRepl,
+      scaldingJson,
+      scaldingJdbc,
+      scaldingDb,
+      maple,
+      executionTutorial,
+      scaldingSerialization,
+      scaldingThriftMacros
     ))
   }
 
@@ -690,10 +705,9 @@ lazy val docSettings = Seq(
   micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> "contributing.md"),
   micrositeGithubRepo := "scalding",
     micrositePalette := Map(
-    // "brand-primary" -> "#E05236", "brand-secondary" -> "#3F3242", "brand-tertiary" -> "#2D232F",
-        "brand-primary" -> "#5B5988",
-        "brand-secondary" -> "#292E53",
-        "brand-tertiary" -> "#222749",
+    "brand-primary" -> "#5B5988",
+    "brand-secondary" -> "#292E53",
+    "brand-tertiary" -> "#222749",
     "gray-dark" -> "#49494B",
     "gray" -> "#7B7B7E",
     "gray-light" -> "#E5E5E6",
