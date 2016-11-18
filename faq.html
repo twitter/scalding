@@ -1,0 +1,269 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Scalding</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Scala API for Cascading." /><meta name="author" content="Scalding's contributors" /><meta name="og:image" content="/scalding/img/poster.png" /><meta name="og:title" content="Scalding" /><meta name="og:site_name" content="Scalding" /><meta name="og:url" content="http://twitter.github.io/scalding" /><meta name="og:type" content="website" /><meta name="og:description" content="Scala API for Cascading." /><meta name="twitter:image" content="/scalding/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/scalding/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/scalding/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/scalding/css/style.css" /><link rel="stylesheet" href="/scalding/css/palette.css" /></head><body><header id="site-header"><div class="navbar-wrapper navbar-inverse"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/scalding/" class="brand"><div class="icon-wrapper" style="background:url('/scalding/img/navbar_brand.png') no-repeat"><span>Scalding</span></div></a></div><nav class="text-right"><ul class=""><li><a href="https://github.com/twitter/scalding"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="api"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div><div class="jumbotron" style="background-image:url('/scalding/img/jumbotron_pattern.png')"></div><div><ul class="horizontalNav">         <li><a class="" href="/scalding/cookbook.html">Cookbook</a></li>  <li><a class="" href="/scalding/resources_for_learners.html">Resources for Learners</a></li>  <li><a class=" active " href="/scalding/faq.html">FAQ</a></li>  <li><a class="" href="/scalding/contributing.html">Contributing</a></li>  <li><a class="" href="/scalding/powered_by.html">Powered By</a></li> </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
+
+<p>Feel free to add new questions and to ping <a href="http://twitter.com/scalding">@Scalding</a> for an answer.</p>
+
+<h1 id="running-scalding">Running Scalding</h1>
+
+<h3 id="who-actually-uses-scalding">Who actually uses Scalding?</h3>
+
+<p>Twitter uses it in production all over the place!</p>
+
+<p>Check out our <a href="powered_by.html">Powered By</a> page for more examples.</p>
+
+<h3 id="im-having-trouble-with-scaldrb-and-i-just-want-to-run-jars-in-my-own-system">I’m having trouble with scald.rb, and I just want to run jars in my own system:</h3>
+
+<p>See this <a href="https://twitter.com/Joolz/status/264834261549457409">conversation on Twitter</a>.</p>
+
+<h3 id="can-scalding-be-run-on-amazons-elastic-mapreduce">Can Scalding be run on Amazon’s Elastic MapReduce?</h3>
+
+<p>Yes! See the <a href="https://groups.google.com/forum/?fromgroups#!topic/cascading-user/5RfJa8n1JPo">cascading-user group discussion</a>.  We would like to see someone prepare a patch for scald.rb to handle submission of scalding jobs to EMR.</p>
+
+<h3 id="scalding-complains-when-i-use-a-timepathedsourcehttpsgithubcomtwitterscaldingblobmastersrcmainscalacomtwitterscaldingfilesourcescalal213-and-some-of-the-data-is-missing-how-can-i-ignore-that-error">Scalding complains when I use a <a href="https://github.com/twitter/scalding/blob/master/src/main/scala/com/twitter/scalding/FileSource.scala#L213">TimePathedSource</a> and some of the data is missing. How can I ignore that error?</h3>
+
+<p>Pass the option <code class="highlighter-rouge">--tool.partialok</code> to your job and it will ignore any missing data. It’s safer to work around by either filling with place-holder empty files, or writing sources thatxb will skip known-missing dates. Using that option by default is very dangerous.</p>
+
+<h3 id="i-receive-this-error-when-running-sbt-update-tterror-occurred-during-initialization-of-vm-incompatible-minimum-and-maximum-heap-sizes-specifiedtt">I receive this error when running <code class="highlighter-rouge">sbt update</code>: <tt>Error occurred during initialization of VM. Incompatible minimum and maximum heap sizes specified</tt></h3>
+
+<p>In your sbt script, set <code class="highlighter-rouge">local min=$(( $mem / 2 ))</code></p>
+
+<h1 id="writing-jobs">Writing Jobs</h1>
+
+<h3 id="how-do-i-perform-windowed-calculations-for-example-moving-average-in-scalding">How do I perform windowed calculations (for example, moving average) in Scalding?</h3>
+
+<p>You want to use <code class="highlighter-rouge">GroupBuilder.scanLeft</code>.  A <code class="highlighter-rouge">scanLeft</code> is like a <code class="highlighter-rouge">foldLeft</code> except that you output each intermediate value.  Both of these functions are part of the standard Scala library as well. <a href="http://stackoverflow.com/questions/6799441/in-scala-how-do-i-keep-track-of-running-totals-without-using-var">See StackOverflow for <code class="highlighter-rouge">scanLeft</code> examples</a>.  For the specific example of moving averages in Scalding, see the <a href="https://groups.google.com/forum/?fromgroups#!topic/cascading-user/CTYOjlHs6xE">cascading-user group discussion</a>.</p>
+
+<h3 id="how-do-i-read-a-single-reduced-value-from-a-pipe">How do I read a single reduced value from a pipe?</h3>
+
+<p>You can’t do that.  Instead you should use RichPipe.crossWithTiny to efficiently do a cartesian product of a small set of values to a larger set.  The small set might be a single output, from say <code class="highlighter-rouge">pipe.groupAll { _.size }</code>.  Alternatively, you might kick off a subsequent job in <code class="highlighter-rouge">Job.next</code>, and use <code class="highlighter-rouge">Source.readAtSubmitter</code> to read the value before you get going (or even in <code class="highlighter-rouge">Job.next</code> to see if you need to kick off the next job).</p>
+
+<h3 id="how-do-i-make-simple-records-for-use-in-my-scalding-job">How do I make simple records for use in my scalding job?</h3>
+
+<p>We recommend cases classes <strong>defined outside of your Job</strong>. Case classes defined inside your job capture an $outer member variable that references the job that is wasteful for serialization. If you are having stack overflows during case class serialization this is likely your problem. If you have a use case this doesn’t cover, email the cascading-user list or mention <a href="http://twitter.com/scalding">@scalding</a>. Dealing with serialization issues well in systems like Hadoop is tricky, and we’re still improving our approaches.</p>
+
+<p>See the <a href="https://groups.google.com/forum/?fromgroups#!topic/cascading-user/kjpohwyC03Y">discussion on cascading-user</a>.</p>
+
+<h3 id="how-do-i-pass-parameters-to-my-hadoop-job-number-of-reducers--memory-options--etc-">How do I pass parameters to my hadoop job (number of reducers , memory options , etc.) ?</h3>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>hadoop jar myjar \
+com.twitter.scalding.Tool \
+-D mapred.output.compress=false  \
+-D mapred.child.java.opts=-Xmx2048m \
+-D mapred.reduce.tasks=20 \
+com.class.myclass \
+--hdfs \
+--input $input \
+--output $output
+</code></pre>
+</div>
+
+<h3 id="how-do-i-access-the-jobconf">How do I access the jobConf?</h3>
+
+<p>If you want to update the jobConf in your job, the way to do it is to override the config method in Job:</p>
+
+<p>https://github.com/twitter/scalding/blob/cee3bb99ebb00db9622c387bee0b2718ab9cea61/scalding-core/src/main/scala/com/twitter/scalding/Job.scala#L163</p>
+
+<p>If you really want to just read from the jobConf, you can do it with code like:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">implicitly</span><span class="o">[</span><span class="kt">Mode</span><span class="o">]</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">Hdfs</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="n">configuration</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">{</span>
+    <span class="c1">// use the configuration which is an instance of Configuration
+</span>  <span class="o">}</span>
+  <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="n">error</span><span class="o">(</span><span class="s">"Not running on Hadoop! (maybe cascading local mode?)"</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>See this discussion: https://groups.google.com/forum/?fromgroups=#!topic/cascading-user/YppTLebWds8</p>
+
+<h3 id="how-do-i-append-my-parameters-to-jobconf">How do I append my parameters to jobConf?</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">WordCountJob</span><span class="o">(</span><span class="n">args</span> <span class="k">:</span> <span class="kt">Args</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">Job</span><span class="o">(</span><span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+
+<span class="c1">// Prior to 0.9.0 we need the mode, after 0.9.0 mode is a def on Job.
+</span><span class="k">override</span> <span class="k">def</span> <span class="n">config</span><span class="o">(</span><span class="k">implicit</span> <span class="n">m</span><span class="k">:</span> <span class="kt">Mode</span><span class="o">)</span><span class="k">:</span> <span class="kt">Map</span><span class="o">[</span><span class="kt">AnyRef</span>,<span class="kt">AnyRef</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+   <span class="k">super</span><span class="o">.</span><span class="n">config</span> <span class="o">++</span> <span class="nc">Map</span> <span class="o">(</span><span class="s">"my.job.name"</span> <span class="o">-&gt;</span> <span class="s">"my new job name"</span><span class="o">)</span>
+
+  <span class="o">}</span>
+</code></pre>
+</div>
+
+<h3 id="what-if-i-have-more-than-22-fields-in-my-data-set">What if I have more than 22 fields in my data-set?</h3>
+
+<p><strong>Warning: this answer refers to the DEPRECATED Fields API.</strong></p>
+
+<p>Many of the examples (e.g. in the <code class="highlighter-rouge">tutorial/</code> directory) show that the fields argument is specified as a Scala Tuple when reading a delimited file. However Scala Tuples are currently limited to a maximum of 22 elements. To read-in a data-set with more than 22 fields, you can use a List of Symbols as fields specifier. E.g.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">mySchema</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="ss">'first,</span> <span class="ss">'last,</span> <span class="ss">'phone,</span> <span class="ss">'age,</span> <span class="ss">'country)</span>
+
+<span class="k">val</span> <span class="n">input</span> <span class="k">=</span> <span class="nc">Csv</span><span class="o">(</span><span class="s">"/path/to/file.txt"</span><span class="o">,</span> <span class="n">separator</span> <span class="k">=</span> <span class="s">","</span><span class="o">,</span> <span class="n">fields</span> <span class="k">=</span> <span class="n">mySchema</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">output</span> <span class="k">=</span> <span class="nc">TextLine</span><span class="o">(</span><span class="s">"/path/to/out.txt"</span><span class="o">)</span>
+<span class="n">input</span><span class="o">.</span><span class="n">read</span>
+     <span class="o">.</span><span class="n">project</span><span class="o">(</span><span class="ss">'age,</span> <span class="ss">'country)</span>
+     <span class="o">.</span><span class="n">write</span><span class="o">(</span><span class="nc">Tsv</span><span class="o">(</span><span class="n">output</span><span class="o">))</span>
+</code></pre>
+</div>
+
+<p>Another way to specify fields is using Scala Enumerations, which is available in the <code class="highlighter-rouge">develop</code> branch (as of Apr 2, 2013), as demonstrated in <a href="https://github.com/twitter/scalding/blob/develop/tutorial/Tutorial6.scala">Tutorial 6</a>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Schema</span> <span class="k">extends</span> <span class="nc">Enumeration</span> <span class="o">{</span>
+   <span class="k">val</span> <span class="n">first</span><span class="o">,</span> <span class="n">last</span><span class="o">,</span> <span class="n">phone</span><span class="o">,</span> <span class="n">age</span><span class="o">,</span> <span class="n">country</span> <span class="k">=</span> <span class="nc">Value</span> <span class="c1">// arbitrary number of fields
+</span><span class="o">}</span>
+
+<span class="k">import</span> <span class="nn">Schema._</span>
+
+<span class="nc">Csv</span><span class="o">(</span><span class="s">"tutorial/data/phones.txt"</span><span class="o">,</span> <span class="n">separator</span> <span class="k">=</span> <span class="s">" "</span><span class="o">,</span> <span class="n">fields</span> <span class="k">=</span> <span class="nc">Schema</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">read</span>
+  <span class="o">.</span><span class="n">project</span><span class="o">(</span><span class="n">first</span><span class="o">,</span><span class="n">age</span><span class="o">)</span>
+  <span class="o">.</span><span class="n">write</span><span class="o">(</span><span class="nc">Tsv</span><span class="o">(</span><span class="s">"tutorial/data/output6.tsv"</span><span class="o">))</span>
+</code></pre>
+</div>
+
+<h3 id="how-do-i-increase-the-spill-threshold">How do I increase the spill threshold?</h3>
+
+<p>The spilling is controlled with the same hadoop option as cascading:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>-Dcascading.spill.list.threshold=1000000
+</code></pre>
+</div>
+
+<p>Would keep 1 million items in memory.</p>
+
+<p>The rule of thumb is use as much as you can without getting OOM.</p>
+
+<h3 id="how-do-i-increase-the-aggregateby-threshold-value">How do I increase the AggregateBy threshold value?</h3>
+
+<p>You can’t set a default for AggregateBy, you need to set it in each reducer by calling spillThreshold function on GroupBuilder.
+https://github.com/twitter/scalding/blob/develop/scalding-core/src/main/scala/com/twitter/scalding/GroupBuilder.scala#L97</p>
+
+<h3 id="q-my-hadoop-job-is-erroring-out-with-abstractmethoderror-or-incompatibleclasschangeerror">Q. My Hadoop job is erroring out with AbstractMethodError or IncompatibleClassChangeError.</h3>
+
+<p>A. If your job has dependencies that clash with Hadoop’s, Hadoop can replace your version of a library (like log4j or ASM) with its own native version. You can fix this with an environment flag that makes sure that your jars show up on the classpath before Hadoop’s. Set these environment variables:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bash
+export HADOOP_CLASSPATH=&lt;your_jar_file&gt;
+export HADOOP_USER_CLASSPATH_FIRST=true
+</code></pre>
+</div>
+
+<h3 id="q-im-getting-a-notserializableexception-on-hadoop-job-submission">Q. I’m getting a NotSerializableException on Hadoop job submission.</h3>
+
+<p>A. All fields in Job get serialized and sent to Hadoop. Your job contains an
+object that is not serializable, even with Kryo. This issue may exhibit itself
+as other exceptions, such as <code class="highlighter-rouge">InvocationTargetException</code>, <code class="highlighter-rouge">KryoException</code>, or
+<code class="highlighter-rouge">IllegalAccessException</code>. What all these potential exceptions have in common
+is being related to serialization failures during Hadoop job submission.</p>
+
+<p>First, try to figure out which object is causing the problem.</p>
+
+<p>For a better stacktrace than the usual opaque dump, try submitting your job again with the <code class="highlighter-rouge">extendedDebugInfo</code> flag set:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>export HADOOP_OPTS="-Dsun.io.serialization.extendedDebugInfo=true"; hadoop &lt;your-commands&gt;
+</code></pre>
+</div>
+
+<p>You should see a much larger stacktrace, with many entries like this:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>    - field (class "com.twitter.scalding.MapsideReduce", name: "commutativeSemigroup", type: "interface com.twitter.algebird.Semigroup")
+    - object (class "com.twitter.scalding.MapsideReduce", MapsideReduce[decl:'key', 'value'])
+    - field (class "cascading.pipe.Operator", name: "operation", type: "interface cascading.operation.Operation")
+    - object (class "cascading.pipe.Each", Each(_pipe_2*_pipe_3)[MapsideReduce[decl:'key', 'value']])
+    - field (class "org.jgrapht.graph.IntrusiveEdge", name: "target", type: "class java.lang.Object")
+    - object (class "org.jgrapht.graph.IntrusiveEdge", org.jgrapht.graph.IntrusiveEdge@6ed95e60)
+    - custom writeObject data (class "java.util.HashMap")
+    - object (class "java.util.LinkedHashMap", {[{?}:UNKNOWN]
+[{?}:UNKNOWN]=org.jgrapht.graph.IntrusiveEdge@6ce4ece3, [{2}:0:1]
+</code></pre>
+</div>
+
+<p>Typically, if you start reading from the bottom of these entries upward, the first familiar class you see will be the object that’s being unexpectedly serialized and causing you issues. In this case, the error was with Scalding’s =MapsideReduce= class.</p>
+
+<p>Once you know which object is causing the problem, try one of the following remedies:</p>
+
+<ol>
+  <li>
+    <p>Put the object in a lazy val</p>
+  </li>
+  <li>
+    <p>Move it into a companion object, which will not be serialized.</p>
+  </li>
+  <li>
+    <p>If the item is only needed at submission, but not on the Mappers/Reducers, make it <code class="highlighter-rouge">@transient</code>.</p>
+  </li>
+</ol>
+
+<p>If you see a common case we overlooked, let us know. Some common issues are inner classes to the Job (don’t do that), Logger objects (don’t put those in the job, put them in a companion), and some mutable Guava objects have given us trouble (we’d love to see this ticket closed: https://github.com/twitter/chill/issues/66 )</p>
+
+<h1 id="issues-with-testing">Issues with Testing</h1>
+
+<h3 id="how-do-i-get-my-tests-working-with-spec2">How do I get my tests working with Spec2?</h3>
+
+<p>from <a href="https://twitter.com/alexatkeplar">Alex Dean, @alexatkeplar</a></p>
+
+<p>The problem was in how I was defining my tests. For Scalding, your Specs2 tests must look like this:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="s">"A job which trys to do blah"</span> <span class="n">should</span> <span class="o">{</span>
+  <span class="o">&lt;&lt;</span><span class="nc">RUN</span> <span class="nc">JOB</span><span class="o">&gt;&gt;</span>
+  <span class="s">"successfully do blah"</span> <span class="n">in</span> <span class="o">{</span>
+    <span class="n">expected</span><span class="o">.</span><span class="n">blah</span> <span class="n">must_==</span> <span class="n">actual</span><span class="o">.</span><span class="n">blah</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>My problem was that my tests looked like this:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="s">"A job which trys to do blah"</span> <span class="n">should</span> <span class="o">{</span>
+  <span class="s">"successfully do blah"</span> <span class="n">in</span> <span class="o">{</span>
+    <span class="o">&lt;&lt;</span><span class="nc">RUN</span> <span class="nc">JOB</span><span class="o">&gt;&gt;</span>
+    <span class="n">expected</span><span class="o">.</span><span class="n">blah</span> <span class="n">must_==</span> <span class="n">actual</span><span class="o">.</span><span class="n">blah</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>In other words, running the job was inside the <code class="highlighter-rouge">in {}</code>. For some reason, this was leading to multiple jobs running at the same time and conflicting with each others’ output.</p>
+
+<p>If anyone is interested, the diff which fixed my tests is here: https://github.com/snowplow/snowplow/commit/792ed2f9082b871ecedcf36956427a2f0935588c</p>
+
+<h3 id="how-can-i-work-with-hbase-with-scalding">How can I work with HBase with scalding?</h3>
+
+<p>See the <a href="cookbook/hbase.html">Scalding and HBase</a> page in the cookbook.</p>
+
+<h1 id="issues-with-sbt">Issues with SBT</h1>
+
+<p>Q) What version of SBT do I need? (It’d be great to capture the actual error that happens when you use the wrong version)</p>
+
+<p>A) Get SBT 0.12.2. If you’re having an older version of SBT, you can update it by typing in command line:</p>
+
+<p>brew update;
+brew unlink sbt;
+brew install sbt</p>
+
+<p>Q) What happens if I get OutOfMemoryErrors when running “sbt assembly”?</p>
+
+<p>A) Create ~/.sbtconfig with these options:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M"
+</code></pre>
+</div>
+
+<p>Q) What should I do if I get “value compare is not a member of object Integer” when running “./sbt compile”?</p>
+
+<p>A) You’re probably using Java 6 instead of Java 7.  You can specify which version of Java SBT should use by passing it the <code class="highlighter-rouge">-java-home</code> option.  For example, on a Mac you’re SBT command might look something like:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>./sbt -java-home /Library/Java/JavaVirtualMachines/&lt;insert folder name of desired JVM version&gt;/Contents/Home/
+</code></pre>
+</div>
+
+<h1 id="contributing-code">Contributing code</h1>
+
+<h3 id="do-you-accept-pull-requests">Do you accept pull requests?</h3>
+
+<p>Yes! By requesting a pull, you are agreeing to license your code under the same license as Scalding.</p>
+
+<h3 id="to-which-branch-do-i-make-my-pull-request">To which branch do I make my pull request?</h3>
+
+<p><a href="https://github.com/twitter/scalding/tree/develop">develop</a></p>
+</div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>Scalding is designed and developed by <a href="http://twitter.github.io/scalding" target="_blank">Scalding's contributors</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/twitter/scalding"><span class="fa fa-github"></span>View on Github</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/scalding/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script></body></html>

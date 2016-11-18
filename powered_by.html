@@ -1,0 +1,155 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Scalding</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Scala API for Cascading." /><meta name="author" content="Scalding's contributors" /><meta name="og:image" content="/scalding/img/poster.png" /><meta name="og:title" content="Scalding" /><meta name="og:site_name" content="Scalding" /><meta name="og:url" content="http://twitter.github.io/scalding" /><meta name="og:type" content="website" /><meta name="og:description" content="Scala API for Cascading." /><meta name="twitter:image" content="/scalding/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/scalding/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/scalding/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/scalding/css/style.css" /><link rel="stylesheet" href="/scalding/css/palette.css" /></head><body><header id="site-header"><div class="navbar-wrapper navbar-inverse"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/scalding/" class="brand"><div class="icon-wrapper" style="background:url('/scalding/img/navbar_brand.png') no-repeat"><span>Scalding</span></div></a></div><nav class="text-right"><ul class=""><li><a href="https://github.com/twitter/scalding"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="api"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div><div class="jumbotron" style="background-image:url('/scalding/img/jumbotron_pattern.png')"></div><div><ul class="horizontalNav">         <li><a class="" href="/scalding/cookbook.html">Cookbook</a></li>  <li><a class="" href="/scalding/resources_for_learners.html">Resources for Learners</a></li>  <li><a class="" href="/scalding/faq.html">FAQ</a></li>  <li><a class="" href="/scalding/contributing.html">Contributing</a></li>  <li><a class=" active " href="/scalding/powered_by.html">Powered By</a></li> </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="powered-by-scalding">Powered By Scalding</h1>
+
+<p>Want to be added to this page? Send a tweet to <a href="https://twitter.com/scalding">@scalding</a> or open an issue.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left"><strong>Company</strong></th>
+      <th style="text-align: left"><strong>Scalding Use Case</strong></th>
+      <th style="text-align: left"><strong>Code</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><a href="https://twitter.com">Twitter</a></td>
+      <td style="text-align: left">We use Scalding often, for everything from custom ad targeting algorithms, market insight, click prediction, traffic quality to PageRank on the Twitter graph. We hope you will use it too!</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.spotify.com">Spotify</a></td>
+      <td style="text-align: left">We use Scalding for almost everything including music recommendation features like <a href="https://www.spotify.com/us/discoverweekly/">Discover Weekly</a> &amp; Release Radar, key business metrics, analytics and content catalogue.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://etsy.com">Etsy</a></td>
+      <td style="text-align: left">We’re starting to use Scalding alongside the JRuby Cascading stack described <a href="http://codeascraft.etsy.com/2010/02/24/analyzing-etsys-data-with-hadoop-and-cascading/">here</a>. More to come as we use it further.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.ebay.com">eBay</a></td>
+      <td style="text-align: left">We use Scalding in our Search organization for ad-hoc data analysis jobs as well as more mature data pipelines that feed our production systems.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://snowplowanalytics.com">Snowplow Analytics</a></td>
+      <td style="text-align: left">Our data validation &amp; enrichment process for event analytics is built on top of Scalding.</td>
+      <td style="text-align: left"><a href="https://github.com/snowplow/snowplow/tree/master/3-enrich/hadoop-etl">GitHub</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://prediction.io/">PredictionIO</a></td>
+      <td style="text-align: left">Machine-learning algorithms build on top of Scalding.</td>
+      <td style="text-align: left"><a href="https://github.com/PredictionIO/PredictionIO/tree/master/process/engines">GitHub</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://gatling-tool.org">Gatling</a></td>
+      <td style="text-align: left">We’ve just rebuilt our reports generation module on top of Scalding. Handy API on top of an efficient engine.</td>
+      <td style="text-align: left"><a href="https://github.com/gcoutant/gatling-scalding/tree/master/src/main/scala/com/excilys/ebi/gatling/scalding">GitHub</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.soundcloud.com/">SoundCloud</a></td>
+      <td style="text-align: left">We use Scalding in our search and recommendations production pipelines to pre and post-process data for various machine learning and graph-based learning algorithms. We also use Scalding for ad-hoc and regular jobs run over production logs for things like click tracking and quality evaluation on search results and recommendations.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.sonar.me/">Sonar</a></td>
+      <td style="text-align: left">Our platform is built on Hadoop, Scalding, Cassandra and Storm. See Sonar’s <a href="http://www.sonar.me/jobs">job listings</a>.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.sky.com/">BSkyB</a></td>
+      <td style="text-align: left">Sky is using Scalding on Hadoop and utilizing HBase through the SpyGlass library for statistical analysis , content related jobs and reporting.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.liveperson.com/">LivePerson</a></td>
+      <td style="text-align: left">LivePerson’s data science group is using Scalding on Hadoop, to develop machine learning algorithms and big data analysis.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.sharethrough.com/engineering/">Sharethrough</a></td>
+      <td style="text-align: left">Sharethrough uses Scalding throughout our production data infrastructure. We use it for everything from advertiser reporting and ML feature engineering, to ad targeting and click forecasting.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://data.linkedin.com/team">LinkedIn</a></td>
+      <td style="text-align: left">Scalding is being used at LinkedIn both at the Product Data Science team and the Email Experience team.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://stripe.com">Stripe</a></td>
+      <td style="text-align: left">Stripe uses Scalding for ETL and machine learning to support our analytics and fraud prevention teams.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.move.com">Move</a></td>
+      <td style="text-align: left">Move uses Scalding on Hadoop for advanced analytics and personalization for <a href="http://www.realtor.com/">Realtor.com</a> and its mobile real estate apps.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.tapad.com">Tapad</a></td>
+      <td style="text-align: left">Tapad uses scalding to manage productized analytics and reporting, internal ad-hoc data mining, and to support our data science team’s research and development efforts.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.crowdstrike.com">CrowdStrike</a></td>
+      <td style="text-align: left">CrowdStrike employs Scalding in our data science and data mining pipelines as part of our big data security platforms in research, development, product and customer endpoints. We have plans to open source our Scalding API (AWS, EMR) on github.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.tumblr.com">Tumblr</a></td>
+      <td style="text-align: left">Tumblr uses scalding as a sort of MVC framework for Hadoop.  Applications include recommendations/discovery, spam detection, and general ETL.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.elance.com">Elance</a></td>
+      <td style="text-align: left">Elance uses scalding for constructing data sets for search ranking, recommendation systems, other modeling problems.</td>
+      <td style="text-align: left">-</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="https://www.commbank.com.au/">Commonwealth Bank Of Australia</a></td>
+      <td style="text-align: left">Commbank uses scalding as a key component within its big data infrastructure. Both on the ETL side, and for the implementation of data science pipelines for building various predictive models</td>
+      <td style="text-align: left"><a href="https://github.com/CommBank/">Github</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://sabrelabs.com">Sabre Labs</a></td>
+      <td style="text-align: left">Sabre Labs uses Scalding for ETL and ad hoc data analysis of trip information.</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.gutefrage.net">gutefrage.net</a></td>
+      <td style="text-align: left">gutefrage.net uses Scalding for it’s Data Products and general ETL flows.</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.mediamath.com">MediaMath</a></td>
+      <td style="text-align: left">MediaMath uses Scalding to power its Data Platform, the centralized data store that powers our ad hoc analytics, client log delivery and new optimization/insight-based products.</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.thesearchparty.com/">The Search Party</a></td>
+      <td style="text-align: left">The Search Party is using Scalding to build production machine learning libraries for clustering, recommendation and text analysis of recruitment related data. Scalding is a breath of fresh air!</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.opower.com/">Opower</a></td>
+      <td style="text-align: left">Opower uses Scalding and <a href="https://github.com/kijiproject/kiji-express">KijiExpress</a> to analyze the world’s energy data and extract machine learning-based insights that power behavior change.</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.barclays.co.uk//">Barclays</a></td>
+      <td style="text-align: left">Barclays uses Scalding for Data Warehousing, ETL and data tranformation into columnar (query optimized) data formats.</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><a href="http://www.devsisters.com/">Devsisters</a></td>
+      <td style="text-align: left">Devsisters uses Scalding for game log analysis (<a href="https://github.com/twitter/scalding/issues/1264">1264</a>)</td>
+      <td style="text-align: left"> </td>
+    </tr>
+  </tbody>
+</table>
+</div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>Scalding is designed and developed by <a href="http://twitter.github.io/scalding" target="_blank">Scalding's contributors</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/twitter/scalding"><span class="fa fa-github"></span>View on Github</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/scalding/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script></body></html>

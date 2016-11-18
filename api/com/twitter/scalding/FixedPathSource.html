@@ -1,0 +1,960 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>FixedPathSource - com.twitter.scalding.FixedPathSource</title>
+          <meta name="description" content="FixedPathSource - com.twitter.scalding.FixedPathSource" />
+          <meta name="keywords" content="FixedPathSource com.twitter.scalding.FixedPathSource" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      <script type="text/javascript" src="../../../lib/modernizr.custom.js"></script><script type="text/javascript" src="../../../lib/diagrams.js" id="diagrams-js"></script>
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'com.twitter.scalding.FixedPathSource';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../../lib/class_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.twitter">twitter</a>.<a href="package.html" class="extype" name="com.twitter.scalding">scalding</a></p>
+        <h1>FixedPathSource</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="com.twitter.scalding">package scalding</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">FixedPathSource</span><span class="result"> extends <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/twitter/scalding/tree/develop/scalding-core/src/main/scala/com/twitter/scalding/FileSource.scala" target="_blank">FileSource.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a>, <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a>, <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a>, <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a>, <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="Csv.html" class="extype" name="com.twitter.scalding.Csv">Csv</a>, <a href="FixedPathTypedDelimited.html" class="extype" name="com.twitter.scalding.FixedPathTypedDelimited">FixedPathTypedDelimited</a>, <a href="source/FixedTypedText.html" class="extype" name="com.twitter.scalding.source.FixedTypedText">FixedTypedText</a>, <a href="MultipleDelimitedFiles.html" class="extype" name="com.twitter.scalding.MultipleDelimitedFiles">MultipleDelimitedFiles</a>, <a href="MultipleSequenceFiles.html" class="extype" name="com.twitter.scalding.MultipleSequenceFiles">MultipleSequenceFiles</a>, <a href="MultipleTextLineFiles.html" class="extype" name="com.twitter.scalding.MultipleTextLineFiles">MultipleTextLineFiles</a>, <a href="MultipleTsvFiles.html" class="extype" name="com.twitter.scalding.MultipleTsvFiles">MultipleTsvFiles</a>, <a href="MultipleWritableSequenceFiles.html" class="extype" name="com.twitter.scalding.MultipleWritableSequenceFiles">MultipleWritableSequenceFiles</a>, <a href="OffsetTextLine.html" class="extype" name="com.twitter.scalding.OffsetTextLine">OffsetTextLine</a>, <a href="Osv.html" class="extype" name="com.twitter.scalding.Osv">Osv</a>, <a href="SequenceFile.html" class="extype" name="com.twitter.scalding.SequenceFile">SequenceFile</a>, <a href="TextLine.html" class="extype" name="com.twitter.scalding.TextLine">TextLine</a>, <a href="Tsv.html" class="extype" name="com.twitter.scalding.Tsv">Tsv</a>, <a href="source/TypedSequenceFile.html" class="extype" name="com.twitter.scalding.source.TypedSequenceFile">TypedSequenceFile</a>, <a href="WritableSequenceFile.html" class="extype" name="com.twitter.scalding.WritableSequenceFile">WritableSequenceFile</a></div>
+          </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
+                <span class="toggle diagram-link">Type Hierarchy</span>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 1916.00 155.00" height="155pt" width="1916pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 151)" class="graph" id="graph0"><polygon points="-4,4 -4,-151 1912,-151 1912,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="com.twitter.scalding.FixedPathSource (this class)" xlink:href="#inheritance-diagram"><polygon points="1090.5,-86 970.5,-86 970.5,-61 1090.5,-61 1090.5,-86" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-80.5" x="980.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70.7495" x="1001.26" text-anchor="start">FixedPathSource</text></a></g></g><!-- node1 --><g class="node class" id="graph1_1"><g id="a_class|graph1_1"><a xlink:title="com.twitter.scalding.Csv" xlink:href="Csv.html#inheritance-diagram"><polygon points="61,-25 3.55271e-15,-25 3.55271e-15,-0 61,-0 61,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="10.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="31.5" text-anchor="start">Csv</text></a></g></g><!-- node0&#45;&gt;node1 --><g class="edge inheritance" id="graph1_0_1"><g id="a_inheritance|graph1_0_1"><a xlink:title="Csv is a subtype of FixedPathSource"><path d="M965.073,-71.2872C777.851,-67.4959 242.35,-54.327 69.5,-25 66.8554,-24.5513 64.1365,-23.9824 61.4238,-23.3389" stroke="#d4d4d4" fill="none"></path><polygon points="965.206,-73.0401 970.241,-71.3912 965.277,-69.5408 965.206,-73.0401" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node class" id="graph1_2"><g id="a_class|graph1_2"><a xlink:title="com.twitter.scalding.FixedPathTypedDelimited" xlink:href="FixedPathTypedDelimited.html#inheritance-diagram"><polygon points="248,-25 79,-25 79,-0 248,-0 248,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="89.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="110.306" text-anchor="start">FixedPathTypedDelimited[T]</text></a></g></g><!-- node0&#45;&gt;node2 --><g class="edge inheritance" id="graph1_0_2"><g id="a_inheritance|graph1_0_2"><a xlink:title="FixedPathTypedDelimited[T] is a subtype of FixedPathSource"><path d="M965.131,-69.8525C831.723,-64.1486 518.562,-49.2208 256.5,-25 253.746,-24.7455 250.948,-24.474 248.123,-24.1891" stroke="#d4d4d4" fill="none"></path><polygon points="965.117,-71.6034 970.187,-70.068 965.266,-68.1066 965.117,-71.6034" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node3 --><g class="node class" id="graph1_3"><g id="a_class|graph1_3"><a xlink:title="com.twitter.scalding.source.FixedTypedText" xlink:href="source/FixedTypedText.html#inheritance-diagram"><polygon points="391,-25 266,-25 266,-0 391,-0 391,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="276.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="297.261" text-anchor="start">FixedTypedText[T]</text></a></g></g><!-- node0&#45;&gt;node3 --><g class="edge inheritance" id="graph1_0_3"><g id="a_inheritance|graph1_0_3"><a xlink:title="FixedTypedText[T] is a subtype of FixedPathSource"><path d="M965.274,-69.431C850.568,-63.6236 605.359,-49.3748 399.5,-25 396.772,-24.677 393.988,-24.3245 391.179,-23.9501" stroke="#d4d4d4" fill="none"></path><polygon points="965.221,-71.1805 970.303,-69.6845 965.398,-67.6849 965.221,-71.1805" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node4 --><g class="node class" id="graph1_4"><g id="a_class|graph1_4"><a xlink:title="com.twitter.scalding.MultipleDelimitedFiles" xlink:href="MultipleDelimitedFiles.html#inheritance-diagram"><polygon points="550,-25 409,-25 409,-0 550,-0 550,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="419.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="440.485" text-anchor="start">MultipleDelimitedFiles</text></a></g></g><!-- node0&#45;&gt;node4 --><g class="edge inheritance" id="graph1_0_4"><g id="a_inheritance|graph1_0_4"><a xlink:title="MultipleDelimitedFiles is a subtype of FixedPathSource"><path d="M965.107,-66.7852C874.066,-58.6284 704.017,-42.6663 559.5,-25 556.436,-24.6254 553.308,-24.2303 550.149,-23.8209" stroke="#d4d4d4" fill="none"></path><polygon points="965.05,-68.5369 970.186,-67.2394 965.361,-65.0508 965.05,-68.5369" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node5 --><g class="node class" id="graph1_5"><g id="a_class|graph1_5"><a xlink:title="com.twitter.scalding.MultipleSequenceFiles" xlink:href="MultipleSequenceFiles.html#inheritance-diagram"><polygon points="712.5,-25 568.5,-25 568.5,-0 712.5,-0 712.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="578.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="599.306" text-anchor="start">MultipleSequenceFiles</text></a></g></g><!-- node0&#45;&gt;node5 --><g class="edge inheritance" id="graph1_0_5"><g id="a_inheritance|graph1_0_5"><a xlink:title="MultipleSequenceFiles is a subtype of FixedPathSource"><path d="M965.462,-62.6609C895.643,-52.0986 785.021,-35.3634 712.591,-24.4061" stroke="#d4d4d4" fill="none"></path><polygon points="965.212,-64.3929 970.417,-63.4106 965.735,-60.9323 965.212,-64.3929" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node6 --><g class="node class" id="graph1_6"><g id="a_class|graph1_6"><a xlink:title="com.twitter.scalding.MultipleTextLineFiles" xlink:href="MultipleTextLineFiles.html#inheritance-diagram"><polygon points="866.5,-25 730.5,-25 730.5,-0 866.5,-0 866.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="740.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="761.202" text-anchor="start">MultipleTextLineFiles</text></a></g></g><!-- node0&#45;&gt;node6 --><g class="edge inheritance" id="graph1_0_6"><g id="a_inheritance|graph1_0_6"><a xlink:title="MultipleTextLineFiles is a subtype of FixedPathSource"><path d="M980.358,-59.7485C939.845,-49.4454 883.303,-35.0662 844.064,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="979.94,-61.4478 985.217,-60.9841 980.803,-58.0557 979.94,-61.4478" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node7 --><g class="node class" id="graph1_7"><g id="a_class|graph1_7"><a xlink:title="com.twitter.scalding.MultipleTsvFiles" xlink:href="MultipleTsvFiles.html#inheritance-diagram"><polygon points="998.5,-25 884.5,-25 884.5,-0 998.5,-0 998.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="894.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="915.325" text-anchor="start">MultipleTsvFiles</text></a></g></g><!-- node0&#45;&gt;node7 --><g class="edge inheritance" id="graph1_0_7"><g id="a_inheritance|graph1_0_7"><a xlink:title="MultipleTsvFiles is a subtype of FixedPathSource"><path d="M1008.75,-58.0789C993.469,-47.9511 973.299,-34.5802 959.047,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="1007.78,-59.5394 1012.92,-60.8435 1009.72,-56.6222 1007.78,-59.5394" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node8 --><g class="node class" id="graph1_8"><g id="a_class|graph1_8"><a xlink:title="com.twitter.scalding.MultipleWritableSequenceFiles" xlink:href="MultipleWritableSequenceFiles.html#inheritance-diagram"><polygon points="1222,-25 1017,-25 1017,-0 1222,-0 1222,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1027.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1048.33" text-anchor="start">MultipleWritableSequenceFiles[K, V]</text></a></g></g><!-- node0&#45;&gt;node8 --><g class="edge inheritance" id="graph1_0_8"><g id="a_inheritance|graph1_0_8"><a xlink:title="MultipleWritableSequenceFiles[K, V] is a subtype of FixedPathSource"><path d="M1052.25,-58.0789C1067.53,-47.9511 1087.7,-34.5802 1101.95,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="1051.28,-56.6222 1048.08,-60.8435 1053.22,-59.5394 1051.28,-56.6222" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node9 --><g class="node class" id="graph1_9"><g id="a_class|graph1_9"><a xlink:title="com.twitter.scalding.OffsetTextLine" xlink:href="OffsetTextLine.html#inheritance-diagram"><polygon points="1347,-25 1240,-25 1240,-0 1347,-0 1347,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1250.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1271.24" text-anchor="start">OffsetTextLine</text></a></g></g><!-- node0&#45;&gt;node9 --><g class="edge inheritance" id="graph1_0_9"><g id="a_inheritance|graph1_0_9"><a xlink:title="OffsetTextLine is a subtype of FixedPathSource"><path d="M1086.78,-59.8739C1132.75,-49.5624 1197.18,-35.1068 1241.85,-25.0875" stroke="#d4d4d4" fill="none"></path><polygon points="1086.33,-58.182 1081.83,-60.9841 1087.1,-61.5972 1086.33,-58.182" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node10 --><g class="node class" id="graph1_10"><g id="a_class|graph1_10"><a xlink:title="com.twitter.scalding.Osv" xlink:href="Osv.html#inheritance-diagram"><polygon points="1426,-25 1365,-25 1365,-0 1426,-0 1426,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1375.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1396.22" text-anchor="start">Osv</text></a></g></g><!-- node0&#45;&gt;node10 --><g class="edge inheritance" id="graph1_0_10"><g id="a_inheritance|graph1_0_10"><a xlink:title="Osv is a subtype of FixedPathSource"><path d="M1095.84,-65.7455C1162.01,-58.2592 1267.06,-44.5976 1356.5,-25 1359.26,-24.3956 1362.11,-23.6993 1364.95,-22.9546" stroke="#d4d4d4" fill="none"></path><polygon points="1095.52,-64.0202 1090.75,-66.318 1095.91,-67.4983 1095.52,-64.0202" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node11 --><g class="node class" id="graph1_11"><g id="a_class|graph1_11"><a xlink:title="com.twitter.scalding.SequenceFile" xlink:href="SequenceFile.html#inheritance-diagram"><polygon points="1548.5,-25 1444.5,-25 1444.5,-0 1548.5,-0 1548.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1454.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1475.03" text-anchor="start">SequenceFile</text></a></g></g><!-- node0&#45;&gt;node11 --><g class="edge inheritance" id="graph1_0_11"><g id="a_inheritance|graph1_0_11"><a xlink:title="SequenceFile is a subtype of FixedPathSource"><path d="M1095.91,-66.2426C1176.14,-58.2428 1316.17,-43.2228 1435.5,-25 1438.38,-24.5607 1441.32,-24.0862 1444.3,-23.5887" stroke="#d4d4d4" fill="none"></path><polygon points="1095.52,-64.5231 1090.72,-66.7594 1095.87,-68.006 1095.52,-64.5231" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node12 --><g class="node class" id="graph1_12"><g id="a_class|graph1_12"><a xlink:title="com.twitter.scalding.TextLine" xlink:href="TextLine.html#inheritance-diagram"><polygon points="1648,-25 1567,-25 1567,-0 1648,-0 1648,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1577.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1598.49" text-anchor="start">TextLine</text></a></g></g><!-- node0&#45;&gt;node12 --><g class="edge inheritance" id="graph1_0_12"><g id="a_inheritance|graph1_0_12"><a xlink:title="TextLine is a subtype of FixedPathSource"><path d="M1096.17,-69.4592C1196.23,-64.1788 1392.62,-51.2668 1557.5,-25 1560.58,-24.5095 1563.75,-23.9382 1566.93,-23.3174" stroke="#d4d4d4" fill="none"></path><polygon points="1095.8,-67.7264 1090.9,-69.7354 1095.98,-71.2216 1095.8,-67.7264" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node13 --><g class="node class" id="graph1_13"><g id="a_class|graph1_13"><a xlink:title="com.twitter.scalding.Tsv" xlink:href="Tsv.html#inheritance-diagram"><polygon points="1724.5,-25 1666.5,-25 1666.5,-0 1724.5,-0 1724.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1676.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1697.11" text-anchor="start">Tsv</text></a></g></g><!-- node0&#45;&gt;node13 --><g class="edge inheritance" id="graph1_0_13"><g id="a_inheritance|graph1_0_13"><a xlink:title="Tsv is a subtype of FixedPathSource"><path d="M1095.74,-72.223C1210.38,-70.7033 1455.01,-62.8389 1657.5,-25 1660.35,-24.4682 1663.28,-23.8014 1666.2,-23.0581" stroke="#d4d4d4" fill="none"></path><polygon points="1095.69,-70.4734 1090.72,-72.2867 1095.74,-73.9731 1095.69,-70.4734" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node14 --><g class="node class" id="graph1_14"><g id="a_class|graph1_14"><a xlink:title="com.twitter.scalding.WritableSequenceFile" xlink:href="WritableSequenceFile.html#inheritance-diagram"><polygon points="1908,-25 1743,-25 1743,-0 1908,-0 1908,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-19.5" x="1753.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.74951" x="1774.06" text-anchor="start">WritableSequenceFile[K, V]</text></a></g></g><!-- node0&#45;&gt;node14 --><g class="edge inheritance" id="graph1_0_14"><g id="a_inheritance|graph1_0_14"><a xlink:title="WritableSequenceFile[K, V] is a subtype of FixedPathSource"><path d="M1095.86,-69.3283C1220.2,-63.0184 1499.31,-47.5308 1733.5,-25 1736.54,-24.7071 1739.64,-24.3944 1742.77,-24.0663" stroke="#d4d4d4" fill="none"></path><polygon points="1095.68,-67.5848 1090.78,-69.5854 1095.86,-71.0803 1095.68,-67.5848" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node15 --><g class="node class" id="graph1_15"><g id="a_class|graph1_15"><a xlink:title="com.twitter.scalding.FileSource" xlink:href="FileSource.html#inheritance-diagram"><polygon points="1076,-147 985,-147 985,-122 1076,-122 1076,-147" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../lib/class_diagram.png" y="-141.5" x="995.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.75" x="1016.21" text-anchor="start">FileSource</text></a></g></g><!-- node15&#45;&gt;node0 --><g class="edge inheritance" id="graph1_15_0"><g id="a_inheritance|graph1_15_0"><a xlink:title="FixedPathSource is a subtype of FileSource"><path d="M1030.5,-116.687C1030.5,-106.917 1030.5,-94.8534 1030.5,-86.1323" stroke="#d4d4d4" fill="none"></path><polygon points="1028.75,-116.843 1030.5,-121.843 1032.25,-116.844 1028.75,-116.843" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+              </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="com.twitter.scalding.FixedPathSource"><span>FixedPathSource</span></li><li class="in" name="com.twitter.scalding.FileSource"><span>FileSource</span></li><li class="in" name="com.twitter.scalding.HfsTapProvider"><span>HfsTapProvider</span></li><li class="in" name="com.twitter.scalding.LocalSourceOverride"><span>LocalSourceOverride</span></li><li class="in" name="com.twitter.scalding.SchemedSource"><span>SchemedSource</span></li><li class="in" name="com.twitter.scalding.Source"><span>Source</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="com.twitter.scalding.FixedPathSource#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(path:String*):com.twitter.scalding.FixedPathSource"></a>
+      <a id="&lt;init&gt;:FixedPathSource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">FixedPathSource</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span>*</span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@&lt;init&gt;(path:String*):com.twitter.scalding.FixedPathSource" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@##():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#checkFlowDefNotNull" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="checkFlowDefNotNull()(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit"></a>
+      <a id="checkFlowDefNotNull()(FlowDef,Mode):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">checkFlowDefNotNull</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@checkFlowDefNotNull()(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@clone():Object" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#createHdfsReadTap" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHdfsReadTap(hdfsMode:com.twitter.scalding.Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createHdfsReadTap(Hdfs):Tap[JobConf,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createHdfsReadTap</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@createHdfsReadTap(hdfsMode:com.twitter.scalding.Hdfs):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.HfsTapProvider#createHfsTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs"></a>
+      <a id="createHfsTap(Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_],String,SinkMode):Hfs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createHfsTap</span><span class="params">(<span name="scheme">scheme: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.hadoop.Hfs">Hfs</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@createHfsTap(scheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_],path:String,sinkMode:cascading.tap.SinkMode):cascading.tap.hadoop.Hfs" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#createLocalTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]"></a>
+      <a id="createLocalTap(SinkMode):Tap[JobConf,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createLocalTap</span><span class="params">(<span name="sinkMode">sinkMode: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@createLocalTap(sinkMode:cascading.tap.SinkMode):cascading.tap.Tap[org.apache.hadoop.mapred.JobConf,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a local tap.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a local tap.
+</p></div><dl class="paramcmts block"><dt class="param">sinkMode</dt><dd class="cmt"><p>The mode for handling output conflicts.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#createTap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]"></a>
+      <a id="createTap(AccessMode)(Mode):Tap[_,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createTap</span><span class="params">(<span name="readOrWrite">readOrWrite: <a href="AccessMode.html" class="extype" name="com.twitter.scalding.AccessMode">AccessMode</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.tap.Tap">Tap</span>[_, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@createTap(readOrWrite:com.twitter.scalding.AccessMode)(implicitmode:com.twitter.scalding.Mode):cascading.tap.Tap[_,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Subclasses of Source MUST override this method.</p><div class="fullcomment"><div class="comment cmt"><p>Subclasses of Source MUST override this method. They may call out to TestTapFactory for
+making Taps suitable for testing.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(that:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="that">that: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@equals(that:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#goodHdfsPaths" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="goodHdfsPaths(hdfsMode:com.twitter.scalding.Hdfs):Iterable[String]"></a>
+      <a id="goodHdfsPaths(Hdfs):Iterable[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">goodHdfsPaths</span><span class="params">(<span name="hdfsMode">hdfsMode: <a href="Hdfs.html" class="extype" name="com.twitter.scalding.Hdfs">Hdfs</a></span>)</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@goodHdfsPaths(hdfsMode:com.twitter.scalding.Hdfs):Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#hdfsPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsPaths:Iterable[String]"></a>
+      <a id="hdfsPaths:Iterable[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hdfsPaths</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@hdfsPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#hdfsReadPathsAreGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
+      <a id="hdfsReadPathsAreGood(Configuration):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hdfsReadPathsAreGood</span><span class="params">(<span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@hdfsReadPathsAreGood(conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.SchemedSource#hdfsScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]"></a>
+      <a id="hdfsScheme:Scheme[JobConf,RecordReader[_,_],OutputCollector[_,_],_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hdfsScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="org.apache.hadoop.mapred.JobConf">JobConf</span>, <span class="extype" name="org.apache.hadoop.mapred.RecordReader">RecordReader</span>[_, _], <span class="extype" name="org.apache.hadoop.mapred.OutputCollector">OutputCollector</span>[_, _], _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@hdfsScheme:cascading.scheme.Scheme[org.apache.hadoop.mapred.JobConf,org.apache.hadoop.mapred.RecordReader[_,_],org.apache.hadoop.mapred.OutputCollector[_,_],_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The scheme to use if the source is on hdfs.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is on hdfs.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#hdfsWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hdfsWritePath:String"></a>
+      <a id="hdfsWritePath:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hdfsWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@hdfsWritePath:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#localPaths" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localPaths:Iterable[String]"></a>
+      <a id="localPaths:Iterable[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localPaths</span><span class="result">: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@localPaths:Iterable[String]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A path to use for the local tap.</p><div class="fullcomment"><div class="comment cmt"><p>A path to use for the local tap.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.SchemedSource#localScheme" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]"></a>
+      <a id="localScheme:Scheme[Properties,InputStream,OutputStream,_,_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localScheme</span><span class="result">: <span class="extype" name="cascading.scheme.Scheme">Scheme</span>[<span class="extype" name="java.util.Properties">Properties</span>, <span class="extype" name="java.io.InputStream">InputStream</span>, <span class="extype" name="java.io.OutputStream">OutputStream</span>, _, _]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@localScheme:cascading.scheme.Scheme[java.util.Properties,java.io.InputStream,java.io.OutputStream,_,_]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The scheme to use if the source is local.</p><div class="fullcomment"><div class="comment cmt"><p>The scheme to use if the source is local.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.LocalSourceOverride#localWritePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="localWritePath:String"></a>
+      <a id="localWritePath:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">localWritePath</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@localWritePath:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#pathIsGood" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pathIsGood(globPattern:String,conf:org.apache.hadoop.conf.Configuration):Boolean"></a>
+      <a id="pathIsGood(String,Configuration):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pathIsGood</span><span class="params">(<span name="globPattern">globPattern: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="conf">conf: <span class="extype" name="org.apache.hadoop.conf.Configuration">Configuration</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@pathIsGood(globPattern:String,conf:org.apache.hadoop.conf.Configuration):Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Determines if a path is 'valid' for this source.</p><div class="fullcomment"><div class="comment cmt"><p>Determines if a path is 'valid' for this source. In strict mode all paths must be valid.
+In non-strict mode, all invalid paths will be filtered out.</p><p>Subclasses can override this to validate paths.</p><p>The default implementation is a quick sanity check to look for missing or empty directories.
+It is necessary but not sufficient -- there are cases where this will return true but there is
+in fact missing data.</p><p>TODO: consider writing a more in-depth version of this method in <a href="TimePathedSource.html" class="extype" name="com.twitter.scalding.TimePathedSource">TimePathedSource</a> that looks for
+TODO: missing days / hours etc.
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
+      <a id="read(FlowDef,Mode):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">read</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@read(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.SchemedSource#sinkMode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sinkMode:cascading.tap.SinkMode"></a>
+      <a id="sinkMode:SinkMode"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sinkMode</span><span class="result">: <span class="extype" name="cascading.tap.SinkMode">SinkMode</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@sinkMode:cascading.tap.SinkMode" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#sourceId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sourceId:String"></a>
+      <a id="sourceId:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sourceId</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@sourceId:String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p><div class="fullcomment"><div class="comment cmt"><p>This is a name the refers to this exact instance of the source
+(put another way, if s1.sourceId == s2.sourceId, the job should
+work the same if one is replaced with the other
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#stripTrailing" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stripTrailing(path:String):String"></a>
+      <a id="stripTrailing(String):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stripTrailing</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@stripTrailing(path:String):String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Similar in behavior to <code><a href="TimePathedSource$.html#writePathFor(pattern:String,dateRange:com.twitter.scalding.DateRange,tz:java.util.TimeZone):String" class="extmbr" name="com.twitter.scalding.TimePathedSource#writePathFor">TimePathedSource.writePathFor</a></code>.</p><div class="fullcomment"><div class="comment cmt"><p>Similar in behavior to <code><a href="TimePathedSource$.html#writePathFor(pattern:String,dateRange:com.twitter.scalding.DateRange,tz:java.util.TimeZone):String" class="extmbr" name="com.twitter.scalding.TimePathedSource#writePathFor">TimePathedSource.writePathFor</a></code>.
+Strip out the trailing slash star.
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="com.twitter.scalding.FixedPathSource#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@toString():String" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="com.twitter.scalding.FixedPathSource">FixedPathSource</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#transformForRead" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
+      <a id="transformForRead(Pipe):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformForRead</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@transformForRead(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#transformForWrite" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe"></a>
+      <a id="transformForWrite(Pipe):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformForWrite</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@transformForWrite(pipe:cascading.pipe.Pipe):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#transformInTest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transformInTest:Boolean"></a>
+      <a id="transformInTest:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transformInTest</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@transformInTest:Boolean" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source.</p><div class="fullcomment"><div class="comment cmt"><p>The mock passed in to scalding.JobTest may be considered
+as a mock of the Tap or the Source. By default, as of 0.9.0,
+it is considered as a Mock of the Source. If you set this
+to true, the mock in TestMode will be considered to be a
+mock of the Tap (which must be transformed) and not the Source.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="com.twitter.scalding.FileSource#validateTaps" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="validateTaps(mode:com.twitter.scalding.Mode):Unit"></a>
+      <a id="validateTaps(Mode):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">validateTaps</span><span class="params">(<span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@validateTaps(mode:com.twitter.scalding.Mode):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a> → <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="com.twitter.scalding.Source#writeFrom" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe"></a>
+      <a id="writeFrom(Pipe)(FlowDef,Mode):Pipe"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">writeFrom</span><span class="params">(<span name="pipe">pipe: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="flowDef">flowDef: <span class="extype" name="cascading.flow.FlowDef">FlowDef</span></span>, <span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>)</span><span class="result">: <span class="extype" name="cascading.pipe.Pipe">Pipe</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@writeFrom(pipe:cascading.pipe.Pipe)(implicitflowDef:cascading.flow.FlowDef,implicitmode:com.twitter.scalding.Mode):cascading.pipe.Pipe" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">write the pipe but return the input so it can be chained into
+the next operation
+</p><div class="fullcomment"><div class="comment cmt"><p>write the pipe but return the input so it can be chained into
+the next operation
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="com.twitter.scalding.Source#readAtSubmitter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]"></a>
+      <a id="readAtSubmitter[T](Mode,TupleConverter[T]):Stream[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 0.9.0) replace with Mappable.toIterator">readAtSubmitter</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="mode">mode: <a href="Mode.html" class="extype" name="com.twitter.scalding.Mode">Mode</a></span>, <span name="conv">conv: <a href="TupleConverter.html" class="extype" name="com.twitter.scalding.TupleConverter">TupleConverter</a>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Stream">Stream</span>[<span class="extype" name="com.twitter.scalding.Source.readAtSubmitter.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.twitter.scalding.FixedPathSource@readAtSubmitter[T](implicitmode:com.twitter.scalding.Mode,implicitconv:com.twitter.scalding.TupleConverter[T]):Stream[T]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 0.9.0)</i> replace with Mappable.toIterator</p></dd></dl></div>
+    </li></ol>
+            </div>
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="com.twitter.scalding.FileSource">
+              <h3>Inherited from <a href="FileSource.html" class="extype" name="com.twitter.scalding.FileSource">FileSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.HfsTapProvider">
+              <h3>Inherited from <a href="HfsTapProvider.html" class="extype" name="com.twitter.scalding.HfsTapProvider">HfsTapProvider</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.LocalSourceOverride">
+              <h3>Inherited from <a href="LocalSourceOverride.html" class="extype" name="com.twitter.scalding.LocalSourceOverride">LocalSourceOverride</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.SchemedSource">
+              <h3>Inherited from <a href="SchemedSource.html" class="extype" name="com.twitter.scalding.SchemedSource">SchemedSource</a></h3>
+            </div><div class="parent" name="com.twitter.scalding.Source">
+              <h3>Inherited from <a href="Source.html" class="extype" name="com.twitter.scalding.Source">Source</a></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

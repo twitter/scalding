@@ -1,0 +1,88 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Scalding</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Scala API for Cascading." /><meta name="author" content="Scalding's contributors" /><meta name="og:image" content="/scalding/img/poster.png" /><meta name="og:title" content="Scalding" /><meta name="og:site_name" content="Scalding" /><meta name="og:url" content="http://twitter.github.io/scalding" /><meta name="og:type" content="website" /><meta name="og:description" content="Scala API for Cascading." /><meta name="twitter:image" content="/scalding/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/scalding/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/scalding/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/scalding/css/style.css" /><link rel="stylesheet" href="/scalding/css/palette.css" /></head><body><header id="site-header"><div class="navbar-wrapper navbar-inverse"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/scalding/" class="brand"><div class="icon-wrapper" style="background:url('/scalding/img/navbar_brand.png') no-repeat"><span>Scalding</span></div></a></div><nav class="text-right"><ul class=""><li><a href="https://github.com/twitter/scalding"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="api"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div><div class="jumbotron" style="background-image:url('/scalding/img/jumbotron_pattern.png')"></div><div><ul class="horizontalNav">         <li><a class="" href="/scalding/cookbook.html">Cookbook</a></li>  <li><a class="" href="/scalding/resources_for_learners.html">Resources for Learners</a></li>  <li><a class="" href="/scalding/faq.html">FAQ</a></li>  <li><a class=" active " href="/scalding/contributing.html">Contributing</a></li>  <li><a class="" href="/scalding/powered_by.html">Powered By</a></li> </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="contributing-to-scalding">Contributing to Scalding</h1>
+
+<p>This page lists recommendations and requirements for how to best contribute to Scalding. We strive to obey these as best as possible. As always, thanks for contributing–we hope these guidelines make it easier and shed some light on our approach and processes.</p>
+
+<h2 id="key-branches">Key branches</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">master</code> is the latest, deployed version.</li>
+  <li><code class="highlighter-rouge">develop</code> is where development happens and all pull requests should be submitted.</li>
+</ul>
+
+<h2 id="pull-requests">Pull requests</h2>
+
+<p>Submit pull requests against the <code class="highlighter-rouge">develop</code> branch. Try not to pollute your pull request with unintended changes. Keep it simple and small.</p>
+
+<h2 id="contributing-documentation">Contributing Documentation</h2>
+
+<p>The documentation for Scalding’s website is stored in the <code class="highlighter-rouge">docs/src/main/tut</code> directory of the <a href="https://github.com/twitter/scalding/tree/develop/docs">docs subproject</a>.</p>
+
+<p>Scalding’s documentation is powered by <a href="https://47deg.github.io/sbt-microsites/">sbt-microsites</a> and <a href="https://github.com/tpolecat/tut">tut</a>. <code class="highlighter-rouge">tut</code> compiles any code that appears in the documentation, ensuring that snippets and examples won’t go out of date.</p>
+
+<p>We would love your help making our documentation better. If you see a page that’s empty or needs work, please send us a pull request making it better.</p>
+
+<ul>
+  <li>
+    <p>Make sure to add some code examples! Any code block of this form in any documentation markdown file will get compiled using <code class="highlighter-rouge">tut</code>:</p>
+
+    <p>```toot:book</p>
+    <your code="">
+  ```
+
+</your>
+  </li>
+</ul>
+<p>(Please replace <code class="highlighter-rouge">toot</code> with <code class="highlighter-rouge">tut</code>!) <code class="highlighter-rouge">tut</code> will evaluate your code as if you’d pasted it into a REPL and insert each line’s results in the output. State persists across <code class="highlighter-rouge">tut</code> code blocks, so feel free to alternate code blocks with text discussion. See the <a href="https://github.com/tpolecat/tut">tut README</a> for more information on the various options you can use to customize your code blocks.</p>
+
+<ul>
+  <li>Add your page to the appropriate section in <a href="https://github.com/twitter/scalding/tree/develop/docs/src/main/resources/microsite/data/menu.yml">the menu</a></li>
+</ul>
+
+<h3 id="generating-the-site">Generating the Site</h3>
+
+<p>run <code class="highlighter-rouge">sbt docs/makeMicrosite</code> to generate a local copy of the microsite.</p>
+
+<h3 id="previewing-the-site">Previewing the site</h3>
+
+<ol>
+  <li>Install jekyll locally, depending on your platform, you might do this with any of the following commands:</li>
+</ol>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>yum install jekyll
+apt-get install jekyll
+gem install jekyll
+</code></pre>
+</div>
+
+<ol>
+  <li>In a shell, navigate to the generated site directory in <code class="highlighter-rouge">docs/target/site</code></li>
+  <li>Start jekyll with <code class="highlighter-rouge">jekyll serve --incremental</code></li>
+  <li>Navigate to http://127.0.0.1:4000/scalding/ in your browser</li>
+  <li>Make changes to your site, and run <code class="highlighter-rouge">sbt docs/makeMicrosite</code> to regenerate the site. The changes should be reflected as soon as <code class="highlighter-rouge">sbt docs/makeMicrosite</code> completes.</li>
+</ol>
+
+<h2 id="post-release">Post-release</h2>
+
+<p>After the release occurs, you will need to update the documentation. Here is a list of the places that will definitely need to be updated:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">README.md</code>: update version numbers</li>
+  <li><code class="highlighter-rouge">CHANGES.md</code>: summarize changes since last release</li>
+</ul>
+
+<p>(Other changes may be necessary, especially for large releases.)</p>
+
+<p>You can get a list of changes between release tags <code class="highlighter-rouge">v0.1.2</code> and <code class="highlighter-rouge">v0.2.0</code> via <code class="highlighter-rouge">git log v0.1.2..v0.2.0</code>. Scanning this list of commit messages is a good way to get a summary of what happened, although it does not account for conversations that occured on Github.</p>
+
+<p>Once the relevant documentation changes have been committed, new <a href="https://github.com/twitter/scalding/releases">release notes</a> should be added. You can add a release by clicking the “Draft a new release” button on that page, or if the relevant release already exists, you can click “Edit release”.</p>
+
+<p>The website should then be updated via <code class="highlighter-rouge">sbt docs/publishMicrosite</code>.</p>
+
+<h2 id="license">License</h2>
+
+<p>By contributing your code, you agree to license your contribution under the terms of the <a href="LICENSE">APLv2</a>.</p>
+</div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>Scalding is designed and developed by <a href="http://twitter.github.io/scalding" target="_blank">Scalding's contributors</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/twitter/scalding"><span class="fa fa-github"></span>View on Github</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/scalding/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script></body></html>
