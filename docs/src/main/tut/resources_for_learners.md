@@ -13,7 +13,7 @@ position: 2
 
 ## How-tos
 
-- [[Scalding with CDH3U2 in a Maven project]]
+- Scalding with CDH3U2 in a Maven project (TODO: Convert wiki page and link)
 - [Running your Scalding jobs in Eclipse](http://hokiesuns.blogspot.com/2012/07/running-your-scalding-jobs-in-eclipse.html)
 - [Running your Scalding jobs in IDEA intellij](http://willwhim.wpengine.com/2013/02/28/using-intellij-with-twitters-scalding/)
 - [Running Scalding jobs on EMR](https://github.com/snowplow/scalding-example-project)
