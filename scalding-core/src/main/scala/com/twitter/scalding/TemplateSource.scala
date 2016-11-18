@@ -41,7 +41,7 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
    * @param readOrWrite Describes if this source is being read from or written to.
    * @param mode The mode of the job. (implicit)
    *
-   * @returns A cascading TemplateTap.
+   * @return A cascading TemplateTap.
    */
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     readOrWrite match {
@@ -118,4 +118,3 @@ case class TemplatedSequenceFile(
 
   override val fields = sequenceFields
 }
-
