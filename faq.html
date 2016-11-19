@@ -28,14 +28,6 @@
 
 <h1 id="writing-jobs">Writing Jobs</h1>
 
-<h3 id="how-do-i-perform-windowed-calculations-for-example-moving-average-in-scalding">How do I perform windowed calculations (for example, moving average) in Scalding?</h3>
-
-<p>You want to use <code class="highlighter-rouge">GroupBuilder.scanLeft</code>.  A <code class="highlighter-rouge">scanLeft</code> is like a <code class="highlighter-rouge">foldLeft</code> except that you output each intermediate value.  Both of these functions are part of the standard Scala library as well. <a href="http://stackoverflow.com/questions/6799441/in-scala-how-do-i-keep-track-of-running-totals-without-using-var">See StackOverflow for <code class="highlighter-rouge">scanLeft</code> examples</a>.  For the specific example of moving averages in Scalding, see the <a href="https://groups.google.com/forum/?fromgroups#!topic/cascading-user/CTYOjlHs6xE">cascading-user group discussion</a>.</p>
-
-<h3 id="how-do-i-read-a-single-reduced-value-from-a-pipe">How do I read a single reduced value from a pipe?</h3>
-
-<p>You can’t do that.  Instead you should use RichPipe.crossWithTiny to efficiently do a cartesian product of a small set of values to a larger set.  The small set might be a single output, from say <code class="highlighter-rouge">pipe.groupAll { _.size }</code>.  Alternatively, you might kick off a subsequent job in <code class="highlighter-rouge">Job.next</code>, and use <code class="highlighter-rouge">Source.readAtSubmitter</code> to read the value before you get going (or even in <code class="highlighter-rouge">Job.next</code> to see if you need to kick off the next job).</p>
-
 <h3 id="how-do-i-make-simple-records-for-use-in-my-scalding-job">How do I make simple records for use in my scalding job?</h3>
 
 <p>We recommend cases classes <strong>defined outside of your Job</strong>. Case classes defined inside your job capture an $outer member variable that references the job that is wasteful for serialization. If you are having stack overflows during case class serialization this is likely your problem. If you have a use case this doesn’t cover, email the cascading-user list or mention <a href="http://twitter.com/scalding">@scalding</a>. Dealing with serialization issues well in systems like Hadoop is tricky, and we’re still improving our approaches.</p>
@@ -89,7 +81,7 @@ com.class.myclass \
 
 <h3 id="what-if-i-have-more-than-22-fields-in-my-data-set">What if I have more than 22 fields in my data-set?</h3>
 
-<p><strong>Warning: this answer refers to the DEPRECATED Fields API.</strong></p>
+<p><strong>TODO: this answer refers to the DEPRECATED Fields API.</strong></p>
 
 <p>Many of the examples (e.g. in the <code class="highlighter-rouge">tutorial/</code> directory) show that the fields argument is specified as a Scala Tuple when reading a delimited file. However Scala Tuples are currently limited to a maximum of 22 elements. To read-in a data-set with more than 22 fields, you can use a List of Symbols as fields specifier. E.g.</p>
 
