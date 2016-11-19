@@ -1,16 +1,29 @@
 language: scala
 jdk: oraclejdk7
 sudo: false
-before_install: umask 0022
+
+before_install:
+  - umask 0022
+  - export PATH=${PATH}:./vendor/bundle
+
+install:
+  - rvm use 2.2.3 --install --fuzzy
+  - gem update --system
+  - gem install sass
+  - gem install jekyll -v 3.2.1
+
 cache:
   directories:
    - $HOME/.scalding.dep.cache
+
 script:
   - scripts/testValidator.sh
+
 addons:
   apt:
     packages:
     - md5deep
+
 matrix:
   include:
 #BASE TESTS
@@ -91,11 +104,20 @@ matrix:
       - "scripts/test_execution_tutorial.sh"
 
     - scala: 2.11.8
-      env: BUILD="test repl and typed tutorials"
+      env: BUILD="test repl and typed tutorials and microsite"
       script:
+      - ./sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite
       - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"
       - "scripts/build_assembly_no_test.sh scalding-core"
       - "scripts/test_typed_tutorials.sh"
       - "scripts/build_assembly_no_test.sh execution-tutorial"
       - "scripts/test_execution_tutorial.sh"
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/7b7b19bebb32fb18c9c2
+    on_success: change
+    on_failure: always
+    on_start: never

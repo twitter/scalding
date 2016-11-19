@@ -7,6 +7,8 @@ resolvers ++= Seq(
 )
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
+addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.3.3")
+addSbtPlugin("com.fortysevendeg" % "sbt-microsites" % "0.3.3")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.0")
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "3.20.0")

@@ -78,7 +78,7 @@ trait LocalSourceOverride extends SchemedSource {
    * Creates a local tap.
    *
    * @param sinkMode The mode for handling output conflicts.
-   * @returns A tap.
+   * @return A tap.
    */
   def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
     val taps = localPaths.map {
