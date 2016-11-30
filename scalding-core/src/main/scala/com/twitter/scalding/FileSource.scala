@@ -15,33 +15,24 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, InputStream, OutputStream }
-import java.util.{ UUID, Properties }
+import java.io.{ InputStream, OutputStream }
+import java.util.{ Properties, UUID }
 
 import cascading.scheme.Scheme
-import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
-import cascading.scheme.hadoop.{
-  TextLine => CHTextLine,
-  TextDelimited => CHTextDelimited,
-  SequenceFile => CHSequenceFile
-}
+import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.tap.{ MultiSourceTap, SinkMode, Tap }
 import cascading.tap.hadoop.Hfs
-import cascading.tap.MultiSourceTap
-import cascading.tap.SinkMode
-import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
-
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{ MapAlgebra, OrVal }
-
+import com.twitter.algebird.{ MapAlgebra, Semigroup }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector
-import org.apache.hadoop.mapred.RecordReader
+import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.slf4j.LoggerFactory
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -121,6 +112,31 @@ object AcceptAllPathFilter extends PathFilter {
 }
 
 object FileSource {
+  val LOG = LoggerFactory.getLogger(this.getClass)
+
+  private[this] def verboseLogEnabled(conf: Configuration): Boolean =
+    conf.getBoolean(Config.VerboseFileSourceLoggingKey, false)
+
+  private[this] def ifVerboseLog(conf: Configuration)(msgFn: => String): Unit = {
+    if (verboseLogEnabled(conf)) {
+      val stack = Thread.currentThread
+        .getStackTrace
+        .iterator
+        .drop(2) // skip getStackTrace and ifVerboseLog
+        .mkString("\n")
+
+      // evaluate call by name param once
+      val msg = msgFn
+
+      LOG.info(
+        s"""
+          |***FileSource Verbose Log***
+          |$stack
+          |
+          |$msg
+        """.stripMargin)
+    }
+  }
 
   def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
     val path = new Path(glob)
@@ -135,26 +151,39 @@ object FileSource {
    * @return whether globPath contains non hidden files
    */
   def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, HiddenFileFilter).isEmpty
+    val res = glob(globPath, conf, HiddenFileFilter)
+
+    ifVerboseLog(conf) {
+      val allFiles = glob(globPath, conf, AcceptAllPathFilter).mkString("\n")
+      val matched = res.mkString("\n")
+      s"""
+         |globHasNonHiddenPaths:
+         |globPath: $globPath
+         |all files matching globPath, using HiddenFileFilter:
+         |$matched
+         |all files matching globPath, w/o filtering:
+         |$allFiles
+        """.stripMargin
+    }
+
+    res.nonEmpty
   }
 
   /**
-   * @return whether globPath contains a _SUCCESS file
+   * Returns true if, for every file matched by globPath, there is a _SUCCESS file present
+   * in its parent directory.
    */
-  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = allGlobFilesWithSuccess(globPath, conf, hiddenFilter = false)
+  def globHasSuccessFile(globPath: String, conf: Configuration): Boolean = {
 
-  /**
-   * Determines whether each file in the glob has a _SUCCESS sibling file in the same directory
-   * @param globPath path to check
-   * @param conf Hadoop Configuration to create FileSystem
-   * @param hiddenFilter true, if only non-hidden files are checked
-   * @return true if the directory has files after filters are applied
-   */
-  def allGlobFilesWithSuccess(globPath: String, conf: Configuration, hiddenFilter: Boolean): Boolean = {
-    // Produce tuples (dirName, hasSuccess, hasNonHidden) keyed by dir
-    //
-    val usedDirs = glob(globPath, conf, AcceptAllPathFilter)
-      .map { fileStatus: FileStatus =>
+    val allFiles = glob(globPath, conf, AcceptAllPathFilter)
+
+    val dirs = allFiles
+      .iterator
+      .filter { fileStatus =>
+        // ignore hidden *directories*
+        val isHiddenDir = fileStatus.isDirectory && !HiddenFileFilter.accept(fileStatus.getPath)
+        !isHiddenDir
+      }.map { fileStatus: FileStatus =>
         // stringify Path for Semigroup
         val dir =
           if (fileStatus.isDirectory)
@@ -162,23 +191,36 @@ object FileSource {
           else
             fileStatus.getPath.getParent.toString
 
-        // HiddenFileFilter should better be called non-hidden but it borrows its name from the
-        // private field name in hadoop FileInputFormat
-        //
-        dir -> (dir,
-          OrVal(SuccessFileFilter.accept(fileStatus.getPath) && fileStatus.isFile),
-          OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
+        val fileIsSuccessFile = SuccessFileFilter.accept(fileStatus.getPath) && fileStatus.isFile
+
+        // create a table of dir, containsSuccessFile
+        // to be summed later
+        dir -> fileIsSuccessFile
       }
 
-    // OR by key
-    val uniqueUsedDirs = MapAlgebra.sumByKey(usedDirs)
-      .filter { case (_, (_, _, hasNonHidden)) => (!hiddenFilter || hasNonHidden.get) }
+    // sumByKey using OR
+    // important not to use Algebird's OrVal which is a monoid, and treats 'false'
+    // as zero. Combined with MapAlgebra.sumByKey, that results in any keys mapped to
+    // false being dropped from the output (MapAlgebra tries to be sparse, but we don't
+    // want that here). Using a Semigroup (no zero) instead of a Monoid fixes that.
+    val dirStatuses = MapAlgebra.sumByKey(dirs)(Semigroup.from((x, y) => x || y))
 
-    // there is at least one valid path, and all paths have success
-    //
-    uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
-      case (_, (_, hasSuccess, _)) => hasSuccess.get
+    val invalid = dirStatuses.isEmpty || dirStatuses.exists { case (dir, containsSuccessFile) => !containsSuccessFile }
+
+    ifVerboseLog(conf) {
+      val dirStatusesStr = dirStatuses.mkString("\n")
+      val allFilesStr = allFiles.mkString("\n")
+      s"""
+        |globHasSuccessFile:
+        |globPath: $globPath
+        |directory has success file?:
+        |$dirStatusesStr
+        |all files matching globPath:
+        |$allFilesStr
+      """.stripMargin
     }
+
+    !invalid
   }
 }
 
@@ -200,7 +242,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
    * TODO: consider writing a more in-depth version of this method in [[TimePathedSource]] that looks for
    * TODO: missing days / hours etc.
    */
-  protected def pathIsGood(p: String, conf: Configuration) = FileSource.globHasNonHiddenPaths(p, conf)
+  protected def pathIsGood(globPattern: String, conf: Configuration) = FileSource.globHasNonHiddenPaths(globPattern, conf)
 
   def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
@@ -281,7 +323,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   /*
    * Get all the set of valid paths based on source strictness.
    */
-  protected def goodHdfsPaths(hdfsMode: Hdfs) = {
+  protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
     hdfsMode match {
       //we check later that all the paths are good
       case Hdfs(true, _) => hdfsPaths
@@ -291,19 +333,16 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   }
 
   protected def createHdfsReadTap(hdfsMode: Hdfs): Tap[JobConf, _, _] = {
-    val taps: List[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]] =
+    val taps =
       goodHdfsPaths(hdfsMode)
-        .toList.map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
-    taps.size match {
-      case 0 => {
-        // This case is going to result in an error, but we don't want to throw until
-        // validateTaps. Return an InvalidSource here so the Job constructor does not fail.
-        // In the worst case if the flow plan is misconfigured,
-        //openForRead on mappers should fail when using this tap.
-        new InvalidSourceTap(hdfsPaths)
-      }
-      case 1 => taps.head
-      case _ => new ScaldingMultiSourceTap(taps)
+        .iterator
+        .map { path => CastHfsTap(createHfsTap(hdfsScheme, path, sinkMode)) }
+        .toList
+
+    taps match {
+      case Nil => new IterableSource[Any](Nil, hdfsScheme.getSourceFields).createTap(Read)(hdfsMode).asInstanceOf[Tap[JobConf, _, _]]
+      case one :: Nil => one
+      case many => new ScaldingMultiSourceTap(many)
     }
   }
 }
@@ -373,30 +412,31 @@ trait SequenceFileScheme extends SchemedSource {
 }
 
 /**
- * Ensures that a _SUCCESS file is present in every directory included by a glob,
- * as well as the requirements of [[FileSource.pathIsGood]]. The set of directories to check for
- * _SUCCESS
- * is determined by examining the list of all paths returned by globPaths and adding parent
- * directories of the non-hidden files encountered.
- * pathIsGood should still be considered just a best-effort test. As an illustration the following
- * layout with an in-flight job is accepted for the glob dir*&#47;*:
- * <pre>
- *   dir1/_temporary
- *   dir2/file1
- *   dir2/_SUCCESS
- * </pre>
+ * Uses _SUCCESS files instead of the presence of non-hidden files to determine if a path is good.
  *
- * Similarly if dir1 is physically empty pathIsGood is still true for dir*&#47;* above
+ * Requires that:
+ * 1) Every matched, non-hidden directory contains a _SUCCESS file
+ * 2) Every matched, non-hidden file's parent directory contain a _SUCCESS file
  *
- * On the other hand it will reject an empty output directory of a finished job:
- * <pre>
- *   dir1/_SUCCESS
- * </pre>
+ * pathIsGood should still be considered just a best-effort test. There are still cases where this is
+ * not a sufficient test for correctness. See https://github.com/twitter/scalding/issues/1602
  *
+ * This does accept empty directories that contain a _SUCCESS file, which signals the directory is both
+ * valid, and there is not data for that directory (you'll get an empty pipe).
  */
 trait SuccessFileSource extends FileSource {
   override protected def pathIsGood(p: String, conf: Configuration) =
-    FileSource.allGlobFilesWithSuccess(p, conf, true)
+    FileSource.globHasSuccessFile(p, conf)
+
+  // we need to do some filtering on goodHdfsPaths to remove
+  // empty dirs that we consider "good" but don't want to ask hadoop's FileInputFormat to read.
+  override protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
+    super
+      .goodHdfsPaths(hdfsMode)
+      // some paths deemed "good" may actually be empty, and hadoop's FileInputFormat
+      // doesn't like that. So we filter them away here.
+      .filter { p => FileSource.globHasNonHiddenPaths(p, hdfsMode.conf) }
+  }
 }
 
 /**

@@ -15,17 +15,10 @@
 package com.twitter.scalding
 package typed
 
-import java.util.Properties
-import java.io.{ InputStream, OutputStream }
-
-import cascading.scheme.Scheme
-import cascading.scheme.hadoop.TextDelimited
-import cascading.scheme.local.{ TextDelimited => LocalTextDelimited }
-import cascading.tap.{ Tap, SinkMode }
-import cascading.tap.hadoop.{ Hfs, PartitionTap }
+import cascading.tap.hadoop.PartitionTap
 import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
-import cascading.tap.partition.Partition
-import cascading.tuple.{ Fields, Tuple, TupleEntry }
+import cascading.tap.{ SinkMode, Tap }
+import cascading.tuple.Fields
 
 /**
  * Trait to assist with creating partitioned sources.

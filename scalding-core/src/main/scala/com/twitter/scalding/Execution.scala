@@ -591,14 +591,17 @@ object Execution {
    * This allows you to run any cascading flowDef as an Execution.
    */
   private case class FlowDefExecution(result: (Config, Mode) => FlowDef) extends Execution[Unit] {
-    protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline(
+    protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      lazy val future =
         for {
           flowDef <- toFuture(Try(result(conf, mode)))
           _ = FlowStateMap.validateSources(flowDef, mode)
           (id, jobStats) <- cache.runFlowDef(conf, mode, flowDef)
           _ = FlowStateMap.clear(flowDef)
-        } yield ((), Map(id -> ExecutionCounters.fromJobStats(jobStats))))
+        } yield ((), Map(id -> ExecutionCounters.fromJobStats(jobStats)))
+
+      Trampoline(cache.getOrElseInsert(conf, this, future))
+    }
   }
 
   /*
@@ -742,10 +745,17 @@ object Execution {
   /**
    * This makes a constant execution that runs no job.
    * Note this is a lazy parameter that is evaluated every
-   * time run is called.
+   * time run is called and does so in the ExecutionContext
+   * given to run
    */
-  def from[T](t: => T): Execution[T] = fromTry(Try(t))
-  def fromTry[T](t: => Try[T]): Execution[T] = fromFuture { _ => toFuture(t) }
+  def from[T](t: => T): Execution[T] = fromFuture { implicit ec => Future(t) }
+  /**
+   * This evaluates the argument every time run is called, and does
+   * so in the ExecutionContext given to run
+   */
+  def fromTry[T](t: => Try[T]): Execution[T] = fromFuture { implicit ec =>
+    Future(t).flatMap(toFuture)
+  }
 
   /**
    * The call to fn will happen when the run method on the result is called.

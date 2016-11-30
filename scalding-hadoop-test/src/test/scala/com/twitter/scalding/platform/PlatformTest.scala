@@ -15,24 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
-import cascading.flow.FlowException
-import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
-import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple }
+import java.util.{Iterator => JIterator}
 
+import cascading.flow.FlowException
+import cascading.pipe.joiner.{InnerJoin, JoinerClosure}
+import cascading.scheme.Scheme
+import cascading.scheme.hadoop.{TextLine => CHTextLine}
+import cascading.tap.Tap
+import cascading.tuple.{Fields, Tuple}
 import com.twitter.scalding._
-import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
 import com.twitter.scalding.serialization.OrderedSerialization
-import java.util.{ Iterator => JIterator }
-import org.scalacheck.{ Arbitrary, Gen }
-import org.scalatest.{ Matchers, WordSpec }
-import org.slf4j.{ LoggerFactory, Logger }
+import com.twitter.scalding.source.{FixedTypedText, NullSink, TypedText}
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
-import scala.math.Ordering
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -255,32 +253,6 @@ class MultipleGroupByJob(args: Args) extends Job(args) {
     .map(_._1)
     .write(TypedTsv("output"))
 
-}
-
-class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
-  TypedPipe.from[String](List("word1", "word1", "word2"))
-    .withDescription("map stage - assign words to 1")
-    .map { w => (w, 1L) }
-    .group
-    .withDescription("reduce stage - sum")
-    .sum
-    .withDescription("write")
-    .write(TypedTsv[(String, Long)]("output"))
-}
-
-class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
-  PlatformTest.setAutoForceRight(mode, true)
-
-  val x = TypedPipe.from[(Int, Int)](List((1, 1)))
-  val y = TypedPipe.from[(Int, String)](List((1, "first")))
-  val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
-
-  x.hashJoin(y) // this triggers an implicit that somehow pushes the line number to the next one
-    .withDescription("hashJoin")
-    .leftJoin(z)
-    .withDescription("leftJoin")
-    .values
-    .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
@@ -547,6 +519,46 @@ class ReadPathJob(args: Args) extends Job(args) {
     .write(NullSink)
 }
 
+// Based on a user job that fails in Cascading3 without fix: https://github.com/cwensel/cascading/pull/57
+// Results in a groupBy which inputs to a coGroup1. The groupBy and coGroup1 are used as inputs to
+// another coGroup2. Without this fix, the Cascading planner loses one of the Each operations between
+// this triangle.
+object GroupByCoGroupCoGroupTriangleJob {
+  val output = TypedTsv[(String, Int)]("output")
+
+  val inputData = List(("A", Seq(1, 2)), ("B", Seq(3, 4)), ("B", Seq(5, 6)), ("A", Seq(1, 2)))
+  val deleteList = List(1, 2)
+  val expectedOutput = List(("B", 3), ("B", 4), ("B", 5), ("B", 6))
+}
+
+class GroupByCoGroupCoGroupTriangleJob(args: Args) extends Job(args) {
+  import GroupByCoGroupCoGroupTriangleJob._
+
+  val inputTP = TypedPipe.from(inputData)
+  val deleteTP = TypedPipe.from(deleteList)
+
+  val groupedValues: TypedPipe[(String, Seq[Int])] =
+    inputTP
+      .groupBy(_._1)
+      .mapValueStream(x => x)
+      .values
+
+  val tuplesToDel =
+    groupedValues
+      .flatMap { case (str, seq) => seq.map { userId => (userId, str) } }
+      .join(deleteTP.asKeys)
+      .toTypedPipe
+      .map { case (userId, (name, _)) => (name, userId) }
+
+  groupedValues
+    .groupBy(_._1)
+    .leftJoin(tuplesToDel)
+    .filter { case (name, (_, isPartOfDeletedSet)) => isPartOfDeletedSet.isEmpty }
+    .values
+    .flatMap { case (tuple, _) => tuple._2.map { id => (tuple._1, id) } }
+    .write(output)
+}
+
 object PlatformTest {
   def setAutoForceRight(mode: Mode, autoForce: Boolean): Unit = {
     mode match {
@@ -556,6 +568,41 @@ object PlatformTest {
       case _ => ()
     }
   }
+}
+
+class TestTypedEmptySource extends FileSource with TextSourceScheme with Mappable[(Long, String)] with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
+  override def converter[U >: (Long, String)] =
+    TupleConverter.asSuperConverter[(Long, String), U](implicitly[TupleConverter[(Long, String)]])
+}
+
+class TestFieldsEmptySource(val fields: Fields = new Fields("customNamedOffset", "customNamedLine")) extends FileSource with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
+  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(fields, CHTextLine.DEFAULT_CHARSET).asInstanceOf[Scheme[_, _, _, _, _]])
+}
+
+// Tests the scenario where you have no data present in the directory pointed to by a source typically
+// due to the directory being empty (but for a _SUCCESS file)
+// We test out that this shouldn't result in a Cascading planner error during {@link Job.buildFlow}
+class EmptyDataJob(args: Args) extends Job(args) {
+  TypedPipe.from(new TestTypedEmptySource)
+    .map { case (offset, line) => line }
+    .write(TypedTsv[String]("output"))
+}
+
+class FieldsEmptyDataJob(args: Args) extends Job(args) {
+  val x = new TestFieldsEmptySource(new Fields("offset1", "line1")).read
+  val y = new TestFieldsEmptySource(new Fields("offset2", "line2")).read
+
+  // Empty sources can return an empty MemoryTap
+  // Here we are testing that this MemoryTap has the right Fields setup in it.
+  // joinWithSmaller triggers the issue we are testing, specially that 'line1 and 'line2
+  // are available in the MemoryTaps according to the planner. Previous we had used Fields.All
+  // and we get the error that field 'line1 and field 'line2 cannot be found in UNKNOWN fields
+  x.joinWithSmaller('line1 -> 'line2, y)
+    .write(Tsv("output"))
 }
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
@@ -589,6 +636,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .run()
     }
   }
+
 
   "A MergeTwoSinksForceToDiskJob" should {
     import TinyJoinAndMergeJob._
@@ -700,7 +748,9 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TinyJoinAndSelfMergeForceToDiskJobTyped(_), cluster)
         .source(joinInput1, joinData1)
         .source(joinInput2, joinData2)
-        .sink(output) { _.toSet shouldBe (outputData.toSet) }
+        .sink(output) {
+          _.toSet shouldBe (outputData.toSet)
+        }
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 2
@@ -710,7 +760,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .run()
     }
   }
-
+  
   "A TsvNoCacheJob" should {
     import TsvNoCacheJob._
 
@@ -774,12 +824,13 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
-          val firstStepDescs = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val firstStepDescSet = firstStepDescs.split(",").map(_.trim).toSet
-
-          val expected = Set(276, 278, 279, 282, 283).map(linenum => /* WARNING: keep aligned with line numbers above */
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:${linenum})") ++ Seq("leftJoin", "hashJoin")
-          firstStepDescSet should equal(expected)
+          val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
+          val lines = List(16, 18, 19, 22, 23).map { i =>
+            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:$i"
+          }
+          firstStep should include ("leftJoin")
+          firstStep should include ("hashJoin")
+          lines.foreach { l => firstStep should include (l) }
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
@@ -906,16 +957,18 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new TypedPipeWithDescriptionJob(_), cluster)
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          val expectedDescs = Set("map stage - assign words to 1",
+          val descs = List("map stage - assign words to 1",
             "reduce stage - sum",
-            "write") ++
-            Seq(263, 264, 266, 267, 268).map( /* WARNING: keep aligned with line numbers above */
-              linenum => s"com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:${linenum})")
+            "write",
+            // should see the .group and the .write show up as line numbers
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:30)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:34)")
 
-          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions).split(",").map(_.trim).toSet)
-          foundDescs should have size 1
-
-          foundDescs.head should equal(expectedDescs)
+          val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
+          descs.foreach { d =>
+            assert(foundDescs.size == 1)
+            assert(foundDescs(0).contains(d))
+          }
           //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
@@ -941,6 +994,20 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     "distinct properly from a list" in {
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
         .sink[String]("output") { _.toList shouldBe data }
+        .run()
+    }
+  }
+
+  "An EmptyData source" should {
+    "read from empty source and write to output without errors" in {
+      HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
+        .run()
+    }
+  }
+
+  "A FieldsEmptyData source" should {
+    "read from empty source and write to output without errors" in {
+      HadoopPlatformJobTest(new FieldsEmptyDataJob(_), cluster)
         .run()
     }
   }
@@ -1011,6 +1078,16 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       }
 
       assert(Option(result.getCause).exists(_.isInstanceOf[InvalidSourceException]))
+    }
+  }
+
+  "A GroupByCoGroupCoGroupTriangle job" should {
+    import GroupByCoGroupCoGroupTriangleJob._
+
+    "do a groupBy along with two coGroups and not lose an Each operation" in {
+      HadoopPlatformJobTest(new GroupByCoGroupCoGroupTriangleJob(_), cluster)
+        .sink[(String, Int)]("output") { _.toList shouldBe expectedOutput }
+        .run()
     }
   }
 }

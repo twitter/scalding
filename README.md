@@ -52,8 +52,27 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
-## Code of Conduct
-This, and all github.com/twitter projects, are under the [Twitter Open Source Code of Conduct](https://engineering.twitter.com/opensource/code-of-conduct). Additionally, see the [Typelevel Code of Conduct](http://typelevel.org/conduct) for specific examples of harassing behavior that are not tolerated.
+## Contact
+For user questions or scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev> (Google search also works as a first step)
+
+In the remote possibility that there exist bugs in this code, please report them to:
+<https://github.com/twitter/scalding/issues>
+
+Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+
+Chat: [![Gitter](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+## Get Involved + Code of Conduct
+Pull requests and bug reports are always welcome!
+
+We use a lightweight form of project governence inspired by the one used by Apache projects.
+Please see [Contributing and Committership](https://github.com/twitter/analytics-infra-governance#contributing-and-committership) for our code of conduct and our pull request review process.
+The TL;DR is send us a pull request, iterate on the feedback + discussion, and get a +1 from a [Committer](COMMITTERS.md) in order to get your PR accepted.
+
+The current list of active committers (who can +1 a pull request) can be found here: [Committers](COMMITTERS.md)
+
+A list of contributors to the project can be found here: [Contributors](https://github.com/twitter/scalding/graphs/contributors)
 
 ## Building
 There is a script (called sbt) in the root that loads the correct sbt version to build:
@@ -101,17 +120,6 @@ The suffix denotes the scala version.
 * Twitter
 
 To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
-
-## Contact
-For user questions or scalding development (internals, extending, release planning):
-<https://groups.google.com/forum/#!forum/scalding-dev> (Google search also works as a first step)
-
-In the remote possibility that there exist bugs in this code, please report them to:
-<https://github.com/twitter/scalding/issues>
-
-Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
-
-Chat: [![Gitter](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>

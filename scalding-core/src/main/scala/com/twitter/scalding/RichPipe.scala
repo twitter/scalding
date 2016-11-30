@@ -36,7 +36,26 @@ object RichPipe extends java.io.Serializable {
 
   def getNextName: String = "_pipe_" + nextPipe.incrementAndGet.toString
 
-  def assignName(p: Pipe): Pipe = new Pipe(getNextName, p)
+  private[scalding] val FormerNameBitLength = 12
+  private[scalding] val FormerAssignedPipeNamePattern = "^_pipe_([0-9]+).*$".r
+  private[scalding] val FromUuidPattern = "^.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-([0-9a-f]{12}).*$".r
+
+  // grab some bit of the previous pipe name to help walk up the graph across name assignments
+  private def getFormerNameBit(p: Pipe): String = p.getName match {
+    case FormerAssignedPipeNamePattern(pipeNumber) => pipeNumber
+    case FromUuidPattern(lastGroup) => lastGroup /* 12 characters */
+    case s if s.length > FormerNameBitLength => s.substring(s.length - FormerNameBitLength, s.length)
+    case s => s
+  }
+
+  /**
+   * Assign a new, guaranteed-unique name to the pipe.
+   * @param p a pipe, whose name should be changed
+   * @return a pipe with a new name which is guaranteed to be new and never re-assigned by this function
+   *
+   * Note: the assigned name includes a few characters from the former name to assisgit dift in debugging.
+   */
+  def assignName(p: Pipe): Pipe = new Pipe(getNextName + "-" + getFormerNameBit(p), p)
 
   /**
    * Gets the underlying config for this pipe and sets the number of reducers
@@ -128,7 +147,9 @@ object RichPipe extends java.io.Serializable {
         // because cascading assumes it knows all the Pipe subtypes
         // and fails to match any others (think of it as a sealed trait)
         // So we handle all special types before checking for the assignName case
-        case other @ (_: Checkpoint | _: Operator | _: Splice | _: SubAssembly) =>
+        case other @ (hj: HashJoin) =>
+          collect ++ getJoinedPipeSet(hj)
+        case other @ (_: Checkpoint | _: Operator | _: Splice /* except HashJoin*/ | _: SubAssembly) =>
           collect :+ other
         case renamedPipe: Pipe =>
           // this is the assignName case
@@ -157,6 +178,60 @@ object RichPipe extends java.io.Serializable {
         false
     }
   }
+
+  /**
+   * Special handling for cases where one side of the hashjoin is merged
+   *  with the hashjoin result. Cascading no longer allows it (as of 3.0),
+   *  so we insert checkpoints and/or intermediate merge stages as appropriate
+   *
+   * @param head the first pipe to be merged
+   * @param tail a list of other pipes to be merged within the first
+   *
+   * @return an updated list of pipes, which can safely be merged
+   */
+  private[scalding] def mergeAvoidingHashes(head: Pipe, tail: List[Pipe]): Pipe = {
+
+    // we make use of the fact that the pipe merge operation is not just associative but also commutative
+    val pipes = head :: tail
+    val (colliding, uncolliding) = pipes.partition(p => pipes.exists(o => (o != p) && isHashJoinedWithPipe(p, o)))
+
+    val (innerColliding, innerUncolliding) = colliding.partition(p =>
+      colliding.exists(o => (o != p) && (isHashJoinedWithPipe(p, o) || isHashJoinedWithPipe(o, p))))
+    /* innerUncolliding pipes collide with some pipes in the uncolliding set, but don't collide with one another.
+     It is fine to lump them and merge them together before merging with the 'uncolliding' set.
+
+      innerColliding pipes collide with one another and must each be checkpointed before use in the general merge.
+     */
+    val safedInnerColliding = innerColliding.map(new Checkpoint(_))
+    val safedInnerUncolliding =
+      if (innerUncolliding.isEmpty) Nil
+      else List(new Checkpoint(mergeAvoidingNameClashes(innerUncolliding.head, innerUncolliding.tail)))
+
+    val reassembled = safedInnerColliding ::: safedInnerUncolliding ::: uncolliding
+    mergeAvoidingNameClashes(reassembled.head, reassembled.tail)
+  }
+
+  /**
+   * Cascading Merge does not support having multiple incoming pipes with the same name.
+   * Selectively rename pipes to avoid naming conflicts.
+   *
+   * @param head the first pipe to be merged (or checkpointed)
+   * @param tail a list of other pipes to be merged within the first
+   * @return a Merge of input pipes with any name clashes removed, or the input pipe if there was only one
+   */
+  private[scalding] def mergeAvoidingNameClashes(head: Pipe, tail: List[Pipe]): Pipe = tail match {
+    case Nil => head // avoid generating new Merge(pipes.head)
+    case _ =>
+      val (result, buf) = tail.foldLeft((List[Pipe](head), Set[String](head.getName))) {
+        case ((result, names), p) =>
+          if (names.contains(p.getName))
+            (assignName(p) :: result, names) /* no need to add the new name to names: assignName is guaranteed unique
+                                               and never assigned again */
+          else (p :: result, names + p.getName)
+      }
+      new Merge(result: _*)
+  }
+
 }
 
 /**
