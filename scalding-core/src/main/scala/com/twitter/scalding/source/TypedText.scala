@@ -57,6 +57,16 @@ object TypedText {
     require(suffix.head == '/', "suffix should include a preceding /")
     new TimePathTypedText[T](ONE, prefix + TimePathedSource.YEAR_MONTH_DAY + suffix + "/*")
   }
+  def dailyPrefixSuffixTsv[T](prefix: String, suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
+    require(prefix.last != '/', "prefix should not include trailing /")
+    require(suffix.head == '/', "suffix should include a preceding /")
+    new TimePathTypedText[T](TAB, prefix + TimePathedSource.YEAR_MONTH_DAY + suffix + "/*")
+  }
+  def dailyPrefixSuffixCsv[T](prefix: String, suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
+    require(prefix.last != '/', "prefix should not include trailing /")
+    require(suffix.head == '/', "suffix should include a preceding /")
+    new TimePathTypedText[T](COMMA, prefix + TimePathedSource.YEAR_MONTH_DAY + suffix + "/*")
+  }
 }
 
 trait TypedTextDelimited[T] extends SchemedSource with Mappable[T] with TypedSink[T] {
