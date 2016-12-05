@@ -457,7 +457,7 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
+      "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
@@ -561,11 +561,11 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
   libraryDependencies <++= (scalaVersion) { scalaVersion => Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion,
     "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-common" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion,
     "com.twitter" %% "chill-algebird" % chillVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
@@ -648,11 +648,11 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion  % "test",
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
+    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion % "test",
+    "org.apache.hadoop" % "hadoop-common" % hadoopVersion % "test",
+    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion % "test"
   ) ++ (if (isScala210x(scalaVersion)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq())
   },
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
