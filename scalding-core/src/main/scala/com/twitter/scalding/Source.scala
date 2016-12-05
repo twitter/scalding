@@ -39,7 +39,9 @@ import scala.collection.JavaConverters._
 /**
  * thrown when validateTaps fails
  */
-class InvalidSourceException(message: String, cause: Throwable = null) extends RuntimeException(message, cause)
+class InvalidSourceException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+  def this(message: String) = this(message, null)
+}
 
 /**
  * InvalidSourceTap used in createTap method when we want to defer
