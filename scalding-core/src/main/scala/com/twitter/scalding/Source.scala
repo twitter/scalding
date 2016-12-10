@@ -39,7 +39,9 @@ import scala.collection.JavaConverters._
 /**
  * thrown when validateTaps fails
  */
-class InvalidSourceException(message: String) extends RuntimeException(message)
+class InvalidSourceException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+  def this(message: String) = this(message, null)
+}
 
 /**
  * InvalidSourceTap used in createTap method when we want to defer
@@ -51,7 +53,10 @@ class InvalidSourceException(message: String) extends RuntimeException(message)
  *
  * hdfsPaths represents user-supplied list that was detected as not containing any valid paths.
  */
-class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobConf, RecordReader[_, _]] {
+class InvalidSourceTap(val e: Throwable) extends SourceTap[JobConf, RecordReader[_, _]] {
+
+  def this(hdfsPaths: Iterable[String]) =
+    this(new InvalidSourceException(s"No good paths in $hdfsPaths"))
 
   private final val randomId = UUID.randomUUID.toString
 
@@ -61,8 +66,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
 
   override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
-    throw new InvalidSourceException(s"InvalidSourceTap: No good paths in $hdfsPaths")
+  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator = throw new InvalidSourceException("Encountered InvalidSourceTap!", e)
 
   override def resourceExists(conf: JobConf): Boolean = false
 
