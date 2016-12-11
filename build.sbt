@@ -17,10 +17,10 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
 }
 def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
-val algebirdVersion = "0.12.1"
+val algebirdVersion = "0.13.0"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
-val bijectionVersion = "0.9.1"
+val bijectionVersion = "0.9.4"
 val cascadingAvroVersion = "2.1.2"
 val chillVersion = "0.7.3"
 val elephantbirdVersion = "4.8"
@@ -29,19 +29,24 @@ val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
 val hravenVersion = "0.9.17.t05"
 val jacksonVersion = "2.4.2"
-val json4SVersion = "3.2.11"
+val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
 val protobufVersion = "2.4.1"
 val quasiquotesVersion = "2.0.1"
-val scalaCheckVersion = "1.12.2"
-val scalaTestVersion = "2.2.6"
-val scalameterVersion = "0.6"
+val scalameterVersion = "0.8.2"
+val scalaCheckVersion = "1.13.4"
+val scalaTestVersion = "3.0.1"
 val scroogeVersion = "3.20.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
+
+def quasiquotes(scalaVersion: String) =
+  if (isScala210x(scalaVersion))
+    Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion)
+  else Seq()
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -69,10 +74,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   ),
 
   resolvers ++= Seq(
-    "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-    "maven central" at "https://repo.maven.apache.org/maven2",
-    "releases" at "https://oss.sonatype.org/content/repositories/releases",
-    "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+    Opts.resolver.mavenLocalFile,
+    Opts.resolver.sonatypeSnapshots,
+    Opts.resolver.sonatypeReleases,
     "Concurrent Maven Repo" at "http://conjars.org/repo",
     "Twitter Maven" at "http://maven.twttr.com",
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
@@ -212,12 +216,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 lazy val scalding = Project(
   id = "scalding",
   base = file("."),
-  settings = sharedSettings
-).settings(
-  test := {},
-  publish := {}, // skip publishing for this root project.
-  publishLocal := {}
-).aggregate(
+  settings = sharedSettings)
+ .settings(noPublishSettings)
+ .aggregate(
   scaldingArgs,
   scaldingDate,
   scaldingCore,
@@ -240,12 +241,9 @@ lazy val scalding = Project(
 lazy val scaldingAssembly = Project(
   id = "scalding-assembly",
   base = file("assembly"),
-  settings = sharedSettings
-).settings(
-  test := {},
-  publish := {}, // skip publishing for this root project.
-  publishLocal := {}
-).aggregate(
+  settings = sharedSettings)
+ .settings(noPublishSettings)
+ .aggregate(
   scaldingArgs,
   scaldingDate,
   scaldingCore,
@@ -279,11 +277,11 @@ lazy val noPublishSettings = Seq(
  * This returns the youngest jar we released that is compatible with
  * the current.
  */
-val unreleasedModules = Set[String]("hadoop-test") //releases 0.11
+val ignoredModules = Set[String]("benchmarks")
 
 def youngestForwardCompatible(subProj: String) =
   Some(subProj)
-    .filterNot(unreleasedModules.contains(_))
+    .filterNot(ignoredModules.contains(_))
     .map {
     s => "com.twitter" %% (s"scalding-$s") % "0.16.0"
   }
@@ -306,14 +304,15 @@ lazy val cascadingVersion =
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
-lazy val scaldingBenchmarks = module("benchmarks").settings(
-  libraryDependencies ++= Seq(
-    "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
-  ),
-  testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-  parallelExecution in Test := false
-).dependsOn(scaldingCore)
+lazy val scaldingBenchmarks = module("benchmarks")
+  .settings(
+    libraryDependencies ++= Seq(
+        "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
+        "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+      ),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+    parallelExecution in Test := false
+  ).dependsOn(scaldingCore)
 
 lazy val scaldingCore = module("core").settings(
   libraryDependencies ++= Seq(
@@ -333,10 +332,7 @@ lazy val scaldingCore = module("core").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++
-    (if (isScala210x(scalaVersion.value))
-      Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion)
-    else Seq()),
+    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++ quasiquotes(scalaVersion.value),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
@@ -408,7 +404,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "com.twitter" %% "chill-bijection" % chillVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
     "org.typelevel" %% "macro-compat" % macroCompatVersion
-    ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq()),
+    ) ++ quasiquotes(scalaVersion.value),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
 
@@ -514,7 +510,7 @@ lazy val scaldingRepl = module("repl")
 lazy val scaldingSerialization = module("serialization").settings(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
+  ) ++ ++ quasiquotes(scalaVersion.value),
 addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 )
 
@@ -592,8 +588,8 @@ lazy val scaldingDb = module("db").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion
-  ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
-addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  ) ++ quasiquotes(scalaVersion.value),
+  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingCore)
 
 lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
@@ -622,7 +618,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
-  ) ++ (if (isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
+  ) ++ quasiquotes(scalaVersion.value),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(
     scaldingCore,
