@@ -443,6 +443,21 @@ object Config {
   /** Whether the number of reducers has been set explicitly using a `withReducers` */
   val WithReducersSetExplicitly = "scalding.with.reducers.set.explicitly"
 
+  /** Name of parameter to specify which class to use as the default estimator. */
+  val MemoryEstimators = "scalding.memory.estimator.classes"
+
+  /** Hadoop map memory */
+  val MapMemory = "mapreduce.map.memory.mb"
+
+  /** Hadoop map java opts */
+  val MapJavaOpts = "mapreduce.map.java.opts"
+
+  /** Hadoop reduce java opts */
+  val ReduceJavaOpts = "mapreduce.reduce.java.opts"
+
+  /** Hadoop reduce memory */
+  val ReduceMemory = "mapreduce.reduce.memory.mb"
+
   /** Manual description for use in .dot and MR step names set using a `withDescription`. */
   val PipeDescriptions = "scalding.pipe.descriptions"
   val StepDescriptions = "scalding.step.descriptions"
