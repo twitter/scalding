@@ -64,7 +64,7 @@ object HRavenMemoryService extends MemoryService {
   case class RichConfig(conf: JobConf) {
 
     val MaxFetch = "hraven.reducer.estimator.max.flow.history"
-    val MaxFetchDefault = 5
+    val MaxFetchDefault = 10
 
     def maxFetch: Int = conf.getInt(MaxFetch, MaxFetchDefault)
 
@@ -173,7 +173,11 @@ object HRavenMemoryService extends MemoryService {
 
     // Find the FlowStep in the hRaven flow that corresponds to the current step
     // *Note*: when hRaven says "Job" it means "FlowStep"
-    flowsTry.map(flows => flows.flatMap(findMatchingJobStep))
+    flowsTry.map{ flows =>
+      val map: Seq[JobDetails] = flows.flatMap(findMatchingJobStep)
+      LOG.info("Found :" + flows.length + " flows in fetchJobDetails. After finding matching job step, noJobDetails = " + map.length)
+      map
+    }
   }
 
   override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepMemoryHistory]] =
@@ -182,14 +186,19 @@ object HRavenMemoryService extends MemoryService {
         step <- history
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, "")
         // update HRavenHistoryService.TaskDetailFields when consuming additional task fields from hraven below
-        tasks = step.getTasks.asScala.map {
+        tasks = step.getTasks.asScala.flatMap {
           t =>
-            val group = t.getCounters.getGroup(TaskCounterGroup)
-            val committedHeap = group.get(CommittedHeapBytes).getValue
-            val cpu = group.get(CpuMs).getValue
-            val phyMemory = group.get(PhysicalMemoryBytes).getValue
-            val gc = group.get(GCTimeMs).getValue
-            Task(t.getType, committedHeap, phyMemory, cpu, gc)
+            //sometimes get groups with only partial data
+            if (t.getCounters.getGroups.isEmpty || t.getCounters.getGroup(TaskCounterGroup).size() < 4) None
+            else {
+              val group = t.getCounters.getGroup(TaskCounterGroup)
+
+              val committedHeap = group.get(CommittedHeapBytes).getValue
+              val cpu = group.get(CpuMs).getValue
+              val phyMemory = group.get(PhysicalMemoryBytes).getValue
+              val gc = group.get(GCTimeMs).getValue
+              Some(Task(t.getTaskType, committedHeap, phyMemory, cpu, gc))
+            }
         }
       } yield toFlowStepMemoryHistory(keys, step, tasks)
     }

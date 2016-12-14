@@ -77,10 +77,10 @@ object MemoryEstimatorConfig {
   def getScaleFactor(conf: JobConf): Double = conf.getDouble(memoryScaleFactor, 1.2)
 
   // max container is 8GB
-  val maxMemoryEstimate: Double = 8 * 1024 * 1024 * 1024
+  val maxMemoryEstimate: Double = 8.0 * 1024 * 1024 * 1024
 
   //min container is
-  val minMemoryEstimate: Double = 500 * 1024 * 1024
+  val minMemoryEstimate: Double = 500.0 * 1024 * 1024
 }
 
 // Tuple(MapMemory in MB, ReduceMemory in MB), or None to keep the default.
@@ -159,6 +159,7 @@ trait HistoryMemoryEstimator extends MemoryEstimator {
   }
 
   private def getMapReduceMemory(history: FlowStepMemoryHistory): (Option[Long], Option[Long]) = {
+    LOG.info(s"Processing tasks: ${history.tasks}")
     val reduceTasks: Seq[Task] = history.tasks.filter { t => t.taskType == "REDUCE" }
     val mapTasks: Seq[Task] = history.tasks.filter { t => t.taskType == "MAP" }
 
@@ -254,14 +255,14 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       memoryEstimate match {
         case Some(MemoryEstimate(Some(mapMem), Some(reduceMem))) =>
-          LOG.info(s"Overriding map memory to: $mapMem and reduce memory to $reduceMem")
+          LOG.info(s"Overriding map Xmx memory to: $mapMem and reduce Xmx memory to $reduceMem")
           setMapMemory(mapMem, conf)
           setReduceMemory(reduceMem, conf)
         case Some(MemoryEstimate(Some(mapMem), _)) =>
-          LOG.info(s"Overriding only map memory to: $mapMem")
+          LOG.info(s"Overriding only map Xmx memory to: $mapMem")
           setMapMemory(mapMem, conf)
         case Some(MemoryEstimate(_, Some(reduceMem))) =>
-          LOG.info(s"Overriding only reduce memory to $reduceMem")
+          LOG.info(s"Overriding only reduce Xmx memory to $reduceMem")
           setReduceMemory(reduceMem, conf)
         case _ => LOG.info("Memory estimators didn't calculate any value. Skipping setting memory overrides")
       }
@@ -270,17 +271,27 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
   private def setMapMemory(mapMem: Long, conf: Configuration): Unit = {
     conf.setLong(MemoryEstimatorConfig.originalMapMemory, conf.getLong(Config.MapMemory, 0L))
-    conf.setLong(Config.MapMemory, mapMem)
-    val xmxValue = (mapMem * 0.80).toInt
+
+    val mapContainerMem = (mapMem * 1.33).toLong
+    conf.setLong(Config.MapMemory, mapContainerMem)
+
     val mapOpts = conf.get(Config.MapJavaOpts, "")
-    conf.set(Config.MapJavaOpts, mapOpts + s" -Xmx${xmxValue}M -Xms${xmxValue}M")
+    //remove existing xmx / xms
+    val mapOptsWithoutXm = mapOpts.split(" ").filterNot(s => s.startsWith("-Xmx") || s.startsWith("-Xms")).mkString(" ")
+
+    conf.set(Config.MapJavaOpts, mapOptsWithoutXm + s" -Xmx${mapMem}M -Xms${mapMem}M")
   }
 
   private def setReduceMemory(reduceMem: Long, conf: Configuration): Unit = {
     conf.setLong(MemoryEstimatorConfig.originalReduceMemory, conf.getLong(Config.ReduceMemory, 0L))
-    conf.setLong(Config.ReduceMemory, reduceMem)
-    val xmxValue = (reduceMem * 0.80).toInt
+
+    val reduceContainerMem = (reduceMem * 1.33).toLong
+    conf.setLong(Config.ReduceMemory, reduceContainerMem)
+
     val reduceOpts = conf.get(Config.ReduceJavaOpts, "")
-    conf.set(Config.ReduceJavaOpts, reduceOpts + s" -Xmx${xmxValue}M -Xms${xmxValue}M")
+    //remove existing xmx / xms
+    val reduceOptsWithoutXm = reduceOpts.split(" ").filterNot(s => s.startsWith("-Xmx") || s.startsWith("-Xms")).mkString(" ")
+
+    conf.set(Config.ReduceJavaOpts, reduceOptsWithoutXm + s" -Xmx${reduceMem}M -Xms${reduceMem}M")
   }
 }

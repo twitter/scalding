@@ -175,7 +175,7 @@ object HRavenHistoryService extends HistoryService {
         step <- history
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, "")
         // update HRavenHistoryService.TaskDetailFields when consuming additional task fields from hraven below
-        tasks = step.getTasks.asScala.map { t => Task(t.getType, t.getStatus, t.getStartTime, t.getFinishTime) }
+        tasks = step.getTasks.asScala.map { t => Task(t.getTaskType, t.getStatus, t.getStartTime, t.getFinishTime) }
       } yield toFlowStepHistory(keys, step, tasks)
     }
 
