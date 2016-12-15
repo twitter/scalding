@@ -197,7 +197,7 @@ object HRavenMemoryService extends MemoryService {
               val cpu = group.get(CpuMs).getValue
               val phyMemory = group.get(PhysicalMemoryBytes).getValue
               val gc = group.get(GCTimeMs).getValue
-              Some(Task(t.getTaskType, committedHeap, phyMemory, cpu, gc))
+              Some(Task(t.getType, committedHeap, phyMemory, cpu, gc))
             }
         }
       } yield toFlowStepMemoryHistory(keys, step, tasks)

@@ -70,17 +70,27 @@ object MemoryEstimatorConfig {
   /** Indicates how much to scale the memory estimate after it's calculated */
   val memoryScaleFactor = "scalding.memory.scale.factor"
 
+  //yarn allocates in increments. So we might as well round up our container ask
+  val yarnSchedulerIncrementAllocationMB: String = "yarn.scheduler.increment-allocation-mb"
+
   def getMaxHistory(conf: JobConf): Int = conf.getInt(maxHistoryKey, 5)
 
   def getAlpha(conf: JobConf): Double = conf.getDouble(alphaKey, 1.0)
 
   def getScaleFactor(conf: JobConf): Double = conf.getDouble(memoryScaleFactor, 1.2)
 
-  // max container is 8GB
-  val maxMemoryEstimate: Double = 8.0 * 1024 * 1024 * 1024
+  def getYarnSchedulerIncrement(conf: JobConf): Int = conf.getInt(yarnSchedulerIncrementAllocationMB, 512)
 
-  //min container is
-  val minMemoryEstimate: Double = 500.0 * 1024 * 1024
+  // max container is 8GB, given XmxToMemoryScaleFactor we want to ensure this
+  // estimate when multiplied by that stays below 8GB
+  val maxMemoryEstimate: Double = 6500.0 * 1024 * 1024
+
+  // min container is 1G, multiplying by XmxToMemoryScaleFactor keeps us under the
+  // min container size
+  val minMemoryEstimate: Double = 800.0 * 1024 * 1024
+
+  val XmxToMemoryScaleFactor: Double = 1.25
+
 }
 
 // Tuple(MapMemory in MB, ReduceMemory in MB), or None to keep the default.
@@ -111,8 +121,9 @@ trait HistoryMemoryEstimator extends MemoryEstimator {
     val maxHistory = MemoryEstimatorConfig.getMaxHistory(conf)
     val alpha = MemoryEstimatorConfig.getAlpha(conf)
     val scaleFactor = MemoryEstimatorConfig.getScaleFactor(conf)
+    val yarnSchedulerIncrementMB = MemoryEstimatorConfig.getYarnSchedulerIncrement(conf)
 
-    LOG.info(s"Attempting to estimate memory settings with maxHistory: $maxHistory, alpha: $alpha, scaleFactor: $scaleFactor")
+    LOG.info(s"Attempting to estimate memory settings with maxHistory: $maxHistory, alpha: $alpha, scaleFactor: $scaleFactor, schedulerIncrement: $yarnSchedulerIncrementMB")
 
     memoryService.fetchHistory(info, maxHistory) match {
       case Success(h) if h.isEmpty =>
@@ -176,6 +187,7 @@ trait HistoryMemoryEstimator extends MemoryEstimator {
     memoryList.foldLeft(0.0){ (oldEstimate, currentVal) => (currentVal * alpha) + (1 - alpha) * oldEstimate }
   }
 
+  // calculate the capped Xmx memory estimate
   private def cappedMemoryEstimateMB(memoryEst: Double): Option[Long] = {
     val memoryEstimateBytes: Option[Double] =
       if (memoryEst > MemoryEstimatorConfig.maxMemoryEstimate)
@@ -189,6 +201,7 @@ trait HistoryMemoryEstimator extends MemoryEstimator {
 
     memoryEstimateBytes.map{ est => (est / (1024 * 1024)).toLong }
   }
+
 }
 
 case class FallbackMemoryEstimator(first: MemoryEstimator, fallback: MemoryEstimator) extends MemoryEstimator {
@@ -272,8 +285,11 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   private def setMapMemory(mapMem: Long, conf: Configuration): Unit = {
     conf.setLong(MemoryEstimatorConfig.originalMapMemory, conf.getLong(Config.MapMemory, 0L))
 
-    val mapContainerMem = (mapMem * 1.33).toLong
-    conf.setLong(Config.MapMemory, mapContainerMem)
+    val mapContainerMem = mapMem * MemoryEstimatorConfig.XmxToMemoryScaleFactor
+    val schedulerIncrement = conf.getInt(MemoryEstimatorConfig.yarnSchedulerIncrementAllocationMB, 512)
+    val roundedMapContainerMem = roundUp(mapContainerMem, schedulerIncrement).toLong
+
+    conf.setLong(Config.MapMemory, roundedMapContainerMem)
 
     val mapOpts = conf.get(Config.MapJavaOpts, "")
     //remove existing xmx / xms
@@ -285,8 +301,10 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   private def setReduceMemory(reduceMem: Long, conf: Configuration): Unit = {
     conf.setLong(MemoryEstimatorConfig.originalReduceMemory, conf.getLong(Config.ReduceMemory, 0L))
 
-    val reduceContainerMem = (reduceMem * 1.33).toLong
-    conf.setLong(Config.ReduceMemory, reduceContainerMem)
+    val reduceContainerMem = reduceMem * MemoryEstimatorConfig.XmxToMemoryScaleFactor
+    val schedulerIncrement = conf.getInt(MemoryEstimatorConfig.yarnSchedulerIncrementAllocationMB, 512)
+    val roundedReduceContainerMem = roundUp(reduceContainerMem, schedulerIncrement).toLong
+    conf.setLong(Config.ReduceMemory, roundedReduceContainerMem)
 
     val reduceOpts = conf.get(Config.ReduceJavaOpts, "")
     //remove existing xmx / xms
@@ -294,4 +312,7 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
     conf.set(Config.ReduceJavaOpts, reduceOptsWithoutXm + s" -Xmx${reduceMem}M -Xms${reduceMem}M")
   }
+
+  //Round up value to a multiple of block
+  private def roundUp(value: Double, block: Double): Double = Math.ceil(value / block) * block
 }
