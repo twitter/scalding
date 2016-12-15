@@ -295,7 +295,7 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     //remove existing xmx / xms
     val mapOptsWithoutXm = mapOpts.split(" ").filterNot(s => s.startsWith("-Xmx") || s.startsWith("-Xms")).mkString(" ")
 
-    conf.set(Config.MapJavaOpts, mapOptsWithoutXm + s" -Xmx${mapMem}M -Xms${mapMem}M")
+    conf.set(Config.MapJavaOpts, mapOptsWithoutXm + s" -Xmx${mapMem}M")
   }
 
   private def setReduceMemory(reduceMem: Long, conf: Configuration): Unit = {
@@ -310,7 +310,7 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     //remove existing xmx / xms
     val reduceOptsWithoutXm = reduceOpts.split(" ").filterNot(s => s.startsWith("-Xmx") || s.startsWith("-Xms")).mkString(" ")
 
-    conf.set(Config.ReduceJavaOpts, reduceOptsWithoutXm + s" -Xmx${reduceMem}M -Xms${reduceMem}M")
+    conf.set(Config.ReduceJavaOpts, reduceOptsWithoutXm + s" -Xmx${reduceMem}M")
   }
 
   //Round up value to a multiple of block
