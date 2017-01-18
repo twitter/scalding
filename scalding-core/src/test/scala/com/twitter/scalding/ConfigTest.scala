@@ -69,7 +69,7 @@ class ConfigTest extends WordSpec with Matchers {
 
       Config.empty.getCascadingSerializationTokens shouldBe empty
 
-      // tokenClasses are a subset that don't include primites or arrays.
+      // tokenClasses are a subset that don't include primitives or arrays.
       val tokenClasses = Config.default.getCascadingSerializationTokens.values.toSet
       val kryoClasses = Config.default.getKryoRegisteredClasses.map(_.getName)
       // Tokens are a subset of Kryo registered classes
@@ -78,7 +78,7 @@ class ConfigTest extends WordSpec with Matchers {
       (kryoClasses -- tokenClasses).forall { c =>
         // primitives cannot be forName'd
         val prim = Set(classOf[Boolean], classOf[Byte], classOf[Short],
-          classOf[Int], classOf[Long], classOf[Float], classOf[Double], classOf[Char])
+          classOf[Int], classOf[Long], classOf[Float], classOf[Double], classOf[Char], classOf[Unit])
           .map(_.getName)
 
         prim(c) || Class.forName(c).isArray
