@@ -18,6 +18,7 @@ package com.twitter.scalding
 import com.twitter.algebird.monad.{ Reader, Trampoline }
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
+import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
 import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
@@ -256,6 +257,21 @@ object Execution {
 
   def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
+
+  /**
+   * Distributes the file onto each map/reduce node,
+   * so you can use it for Scalding source creation and TypedPipe, KeyedList, etc. transformations.
+   * Using the [[com.twitter.scalding.filecache.CachedFile]] outside of Execution will probably not work.
+   *
+   * For multiple files you must nested your execution, see docs of [[com.twitter.scalding.filecache.DistributedCacheFile]]
+   */
+  def withCachedFile[T](path: String)(fn: CachedFile => Execution[T]): Execution[T] = {
+    Execution.getMode.flatMap { mode =>
+      val cachedFile = DistributedCacheFile.cachedFile(path, mode)
+
+      withConfig(fn(cachedFile))(_.addDistributedCacheFiles(cachedFile))
+    }
+  }
 
   /**
    * This function allows running the passed execution with its own cache.

@@ -17,10 +17,12 @@ package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapreduce.MRJobConfig
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
+import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
@@ -28,6 +30,7 @@ import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
+import java.net.URI
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -49,6 +52,27 @@ trait Config extends Serializable {
       case (Some(v), r) => (r, this + (k -> v))
       case (None, r) => (r, this - k)
     }
+
+  /**
+   * Add files to be localized to the config. Intended to be used by user code.
+   * @param cachedFiles CachedFiles to be added
+   * @return new Config with cached files
+   */
+  def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
+    cachedFiles.foldLeft(this) { case (config, file) =>
+        file match {
+          case hadoopFile: HadoopCachedFile =>
+            Config.addDistributedCacheFile(hadoopFile.sourceUri, config)
+          case _ => config
+        }
+    }
+
+  /**
+   * Get cached files from config
+   */
+  def getDistributedCachedFiles: Seq[CachedFile] = {
+    Config.getDistributedCacheFile(this)
+  }
 
   /**
    * This is a name that if present is passed to flow.setName,
@@ -566,6 +590,47 @@ object Config {
     val bytes = fromInputStream(is)
     is.close()
     md5Hex(bytes)
+  }
+
+  /**
+   * Add a file to be localized to the config. Intended to be used by user code.
+   *
+   * @param qualifiedURI The qualified uri of the cache to be localized
+   * @param config Config to add the cache to
+   *
+   * @return new Config with cached files
+   *
+   * @see basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
+   */
+  private def addDistributedCacheFile(qualifiedURI: URI, config: Config): Config = {
+    val newFile = DistributedCacheFile
+      .symlinkedUriFor(qualifiedURI)
+      .toString
+
+    val newFiles = config
+      .get(MRJobConfig.CACHE_FILES)
+      .map(files => files + "," + newFile)
+      .getOrElse(newFile)
+
+    config + (MRJobConfig.CACHE_FILES -> newFiles)
+  }
+
+  /**
+   * Get distributed cache files from config
+   *
+   * @param config Config with cached files
+   */
+  private def getDistributedCacheFile(config: Config): Seq[CachedFile] = {
+    config
+      .get(MRJobConfig.CACHE_FILES)
+      .toSeq
+      .flatMap(_.split(","))
+      .filter(_.nonEmpty)
+      .map { file =>
+        val symlinkedUri = new URI(file)
+        val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
+        HadoopCachedFile(qualifiedUri)
+      }
   }
 
   private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =
