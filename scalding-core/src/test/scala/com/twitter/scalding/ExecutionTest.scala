@@ -30,6 +30,7 @@ import scala.util.Random
 import scala.util.{Failure, Success, Try}
 import ExecutionContext._
 import com.twitter.scalding.Execution.TempFileCleanup
+import org.apache.hadoop.conf.Configuration
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
@@ -261,6 +262,35 @@ class ExecutionTest extends WordSpec with Matchers {
 
       assert(oldCounters != newCounters, "With new configs given the source changed we shouldn't cache so the counters should be different")
 
+    }
+
+    "correctly add cached file into config" in {
+      val execution = Execution.withCachedFile("/path/to/your/file.txt") { cachedFile =>
+        Execution.getConfig.map { config =>
+          config.getDistributedCachedFiles should contain only cachedFile
+        }
+      }
+
+      execution.waitFor(Config.default, Hdfs(strict = true, new Configuration(false))) match {
+        case Success(s) => s
+        case Failure(e) => fail(s"Failed running execution, exception:\n$e")
+      }
+    }
+
+    "correctly add cached files into config" in {
+      val execution =
+        Execution.withCachedFile("/path/to/your/one.txt") { one =>
+          Execution.withCachedFile("/path/to/your/second.txt") { second =>
+            Execution.getConfig.map { config =>
+              config.getDistributedCachedFiles should contain only (one, second)
+            }
+          }
+        }
+
+      execution.waitFor(Config.default, Hdfs(strict = true, new Configuration(false))) match {
+        case Success(s) => s
+        case Failure(e) => fail(s"Failed running execution, exception:\n$e")
+      }
     }
   }
 

@@ -15,6 +15,10 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import com.twitter.scalding.filecache.{ HadoopCachedFile, URIHasher }
+import java.net.URI
+import org.apache.hadoop.mapreduce.MRJobConfig
+
 import org.scalatest.{ WordSpec, Matchers }
 import org.scalacheck.Arbitrary
 import org.scalacheck.Properties
@@ -84,6 +88,41 @@ class ConfigTest extends WordSpec with Matchers {
         prim(c) || Class.forName(c).isArray
       } shouldBe true
     }
+    "addDistributedCacheFile works" in {
+      val (cachedFile, path) = ConfigTest.makeCachedFileAndPath("test.txt")
+
+      Config
+        .empty
+        .addDistributedCacheFiles(cachedFile)
+        .get(MRJobConfig.CACHE_FILES) shouldBe Some(path)
+    }
+    "multiple addDistributedCacheFile work" in {
+      val (cachedFileFirst, pathFirst) = ConfigTest.makeCachedFileAndPath("first.txt")
+      val (cachedFileSecond, pathSecond) = ConfigTest.makeCachedFileAndPath("second.txt")
+
+      Config
+        .empty
+        .addDistributedCacheFiles(cachedFileFirst, cachedFileSecond)
+        .get(MRJobConfig.CACHE_FILES) shouldBe Some(s"$pathFirst,$pathSecond")
+
+      Config
+        .empty
+        .addDistributedCacheFiles(cachedFileFirst)
+        .addDistributedCacheFiles(cachedFileSecond)
+        .get(MRJobConfig.CACHE_FILES) shouldBe Some(s"$pathFirst,$pathSecond")
+    }
+  }
+}
+
+object ConfigTest {
+  def makeCachedFileAndPath(name: String): (HadoopCachedFile, String) = {
+    val uriString = s"hdfs://foo.example:1234/path/to/the/stuff/$name"
+    val uri = new URI(uriString)
+    val hashHex = URIHasher(uri)
+    val hashedFilename = hashHex + s"-$name"
+    val cachedFile = HadoopCachedFile(uri)
+
+    (cachedFile, s"$uriString#$hashedFilename")
   }
 }
 

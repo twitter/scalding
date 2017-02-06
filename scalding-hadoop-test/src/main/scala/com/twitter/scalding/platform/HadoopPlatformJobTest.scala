@@ -17,13 +17,8 @@ package com.twitter.scalding.platform
 
 import cascading.flow.Flow
 import com.twitter.scalding._
-import com.twitter.scalding.source.TypedText
-
-import java.io.{ BufferedWriter, File, FileWriter }
 
 import org.apache.hadoop.mapred.JobConf
-
-import org.slf4j.LoggerFactory
 
 /**
  * This class is used to construct unit tests in scalding which
@@ -37,64 +32,34 @@ case class HadoopPlatformJobTest(
   dataToCreate: Seq[(String, Seq[String])] = Vector(),
   sourceWriters: Seq[Args => Job] = Vector.empty,
   sourceReaders: Seq[Mode => Unit] = Vector.empty,
-  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) {
-  private val LOG = LoggerFactory.getLogger(getClass)
+  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) extends HadoopPlatform[Args, Job, HadoopPlatformJobTest] {
 
-  def arg(inArg: String, value: List[String]): HadoopPlatformJobTest = copy(argsMap = argsMap + (inArg -> value))
+  override def arg(key: String, value: String): HadoopPlatformJobTest =
+    copy(argsMap = argsMap + (key -> List(value)))
 
-  def arg(inArg: String, value: String): HadoopPlatformJobTest = arg(inArg, List(value))
+  override def data(data: (String, Seq[String])): HadoopPlatformJobTest =
+    copy(dataToCreate = dataToCreate :+ data)
 
-  def source[T: TypeDescriptor](location: String, data: Seq[T]): HadoopPlatformJobTest = source(TypedText.tsv[T](location), data)
-
-  def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
+  override def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
         TypedPipe.from(List("")).flatMap { _ => data }.write(out)
       }
     })
 
-  def sink[T: TypeDescriptor](location: String)(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
-    sink(TypedText.tsv[T](location))(toExpect)
-
-  def sink[T](in: Mappable[T])(toExpect: Seq[T] => Unit): HadoopPlatformJobTest =
+  override def sink[T](in: Mappable[T])(toExpect: (Seq[T]) => Unit): HadoopPlatformJobTest =
     copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq) })
 
   def inspectCompletedFlow(checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
     copy(flowCheckers = flowCheckers :+ checker)
 
-  private def createSources(): Unit = {
-    dataToCreate foreach {
-      case (location, lines) =>
-        val tmpFile = File.createTempFile("hadoop_platform", "job_test")
-        tmpFile.deleteOnExit()
-        if (!lines.isEmpty) {
-          val os = new BufferedWriter(new FileWriter(tmpFile))
-          os.write(lines.head)
-          lines.tail.foreach { str =>
-            os.newLine()
-            os.write(str)
-          }
-          os.close()
-        }
-        cluster.putFile(tmpFile, location)
-        tmpFile.delete()
-    }
-
-    sourceWriters.foreach { cons => runJob(initJob(cons)) }
-  }
-
-  private def checkSinks(): Unit = {
-    LOG.debug("Executing sinks")
-    sourceReaders.foreach { _(cluster.mode) }
-  }
-
-  def run(): Unit = {
+  override def run(): Unit = {
     System.setProperty("cascading.update.skip", "true")
-    val job = initJob(cons)
+    val job = init(cons)
     cluster.addClassSourceToClassPath(cons.getClass)
     cluster.addClassSourceToClassPath(job.getClass)
     createSources()
-    runJob(job)
+    execute(job)
     checkSinks()
     flowCheckers.foreach { checker =>
       job.completedFlow.collect {
@@ -103,14 +68,14 @@ case class HadoopPlatformJobTest(
     }
   }
 
-  private def initJob(cons: Args => Job): Job = cons(Mode.putMode(cluster.mode, new Args(argsMap)))
+  override def init(cons: Args => Job): Job = cons(Mode.putMode(cluster.mode, new Args(argsMap)))
 
   @annotation.tailrec
-  private final def runJob(job: Job): Unit = {
+  override final def execute(job: Job): Unit = {
     job.run()
     job.clear()
     job.next match {
-      case Some(nextJob) => runJob(nextJob)
+      case Some(nextJob) => execute(nextJob)
       case None => ()
     }
   }
