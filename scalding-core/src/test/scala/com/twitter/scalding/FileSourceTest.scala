@@ -234,8 +234,8 @@ class FileSourceTest extends WordSpec with Matchers {
 
     "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while dirs with " +
       "hidden ones don't" in {
-      pathIsGood("test_data/2013/{04,05}/*") shouldBe true
-    }
+        pathIsGood("test_data/2013/{04,05}/*") shouldBe true
+      }
 
     // NOTE: this is an undesirable limitation of SuccessFileSource, and is encoded here
     // as a demonstration. This isn't a great behavior that we'd want to keep.

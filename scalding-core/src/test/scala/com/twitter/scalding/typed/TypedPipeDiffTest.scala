@@ -141,7 +141,7 @@ object TypedPipeDiffLaws {
 }
 
 class TypedPipeDiffLaws extends PropSpec with PropertyChecks with Checkers {
-  override implicit val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 5)
+  override implicit val generatorDrivenConfig = PropertyCheckConfiguration(minSuccessful = 5)
 
   property("diffLaws") {
     check(TypedPipeDiffLaws.diffLaw[Int])
