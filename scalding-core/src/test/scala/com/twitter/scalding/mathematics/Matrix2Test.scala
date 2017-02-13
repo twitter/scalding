@@ -21,6 +21,7 @@ import com.twitter.scalding.source.TypedText
 import cascading.pipe.joiner._
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.{ Ring, Group }
+import com.twitter.algebird.field._
 
 import java.io.{ InputStream, OutputStream }
 import scala.util.{ Try, Success }

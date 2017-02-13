@@ -19,6 +19,7 @@ import com.twitter.scalding._
 import cascading.pipe.joiner._
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.Group
+import com.twitter.algebird.field._
 
 object TUtil {
   def printStack(fn: => Unit): Unit = {

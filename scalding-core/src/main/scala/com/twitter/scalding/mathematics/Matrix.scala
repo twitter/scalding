@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.algebird.{ Monoid, Group, Ring, Field }
+import com.twitter.algebird.field._ // backwards compatiblity support
 import com.twitter.scalding._
 
 import cascading.pipe.assembly._
@@ -461,7 +462,7 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
 
   def /(that: LiteralScalar[ValT])(implicit field: Field[ValT]) = {
     field.assertNotZero(that.value)
-    mapValues(elem => field.div(elem, that.value))(field)
+    mapValues(elem => field.div(elem, that.value))
   }
 
   def /(that: Scalar[ValT])(implicit field: Field[ValT]) = {
@@ -469,7 +470,7 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
       .mapValues({ leftRight: (ValT, ValT) =>
         val (left, right) = leftRight
         field.div(left, right)
-      })(field)
+      })
   }
 
   // Between Matrix value reduction - Generalizes matrix addition with an arbitrary value aggregation function
