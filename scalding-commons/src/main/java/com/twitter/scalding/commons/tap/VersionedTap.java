@@ -93,7 +93,9 @@ public class VersionedTap extends Hfs {
   @Override
   public void sourceConfInit(FlowProcess<JobConf> process, JobConf conf) {
     super.sourceConfInit(process, conf);
-    FileInputFormat.setInputPaths(conf, getSourcePath(conf));
+    Path[] inputPaths = FileInputFormat.getInputPaths(conf);
+    inputPaths[inputPaths.length] = new Path(getSourcePath(conf));
+    FileInputFormat.setInputPaths(conf, inputPaths);
   }
 
   @Override
