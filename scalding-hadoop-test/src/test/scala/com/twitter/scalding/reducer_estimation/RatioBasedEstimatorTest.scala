@@ -31,10 +31,10 @@ object ErrorHistoryService extends HistoryService {
 object HistoryServiceWithData {
 
   // we only care about these two input size fields for RatioBasedEstimator
-  def makeHistory(inputHdfsBytesRead: Long, inputHdfsReduceFileBytesRead: Long): FlowStepHistory =
-    makeHistory(inputHdfsBytesRead, inputHdfsReduceFileBytesRead, Seq())
+  def makeHistory(inputHdfsBytesRead: Long, mapOutputBytes: Long): FlowStepHistory =
+    makeHistory(inputHdfsBytesRead, mapOutputBytes, Seq())
 
-  def makeHistory(inputHdfsBytesRead: Long, inputHdfsReduceFileBytesRead: Long, taskRuntimes: Seq[Long]): FlowStepHistory = {
+  def makeHistory(inputHdfsBytesRead: Long, mapOutputBytes: Long, taskRuntimes: Seq[Long]): FlowStepHistory = {
     val random = new scala.util.Random(123)
     val tasks = taskRuntimes.map { time =>
       val startTime = random.nextLong
@@ -58,7 +58,8 @@ object HistoryServiceWithData {
       failedReduces = 0L,
       mapFileBytesRead = 0L,
       mapFileBytesWritten = 0L,
-      reduceFileBytesRead = inputHdfsReduceFileBytesRead,
+      mapOutputBytes = mapOutputBytes,
+      reduceFileBytesRead = 0l,
       hdfsBytesRead = inputHdfsBytesRead,
       hdfsBytesWritten = 0L,
       mapperTimeMillis = 0L,
