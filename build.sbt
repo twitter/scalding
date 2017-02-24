@@ -38,6 +38,7 @@ val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "4.12.0"
+val scroogeVersion210 = "4.7.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
@@ -47,6 +48,12 @@ def quasiquotes(scalaVersion: String) =
   if (isScala210x(scalaVersion))
     Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion)
   else Seq()
+
+def scrooge(scalaVersion: String) =
+  if (isScala210x(scalaVersion))
+    "com.twitter" %% "scrooge-serializer" % scroogeVersion210
+  else
+    "com.twitter" %% "scrooge-serializer" % scroogeVersion
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -350,7 +357,7 @@ lazy val scaldingCommons = module("commons").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.thrift" % "libthrift" % thriftVersion,
     // TODO: split this out into a scalding-scrooge
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+    scrooge(scalaVersion.value) % "provided",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
     "junit" % "junit" % junitVersion % "test"
@@ -380,7 +387,7 @@ lazy val scaldingParquetFixtures = module("parquet-fixtures")
        (sourceManaged.value ** "*.java").get.toSeq
      }.taskValue,
      libraryDependencies ++= Seq(
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+       scrooge(scalaVersion.value) % "provided",
        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
        "org.apache.thrift" % "libthrift" % thriftVersion
      )
@@ -424,7 +431,7 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
           (sourceManaged.value ** "*.java").get.toSeq
       }.taskValue,
     libraryDependencies ++= Seq(
-      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      scrooge(scalaVersion.value) % "provided",
       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
       "org.apache.thrift" % "libthrift" % thriftVersion
   )
@@ -439,7 +446,7 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+      scrooge(scalaVersion.value),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
@@ -596,7 +603,7 @@ lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
   .settings(
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     libraryDependencies ++= Seq(
-      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      scrooge(scalaVersion.value) % "provided",
       "org.apache.thrift" % "libthrift" % thriftVersion
     )
 )
@@ -607,7 +614,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" % "chill-thrift" % chillVersion % "test",
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+    scrooge(scalaVersion.value) % "provided",
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
