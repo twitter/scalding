@@ -55,6 +55,7 @@ object TypeDescriptorProviderImpl {
         .map(_.returnType.asSeenFrom(t, t.typeSymbol.asClass))
         .toList
 
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def go(t: Type, offset: Int): (Int, Option[Int]) = {
       val thisColumn = (offset + 1, Some(offset))
       t match {

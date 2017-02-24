@@ -848,6 +848,7 @@ final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T] {
     Semigroup.sumOption[U](iterable).map(LiteralValue(_))
       .getOrElse(EmptyValue)
 
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   override def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]) = {
     val kvit = raiseTo[(K, V)] match {
       case IterablePipe(kviter) => kviter
