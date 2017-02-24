@@ -28,7 +28,7 @@ val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
 val hravenVersion = "0.9.17.t05"
-val jacksonVersion = "2.4.2"
+val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
@@ -37,7 +37,7 @@ val quasiquotesVersion = "2.0.1"
 val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
-val scroogeVersion = "3.20.0"
+val scroogeVersion = "4.12.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
@@ -55,7 +55,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.8",
 
-  crossScalaVersions := Seq("2.10.6", scalaVersion.value),
+  crossScalaVersions := Seq("2.10.6", scalaVersion.value, "2.12.1"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
