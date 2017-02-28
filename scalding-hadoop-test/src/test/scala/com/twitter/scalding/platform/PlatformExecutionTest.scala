@@ -1,7 +1,7 @@
 package com.twitter.scalding.platform
 
-import com.twitter.scalding.{Config, Execution, TypedPipe, TypedTsv}
-import org.scalatest.{Matchers, WordSpec}
+import com.twitter.scalding.{ Config, Execution, TypedPipe, TypedTsv }
+import org.scalatest.{ Matchers, WordSpec }
 import scala.io.Source
 
 object InAndOutExecution extends Function[Config, Execution[Unit]] {

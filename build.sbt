@@ -1,6 +1,5 @@
 import AssemblyKeys._
 import ReleaseTransformations._
-import com.twitter.scrooge.ScroogeSBT
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
@@ -376,16 +375,7 @@ lazy val scaldingAvro = module("avro").settings(
 lazy val scaldingParquetFixtures = module("parquet-fixtures")
    .settings(
      scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-     sourceGenerators in Test += Def.task {
-       val sources = (scroogeThriftSources in Test).value
-       val out = streams.value
-       // for some reason, sbt sometimes calls us multiple times, often with no source files.
-       if ((scroogeIsDirty in Test).value && sources.nonEmpty) {
-         out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
-         ScroogeSBT.compile(out.log, sourceManaged.value, sources.toSet, Set(), Map(), "java", Set("--language", "java"))
-       }
-       (sourceManaged.value ** "*.java").get.toSeq
-     }.taskValue,
+     scroogeLanguages in Test := Seq("java", "scala"),
      libraryDependencies ++= Seq(
        scrooge(scalaVersion.value) % "provided",
        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
@@ -420,16 +410,7 @@ lazy val scaldingParquet = module("parquet").settings(
 lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   .settings(
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-    sourceGenerators in Test += Def.task {
-        val sources = (scroogeThriftSources in Test).value
-        val out = streams.value
-        // for some reason, sbt sometimes calls us multiple times, often with no source files.
-        if ((scroogeIsDirty in Test).value && sources.nonEmpty) {
-          out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
-          ScroogeSBT.compile(out.log, sourceManaged.value, sources.toSet, Set(), Map(), "java", Set())
-        }
-          (sourceManaged.value ** "*.java").get.toSeq
-      }.taskValue,
+    scroogeLanguages in Test := Seq("java", "scala"),
     libraryDependencies ++= Seq(
       scrooge(scalaVersion.value) % "provided",
       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
