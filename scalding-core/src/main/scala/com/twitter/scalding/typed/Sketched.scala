@@ -41,12 +41,21 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   def reducers = Some(numReducers)
 
   private lazy implicit val cms = CMS.monoid[Bytes](eps, delta, seed)
-  lazy val sketch: TypedPipe[CMS[Bytes]] =
+  lazy val sketch: TypedPipe[CMS[Bytes]] = {
+    // every 10k items, compact into a CMS to prevent very slow mappers
+    lazy implicit val batchedSG = Batched.compactingSemigroup[CMS[Bytes]](10000)
+
     pipe
-      .map { case (k, _) => cms.create(Bytes(serialization(k))) }
-      .sum // sum everything to one value
-      .toTypedPipe
-      .forceToDisk
+      .map { case (k, _) => ((), Batched(cms.create(Bytes(serialize(k))))) }
+      .sumByLocalKeys
+      .map {
+        case (_, batched) => batched.sum
+      } // remove the Batched before going to the reducers
+      .groupAll
+      .sum
+      .values
+      .forceToDisk // make sure we materialize when we have 1 item
+  }
 
   /**
    * Like a hashJoin, this joiner does not see all the values V at one time, only one at a time.
