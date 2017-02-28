@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.scalding.typed.CoGrouped.distinctBy
@@ -34,11 +34,14 @@ object DistinctByProps extends Properties("CoGrouped.DistinctBy") {
   }
   property("distinctBy to different values never changes the list") = forAll { (l: List[Int]) =>
     var idx = 0
-    val fn = { (i: Int) => idx += 1; idx }
+    val fn = { (i: Int) =>
+      idx += 1; idx
+    }
     distinctBy(l)(fn) == l
   }
-  property("distinctBy works like groupBy(fn).map(_._2.head).toSet") = forAll { (l: List[Int], fn: Int => Byte) =>
-    distinctBy(l)(fn).toSet == l.groupBy(fn).map(_._2.head).toSet
+  property("distinctBy works like groupBy(fn).map(_._2.head).toSet") = forAll {
+    (l: List[Int], fn: Int => Byte) =>
+      distinctBy(l)(fn).toSet == l.groupBy(fn).map(_._2.head).toSet
   }
   property("distinctBy matches a mutable implementation") = forAll { (l: List[Int], fn: Int => Byte) =>
     val dlist = distinctBy(l)(fn)

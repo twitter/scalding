@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 import com.twitter.scalding._
 
 /**
@@ -37,8 +37,6 @@ And the output:
 The output should look just like the input, but with line numbers.
 More on this in part 1 of the tutorial.
 **/
-
-
 /**
 All jobs in scalding are represented by a subclass of com.twitter.scalding.Job.
 The constructor must take a single com.twitter.scalding.Args, even if, as here,
@@ -47,7 +45,7 @@ we don't use it.
 For the scald.rb script to work, name the class to match the file,
 and don't use a package.
 **/
-class Tutorial0(args : Args) extends Job(args) {
+class Tutorial0(args: Args) extends Job(args) {
 
   /**
   Both input and output data sources are represented by instances of

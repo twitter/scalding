@@ -34,5 +34,8 @@ trait CaseClassFieldSetter {
 
   // use the field setter known specific to the given field type
   // return scala.util.Failure if no type specific setter in the container
-  def from(c: Context)(fieldType: c.Type, idx: Int, container: c.TermName, fieldValue: c.Tree): Try[c.Tree]
+  def from(c: Context)(fieldType: c.Type,
+                       idx: Int,
+                       container: c.TermName,
+                       fieldValue: c.Tree): Try[c.Tree]
 }

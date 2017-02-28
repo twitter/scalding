@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.tuple._
@@ -57,7 +57,8 @@ class ReflectionTuplePacker[T](implicit m: Manifest[T]) extends TuplePacker[T] {
   override def newConverter(fields: Fields) = new ReflectionTupleConverter[T](fields)(m)
 }
 
-class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) extends TupleConverter[T] {
+class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T])
+    extends TupleConverter[T] {
   override val arity = fields.size
 
   def lowerFirst(s: String) = s.substring(0, 1).toLowerCase + s.substring(1)
@@ -71,17 +72,19 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   def validate(): Unit = {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
-    val missing = Dsl.asList(fields).find { f => !getSetters.contains(f.toString) }
+    val missing = Dsl.asList(fields).find { f =>
+      !getSetters.contains(f.toString)
+    }
 
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
   }
   validate()
 
-  def getSetters = m.runtimeClass
-    .getDeclaredMethods
-    .filter { _.getName.startsWith("set") }
-    .groupBy { setterToFieldName(_) }
-    .mapValues { _.head }
+  def getSetters =
+    m.runtimeClass.getDeclaredMethods
+      .filter { _.getName.startsWith("set") }
+      .groupBy { setterToFieldName(_) }
+      .mapValues { _.head }
 
   // Do all the reflection for the setters we need:
   // This needs to be lazy because Method is not serializable
@@ -107,14 +110,16 @@ class OrderedTuplePacker[T](implicit m: Manifest[T]) extends TuplePacker[T] {
   override def newConverter(fields: Fields) = new OrderedConstructorConverter[T](fields)(m)
 }
 
-class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T]) extends TupleConverter[T] {
+class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T])
+    extends TupleConverter[T] {
   override val arity = fields.size
   // Keep this as a method, so we can validate by calling, but don't serialize it, and keep it lazy
   // below
-  def getConstructor = mf.runtimeClass
-    .getConstructors
-    .filter { _.getParameterTypes.size == fields.size }
-    .head.asInstanceOf[Constructor[T]]
+  def getConstructor =
+    mf.runtimeClass.getConstructors
+      .filter { _.getParameterTypes.size == fields.size }
+      .head
+      .asInstanceOf[Constructor[T]]
 
   //Make sure we can actually get a constructor:
   getConstructor

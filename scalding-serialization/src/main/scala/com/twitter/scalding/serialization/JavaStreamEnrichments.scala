@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import java.io._
@@ -41,6 +41,7 @@ object JavaStreamEnrichments {
     def wrapAsOutputStreamAt(pos: Int): ArrayWrappingOutputStream =
       new ArrayWrappingOutputStream(bytes, pos)
   }
+
   /**
    * Wraps an Array so that you can write into it as a stream without reallocations
    * or copying at the end. Useful if you know an upper bound on the number of bytes
@@ -80,6 +81,7 @@ object JavaStreamEnrichments {
    * This code is similar to those algorithms
    */
   implicit class RichInputStream(val s: InputStream) extends AnyVal {
+
     /**
      * If s supports marking, we mark it. Otherwise we read the needed
      * bytes out into a ByteArrayStream and return that.
@@ -96,11 +98,13 @@ object JavaStreamEnrichments {
      * {/code}
      */
     def markOrBuffer(size: Int): InputStream = {
-      val ms = if (s.markSupported) s else {
-        val buf = new Array[Byte](size)
-        s.readFully(buf)
-        new ByteArrayInputStream(buf)
-      }
+      val ms =
+        if (s.markSupported) s
+        else {
+          val buf = new Array[Byte](size)
+          s.readFully(buf)
+          new ByteArrayInputStream(buf)
+        }
       // Make sure we can reset after we read this many bytes
       ms.mark(size)
       ms
@@ -210,7 +214,8 @@ object JavaStreamEnrichments {
       def go(c: Long): Unit = {
         val skipped = s.skip(c)
         if (skipped == c) ()
-        else if (skipped == 0L) throw new IOException(s"could not skipFully: count, c, skipped = ${(count, c, skipped)}")
+        else if (skipped == 0L)
+          throw new IOException(s"could not skipFully: count, c, skipped = ${(count, c, skipped)}")
         else go(c - skipped)
       }
       if (count != 0L) go(count) else ()
@@ -220,9 +225,8 @@ object JavaStreamEnrichments {
   implicit class RichOutputStream(val s: OutputStream) extends AnyVal {
     def writeBoolean(b: Boolean): Unit = if (b) s.write(1: Byte) else s.write(0: Byte)
 
-    def writeBytes(b: Array[Byte], off: Int, len: Int): Unit = {
+    def writeBytes(b: Array[Byte], off: Int, len: Int): Unit =
       s.write(b, off, len)
-    }
 
     def writeByte(b: Byte): Unit = s.write(b)
 

@@ -16,16 +16,16 @@ package com.twitter.scalding
 package typed
 
 import java.util.Properties
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
 
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.TextLine
-import cascading.scheme.local.{ TextLine => LocalTextLine }
-import cascading.tap.{ Tap, SinkMode }
-import cascading.tap.hadoop.{ Hfs, PartitionTap }
-import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
+import cascading.scheme.local.{TextLine => LocalTextLine}
+import cascading.tap.{SinkMode, Tap}
+import cascading.tap.hadoop.{Hfs, PartitionTap}
+import cascading.tap.local.{FileTap, PartitionTap => LocalPartitionTap}
 import cascading.tap.partition.Partition
-import cascading.tuple.{ Fields, Tuple, TupleEntry }
+import cascading.tuple.{Fields, Tuple, TupleEntry}
 
 /**
  * Scalding source to read or write partitioned text.
@@ -52,10 +52,18 @@ import cascading.tuple.{ Fields, Tuple, TupleEntry }
  * @param template Template for the partitioned path
  * @param encoding Text encoding of the file content
  */
-case class PartitionedTextLine[P](
-  path: String, template: String, encoding: String = TextLine.DEFAULT_CHARSET)(implicit val valueSetter: TupleSetter[String], val valueConverter: TupleConverter[(Long, String)],
-    val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P]) extends SchemedSource with TypedSink[(P, String)] with Mappable[(P, (Long, String))] with HfsTapProvider
-  with java.io.Serializable {
+case class PartitionedTextLine[P](path: String,
+                                  template: String,
+                                  encoding: String = TextLine.DEFAULT_CHARSET)(
+    implicit val valueSetter: TupleSetter[String],
+    val valueConverter: TupleConverter[(Long, String)],
+    val partitionSetter: TupleSetter[P],
+    val partitionConverter: TupleConverter[P])
+    extends SchemedSource
+    with TypedSink[(P, String)]
+    with Mappable[(P, (Long, String))]
+    with HfsTapProvider
+    with java.io.Serializable {
 
   // The partition fields, offset by the value arity.
   val partitionFields =
@@ -65,8 +73,9 @@ case class PartitionedTextLine[P](
   // see sinkFields in PartitionSchemed for other half of this work around.
   override def hdfsScheme = {
     val scheme =
-      HadoopSchemeInstance(new TextLine(TextLine.DEFAULT_SOURCE_FIELDS, encoding)
-        .asInstanceOf[Scheme[_, _, _, _, _]])
+      HadoopSchemeInstance(
+        new TextLine(TextLine.DEFAULT_SOURCE_FIELDS, encoding)
+          .asInstanceOf[Scheme[_, _, _, _, _]])
     scheme.setSinkFields(PartitionUtil.toFields(0, valueSetter.arity))
     scheme
   }
@@ -94,7 +103,9 @@ case class PartitionedTextLine[P](
     mode match {
       case Local(_) => {
         val fileTap = new FileTap(localScheme, path, SinkMode.REPLACE)
-        new LocalPartitionTap(fileTap, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
+        new LocalPartitionTap(fileTap,
+                              new TemplatePartition(partitionFields, template),
+                              SinkMode.UPDATE)
           .asInstanceOf[Tap[_, _, _]]
       }
       case Hdfs(_, _) => {

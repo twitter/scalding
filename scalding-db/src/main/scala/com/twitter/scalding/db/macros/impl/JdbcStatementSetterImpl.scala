@@ -18,7 +18,7 @@ package com.twitter.scalding.db.macros.impl
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
+import com.twitter.bijection.macros.{IsCaseClass, MacroGenerated}
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding._
 import com.twitter.scalding.macros.impl.CaseClassBasedSetterImpl
@@ -29,8 +29,8 @@ import com.twitter.scalding.db.JdbcStatementSetter
  */
 private[macros] object JdbcStatementSetterImpl {
 
-  def caseClassJdbcSetterCommonImpl[T](c: Context,
-    allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[JdbcStatementSetter[T]] = {
+  def caseClassJdbcSetterCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(
+      implicit T: c.WeakTypeTag[T]): c.Expr[JdbcStatementSetter[T]] = {
     import c.universe._
 
     val stmtTerm = newTermName(c.fresh("stmt"))
@@ -46,4 +46,3 @@ private[macros] object JdbcStatementSetterImpl {
     c.Expr[JdbcStatementSetter[T]](res)
   }
 }
-

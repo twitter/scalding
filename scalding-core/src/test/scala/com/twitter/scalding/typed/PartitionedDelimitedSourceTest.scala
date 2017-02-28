@@ -16,9 +16,9 @@ package com.twitter.scalding.typed
 
 import java.io.File
 
-import scala.io.{ Source => ScalaSource }
+import scala.io.{Source => ScalaSource}
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import com.twitter.scalding._
 import TDsl._

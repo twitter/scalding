@@ -6,9 +6,11 @@ import com.twitter.scalding.db.macros._
 import com.twitter.scalding.db.macros.impl.FieldName
 
 object ColumnFormat {
-  def apply(c: Context)(fAccessor: List[c.universe.MethodSymbol], fType: String, size: Option[Int])(implicit fName: FieldName,
-    isNullable: Boolean, defaultV: Option[c.Expr[String]]): ColumnFormat[c.type] = {
-
+  def apply(
+      c: Context)(fAccessor: List[c.universe.MethodSymbol], fType: String, size: Option[Int])(
+      implicit fName: FieldName,
+      isNullable: Boolean,
+      defaultV: Option[c.Expr[String]]): ColumnFormat[c.type] =
     new ColumnFormat[c.type](c) {
       val fieldAccessor = fAccessor
       val fieldType = fType
@@ -17,7 +19,6 @@ object ColumnFormat {
       val sizeOpt = size
       val defaultValue = defaultV
     }
-  }
 }
 
 /**
@@ -34,4 +35,3 @@ abstract class ColumnFormat[C <: Context](val ctx: C) {
   def sizeOpt: Option[Int]
   def defaultValue: Option[ctx.Expr[String]]
 }
-

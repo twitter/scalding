@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import scala.collection.mutable.{ Buffer, ListBuffer }
+import scala.collection.mutable.{Buffer, ListBuffer}
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import cascading.tuple.Tuple
@@ -28,13 +28,11 @@ import scala.util.Try
 object JobTest {
 
   @deprecated(message = "Use the non-reflection based JobTest apply methods", since = "0.16.1")
-  def apply(jobName: String) = {
+  def apply(jobName: String) =
     new JobTest((args: Args) => Job(jobName, args))
-  }
 
-  def apply(cons: (Args) => Job) = {
+  def apply(cons: (Args) => Job) =
     new JobTest(cons)
-  }
 
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
@@ -48,9 +46,8 @@ object JobTest {
 }
 
 object CascadeTest {
-  def apply(jobName: String) = {
+  def apply(jobName: String) =
     new CascadeTest((args: Args) => Job(jobName, args))
-  }
 }
 
 /**
@@ -66,7 +63,9 @@ class JobTest(cons: (Args) => Job) {
   private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
-  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
+  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ =>
+    None
+  }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
   private var validateJob = false
@@ -82,17 +81,23 @@ class JobTest(cons: (Args) => Job) {
   }
 
   private def sourceBuffer[T: TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
-    source { src => if (src == s) Some(tups) else None }
+    source { src =>
+      if (src == s) Some(tups) else None
+    }
     this
   }
 
   /** Add a function to produce a mock when a certain source is requested */
   def source[T](fn: Source => Option[Iterable[T]])(implicit setter: TupleSetter[T]): JobTest = {
     val oldSm = sourceMap
-    val bufferTupFn = fn.andThen { optItT => optItT.map { _.map(t => setter(t)).toBuffer } }
+    val bufferTupFn = fn.andThen { optItT =>
+      optItT.map { _.map(t => setter(t)).toBuffer }
+    }
     // We have to memoize to return the same buffer each time
     val memo = scala.collection.mutable.Map[Source, Option[Buffer[Tuple]]]()
-    sourceMap = { (src: Source) => memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src)) }
+    sourceMap = { (src: Source) =>
+      memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src))
+    }
     this
   }
 
@@ -101,7 +106,8 @@ class JobTest(cons: (Args) => Job) {
    * .ifSource { case Tsv("in") => List(1, 2, 3) }
    * We need a different function name from source to help the compiler
    */
-  def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
+  def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(
+      implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
 
   def source[T](s: Source, iTuple: Iterable[T])(implicit setter: TupleSetter[T]): JobTest =
@@ -120,11 +126,15 @@ class JobTest(cons: (Args) => Job) {
      * you also modify the `finalize` function accordingly.
      */
     sinkSet += s
-    callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
+    callbacks += (() =>
+                    op(buffer.map { tup =>
+                      conv(new TupleEntry(tup))
+                    }))
     this
   }
 
-  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
+  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(
+      implicit conv: TupleConverter[A]) =
     sink[A](s)(op)
 
   // Used to pass an assertion about a counter defined by the given group and name.
@@ -170,7 +180,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   // This SITS is unfortunately needed to get around Specs
-  def finish(): Unit = { () }
+  def finish(): Unit = ()
 
   def validate(v: Boolean) = {
     validateJob = v
@@ -187,7 +197,8 @@ class JobTest(cons: (Args) => Job) {
         conf.set("jobclient.completion.poll.interval", "100")
         conf.set("cascading.flow.job.pollinginterval", "5")
         // Work around for local hadoop race
-        conf.set("mapred.local.dir", "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
+        conf.set("mapred.local.dir",
+                 "/tmp/hadoop/%s/mapred/local".format(java.util.UUID.randomUUID))
         HadoopTest(conf, sourceMap)
       } else {
         Test(sourceMap)
@@ -206,9 +217,12 @@ class JobTest(cons: (Args) => Job) {
 
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
-      System.setProperty("cascading.planner.plan.path", "target/test/cascading/traceplan/" + job.name)
-      System.setProperty("cascading.planner.plan.transforms.path", "target/test/cascading/traceplan/" + job.name + "/transform")
-      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
+      System.setProperty("cascading.planner.plan.path",
+                         "target/test/cascading/traceplan/" + job.name)
+      System.setProperty("cascading.planner.plan.transforms.path",
+                         "target/test/cascading/traceplan/" + job.name + "/transform")
+      System.setProperty("cascading.planner.stats.path",
+                         "target/test/cascading/traceplan/" + job.name + "/stats")
     }
 
     if (validateJob) {
@@ -229,13 +243,17 @@ class JobTest(cons: (Args) => Job) {
              * you also modify the `finalize` function accordingly.
              */
             // The sinks are written to disk, we need to clean them up:
-            sinkSet.foreach{ hadoopTest.finalize(_) }
+            sinkSet.foreach { hadoopTest.finalize(_) }
           }
           case _ => ()
         }
         // Now it is time to check the test conditions:
-        callbacks.foreach { cb => cb() }
-        statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }
+        callbacks.foreach { cb =>
+          cb()
+        }
+        statsCallbacks.foreach { cb =>
+          cb(job.scaldingCascadingStats.get)
+        }
       }
     }
   }

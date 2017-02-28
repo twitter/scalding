@@ -36,7 +36,10 @@ private[macros] object JdbcFieldSetter extends CaseClassFieldSetter {
     q"""$container.setObject($idx + 1, $fieldValue)"""
   }
 
-  override def from(c: Context)(fieldType: c.Type, idx: Int, container: c.TermName, fieldValue: c.Tree): Try[c.Tree] = Try {
+  override def from(c: Context)(fieldType: c.Type,
+                                idx: Int,
+                                container: c.TermName,
+                                fieldValue: c.Tree): Try[c.Tree] = Try {
     import c.universe._
 
     // jdbc Statement indexes are one-based, hence +1 here

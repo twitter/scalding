@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.filecache
 
 import cascading.tuple.Tuple
@@ -20,12 +20,14 @@ import com.twitter.scalding._
 import java.io.File
 import java.net.URI
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import scala.collection.mutable
 
 // TODO: fix? is it worth having the dep on mockito just for this?
 class DistributedCacheFileSpec extends WordSpec with Matchers {
-  case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]]) extends TestMode with CascadingLocal
+  case class UnknownMode(buffers: Map[Source, mutable.Buffer[Tuple]])
+      extends TestMode
+      with CascadingLocal
   /*
   val conf = smartMock[Configuration]
 
@@ -44,7 +46,7 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
 
   lazy val testMode = smartMock[Test]
   lazy val localMode = smartMock[Local]
-*/
+   */
   val uriString = "hdfs://foo.example:1234/path/to/the/stuff/thefilename.blah"
   val uri = new URI(uriString)
   val hashHex = URIHasher(uri)
@@ -82,5 +84,5 @@ class DistributedCacheFileSpec extends WordSpec with Matchers {
       an[RuntimeException] should be thrownBy (dcf.add()(mode))
     }
   }
-  */
+ */
 }

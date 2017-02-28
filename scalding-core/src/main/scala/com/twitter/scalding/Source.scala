@@ -12,19 +12,25 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import java.io.{ InputStream, OutputStream }
-import java.util.{ Map => JMap, Properties, UUID }
+import java.io.{InputStream, OutputStream}
+import java.util.{Map => JMap, Properties, UUID}
 
 import cascading.flow.FlowDef
 import cascading.flow.FlowProcess
-import cascading.scheme.{ NullScheme, Scheme }
+import cascading.scheme.{NullScheme, Scheme}
 import cascading.tap.hadoop.Hfs
 import cascading.tap.SinkMode
-import cascading.tap.{ Tap, SourceTap, SinkTap }
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry, TupleEntryCollector, TupleEntryIterator }
+import cascading.tap.{SinkTap, SourceTap, Tap}
+import cascading.tuple.{
+  Fields,
+  Tuple => CTuple,
+  TupleEntry,
+  TupleEntryCollector,
+  TupleEntryIterator
+}
 
 import cascading.pipe.Pipe
 
@@ -39,7 +45,8 @@ import scala.collection.JavaConverters._
 /**
  * thrown when validateTaps fails
  */
-class InvalidSourceException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+class InvalidSourceException(message: String, cause: Throwable)
+    extends RuntimeException(message, cause) {
   def this(message: String) = this(message, null)
 }
 
@@ -66,7 +73,9 @@ class InvalidSourceTap(val e: Throwable) extends SourceTap[JobConf, RecordReader
 
   override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator = throw new InvalidSourceException("Encountered InvalidSourceTap!", e)
+  override def openForRead(flow: FlowProcess[JobConf],
+                           input: RecordReader[_, _]): TupleEntryIterator =
+    throw new InvalidSourceException("Encountered InvalidSourceTap!", e)
 
   override def resourceExists(conf: JobConf): Boolean = false
 
@@ -94,7 +103,9 @@ class InvalidSourceTap(val e: Throwable) extends SourceTap[JobConf, RecordReader
 private[scalding] class InvalidInputFormat extends InputFormat[Nothing, Nothing] {
   override def getSplits(conf: JobConf, numSplits: Int): Nothing =
     throw new InvalidSourceException("getSplits called on InvalidInputFormat")
-  override def getRecordReader(split: InputSplit, conf: JobConf, reporter: org.apache.hadoop.mapred.Reporter): Nothing =
+  override def getRecordReader(split: InputSplit,
+                               conf: JobConf,
+                               reporter: org.apache.hadoop.mapred.Reporter): Nothing =
     throw new InvalidSourceException("getRecordReader called on InvalidInputFormat")
 }
 
@@ -191,9 +202,8 @@ abstract class Source extends java.io.Serializable {
     pipe
   }
 
-  protected def checkFlowDefNotNull()(implicit flowDef: FlowDef, mode: Mode): Unit = {
+  protected def checkFlowDefNotNull()(implicit flowDef: FlowDef, mode: Mode): Unit =
     assert(flowDef != null, "Trying to access null FlowDef while in mode: %s".format(mode))
-  }
 
   protected def transformForWrite(pipe: Pipe) = pipe
   protected def transformForRead(pipe: Pipe) = pipe
@@ -229,16 +239,19 @@ abstract class Source extends java.io.Serializable {
  */
 trait Mappable[+T] extends Source with TypedSource[T] {
 
-  final def mapTo[U](out: Fields)(mf: (T) => U)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+  final def mapTo[U](out: Fields)(
+      mf: (T) => U)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     RichPipe(read(flowDef, mode)).mapTo[T, U](sourceFields -> out)(mf)(converter, setter)
-  }
+
   /**
    * If you want to filter, you should use this and output a 0 or 1 length Iterable.
    * Filter does not change column names, and we generally expect to change columns here
    */
-  final def flatMapTo[U](out: Fields)(mf: (T) => TraversableOnce[U])(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+  final def flatMapTo[U](out: Fields)(mf: (T) => TraversableOnce[U])(
+      implicit flowDef: FlowDef,
+      mode: Mode,
+      setter: TupleSetter[U]): Pipe =
     RichPipe(read(flowDef, mode)).flatMapTo[T, U](sourceFields -> out)(mf)(converter, setter)
-  }
 
   /**
    * Allows you to read a Tap on the submit node NOT FOR USE IN THE MAPPERS OR REDUCERS.
@@ -248,7 +261,9 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     validateTaps(mode)
     val tap = createTap(Read)(mode)
     val conv = converter
-    mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
+    mode.openForRead(config, tap).asScala.map { te =>
+      conv(te.selectEntry(sourceFields))
+    }
   }
 }
 
@@ -257,7 +272,8 @@ trait Mappable[+T] extends Source with TypedSource[T] {
  * implementation for a Mappable with a single item.
  */
 trait SingleMappable[T] extends Mappable[T] {
-  override def converter[U >: T] = TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
+  override def converter[U >: T] =
+    TupleConverter.asSuperConverter(TupleConverter.singleConverter[T])
 }
 
 /**
@@ -265,9 +281,9 @@ trait SingleMappable[T] extends Mappable[T] {
  * can be used to drive a pipe without actually writing to HDFS.
  */
 class NullTap[Config, Input, Output, SourceContext, SinkContext]
-  extends SinkTap[Config, Output](
-    new NullScheme[Config, Input, Output, SourceContext, SinkContext](Fields.NONE, Fields.ALL),
-    SinkMode.UPDATE) {
+    extends SinkTap[Config, Output](
+      new NullScheme[Config, Input, Output, SourceContext, SinkContext](Fields.NONE, Fields.ALL),
+      SinkMode.UPDATE) {
 
   def getIdentifier = "nullTap"
   def openForWrite(flowProcess: FlowProcess[Config], output: Output) =
@@ -284,17 +300,19 @@ class NullTap[Config, Input, Output, SourceContext, SinkContext]
 }
 
 trait BaseNullSource extends Source {
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     readOrWrite match {
       case Read => throw new Exception("not supported, reading from null")
-      case Write => mode match {
-        case Hdfs(_, _) => new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
-        case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
-        case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
-      }
+      case Write =>
+        mode match {
+          case Hdfs(_, _) =>
+            new NullTap[JobConf, RecordReader[_, _], OutputCollector[_, _], Any, Any]
+          case Local(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
+          case Test(_) => new NullTap[Properties, InputStream, OutputStream, Any, Any]
+        }
     }
-  }
 }
+
 /**
  * A source outputs nothing. It is used to drive execution of a task for side effect only.
  */

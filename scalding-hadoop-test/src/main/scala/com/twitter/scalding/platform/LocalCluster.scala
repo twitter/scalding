@@ -12,19 +12,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.{ File, RandomAccessFile }
+import java.io.{File, RandomAccessFile}
 import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.filecache.DistributedCache
-import org.apache.hadoop.fs.{ FileUtil, Path }
+import org.apache.hadoop.fs.{FileUtil, Path}
 import org.apache.hadoop.hdfs.MiniDFSCluster
-import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
+import org.apache.hadoop.mapred.{JobConf, MiniMRCluster}
 import org.slf4j.LoggerFactory
 import org.slf4j.impl.Log4jLoggerAdapter
 
@@ -89,7 +89,8 @@ class LocalCluster(mutex: Boolean = true) {
     val conf = new Configuration
     val dfs = new MiniDFSCluster(conf, 4, true, null)
     val fileSystem = dfs.getFileSystem
-    val cluster = new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
+    val cluster =
+      new MiniMRCluster(4, fileSystem.getUri.toString, 1, null, null, new JobConf(conf))
     val mrJobConf = cluster.createJobConf()
     mrJobConf.setInt("mapred.submit.replication", 2)
     mrJobConf.set("mapred.map.max.attempts", "2")
@@ -109,11 +110,12 @@ class LocalCluster(mutex: Boolean = true) {
     mrJobConf.setReduceSpeculativeExecution(false)
     mrJobConf.set("mapreduce.user.classpath.first", "true")
 
-    LOG.debug("Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)
+    LOG.debug(
+      "Creating directory to store jars on classpath: " + LocalCluster.HADOOP_CLASSPATH_DIR)
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
     // merge in input configuration
-    inConf.toMap.foreach{ case (k, v) => mrJobConf.set(k, v) }
+    inConf.toMap.foreach { case (k, v) => mrJobConf.set(k, v) }
 
     hadoop = Some(dfs, cluster, mrJobConf)
 
@@ -145,13 +147,13 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
       classOf[com.twitter.maple.tap.TupleMemoryInputFormat],
-      classOf[org.apache.commons.configuration.Configuration]).foreach { addClassSourceToClassPath(_) }
+      classOf[org.apache.commons.configuration.Configuration]
+    ).foreach { addClassSourceToClassPath(_) }
     this
   }
 
-  def addClassSourceToClassPath[T](clazz: Class[T]): Unit = {
+  def addClassSourceToClassPath[T](clazz: Class[T]): Unit =
     addFileToHadoopClassPath(getFileForClass(clazz))
-  }
 
   def addFileToHadoopClassPath(resourceDir: File): Boolean =
     if (classpath.contains(resourceDir)) {
@@ -161,7 +163,8 @@ class LocalCluster(mutex: Boolean = true) {
       LOG.debug("Not yet on Hadoop classpath: " + resourceDir)
       val localJarFile = if (resourceDir.isDirectory) MakeJar(resourceDir) else resourceDir
       val hdfsJarPath = new Path(LocalCluster.HADOOP_CLASSPATH_DIR, localJarFile.getName)
-      fileSystem.copyFromLocalFile(new Path("file://%s".format(localJarFile.getAbsolutePath)), hdfsJarPath)
+      fileSystem.copyFromLocalFile(new Path("file://%s".format(localJarFile.getAbsolutePath)),
+                                   hdfsJarPath)
       DistributedCache.addFileToClassPath(hdfsJarPath, jobConf, fileSystem)
       LOG.debug("Added to Hadoop classpath: " + localJarFile)
       classpath += resourceDir

@@ -14,6 +14,7 @@ class HelpException extends RuntimeException("User asked for help")
 class DescriptionValidationException(msg: String) extends RuntimeException(msg)
 
 trait ArgHelper {
+
   /**
    * Similar to describe but validate all args are described
    *
@@ -21,12 +22,11 @@ trait ArgHelper {
    * @param ex Input Execution
    * @return Output Execution
    */
-  def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+  def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] =
     Execution.getArgs.flatMap { args =>
       validatedDescribe(describedArgs, args)
       ex
     }
-  }
 
   /**
    * Describe a set of Args given Descriptions and validate all Args are described
@@ -53,12 +53,11 @@ trait ArgHelper {
    * @param ex Input Execution
    * @return Output Execution
    */
-  def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+  def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] =
     Execution.getArgs.flatMap { args =>
       describe(describedArgs, args)
       ex
     }
-  }
 
   /**
    * Describe a set of Args given Descriptions
@@ -73,7 +72,8 @@ trait ArgHelper {
   def helpRequest(describedArgs: Seq[DescribedArg]): Nothing = {
     val top = "\n###########################################################################\n\n"
     val usage = s"Command Line Args :: ${argString(describedArgs)}\n\n\n"
-    val bottom = "\n\n###########################################################################\n"
+    val bottom =
+      "\n\n###########################################################################\n"
 
     println(top + usage + help(describedArgs) + bottom)
 
@@ -86,7 +86,7 @@ trait ArgHelper {
    * @param describedArgs List of Argument Descriptions
    * @return Command Line Parameters
    */
-  private[this] def argString(describedArgs: Seq[DescribedArg]): String = {
+  private[this] def argString(describedArgs: Seq[DescribedArg]): String =
     describedArgs.foldLeft("") {
       case (str, describedArg) =>
         val msg = describedArg match {
@@ -97,7 +97,6 @@ trait ArgHelper {
         }
         str + msg
     } + "[--help]"
-  }
 
   /**
    * More detailed help command for these described arguments
@@ -105,7 +104,7 @@ trait ArgHelper {
    * @param describedArgs List of Argument Descriptions
    * @return Detailed Help for the Args
    */
-  private[this] def help(describedArgs: Seq[DescribedArg]): String = {
+  private[this] def help(describedArgs: Seq[DescribedArg]): String =
     describedArgs.foldLeft("") {
       case (str, describedArg) =>
         val msg = describedArg match {
@@ -116,7 +115,6 @@ trait ArgHelper {
         }
         str + msg
     } + "--help :: Show this help message."
-  }
 }
 
 object ArgHelp extends ArgHelper

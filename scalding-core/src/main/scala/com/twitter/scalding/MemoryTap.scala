@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.tap.Tap
@@ -24,13 +24,13 @@ import cascading.flow.FlowProcess
 import scala.collection.mutable.Buffer
 import scala.collection.JavaConverters._
 
-class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupleBuffer: Buffer[Tuple])
-  extends Tap[Properties, In, Out](scheme) {
+class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _],
+                         val tupleBuffer: Buffer[Tuple])
+    extends Tap[Properties, In, Out](scheme) {
 
   private var modifiedTime: Long = 1L
-  def updateModifiedTime(): Unit = {
+  def updateModifiedTime(): Unit =
     modifiedTime = System.currentTimeMillis
-  }
 
   override def createResource(conf: Properties) = {
     updateModifiedTime()
@@ -44,11 +44,11 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
   override def getModifiedTime(conf: Properties) = if (resourceExists(conf)) modifiedTime else 0L
   override lazy val getIdentifier: String = scala.math.random.toString
 
-  override def openForRead(flowProcess: FlowProcess[Properties], input: In) = {
+  override def openForRead(flowProcess: FlowProcess[Properties], input: In) =
     new TupleEntryChainIterator(scheme.getSourceFields, tupleBuffer.toIterator.asJava)
-  }
 
-  override def openForWrite(flowProcess: FlowProcess[Properties], output: Out): TupleEntryCollector = {
+  override def openForWrite(flowProcess: FlowProcess[Properties],
+                            output: Out): TupleEntryCollector = {
     tupleBuffer.clear()
     new MemoryTupleEntryCollector(tupleBuffer, this)
   }
@@ -59,7 +59,8 @@ class MemoryTap[In, Out](val scheme: Scheme[Properties, In, Out, _, _], val tupl
 
 }
 
-class MemoryTupleEntryCollector(val tupleBuffer: Buffer[Tuple], mt: MemoryTap[_, _]) extends TupleEntryCollector {
+class MemoryTupleEntryCollector(val tupleBuffer: Buffer[Tuple], mt: MemoryTap[_, _])
+    extends TupleEntryCollector {
 
   override def collect(tupleEntry: TupleEntry): Unit = {
     mt.updateModifiedTime()

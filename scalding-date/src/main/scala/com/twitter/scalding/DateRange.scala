@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import scala.annotation.tailrec
@@ -20,6 +20,7 @@ import scala.annotation.tailrec
 import java.util.TimeZone
 
 object DateRange extends java.io.Serializable {
+
   /**
    * Parse this string into a range.
    * 2009-10-01 is interpetted as the whole day
@@ -38,8 +39,8 @@ object DateRange extends java.io.Serializable {
    * could be construed as matching the string passed, e.g.
    * ("2011-01-02T04", "2011-01-02T05") includes two full hours (all of 4 and all of 5)
    */
-  def parse(iso8601start: String,
-    iso8601inclusiveUpper: String)(implicit tz: TimeZone, dp: DateParser): DateRange = {
+  def parse(iso8601start: String, iso8601inclusiveUpper: String)(implicit tz: TimeZone,
+                                                                 dp: DateParser): DateRange = {
 
     val start = RichDate(iso8601start)
     val end = RichDate.upperBound(iso8601inclusiveUpper)
@@ -51,11 +52,12 @@ object DateRange extends java.io.Serializable {
   /**
    * Pass one or two args (from a scalding.Args .list) to parse into a DateRange
    */
-  def parse(fromArgs: Seq[String])(implicit tz: TimeZone, dp: DateParser): DateRange = fromArgs match {
-    case Seq(s, e) => parse(s, e)
-    case Seq(o) => parse(o)
-    case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
-  }
+  def parse(fromArgs: Seq[String])(implicit tz: TimeZone, dp: DateParser): DateRange =
+    fromArgs match {
+      case Seq(s, e) => parse(s, e)
+      case Seq(o) => parse(o)
+      case x => sys.error("--date must have exactly one or two date[time]s. Got: " + x.toString)
+    }
 
   /**
    * DateRanges are inclusive. Use this to create a DateRange that excludes
@@ -74,6 +76,7 @@ object DateRange extends java.io.Serializable {
 case class DateRange(val start: RichDate, val end: RichDate) {
   import DateOps._
   require(start <= end, s"""The start "${start}" must be before or on the end "${end}".""")
+
   /**
    * shift this by the given unit
    */
@@ -82,11 +85,13 @@ case class DateRange(val start: RichDate, val end: RichDate) {
 
   def isBefore(d: RichDate) = end < d
   def isAfter(d: RichDate) = d < start
+
   /**
    * make the range wider by delta on each side.  Good to catch events which
    * might spill over.
    */
   def embiggen(delta: Duration) = DateRange(start - delta, end + delta)
+
   /**
    * Extend the length by moving the end. We can keep the party going, but we
    * can't start it earlier.
@@ -94,6 +99,7 @@ case class DateRange(val start: RichDate, val end: RichDate) {
   def extend(delta: Duration) = DateRange(start, end + delta)
 
   def contains(point: RichDate) = (start <= point) && (point <= end)
+
   /**
    * Is the given Date range a (non-strict) subset of the given range
    */

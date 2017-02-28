@@ -1,7 +1,11 @@
 package com.twitter.scalding.parquet.tuple.macros
 
-import com.twitter.scalding.parquet.tuple.macros.impl.{ ParquetReadSupportProvider, ParquetSchemaProvider, WriteSupportProvider }
-import com.twitter.scalding.parquet.tuple.scheme.{ ParquetReadSupport, ParquetWriteSupport }
+import com.twitter.scalding.parquet.tuple.macros.impl.{
+  ParquetReadSupportProvider,
+  ParquetSchemaProvider,
+  WriteSupportProvider
+}
+import com.twitter.scalding.parquet.tuple.scheme.{ParquetReadSupport, ParquetWriteSupport}
 
 import scala.reflect.macros.whitebox.Context
 import scala.language.experimental.macros
@@ -13,7 +17,6 @@ import macrocompat.bundle
  * like scala List, Set, and Map.
  * @author Jian TANG
  */
-
 @bundle
 class Impl(val c: Context) {
   val schemaProvider = new ParquetSchemaProvider((s: String) => s)
@@ -31,6 +34,7 @@ class Impl(val c: Context) {
 }
 
 object Macros {
+
   /**
    * Macro used to generate parquet schema for a given case class. For example if we have:
    *

@@ -1,8 +1,8 @@
 package com.twitter.scalding.parquet.thrift
 
 import cascading.scheme.Scheme
-import com.twitter.scalding.typed.{ PartitionSchemed, PartitionUtil }
-import com.twitter.scalding.{ FixedPathSource, HadoopSchemeInstance, TupleConverter, TupleSetter }
+import com.twitter.scalding.typed.{PartitionSchemed, PartitionUtil}
+import com.twitter.scalding.{FixedPathSource, HadoopSchemeInstance, TupleConverter, TupleSetter}
 
 import scala.reflect.ClassTag
 
@@ -27,15 +27,22 @@ import scala.reflect.ClassTag
  * }}}
  *
  */
-case class PartitionedParquetThriftSource[P, T <: ParquetThrift.ThriftBase](path: String, template: String)(implicit val ct: ClassTag[T],
-  val valueSetter: TupleSetter[T], val valueConverter: TupleConverter[T], val partitionSetter: TupleSetter[P], val partitionConverter: TupleConverter[P])
-  extends FixedPathSource(path) with ParquetThriftBase[T] with PartitionSchemed[P, T] with Serializable {
+case class PartitionedParquetThriftSource[P, T <: ParquetThrift.ThriftBase](path: String,
+                                                                            template: String)(
+    implicit val ct: ClassTag[T],
+    val valueSetter: TupleSetter[T],
+    val valueConverter: TupleConverter[T],
+    val partitionSetter: TupleSetter[P],
+    val partitionConverter: TupleConverter[P])
+    extends FixedPathSource(path)
+    with ParquetThriftBase[T]
+    with PartitionSchemed[P, T]
+    with Serializable {
 
   override val fields = PartitionUtil.toFields(0, implicitly[TupleSetter[T]].arity)
 
-  assert(
-    fields.size == valueSetter.arity,
-    "The number of fields needs to be the same as the arity of the value setter")
+  assert(fields.size == valueSetter.arity,
+         "The number of fields needs to be the same as the arity of the value setter")
 
   // Create the underlying scheme and explicitly set the source, sink fields to be only the specified fields
   override def hdfsScheme = {

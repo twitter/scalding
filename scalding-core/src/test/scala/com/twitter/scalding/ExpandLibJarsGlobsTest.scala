@@ -3,7 +3,7 @@ package com.twitter.scalding
 import java.io.File
 import java.nio._
 import java.nio.file._
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class ExpandLibJarsGlobsTest extends WordSpec with Matchers {
   def touch(parent: File, p: String): String = {
@@ -13,7 +13,8 @@ class ExpandLibJarsGlobsTest extends WordSpec with Matchers {
   }
 
   def getTmpRoot = {
-    val tmpRoot = new File(System.getProperty("java.io.tmpdir"), scala.util.Random.nextInt(Int.MaxValue).toString)
+    val tmpRoot = new File(System.getProperty("java.io.tmpdir"),
+                           scala.util.Random.nextInt(Int.MaxValue).toString)
     require(tmpRoot.mkdirs(), "Failed to make temporary directory")
     tmpRoot.deleteOnExit()
     tmpRoot
@@ -30,13 +31,16 @@ class ExpandLibJarsGlobsTest extends WordSpec with Matchers {
         touch(tmpRoot, s".myHidden.jar.myF_${idx}.jar")
       }
 
-      val resultingLibJars1 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/*.jar"))(1).split(",")
+      val resultingLibJars1 =
+        ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/*.jar"))(1).split(",")
       assert(resultingLibJars1.sorted.toList == jars.sorted.toList)
 
-      val resultingLibJars2 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/"))(1).split(",")
+      val resultingLibJars2 =
+        ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/"))(1).split(",")
       assert(resultingLibJars2.sorted.toList == jars.sorted.toList)
 
-      val resultingLibJars3 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/*"))(1).split(",")
+      val resultingLibJars3 =
+        ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/*"))(1).split(",")
       assert(resultingLibJars3.sorted.toList == jars.sorted.toList)
     }
 
@@ -50,7 +54,8 @@ class ExpandLibJarsGlobsTest extends WordSpec with Matchers {
         touch(tmpRoot, s".myHidden.jar.myF_${idx}.jar")
       }
 
-      val resultingLibJars1 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot.getAbsolutePath}/*.zip"))(1).split(",").filter(_.nonEmpty)
+      val resultingLibJars1 = ExpandLibJarsGlobs(
+        Array("-libjars", s"${tmpRoot.getAbsolutePath}/*.zip"))(1).split(",").filter(_.nonEmpty)
       assert(resultingLibJars1.isEmpty)
     }
 
@@ -70,11 +75,16 @@ class ExpandLibJarsGlobsTest extends WordSpec with Matchers {
       }
 
       // Using wildcards for both
-      val resultingLibJars1 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot1.getAbsolutePath}/*.jar,${tmpRoot2.getAbsolutePath}/*.jar"))(1).split(",")
+      val resultingLibJars1 = ExpandLibJarsGlobs(
+        Array("-libjars", s"${tmpRoot1.getAbsolutePath}/*.jar,${tmpRoot2.getAbsolutePath}/*.jar"))(
+        1).split(",")
       assert(resultingLibJars1.sorted.toList == (jars1 ++ jars2).sorted.toList)
 
       // No wildcards for second dir
-      val resultingLibJars2 = ExpandLibJarsGlobs(Array("-libjars", s"${tmpRoot1.getAbsolutePath}/*.jar,${tmpRoot2.getAbsolutePath}/myF_0.jar"))(1).split(",")
+      val resultingLibJars2 = ExpandLibJarsGlobs(
+        Array("-libjars",
+              s"${tmpRoot1.getAbsolutePath}/*.jar,${tmpRoot2.getAbsolutePath}/myF_0.jar"))(1)
+        .split(",")
       assert(resultingLibJars2.sorted.toList == (jars1 ++ jars2).sorted.toList)
 
     }

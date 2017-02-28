@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 /*
  * Zip uses side effect construct to create zipped list.
@@ -30,7 +30,7 @@ class Zip(args: Args) extends Job(args) {
 
   val zipped = Tsv("line", ('line)).pipe
     .using { createState }
-    .flatMap[String, (String, String)] ('line -> ('l1, 'l2)) {
+    .flatMap[String, (String, String)]('line -> ('l1, 'l2)) {
       case (accu, line) =>
         if (accu.lastLine == null) {
           accu.lastLine = line
@@ -49,7 +49,8 @@ class Zip(args: Args) extends Job(args) {
 class SideEffectTest extends WordSpec with Matchers with FieldConversions {
   "Zipper should do create zipped sequence. Coded with side effect" should {
     JobTest(new Zip(_))
-      .source(Tsv("line", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
+      .source(Tsv("line", ('line)),
+              List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
       .sink[(String, String)](Tsv("zipped")) { ob =>
         "correctly compute zipped sequence" in {
           val res = ob.toList
@@ -101,11 +102,20 @@ class ZipBuffer(args: Args) extends Job(args) {
 class SideEffectBufferTest extends WordSpec with Matchers with FieldConversions {
   "ZipBuffer should do create two zipped sequences, one for even lines and one for odd lines. Coded with side effect" should {
     JobTest("com.twitter.scalding.ZipBuffer")
-      .source(Tsv("line", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4"), Tuple1("line5"), Tuple1("line6")))
+      .source(Tsv("line", ('line)),
+              List(Tuple1("line1"),
+                   Tuple1("line2"),
+                   Tuple1("line3"),
+                   Tuple1("line4"),
+                   Tuple1("line5"),
+                   Tuple1("line6")))
       .sink[(String, String)](Tsv("zipped")) { ob =>
         "correctly compute zipped sequence" in {
           val res = ob.toList.sorted
-          val expected = List(("line1", "line3"), ("line3", "line5"), ("line2", "line4"), ("line4", "line6")).sorted
+          val expected = List(("line1", "line3"),
+                              ("line3", "line5"),
+                              ("line2", "line4"),
+                              ("line4", "line6")).sorted
           res shouldBe expected
         }
       }

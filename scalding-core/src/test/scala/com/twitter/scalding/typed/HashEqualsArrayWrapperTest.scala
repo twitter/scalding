@@ -1,16 +1,15 @@
 package com.twitter.scalding.typed
 
-import org.scalacheck.{ Arbitrary, Prop }
-import org.scalatest.{ FunSuite, PropSpec }
-import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalacheck.{Arbitrary, Prop}
+import org.scalatest.{FunSuite, PropSpec}
+import org.scalatest.prop.{Checkers, PropertyChecks}
 import scala.reflect.ClassTag
 
 object HashArrayEqualsWrapperLaws {
 
-  def check2[T](ordToTest: Ordering[HashEqualsArrayWrapper[T]])(implicit ord: Ordering[T], arb: Arbitrary[Array[T]]): Prop =
-
+  def check2[T](ordToTest: Ordering[HashEqualsArrayWrapper[T]])(implicit ord: Ordering[T],
+                                                                arb: Arbitrary[Array[T]]): Prop =
     Prop.forAll { (left: Array[T], right: Array[T]) =>
-
       val leftWrapped = HashEqualsArrayWrapper.wrap(left)
       val rightWrapped = HashEqualsArrayWrapper.wrap(right)
 
@@ -20,7 +19,8 @@ object HashArrayEqualsWrapperLaws {
 
       val cmp = ordToTest.compare(leftWrapped, rightWrapped)
 
-      val lenCmp = java.lang.Integer.compare(leftWrapped.wrapped.length, rightWrapped.wrapped.length)
+      val lenCmp =
+        java.lang.Integer.compare(leftWrapped.wrapped.length, rightWrapped.wrapped.length)
       if (lenCmp != 0) {
         cmp.signum == lenCmp.signum
       } else {
@@ -28,8 +28,8 @@ object HashArrayEqualsWrapperLaws {
       }
     }
 
-  def check[T](ordToTest: Ordering[Array[T]])(implicit ord: Ordering[T], arb: Arbitrary[Array[T]]): Prop =
-
+  def check[T](ordToTest: Ordering[Array[T]])(implicit ord: Ordering[T],
+                                              arb: Arbitrary[Array[T]]): Prop =
     Prop.forAll { (left: Array[T], right: Array[T]) =>
       import scala.Ordering.Implicits.seqDerivedOrdering
 
@@ -95,6 +95,8 @@ class HashArrayEqualsWrapperTest extends FunSuite {
 
   test("classForTag works correctly") {
     assert(HashEqualsArrayWrapper.classForTag(implicitly[ClassTag[String]]) === classOf[String])
-    assert(HashEqualsArrayWrapper.classForTag(implicitly[ClassTag[Array[Byte]]]) === classOf[Array[Byte]])
+    assert(
+      HashEqualsArrayWrapper
+        .classForTag(implicitly[ClassTag[Array[Byte]]]) === classOf[Array[Byte]])
   }
 }

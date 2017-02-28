@@ -7,7 +7,7 @@ import java.net.URI
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
+import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
 import org.apache.hadoop.fs.Path
 
 object URIHasher {
@@ -28,7 +28,10 @@ object URIHasher {
   def apply(uri: URI): String = {
     val (h1, h2) = HashFunc(uri.toASCIIString)
     val bytes = ByteBuffer.allocate(16).putLong(h1).putLong(h2).array()
-    bytes.map(deSign).map("%02x".format(_)).reduceLeft(_ + _) // lifted gently from com.twitter.util.U64
+    bytes
+      .map(deSign)
+      .map("%02x".format(_))
+      .reduceLeft(_ + _) // lifted gently from com.twitter.util.U64
   }
 }
 
@@ -81,6 +84,7 @@ object URIHasher {
  *
  */
 object DistributedCacheFile {
+
   /**
    * Create an object that can be used to register a given URI (representing an hdfs file)
    * that should be added to the DistributedCache.
@@ -110,13 +114,12 @@ object DistributedCacheFile {
   private[scalding] def cachedFile(path: String, mode: Mode): CachedFile =
     UncachedFile(Left(path)).cached(mode)
 
-  private[scalding] def addCachedFile(cachedFile: CachedFile, mode: Mode): Unit = {
+  private[scalding] def addCachedFile(cachedFile: CachedFile, mode: Mode): Unit =
     (cachedFile, mode) match {
       case (hadoopFile: HadoopCachedFile, hadoopMode: HadoopMode) =>
         HDistributedCache.addCacheFile(symlinkedUriFor(hadoopFile.sourceUri), hadoopMode.jobConf)
       case _ =>
     }
-  }
 
   def symlinkNameFor(uri: URI): String = {
     val hexsum = URIHasher(uri)
@@ -172,6 +175,7 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 }
 
 sealed abstract class CachedFile {
+
   /** The path to the cahced file on disk (the symlink registered at configuration time) */
   def path: String
 

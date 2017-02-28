@@ -12,21 +12,23 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 import java.io.Serializable
 import java.util.PriorityQueue
 import scala.collection.JavaConverters._
 
-import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
+import com.twitter.algebird.{Aggregator, Fold, Ring, Semigroup}
 import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
 
 object KeyedListLike {
+
   /** KeyedListLike items are implicitly convertable to TypedPipe */
-  implicit def toTypedPipe[K, V, S[K, +V] <: KeyedListLike[K, V, S]](keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
+  implicit def toTypedPipe[K, V, S[K, +V] <: KeyedListLike[K, V, S]](
+      keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
 }
 
 /**
@@ -43,7 +45,7 @@ trait KeyedList[K, +T] extends KeyedListLike[K, T, KeyedList]
  *  with a function from Iterator to another Iterator
  */
 trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
-  extends java.io.Serializable {
+    extends java.io.Serializable {
 
   /**
    * End of the operations on values. From this point on the keyed structure
@@ -87,7 +89,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     }
 
     }
-    */
+   */
 
   /**
    * filter keys on a predicate. More efficient than filter if you are
@@ -134,14 +136,20 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * and out of cascading/hadoop types.
    */
   def filter(fn: ((K, T)) => Boolean): This[K, T] =
-    mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
+    mapGroup { (k: K, items: Iterator[T]) =>
+      items.filter { t =>
+        fn((k, t))
+      }
+    }
 
   /**
    * flatten the values
    * Useful after sortedTake, for instance
    */
   def flattenValues[U](implicit ev: T <:< TraversableOnce[U]): This[K, U] =
-    mapValueStream(_.flatMap { us => us.asInstanceOf[TraversableOnce[U]] })
+    mapValueStream(_.flatMap { us =>
+      us.asInstanceOf[TraversableOnce[U]]
+    })
 
   /**
    * This is just short hand for mapValueStream(identity), it makes sure the
@@ -171,21 +179,27 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * but for Grouped we can avoid resorting to mapValueStream
    */
   def mapValues[V](fn: T => V): This[K, V] =
-    mapGroup { (_, iter) => iter.map(fn) }
+    mapGroup { (_, iter) =>
+      iter.map(fn)
+    }
 
   /**
    * Similar to mapValues, but works like flatMap, returning a collection of outputs
    * for each value input.
    */
   def flatMapValues[V](fn: T => TraversableOnce[V]): This[K, V] =
-    mapGroup { (_, iter) => iter.flatMap(fn) }
+    mapGroup { (_, iter) =>
+      iter.flatMap(fn)
+    }
 
   /**
    * Use this when you don't care about the key for the group,
    * otherwise use mapGroup
    */
   def mapValueStream[V](smfn: Iterator[T] => Iterator[V]): This[K, V] =
-    mapGroup { (k: K, items: Iterator[T]) => smfn(items) }
+    mapGroup { (k: K, items: Iterator[T]) =>
+      smfn(items)
+    }
 
   /**
    * Add all items according to the implicit Semigroup
@@ -237,7 +251,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
   /** For each key, count the number of values that satisfy a predicate */
   def count(fn: T => Boolean): This[K, Long] =
-    mapValues { t => if (fn(t)) 1L else 0L }.sum
+    mapValues { t =>
+      if (fn(t)) 1L else 0L
+    }.sum
 
   /** For each key, check to see if a predicate is true for all Values*/
   def forall(fn: T => Boolean): This[K, Boolean] =
@@ -282,11 +298,15 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * the fold for each key
    */
   def foldWithKey[V](fn: K => Fold[T, V]): This[K, V] =
-    mapGroup { (k, vs) => Iterator(fn(k).overTraversable(vs)) }
+    mapGroup { (k, vs) =>
+      Iterator(fn(k).overTraversable(vs))
+    }
 
   /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
-    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
+    mapValueStream { stream =>
+      Iterator(stream.foldLeft(z)(fn))
+    }
 
   /** For each key, scanLeft the values. see scala.collection.Iterable.scanLeft */
   def scanLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
@@ -309,7 +329,10 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     mapValueStream[U](Semigroup.sumOption[U](_).iterator)
 
   /** For each key, give the number of values */
-  def size: This[K, Long] = mapValues { x => 1L }.sum
+  def size: This[K, Long] =
+    mapValues { x =>
+      1L
+    }.sum
 
   /**
    * For each key, give the number of unique values. WARNING: May OOM.
@@ -331,6 +354,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * want to do some custom reduction, do it in mapGroup or mapValueStream
    */
   def toList: This[K, List[T]] = mapValues { List(_) }.sum
+
   /**
    * AVOID THIS IF POSSIBLE
    * Same risks apply here as to toList: you may OOM. See toList.
@@ -359,6 +383,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
   /** Convert to a TypedPipe and only keep the keys */
   def keys: TypedPipe[K] = toTypedPipe.keys
+
   /** Convert to a TypedPipe and only keep the values */
   def values: TypedPipe[T] = toTypedPipe.values
 }

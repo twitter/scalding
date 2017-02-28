@@ -1,4 +1,3 @@
-
 /*
 Copyright 2012 Twitter, Inc.
 
@@ -13,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
-import scala.util.{ Try, Failure }
+import scala.util.{Failure, Try}
 import java.util.TimeZone
 import java.text.DateFormat
 
@@ -31,13 +30,13 @@ trait DateParser extends java.io.Serializable { self =>
 
   def rescueWith(second: DateParser): DateParser =
     new DateParser {
-      def parse(s: String)(implicit tz: TimeZone) = {
+      def parse(s: String)(implicit tz: TimeZone) =
         self.parse(s) orElse second.parse(s)
-      }
     }
 }
 
 object DateParser {
+
   /**
    * This is scalding's default date parser. You can choose this
    * by setting an implicit val DateParser.
@@ -47,8 +46,11 @@ object DateParser {
    */
   def default: DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) =
-      DateOps.getDateParser(s)
-        .map { p => p.parse(s) }
+      DateOps
+        .getDateParser(s)
+        .map { p =>
+          p.parse(s)
+        }
         .getOrElse(Failure(new IllegalArgumentException("Could not find parser for: " + s)))
   }
 

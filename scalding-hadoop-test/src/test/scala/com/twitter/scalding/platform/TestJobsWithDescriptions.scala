@@ -24,9 +24,12 @@ class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
-  TypedPipe.from[String](List("word1", "word1", "word2"))
+  TypedPipe
+    .from[String](List("word1", "word1", "word2"))
     .withDescription("map stage - assign words to 1")
-    .map { w => (w, 1L) }
+    .map { w =>
+      (w, 1L)
+    }
     .group
     .withDescription("reduce stage - sum")
     .sum

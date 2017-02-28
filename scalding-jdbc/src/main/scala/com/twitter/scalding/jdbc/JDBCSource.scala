@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.jdbc
 
-import com.twitter.scalding.{ AccessMode, Hdfs, Mode, Source, TestTapFactory }
+import com.twitter.scalding.{AccessMode, Hdfs, Mode, Source, TestTapFactory}
 import cascading.jdbc.JDBCTap
 import cascading.tap.Tap
 import cascading.tuple.Fields
@@ -82,7 +82,8 @@ abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
         passwd.get,
         driver.get,
         getTableDesc(tableName, columnNames, columnDefinitions),
-        getJDBCScheme(columnNames, filterCondition, updateBy, replaceOnInsert))
+        getJDBCScheme(columnNames, filterCondition, updateBy, replaceOnInsert)
+      )
       tap.setConcurrentReads(maxConcurrentReads)
       tap.setBatchSize(batchSize)
       tap
@@ -101,7 +102,10 @@ abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
   def toSqlCreateString: String = {
     def addBackTicks(str: String) = "`" + str + "`"
     val allCols = columns
-      .map { case ColumnDefinition(ColumnName(name), Definition(defn)) => addBackTicks(name) + " " + defn }
+      .map {
+        case ColumnDefinition(ColumnName(name), Definition(defn)) =>
+          addBackTicks(name) + " " + defn
+      }
       .mkString(",\n")
 
     "CREATE TABLE " + addBackTicks(tableName.get) + " (\n" + allCols + ",\n PRIMARY KEY HERE!!!!"
@@ -109,4 +113,3 @@ abstract class JDBCSource extends Source with ColumnDefiner with JdbcDriver {
 }
 
 case class TableName(get: String)
-

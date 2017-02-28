@@ -2,7 +2,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import cascading.flow.FlowDef
-import cascading.tuple.{ Fields, TupleEntry }
+import cascading.tuple.{Fields, TupleEntry}
 import cascading.pipe.Pipe
 
 /**
@@ -16,7 +16,6 @@ import cascading.pipe.Pipe
  *
  * @author : Krishnan Raman, kraman@twitter.com
  */
-
 object Combinatorics {
 
   /**
@@ -58,26 +57,28 @@ object Combinatorics {
       (pipe, num)
     })
 
-    val res = pipes.reduceLeft((a, b) => {
-      val num = b._2
-      val prevname = Symbol("n" + (num - 1))
-      val myname = Symbol("n" + num)
-      val mypipe = a._1
-        .crossWithSmaller(b._1)
-        .filter(prevname, myname){
-          foo: (Int, Int) =>
+    val res = pipes
+      .reduceLeft((a, b) => {
+        val num = b._2
+        val prevname = Symbol("n" + (num - 1))
+        val myname = Symbol("n" + num)
+        val mypipe = a._1
+          .crossWithSmaller(b._1)
+          .filter(prevname, myname) { foo: (Int, Int) =>
             val (nn1, nn2) = foo
             nn1 < nn2
-        }
-      (mypipe, -1)
-    })._1
+          }
+        (mypipe, -1)
+      })
+      ._1
 
     (1 to k).foldLeft(res)((a, b) => {
       val myname = Symbol("n" + b)
       val newname = Symbol("k" + b)
-      a.map(myname -> newname){
-        inpc: Int => input(inpc - 1)
-      }.discard(myname)
+      a.map(myname -> newname) { inpc: Int =>
+          input(inpc - 1)
+        }
+        .discard(myname)
     })
 
   }
@@ -85,13 +86,13 @@ object Combinatorics {
   /**
    * Return a pipe with all nCk combinations, with k columns per row
    */
-  def combinations(n: Int, k: Int)(implicit flowDef: FlowDef, mode: Mode) = combinations[Int]((1 to n).toArray, k)
+  def combinations(n: Int, k: Int)(implicit flowDef: FlowDef, mode: Mode) =
+    combinations[Int]((1 to n).toArray, k)
 
   /**
    * Return a pipe with all nPk permutations, with k columns per row
    * For details, see combinations(...) above
    */
-
   def permutations[T](input: IndexedSeq[T], k: Int)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
 
     val n = input.size
@@ -102,20 +103,20 @@ object Combinatorics {
     // on a given row, we cannot have duplicate columns in a permutation
     val res = pipes
       .reduceLeft((a, b) => { a.crossWithSmaller(b) })
-      .filter(allc) {
-        x: TupleEntry =>
-          Boolean
-          val values = (0 until allc.size).map(i => x.getInteger(i.asInstanceOf[java.lang.Integer]))
-          values.size == values.distinct.size
+      .filter(allc) { x: TupleEntry =>
+        Boolean
+        val values = (0 until allc.size).map(i => x.getInteger(i.asInstanceOf[java.lang.Integer]))
+        values.size == values.distinct.size
       }
 
     // map numerals to actual data
     (1 to k).foldLeft(res)((a, b) => {
       val myname = Symbol("n" + b)
       val newname = Symbol("k" + b)
-      a.map(myname -> newname){
-        inpc: Int => input(inpc - 1)
-      }.discard(myname)
+      a.map(myname -> newname) { inpc: Int =>
+          input(inpc - 1)
+        }
+        .discard(myname)
     })
 
   }
@@ -123,7 +124,8 @@ object Combinatorics {
   /**
    * Return a pipe with all nPk permutations, with k columns per row
    */
-  def permutations(n: Int, k: Int)(implicit flowDef: FlowDef, mode: Mode) = permutations[Int]((1 to n).toArray, k)
+  def permutations(n: Int, k: Int)(implicit flowDef: FlowDef, mode: Mode) =
+    permutations[Int]((1 to n).toArray, k)
 
   /**
    * Goal: Given weights (a,b,c, ...), we seek integers (x,y,z,...) to satisft
@@ -164,62 +166,81 @@ object Combinatorics {
    * This is at the heart of portfolio mgmt( Markowitz optimization), subset-sum, operations-research LP problems.
    *
    */
-
-  def weightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
+  def weightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(
+      implicit flowDef: FlowDef,
+      mode: Mode): Pipe = {
     val numWeights = weights.size
     val allColumns = (1 to numWeights).map(x => Symbol("k" + x))
 
     // create as many single-column pipes as the number of weights
-    val pipes = allColumns.zip(weights).map(x => {
-      val (name, wt) = x
-      val points = Stream.iterate(0.0) { _ + wt }.takeWhile(_ <= result)
-      IterableSource(points, name).read
-    }).zip(allColumns)
+    val pipes = allColumns
+      .zip(weights)
+      .map(x => {
+        val (name, wt) = x
+        val points = Stream.iterate(0.0) { _ + wt }.takeWhile(_ <= result)
+        IterableSource(points, name).read
+      })
+      .zip(allColumns)
 
     val first = pipes.head
     val accum = (first._1, List[Symbol](first._2))
     val rest = pipes.tail
 
-    val res = rest.foldLeft(accum)((a, b) => {
+    val res = rest
+      .foldLeft(accum)((a, b) => {
 
-      val (apipe, aname) = a
-      val (bpipe, bname) = b
-      val allc = (List(aname)).flatten ++ List[Symbol](bname)
+        val (apipe, aname) = a
+        val (bpipe, bname) = b
+        val allc = (List(aname)).flatten ++ List[Symbol](bname)
 
-      // Algorithm:
-      // Cross two pipes
-      // Create a temp column that stores intermediate results
-      // Apply progressive filtering on the temp column
-      // Discard the temp column
-      // Once all pipes are crossed, test for temp column within error bounds of result
-      // Discard duplicates at end of process
+        // Algorithm:
+        // Cross two pipes
+        // Create a temp column that stores intermediate results
+        // Apply progressive filtering on the temp column
+        // Discard the temp column
+        // Once all pipes are crossed, test for temp column within error bounds of result
+        // Discard duplicates at end of process
 
-      (apipe.crossWithSmaller(bpipe)
-        .map(allc -> 'temp){
-          x: TupleEntry =>
-            val values = (0 until allc.size).map(i => x.getDouble(i.asInstanceOf[java.lang.Integer]))
-            values.sum
-        }.filter('temp){
-          x: Double => if (allc.size == numWeights) (math.abs(x - result) <= error) else (x <= result)
-        }.discard('temp), allc)
-    })._1.unique(allColumns)
+        (apipe
+           .crossWithSmaller(bpipe)
+           .map(allc -> 'temp) { x: TupleEntry =>
+             val values =
+               (0 until allc.size).map(i => x.getDouble(i.asInstanceOf[java.lang.Integer]))
+             values.sum
+           }
+           .filter('temp) { x: Double =>
+             if (allc.size == numWeights) (math.abs(x - result) <= error) else (x <= result)
+           }
+           .discard('temp),
+         allc)
+      })
+      ._1
+      .unique(allColumns)
 
-    (1 to numWeights).zip(weights).foldLeft(res) ((a, b) => {
-      val (num, wt) = b
-      val myname = Symbol("k" + num)
-      a.map(myname -> myname){ x: Int => (x / wt).toInt }
-    })
+    (1 to numWeights)
+      .zip(weights)
+      .foldLeft(res)((a, b) => {
+        val (num, wt) = b
+        val myname = Symbol("k" + num)
+        a.map(myname -> myname) { x: Int =>
+          (x / wt).toInt
+        }
+      })
   }
 
   /**
    * Does the exact same thing as weightedSum, but filters out tuples with a weight of 0
    * The returned pipe contain only positive non-zero weights.
    */
-  def positiveWeightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
+  def positiveWeightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(
+      implicit flowDef: FlowDef,
+      mode: Mode): Pipe = {
     val allColumns = (1 to weights.size).map(x => Symbol("k" + x))
     weightedSum(weights, result, error)
       .filter(allColumns) { x: TupleEntry =>
-        (0 until allColumns.size).forall { i => x.getDouble(java.lang.Integer.valueOf(i)) != 0.0 }
+        (0 until allColumns.size).forall { i =>
+          x.getDouble(java.lang.Integer.valueOf(i)) != 0.0
+        }
       }
   }
 

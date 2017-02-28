@@ -19,13 +19,18 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object CaseObjectOrderedBuf {
   def dispatch(c: Context)(): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && tpe.typeSymbol.asClass.isModuleClass && !tpe.typeConstructor.takesTypeArgs =>
+    case tpe
+        if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && tpe.typeSymbol.asClass.isModuleClass && !tpe.typeConstructor.takesTypeArgs =>
       CaseObjectOrderedBuf(c)(tpe)
   }
 
@@ -40,7 +45,8 @@ object CaseObjectOrderedBuf {
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = q"()"
 
-      override def get(inputStream: ctx.TermName): ctx.Tree = q"${outerType.typeSymbol.companionSymbol}"
+      override def get(inputStream: ctx.TermName): ctx.Tree =
+        q"${outerType.typeSymbol.companionSymbol}"
 
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = q"0"
 
@@ -49,4 +55,3 @@ object CaseObjectOrderedBuf {
     }
   }
 }
-

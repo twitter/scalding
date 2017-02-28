@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 import cascading.flow.FlowDef
@@ -21,7 +21,8 @@ import java.util.WeakHashMap
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
-case class FlowState(sourceMap: Map[String, Source] = Map.empty, flowConfigUpdates: Set[(String, String)] = Set()) {
+case class FlowState(sourceMap: Map[String, Source] = Map.empty,
+                     flowConfigUpdates: Set[(String, String)] = Set()) {
   def addSource(id: String, s: Source): FlowState =
     copy(sourceMap = sourceMap + (id -> s))
 
@@ -51,14 +52,13 @@ object FlowStateMap {
   /**
    * Function to update a state.
    */
-  def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
+  def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T =
     flowMap.synchronized {
       val oldState = Option(flowMap.get(fd)).getOrElse(FlowState())
       val (newState, t) = fn(oldState)
       flowMap.put(fd, newState)
       t
     }
-  }
   def get(fd: FlowDef): Option[FlowState] =
     flowMap.synchronized { Option(flowMap.get(fd)) }
 
@@ -76,4 +76,3 @@ object FlowStateMap {
         .validateSources(mode)
     } else ()
 }
-

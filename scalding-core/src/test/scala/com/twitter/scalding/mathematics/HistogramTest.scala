@@ -12,23 +12,27 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.mathematics
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import com.twitter.scalding._
 
 class HistogramJob(args: Args) extends Job(args) {
   try {
     val hist = Tsv("input", 'n)
-      .groupAll{ _.histogram('n -> 'hist) }
+      .groupAll { _.histogram('n -> 'hist) }
 
     hist
-      .flatMapTo('hist -> ('bin, 'cdf)){ h: Histogram => h.cdf }
+      .flatMapTo('hist -> ('bin, 'cdf)) { h: Histogram =>
+        h.cdf
+      }
       .write(Tsv("cdf-output"))
 
     hist
-      .mapTo('hist -> ('min, 'max, 'sum, 'mean, 'stdDev)){ h: Histogram => (h.min, h.max, h.sum, h.mean, h.stdDev) }
+      .mapTo('hist -> ('min, 'max, 'sum, 'mean, 'stdDev)) { h: Histogram =>
+        (h.min, h.max, h.sum, h.mean, h.stdDev)
+      }
       .write(Tsv("stats-output"))
 
   } catch {

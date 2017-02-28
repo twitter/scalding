@@ -3,6 +3,7 @@ package com.twitter.scalding
 import com.twitter.algebird.Semigroup
 
 object ExecutionUtil {
+
   /**
    * Generate a list of executions from a date range
    *
@@ -10,7 +11,8 @@ object ExecutionUtil {
    * @param fn Function to run a execution given a date range
    * @return Sequence of Executions per Day
    */
-  def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(implicit dr: DateRange): Seq[Execution[T]] =
+  def executionsFromDates[T](duration: Duration)(fn: DateRange => Execution[T])(
+      implicit dr: DateRange): Seq[Execution[T]] =
     dr.each(duration).map(fn).toSeq
 
   /**
@@ -21,7 +23,8 @@ object ExecutionUtil {
    * @param fn Function to run a execution given a date range
    * @return Seq of Dates split by Duration with corresponding execution result
    */
-  def runDatesWithParallelism[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[(DateRange, T)]] = {
+  def runDatesWithParallelism[T](duration: Duration, parallelism: Int = 1)(
+      fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[(DateRange, T)]] = {
 
     val dates = dr.each(duration).toSeq
     Execution.withParallelism(dates.map(fn), parallelism).map(e => dates.zip(e))
@@ -35,8 +38,9 @@ object ExecutionUtil {
    * @param fn Function to run a execution given a date range
    * @return Execution of Sequences
    */
-  def runDateRangeWithParallelism[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[T]] =
-    runDatesWithParallelism(duration, parallelism)(fn).map(_.map{ case (_, t) => t })
+  def runDateRangeWithParallelism[T](duration: Duration, parallelism: Int = 1)(
+      fn: DateRange => Execution[T])(implicit dr: DateRange): Execution[Seq[T]] =
+    runDatesWithParallelism(duration, parallelism)(fn).map(_.map { case (_, t) => t })
 
   /**
    * Same as runDateRangeWithParallelism, but sums the sequence
@@ -54,10 +58,12 @@ object ExecutionUtil {
    * algebird supports monoids for maps and hll) and you wanted to do a
    * final aggregation of the Monoids computed for each duration.
    */
-  def runDateRangeWithParallelismSum[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange, semigroup: Semigroup[T]): Execution[T] = {
+  def runDateRangeWithParallelismSum[T](duration: Duration, parallelism: Int = 1)(
+      fn: DateRange => Execution[T])(implicit dr: DateRange,
+                                     semigroup: Semigroup[T]): Execution[T] = {
     require(dr.each(duration).nonEmpty, "Date Range can not be empty")
 
     runDateRangeWithParallelism(duration, parallelism)(fn)(dr)
-      .map(_.reduceLeft[T]{ case (l, r) => Semigroup.plus(l, r) })
+      .map(_.reduceLeft[T] { case (l, r) => Semigroup.plus(l, r) })
   }
 }

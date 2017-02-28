@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 import com.twitter.scalding._
 
 /**
@@ -37,8 +37,7 @@ Check the output:
   cat tutorial/data/output1.txt
 
 **/
-
-class Tutorial1(args : Args) extends Job(args) {
+class Tutorial1(args: Args) extends Job(args) {
 
   val input = TextLine("tutorial/data/hello.txt")
   val output = TextLine("tutorial/data/output1.txt")
@@ -46,8 +45,7 @@ class Tutorial1(args : Args) extends Job(args) {
   /**
   We generally write each step of the pipeline on a separate line.
   **/
-  input
-    .read
+  input.read
     .project('line)
     .write(output)
 }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.commons.extensions
 
@@ -23,20 +23,25 @@ import scala.collection.mutable.Buffer
 /**
  * @author Mike Jahr
  */
-
 class CheckpointJob(args: Args) extends Job(args) {
   implicit val implicitArgs: Args = args
 
   def in0 = Checkpoint[(Int, Int, Int)]("c0", ('x0, 'y0, 's0)) {
-    Tsv("input0").read.mapTo((0, 1, 2) -> ('x0, 'y0, 's0)) { x: (Int, Int, Int) => x }
+    Tsv("input0").read.mapTo((0, 1, 2) -> ('x0, 'y0, 's0)) { x: (Int, Int, Int) =>
+      x
+    }
   }
   def in1 = Checkpoint[(Int, Int, Int)]("c1", ('x1, 'y1, 's1)) {
-    Tsv("input1").read.mapTo((0, 1, 2) -> ('x1, 'y1, 's1)) { x: (Int, Int, Int) => x }
+    Tsv("input1").read.mapTo((0, 1, 2) -> ('x1, 'y1, 's1)) { x: (Int, Int, Int) =>
+      x
+    }
   }
   def out = Checkpoint[(Int, Int, Int)]("c2", ('x0, 'x1, 'score)) {
     in0
       .joinWithSmaller('y0 -> 'y1, in1)
-      .map(('s0, 's1) -> 'score) { v: (Int, Int) => v._1 * v._2 }
+      .map(('s0, 's1) -> 'score) { v: (Int, Int) =>
+        v._1 * v._2
+      }
       .groupBy('x0, 'x1) { _.sum[Double]('score) }
   }
 
@@ -50,17 +55,20 @@ class TypedCheckpointJob(args: Args) extends Job(args) {
   def in0 = Checkpoint[(Int, Int, Int)]("c0") {
     TypedTsv[(Int, Int, Int)]("input0").map(x => x)
   }
-  def in1 = Checkpoint[(Int, Int, Int)]("c1"){
+  def in1 = Checkpoint[(Int, Int, Int)]("c1") {
     TypedTsv[(Int, Int, Int)]("input1").map(x => x)
   }
   def out = Checkpoint[(Int, Int, Double)]("c2") {
-    in0.groupBy(_._2)
+    in0
+      .groupBy(_._2)
       .join(in1.groupBy(_._2))
-      .mapValues{ case (l, r) => ((l._1, r._1), (l._3 * r._3).toDouble) }
+      .mapValues { case (l, r) => ((l._1, r._1), (l._3 * r._3).toDouble) }
       .values
       .group
       .sum
-      .map{ tup => (tup._1._1, tup._1._2, tup._2) } // super ugly, don't do this in a real job
+      .map { tup =>
+        (tup._1._1, tup._1._2, tup._2)
+      } // super ugly, don't do this in a real job
   }
 
   out.write(TypedTsv[(Int, Int, Double)]("output"))

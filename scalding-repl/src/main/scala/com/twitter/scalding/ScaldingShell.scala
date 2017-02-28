@@ -23,7 +23,7 @@ import java.util.jar.JarOutputStream
 import org.apache.hadoop.util.GenericOptionsParser
 import org.apache.hadoop.conf.Configuration
 
-import scala.tools.nsc.{ GenericRunnerCommand, MainGenericRunner }
+import scala.tools.nsc.{GenericRunnerCommand, MainGenericRunner}
 import scala.tools.nsc.interpreter.ILoop
 import scala.tools.nsc.io.VirtualDirectory
 
@@ -49,7 +49,9 @@ trait BaseScaldingShell extends MainGenericRunner {
 
   protected def replState: BaseReplState = ReplState
 
-  protected def scaldingREPLProvider: () => ILoop = { () => new ScaldingILoop }
+  protected def scaldingREPLProvider: () => ILoop = { () =>
+    new ScaldingILoop
+  }
 
   /**
    * The main entry point for executing the REPL.
@@ -135,14 +137,13 @@ trait BaseScaldingShell extends MainGenericRunner {
    *
    * @return some file for the jar created, or `None` if the REPL is not running.
    */
-  private[scalding] def createReplCodeJar(): Option[File] = {
+  private[scalding] def createReplCodeJar(): Option[File] =
     scaldingREPL.map { repl =>
       val virtualDirectory = repl.virtualDirectory
       val tempJar = new File(Files.createTempDir(),
-        "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
+                             "scalding-repl-session-" + System.currentTimeMillis() + ".jar")
       createJar(virtualDirectory.asInstanceOf[VirtualDirectory], tempJar)
     }
-  }
 
   /**
    * Creates a jar file from the classes contained in a virtual directory.
@@ -170,10 +171,9 @@ trait BaseScaldingShell extends MainGenericRunner {
    * @param entryPath for classes found in the virtual directory.
    * @param jarStream for writing the jar file.
    */
-  private def addVirtualDirectoryToJar(
-    dir: VirtualDirectory,
-    entryPath: String,
-    jarStream: JarOutputStream): Unit = {
+  private def addVirtualDirectoryToJar(dir: VirtualDirectory,
+                                       entryPath: String,
+                                       jarStream: JarOutputStream): Unit =
     dir.foreach { file =>
       if (file.isDirectory) {
         // Recursively descend into subdirectories, adjusting the package name as we do.
@@ -190,7 +190,6 @@ trait BaseScaldingShell extends MainGenericRunner {
         jarStream.closeEntry()
       }
     }
-  }
 }
 
 object ScaldingShell extends BaseScaldingShell

@@ -12,13 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.scheme.NullScheme
 import cascading.tuple.Fields
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class MultiTsvInputJob(args: Args) extends Job(args) {
   try {
@@ -32,7 +32,8 @@ class MultiTsvInputJob(args: Args) extends Job(args) {
 class SequenceFileInputJob(args: Args) extends Job(args) {
   try {
     SequenceFile("input0").read.write(SequenceFile("output0"))
-    WritableSequenceFile("input1", ('query, 'queryStats)).read.write(WritableSequenceFile("output1", ('query, 'queryStats)))
+    WritableSequenceFile("input1", ('query, 'queryStats)).read
+      .write(WritableSequenceFile("output1", ('query, 'queryStats)))
   } catch {
     case e: Exception => e.printStackTrace()
   }
@@ -51,39 +52,35 @@ class FileSourceTest extends WordSpec with Matchers {
   import Dsl._
 
   "A MultipleTsvFile Source" should {
-    JobTest(new MultiTsvInputJob(_)).
-      source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
-        List(("foobar", 1), ("helloworld", 2))).
-        sink[(String, Int)](Tsv("output0")) {
-          outBuf =>
-            "take multiple Tsv files as input sources" in {
-              outBuf should have length 2
-              outBuf.toList shouldBe List(("foobar", 1), ("helloworld", 2))
-            }
+    JobTest(new MultiTsvInputJob(_))
+      .source(MultipleTsvFiles(List("input0", "input1"), ('query, 'queryStats)),
+              List(("foobar", 1), ("helloworld", 2)))
+      .sink[(String, Int)](Tsv("output0")) { outBuf =>
+        "take multiple Tsv files as input sources" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List(("foobar", 1), ("helloworld", 2))
         }
+      }
       .run
       .finish()
   }
 
   "A WritableSequenceFile Source" should {
-    JobTest(new SequenceFileInputJob(_)).
-      source(SequenceFile("input0"),
-        List(("foobar0", 1), ("helloworld0", 2))).
-        source(WritableSequenceFile("input1", ('query, 'queryStats)),
-          List(("foobar1", 1), ("helloworld1", 2))).
-          sink[(String, Int)](SequenceFile("output0")) {
-            outBuf =>
-              "sequence file input" in {
-                outBuf should have length 2
-                outBuf.toList shouldBe List(("foobar0", 1), ("helloworld0", 2))
-              }
-          }
-      .sink[(String, Int)](WritableSequenceFile("output1", ('query, 'queryStats))) {
-        outBuf =>
-          "writable sequence file input" in {
-            outBuf should have length 2
-            outBuf.toList shouldBe List(("foobar1", 1), ("helloworld1", 2))
-          }
+    JobTest(new SequenceFileInputJob(_))
+      .source(SequenceFile("input0"), List(("foobar0", 1), ("helloworld0", 2)))
+      .source(WritableSequenceFile("input1", ('query, 'queryStats)),
+              List(("foobar1", 1), ("helloworld1", 2)))
+      .sink[(String, Int)](SequenceFile("output0")) { outBuf =>
+        "sequence file input" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List(("foobar0", 1), ("helloworld0", 2))
+        }
+      }
+      .sink[(String, Int)](WritableSequenceFile("output1", ('query, 'queryStats))) { outBuf =>
+        "writable sequence file input" in {
+          outBuf should have length 2
+          outBuf.toList shouldBe List(("foobar1", 1), ("helloworld1", 2))
+        }
       }
       .run
       .finish()
@@ -105,7 +102,9 @@ class FileSourceTest extends WordSpec with Matchers {
 
   "TextLine.toIterator" should {
     "correctly read strings" in {
-      TextLine("../tutorial/data/hello.txt").toIterator(Config.default, Local(true)).toList shouldBe List("Hello world", "Goodbye world")
+      TextLine("../tutorial/data/hello.txt")
+        .toIterator(Config.default, Local(true))
+        .toList shouldBe List("Hello world", "Goodbye world")
     }
   }
 
@@ -234,15 +233,15 @@ class FileSourceTest extends WordSpec with Matchers {
 
     "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while dirs with " +
       "hidden ones don't" in {
-        pathIsGood("test_data/2013/{04,05}/*") shouldBe true
-      }
+      pathIsGood("test_data/2013/{04,05}/*") shouldBe true
+    }
 
     // NOTE: this is an undesirable limitation of SuccessFileSource, and is encoded here
     // as a demonstration. This isn't a great behavior that we'd want to keep.
     "accept a multi-dir glob if all dirs with non-hidden files have _SUCCESS while other dirs " +
       "are empty or don't exist" in {
-        pathIsGood("test_data/2013/{02,04,05}/*") shouldBe true
-      }
+      pathIsGood("test_data/2013/{02,04,05}/*") shouldBe true
+    }
   }
 
   "FixedPathSource.hdfsWritePath" should {
@@ -276,7 +275,9 @@ class FileSourceTest extends WordSpec with Matchers {
       val e = intercept[InvalidSourceException] {
         TestInvalidFileSource.validateTaps(Hdfs(strict = true, new Configuration()))
       }
-      assert(e.getMessage.endsWith("Data is missing from one or more paths in: List(invalid_hdfs_path)"))
+      assert(
+        e.getMessage.endsWith(
+          "Data is missing from one or more paths in: List(invalid_hdfs_path)"))
     }
 
     "Throw in validateTaps in non-strict mode" in {
@@ -290,7 +291,9 @@ class FileSourceTest extends WordSpec with Matchers {
       val e = intercept[InvalidSourceException] {
         TestInvalidFileSource.toIterator(Config.default, Hdfs(strict = true, new Configuration()))
       }
-      assert(e.getMessage.endsWith("Data is missing from one or more paths in: List(invalid_hdfs_path)"))
+      assert(
+        e.getMessage.endsWith(
+          "Data is missing from one or more paths in: List(invalid_hdfs_path)"))
     }
 
     "Throw in toIterator because no data is present in non-strict mode" in {

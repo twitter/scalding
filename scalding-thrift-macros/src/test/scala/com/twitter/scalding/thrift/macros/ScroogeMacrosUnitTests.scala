@@ -18,7 +18,7 @@ package com.twitter.scalding.thrift.macros
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.thrift.macros.scalathrift._
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.experimental.macros
 
@@ -58,9 +58,8 @@ class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks 
 
     "Should RT correctly" in {
       class Container[T](implicit oSer: OrderedSerialization[T]) {
-        def ord: OrderedSerialization[(Long, T)] = {
+        def ord: OrderedSerialization[(Long, T)] =
           implicitly[OrderedSerialization[(Long, T)]]
-        }
       }
 
       val ordSer = (new Container[TestLists]).ord

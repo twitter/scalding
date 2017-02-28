@@ -12,20 +12,21 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.scalding.serialization.CascadingBinaryComparator
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.StringOrderedSerialization
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class NoOrderdSerJob(args: Args) extends Job(args) {
 
   override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
 
-  TypedPipe.from(TypedTsv[(String, String)]("input"))
+  TypedPipe
+    .from(TypedTsv[(String, String)]("input"))
     .group
     .max
     .write(TypedTsv[(String, String)]("output"))
@@ -37,7 +38,8 @@ class OrderdSerJob(args: Args) extends Job(args) {
 
   override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
 
-  TypedPipe.from(TypedTsv[(String, String)]("input"))
+  TypedPipe
+    .from(TypedTsv[(String, String)]("input"))
     .group
     .sorted
     .max
@@ -51,7 +53,9 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
       val ex = the[Exception] thrownBy {
         JobTest(new NoOrderdSerJob(_))
           .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
-          .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
+          .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf =>
+            ()
+          }
           .run
           .finish()
       }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import com.esotericsoftware.kryo.Kryo
@@ -24,7 +24,7 @@ import com.twitter.scalding.Args
 
 import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
-import com.twitter.chill.{ SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator }
+import com.twitter.chill.{KryoInstantiator, ScalaKryoInstantiator, SingletonSerializer}
 
 class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
@@ -54,21 +54,29 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK.register(classOf[com.twitter.algebird.Moments], new MomentsSerializer)
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
     // Don't serialize Boxed instances using Kryo.
-    newK.addDefaultSerializer(classOf[com.twitter.scalding.serialization.Boxed[_]], new ThrowingSerializer)
+    newK.addDefaultSerializer(classOf[com.twitter.scalding.serialization.Boxed[_]],
+                              new ThrowingSerializer)
+
     /**
      * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here
      */
-    newK.register(classOf[com.twitter.algebird.DenseVector[_]],
-      new FieldSerializer[com.twitter.algebird.DenseVector[_]](newK,
-        classOf[com.twitter.algebird.DenseVector[_]]))
+    newK.register(
+      classOf[com.twitter.algebird.DenseVector[_]],
+      new FieldSerializer[com.twitter.algebird.DenseVector[_]](
+        newK,
+        classOf[com.twitter.algebird.DenseVector[_]])
+    )
 
-    newK.register(classOf[com.twitter.algebird.SparseVector[_]],
-      new FieldSerializer[com.twitter.algebird.SparseVector[_]](newK,
-        classOf[com.twitter.algebird.SparseVector[_]]))
+    newK.register(
+      classOf[com.twitter.algebird.SparseVector[_]],
+      new FieldSerializer[com.twitter.algebird.SparseVector[_]](
+        newK,
+        classOf[com.twitter.algebird.SparseVector[_]])
+    )
 
     newK.addDefaultSerializer(classOf[com.twitter.algebird.AdaptiveVector[_]],
-      classOf[FieldSerializer[_]])
+                              classOf[FieldSerializer[_]])
 
     /**
      * Pipes can be swept up into closures inside of case classes.  This can generally

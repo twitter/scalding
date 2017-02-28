@@ -12,14 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class AlgebraJob(args: Args) extends Job(args) {
   Tsv("input", ('x, 'y, 'z, 'w))
-    .map('w -> 'w) { w: Int => Set(w) }
+    .map('w -> 'w) { w: Int =>
+      Set(w)
+    }
     .groupBy('x) {
       _.sum[(Int, Int)](('y, 'z) -> ('sy, 'sz))
         .sum[Set[Int]]('w -> 'setw)
@@ -31,7 +33,9 @@ class AlgebraJob(args: Args) extends Job(args) {
 
 class ComplicatedAlgebraJob(args: Args) extends Job(args) {
   Tsv("input", ('x, 'y, 'z, 'w, 'v))
-    .map('w -> 'w) { w: Int => Set(w) }
+    .map('w -> 'w) { w: Int =>
+      Set(w)
+    }
     .groupBy('x) {
       _.sum[(Int, Int, Set[Int], Double)](('y, 'z, 'w, 'v) -> ('sy, 'sz, 'sw, 'sv))
     }

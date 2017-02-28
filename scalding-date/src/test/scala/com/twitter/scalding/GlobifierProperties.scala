@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import org.scalacheck.Arbitrary
@@ -48,7 +48,7 @@ object GlobifierProperties extends Properties("Globifier Properties") {
     val resultantWithNormalized = globifierOps.hourlyRtGlobifier(globifierOps.normalizeHrDr(dr))
 
     val res = globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(resultantDR) &&
-      globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(resultantWithNormalized)
+        globifierOps.normalizeHrDr(dr) == globifierOps.normalizeHrDr(resultantWithNormalized)
 
     if (!res) {
       println("Input dr: " + dr)
@@ -81,7 +81,7 @@ object GlobifierProperties extends Properties("Globifier Properties") {
     val resultantWithNormalized = globifierOps.dailyRtGlobifier(globifierOps.normalizeDayDr(dr))
 
     val res = globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(resultantDR) &&
-      globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(resultantWithNormalized)
+        globifierOps.normalizeDayDr(dr) == globifierOps.normalizeDayDr(resultantWithNormalized)
 
     if (!res) {
       println("Input dr: " + dr)

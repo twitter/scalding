@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
+import cascading.flow.{Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy}
 import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
@@ -24,8 +24,8 @@ import com.twitter.scalding.serialization.CascadingBinaryComparator
 import org.apache.hadoop.mapred.JobConf
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
-import scala.util.{ Failure, Success, Try }
-import org.slf4j.{ Logger, LoggerFactory }
+import scala.util.{Failure, Success, Try}
+import org.slf4j.{Logger, LoggerFactory}
 
 /*
  * This has all the state needed to build a single flow
@@ -39,9 +39,8 @@ trait ExecutionContext {
 
   import ExecutionContext._
 
-  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] =
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
-  }
 
   private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
     val conf = step.getConfig
@@ -92,14 +91,17 @@ trait ExecutionContext {
       // which instantiates and runs them
       mode match {
         case _: HadoopMode =>
-          val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
+          val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] =
+            config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
 
           val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
             case Success(fn) => fn(mode, configWithId)
-            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
+            case Failure(e) =>
+              throw new Exception("Failed to decode flow step strategy when submitting job", e)
           }
 
-          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
+          val optionalFinalStrategy =
+            FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
 
           optionalFinalStrategy.foreach { strategy =>
             flow.setFlowStepStrategy(strategy)
@@ -112,7 +114,8 @@ trait ExecutionContext {
 
           config.getFlowStepListeners.foreach {
             case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
+            case Failure(e) =>
+              new Exception("Failed to decode flow step listener when submitting job", e)
           }
 
         case _ => ()
@@ -150,12 +153,11 @@ trait ExecutionContext {
 object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
-  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
+  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] =
     baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
       case _ => List() // no descriptions
     })
-  }
   /*
    * implicit val ec = ExecutionContext.newContext(config)
    * can be used inside of a Job to get an ExecutionContext if you want
@@ -171,4 +173,3 @@ object ExecutionContext {
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
 }
-

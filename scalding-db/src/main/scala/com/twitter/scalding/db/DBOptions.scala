@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.db
 
@@ -38,12 +38,11 @@ case class StringEncoding(toStr: String) extends AnyVal
 /**
  * Pass your DB credentials to this class in a preferred secure way
  */
-case class ConnectionConfig(
-  connectUrl: ConnectUrl,
-  userName: UserName,
-  password: Password,
-  adapter: Adapter,
-  encoding: StringEncoding)
+case class ConnectionConfig(connectUrl: ConnectUrl,
+                            userName: UserName,
+                            password: Password,
+                            adapter: Adapter,
+                            encoding: StringEncoding)
 
 case class Database(toStr: String) extends AnyVal
 

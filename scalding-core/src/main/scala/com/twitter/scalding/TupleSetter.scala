@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
-import cascading.tuple.{ Tuple => CTuple }
+import cascading.tuple.{Tuple => CTuple}
 
 /**
  * Typeclass to represent converting back to (setting into) a cascading Tuple
@@ -37,6 +37,7 @@ trait TupleSetter[T] extends java.io.Serializable with TupleArity { self =>
 }
 
 trait LowPriorityTupleSetters extends java.io.Serializable {
+
   /**
    * If it is not a scala Tuple, and not any defined in the object TupleSetter
    * we just assume it is a single entry in the tuple

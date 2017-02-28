@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 import com.twitter.algebird._
-import com.twitter.scalding.{ Mode, IterableSource }
+import com.twitter.scalding.{IterableSource, Mode}
 
 import com.twitter.scalding.Execution
 
@@ -47,6 +47,7 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
 
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
+
   /**
    * Identical to toOptionExecution.map(_.get)
    * The result will be an exception if there is no value.

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 import com.twitter.scalding._
 
 /**
@@ -33,13 +33,13 @@ Check the output:
   cat tutorial/data/output4.txt
 
 **/
-
-class Tutorial4(args : Args) extends Job(args) {
+class Tutorial4(args: Args) extends Job(args) {
 
   //we probably don't need to bother with vals for input/output anymore
-  TextLine(args("input"))
-    .read
-    .flatMap('line -> 'word){ line : String => line.split("\\s")}
+  TextLine(args("input")).read
+    .flatMap('line -> 'word) { line: String =>
+      line.split("\\s")
+    }
 
     /**
     To count the words, first we need to group by word.
@@ -57,13 +57,13 @@ class Tutorial4(args : Args) extends Job(args) {
     In this case, the only aggregation we care about is size: how many values are
     in the group.
     **/
-
-    .groupBy('word){group => group.size}
+    .groupBy('word) { group =>
+      group.size
+    }
 
     /**
     No project is needed here because the groupBy has eliminated everything but 'word
     and the size field.
     **/
-
     .write(Tsv(args("output")))
 }

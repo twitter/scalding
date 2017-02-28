@@ -12,14 +12,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
 import java.io.File
-import scala.io.{ Source => ScalaSource }
+import scala.io.{Source => ScalaSource}
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
@@ -27,7 +27,7 @@ import cascading.tuple.TupleEntry
 import cascading.util.Util
 import cascading.tap.partition.Partition
 
-import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv, _ }
+import com.twitter.scalding.{PartitionedTsv => StandardPartitionedTsv, _}
 
 object PartitionSourceTestHelpers {
   import Dsl._
@@ -46,8 +46,13 @@ object PartitionSourceTestHelpers {
 
   // Define once, here, otherwise testMode.getWritePathFor() won't work
   val DelimitedPartitionedTsv = StandardPartitionedTsv("base", "/", 'col1)
-  val CustomPartitionedTsv = StandardPartitionedTsv("base", new CustomPartition('col1, 'col2), false, Fields.ALL, SinkMode.REPLACE)
-  val PartialPartitionedTsv = StandardPartitionedTsv("base", "/", ('col1, 'col2), false, ('col1, 'col3))
+  val CustomPartitionedTsv = StandardPartitionedTsv("base",
+                                                    new CustomPartition('col1, 'col2),
+                                                    false,
+                                                    Fields.ALL,
+                                                    SinkMode.REPLACE)
+  val PartialPartitionedTsv =
+    StandardPartitionedTsv("base", "/", ('col1, 'col2), false, ('col1, 'col3))
 }
 
 class DelimitedPartitionTestJob(args: Args) extends Job(args) {

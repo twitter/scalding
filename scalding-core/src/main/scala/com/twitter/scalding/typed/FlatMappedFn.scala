@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 import java.io.Serializable
@@ -21,8 +21,9 @@ import com.twitter.scalding.TupleConverter
 import cascading.tuple.TupleEntry
 
 /** Closures are difficult for serialization. This class avoids that. */
-sealed trait FlatMapFn[+R] extends Function1[TupleEntry, TraversableOnce[R]]
-  with java.io.Serializable {
+sealed trait FlatMapFn[+R]
+    extends Function1[TupleEntry, TraversableOnce[R]]
+    with java.io.Serializable {
 
   def filter(fn2: R => Boolean): FlatMapFn[R] =
     FilteredFn(this, fn2)
@@ -49,7 +50,8 @@ case object Empty extends FlatMapFn[Nothing] {
 case class MapFn[T, R](fmap: FlatMapFn[T], fn: T => R) extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).map(fn)
 }
-case class FlatMappedFn[T, R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R]) extends FlatMapFn[R] {
+case class FlatMappedFn[T, R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R])
+    extends FlatMapFn[R] {
   def apply(te: TupleEntry) = fmap(te).flatMap(fn)
 }
 case class FilteredFn[R](fmap: FlatMapFn[R], fn: R => Boolean) extends FlatMapFn[R] {

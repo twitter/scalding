@@ -12,20 +12,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.MRJobConfig
-import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
-import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
-import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
-import com.twitter.bijection.{ Base64String, Injection }
+import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
+import com.twitter.chill.{Externalizer, ExternalizerCodec, ExternalizerInjection, KryoInstantiator}
+import com.twitter.chill.config.{ConfiguredInstantiator, ScalaMapConfig}
+import com.twitter.bijection.{Base64String, Injection}
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
 
 import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
+import cascading.flow.{FlowListener, FlowProps, FlowStepListener, FlowStepStrategy}
 import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
@@ -33,7 +33,7 @@ import java.security.MessageDigest
 import java.net.URI
 
 import scala.collection.JavaConverters._
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * This is a wrapper class on top of Map[String, String]
@@ -59,7 +59,8 @@ trait Config extends Serializable {
    * @return new Config with cached files
    */
   def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
-    cachedFiles.foldLeft(this) { case (config, file) =>
+    cachedFiles.foldLeft(this) {
+      case (config, file) =>
         file match {
           case hadoopFile: HadoopCachedFile =>
             Config.addDistributedCacheFile(hadoopFile.sourceUri, config)
@@ -70,9 +71,8 @@ trait Config extends Serializable {
   /**
    * Get cached files from config
    */
-  def getDistributedCachedFiles: Seq[CachedFile] = {
+  def getDistributedCachedFiles: Seq[CachedFile] =
     Config.getDistributedCacheFile(this)
-  }
 
   /**
    * This is a name that if present is passed to flow.setName,
@@ -157,21 +157,22 @@ trait Config extends Serializable {
    * They may or may not be used in this job, but Cascading might want to be made aware
    * that these classes exist
    */
-  def getKryoRegisteredClasses: Set[Class[_]] = {
+  def getKryoRegisteredClasses: Set[Class[_]] =
     // Get an instance of the Kryo serializer (which is populated with registrations)
-    getKryo.map { kryo =>
-      val cr = kryo.newKryo.getClassResolver
+    getKryo
+      .map { kryo =>
+        val cr = kryo.newKryo.getClassResolver
 
-      @annotation.tailrec
-      def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
-        Option(cr.getRegistration(idx)) match {
-          case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
-          case None => acc // The first null is the end of the line
-        }
+        @annotation.tailrec
+        def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
+          Option(cr.getRegistration(idx)) match {
+            case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
+            case None => acc // The first null is the end of the line
+          }
 
-      kryoClasses(0, Set[Class[_]]())
-    }.getOrElse(Set())
-  }
+        kryoClasses(0, Set[Class[_]]())
+      }
+      .getOrElse(Set())
 
   /*
    * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
@@ -184,16 +185,20 @@ trait Config extends Serializable {
    * with a class to serialize to bootstrap the process:
    * Left((classOf[serialization.KryoHadoop], myInstance))
    */
-  def setSerialization(kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
-    userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
+  def setSerialization(
+      kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
+      userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
 
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
-      Seq(classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+      Seq(
+        classOf[org.apache.hadoop.io.serializer.WritableSerialization],
         classOf[cascading.tuple.hadoop.TupleSerialization],
-        classOf[serialization.WrappedSerialization[_]])
+        classOf[serialization.WrappedSerialization[_]]
+      )
     // this must come last
-    val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
+    val last: Seq[Class[_ <: HSerialization[_]]] = Seq(
+      classOf[com.twitter.chill.hadoop.KryoSerialization])
     val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
     // Make sure we keep the order correct and don't add the required fields twice
     val hadoopSer = first ++ (userHadoop.filterNot(required)) ++ last
@@ -203,7 +208,8 @@ trait Config extends Serializable {
     // Now handle the Kryo portion which uses another mechanism
     val chillConf = ScalaMapConfig(toMap)
     kryo match {
-      case Left((bootstrap, inst)) => ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
+      case Left((bootstrap, inst)) =>
+        ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
       case Right(refl) => ConfiguredInstantiator.setReflect(chillConf, refl)
     }
     val withKryo = Config(chillConf.toMap + hadoopKV)
@@ -219,16 +225,18 @@ trait Config extends Serializable {
    * If a ConfiguredInstantiator has been set up, this returns it
    */
   def getKryo: Option[KryoInstantiator] =
-    if (toMap.contains(ConfiguredInstantiator.KEY)) Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
+    if (toMap.contains(ConfiguredInstantiator.KEY))
+      Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
     else None
 
   def getArgs: Args = get(Config.ScaldingJobArgsSerialized) match {
     case None => new Args(Map.empty)
-    case Some(str) => argsSerializer
-      .invert(str)
-      .map(new Args(_))
-      .getOrElse(throw new RuntimeException(
-        s"""Could not deserialize Args from Config. Maybe "$ScaldingJobArgsSerialized" was modified without using Config.setArgs?"""))
+    case Some(str) =>
+      argsSerializer
+        .invert(str)
+        .map(new Args(_))
+        .getOrElse(throw new RuntimeException(
+          s"""Could not deserialize Args from Config. Maybe "$ScaldingJobArgsSerialized" was modified without using Config.setArgs?"""))
   }
 
   def setArgs(args: Args): Config =
@@ -241,13 +249,17 @@ trait Config extends Serializable {
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
   def setScaldingVersion: Config =
-    (this.+(Config.ScaldingVersion -> scaldingVersion)).+(
-      // This is setting a property for cascading/driven
-      (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion)))
+    (this
+      .+(Config.ScaldingVersion -> scaldingVersion))
+      .+(
+        // This is setting a property for cascading/driven
+        (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion)))
 
   def getUniqueIds: Set[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID)
-      .map { str => str.split(",").toSet[String].map(UniqueID(_)) }
+      .map { str =>
+        str.split(",").toSet[String].map(UniqueID(_))
+      }
       .getOrElse(Set.empty)
 
   /**
@@ -294,10 +306,14 @@ trait Config extends Serializable {
    * Add this class name and the md5 hash of it into the config
    */
   def setScaldingFlowClass(clazz: Class[_]): Config =
-    this.+(ScaldingFlowClassName -> clazz.getName).+(ScaldingFlowClassSignature -> Config.md5Identifier(clazz))
+    this
+      .+(ScaldingFlowClassName -> clazz.getName)
+      .+(ScaldingFlowClassSignature -> Config.md5Identifier(clazz))
 
   def getSubmittedTimestamp: Option[RichDate] =
-    get(ScaldingFlowSubmittedTimestamp).map { ts => RichDate(ts.toLong) }
+    get(ScaldingFlowSubmittedTimestamp).map { ts =>
+      RichDate(ts.toLong)
+    }
   /*
    * Sets the timestamp only if it was not already set. This is here
    * to prevent overwriting the submission time if it was set by an
@@ -342,8 +358,7 @@ trait Config extends Serializable {
   }
 
   def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
-    get(Config.FlowListeners)
-      .toList
+    get(Config.FlowListeners).toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowListenerSerializer.invert(_))
 
@@ -356,12 +371,12 @@ trait Config extends Serializable {
   }
 
   def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
-    get(Config.FlowStepListeners)
-      .toList
+    get(Config.FlowStepListeners).toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowStepListenerSerializer.invert(_))
 
-  def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
+  def addFlowStepStrategy(
+      flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
     val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
     update(Config.FlowStepStrategies) {
       case None => (Some(serializedListener), ())
@@ -373,8 +388,7 @@ trait Config extends Serializable {
     this.-(Config.FlowStepStrategies)
 
   def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
-    get(Config.FlowStepStrategies)
-      .toList
+    get(Config.FlowStepStrategies).toList
       .flatMap(s => StringUtility.fastSplit(s, ","))
       .map(flowStepStrategiesSerializer.invert(_))
 
@@ -502,21 +516,20 @@ object Config {
 
     (nonStrings
       .get(AppProps.APP_JAR_CLASS) match {
-        case Some(clazz) =>
-          // Again, the _ causes problem with Try
-          try {
-            val cls = classOf[Class[_]].cast(clazz)
-            Success((nonStrings - AppProps.APP_JAR_CLASS, initConf.setCascadingAppJar(cls)))
-          } catch {
-            case err: Throwable => Failure(err)
-          }
-        case None => Success((nonStrings, initConf))
-      })
-      .flatMap {
-        case (unhandled, withJar) =>
-          if (unhandled.isEmpty) Success(withJar)
-          else Failure(new Exception("unhandled configurations: " + unhandled.toString))
-      }
+      case Some(clazz) =>
+        // Again, the _ causes problem with Try
+        try {
+          val cls = classOf[Class[_]].cast(clazz)
+          Success((nonStrings - AppProps.APP_JAR_CLASS, initConf.setCascadingAppJar(cls)))
+        } catch {
+          case err: Throwable => Failure(err)
+        }
+      case None => Success((nonStrings, initConf))
+    }).flatMap {
+      case (unhandled, withJar) =>
+        if (unhandled.isEmpty) Success(withJar)
+        else Failure(new Exception("unhandled configurations: " + unhandled.toString))
+    }
   }
 
   /**
@@ -534,12 +547,15 @@ object Config {
   /**
    * Either union these two, or return the keys that overlap
    */
-  def disjointUnion[K >: String, V >: String](m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
+  def disjointUnion[K >: String, V >: String](m: Map[K, V],
+                                              conf: Config): Either[Set[String], Map[K, V]] = {
     val asMap = conf.toMap.toMap[K, V] // linter:ignore we are upcasting K, V
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
-    else Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
+    else
+      Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
   }
+
   /**
    * This overwrites any keys in m that exist in config.
    */
@@ -554,7 +570,9 @@ object Config {
    */
   def fromHadoop(conf: Configuration): Config =
     // use `conf.get` to force JobConf to evaluate expressions
-    Config(conf.asScala.map { e => e.getKey -> conf.get(e.getKey) }.toMap)
+    Config(conf.asScala.map { e =>
+      e.getKey -> conf.get(e.getKey)
+    }.toMap)
 
   /*
    * For everything BUT SERIALIZATION, this prefers values in conf,
@@ -620,7 +638,7 @@ object Config {
    *
    * @param config Config with cached files
    */
-  private def getDistributedCacheFile(config: Config): Seq[CachedFile] = {
+  private def getDistributedCacheFile(config: Config): Seq[CachedFile] =
     config
       .get(MRJobConfig.CACHE_FILES)
       .toSeq
@@ -628,16 +646,19 @@ object Config {
       .filter(_.nonEmpty)
       .map { file =>
         val symlinkedUri = new URI(file)
-        val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
+        val qualifiedUri =
+          new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
         HadoopCachedFile(qualifiedUri)
       }
-  }
 
   private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =
     Injection.connect[T, Externalizer[T], Array[Byte], Base64String, String]
 
-  @transient private[scalding] lazy val flowStepListenerSerializer = buildInj[(Mode, Config) => FlowStepListener]
-  @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
-  @transient private[scalding] lazy val flowStepStrategiesSerializer = buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
+  @transient private[scalding] lazy val flowStepListenerSerializer =
+    buildInj[(Mode, Config) => FlowStepListener]
+  @transient private[scalding] lazy val flowListenerSerializer =
+    buildInj[(Mode, Config) => FlowListener]
+  @transient private[scalding] lazy val flowStepStrategiesSerializer =
+    buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
   @transient private[scalding] lazy val argsSerializer = buildInj[Map[String, List[String]]]
 }

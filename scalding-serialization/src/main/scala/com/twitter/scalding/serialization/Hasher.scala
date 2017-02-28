@@ -12,11 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 // Be careful using this, the product/array or similar will attempt to call system hash codes.
 import scala.util.hashing.MurmurHash3
+
 /**
  * This is a specialized typeclass to make it easier to implement Serializations.
  * The specialization *should* mean that there is no boxing and if the JIT
@@ -32,8 +33,8 @@ object Hasher {
   final val seed = 0xf7ca7fd2
 
   @inline
-  def hash[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-    i: T)(implicit h: Hasher[T]): Int = h.hash(i)
+  def hash[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](i: T)(
+      implicit h: Hasher[T]): Int = h.hash(i)
 
   /*
    * Instances below
@@ -43,6 +44,7 @@ object Hasher {
     def hash(i: Unit) = 0
   }
   implicit val boolean: Hasher[Boolean] = new Hasher[Boolean] {
+
     /**
      * Here we use the two large primes as the hash codes.
      * We use primes because we want the probability of collision when

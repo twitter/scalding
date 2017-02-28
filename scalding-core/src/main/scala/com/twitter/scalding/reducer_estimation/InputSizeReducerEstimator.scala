@@ -28,12 +28,13 @@ object InputSizeReducerEstimator {
    * helpful for when less than 1 reducer is needed, but this fraction
    * will be multiplied by a scaling factor later.
    */
-  def estimateReducersWithoutRounding(info: FlowStrategyInfo): Option[Double] = {
+  def estimateReducersWithoutRounding(info: FlowStrategyInfo): Option[Double] =
     Common.inputSizes(info.step) match {
       case Nil =>
-        LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
-          "cannot compute size of:\n - " +
-          Common.unrollTaps(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
+        LOG.warn(
+          "InputSizeReducerEstimator unable to estimate reducers; " +
+            "cannot compute size of:\n - " +
+            Common.unrollTaps(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
         None
       case inputSizes =>
         val bytesPerReducer =
@@ -42,19 +43,21 @@ object InputSizeReducerEstimator {
         val totalBytes = inputSizes.map(_._2).sum
         val nReducers = totalBytes.toDouble / bytesPerReducer.toDouble
 
-        lazy val logStr = inputSizes.map {
-          case (name, bytes) => s"   - $name\t$bytes"
-        }.mkString("\n")
+        lazy val logStr = inputSizes
+          .map {
+            case (name, bytes) => s"   - $name\t$bytes"
+          }
+          .mkString("\n")
 
-        LOG.info("\nInputSizeReducerEstimator" +
-          "\n - input size (bytes): " + totalBytes +
-          "\n - reducer estimate:   " + nReducers +
-          "\n - Breakdown:\n" +
-          logStr)
+        LOG.info(
+          "\nInputSizeReducerEstimator" +
+            "\n - input size (bytes): " + totalBytes +
+            "\n - reducer estimate:   " + nReducers +
+            "\n - Breakdown:\n" +
+            logStr)
 
         Some(nReducers)
     }
-  }
 
 }
 

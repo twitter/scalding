@@ -12,17 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.db
 
-import scala.language.experimental.{ macros => sMacros }
+import scala.language.experimental.{macros => sMacros}
 
-import com.twitter.scalding.db.macros.impl.{ ColumnDefinitionProviderImpl, DBTypeDescriptorImpl }
+import com.twitter.scalding.db.macros.impl.{ColumnDefinitionProviderImpl, DBTypeDescriptorImpl}
 
 // The implicits in the jdbc.macro's package
 // These are to allow us to auto provide our Type Classes without the user possibly knowing
 // all of the various ways we could build it.
 package object macros {
-  implicit def toColumnDefinitionProvider[T]: ColumnDefinitionProvider[T] = macro ColumnDefinitionProviderImpl[T]
+  implicit def toColumnDefinitionProvider[T]: ColumnDefinitionProvider[T] =
+    macro ColumnDefinitionProviderImpl[T]
   implicit def toDBTypeDescriptor[T]: DBTypeDescriptor[T] = macro DBTypeDescriptorImpl[T]
 }

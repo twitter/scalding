@@ -25,7 +25,8 @@ object RuntimeReducerEstimator {
       case "mean" => MeanEstimationScheme
       case "median" => MedianEstimationScheme
       case _ =>
-        throw new Exception(s"""Value of $EstimationScheme must be "mean", "median", or not specified.""")
+        throw new Exception(
+          s"""Value of $EstimationScheme must be "mean", "median", or not specified.""")
     }
   }
 
@@ -44,8 +45,12 @@ object RuntimeReducerEstimator {
   def getReduceTimes(history: Seq[FlowStepHistory]): Seq[Seq[Double]] =
     history.map { h =>
       h.tasks
-        .filter { t => t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime }
-        .map { t => (t.finishTime - t.startTime).toDouble }
+        .filter { t =>
+          t.taskType == "REDUCE" && t.status == "SUCCEEDED" && t.finishTime > t.startTime
+        }
+        .map { t =>
+          (t.finishTime - t.startTime).toDouble
+        }
     }
 }
 
@@ -83,22 +88,25 @@ trait BasicRuntimeReducerEstimator extends HistoryReducerEstimator {
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
-    LOG.info(
-      s"""|
+    LOG.info(s"""|
           |History items have the following numbers of tasks:
           | ${history.map(_.tasks.length)},
           |and the following numbers of tasks have valid task histories:
           | ${reduceTimes.map(_.length)}""".stripMargin)
 
     // total time taken in the step = time per reducer * number of reducers
-    val jobTimes: Seq[Option[Double]] = reduceTimes.map { xs => runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length) }
+    val jobTimes: Seq[Option[Double]] = reduceTimes.map { xs =>
+      runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length)
+    }
 
     // time per step, averaged over all the steps
     val typicalJobTime: Option[Double] = runtimeEstimationScheme.estimateJobTime(jobTimes.flatten)
 
     val desiredRuntime: Long = getRuntimePerReducer(info.step.getConfig)
 
-    val estimate = typicalJobTime.map { t: Double => (t / desiredRuntime).ceil.toInt }
+    val estimate = typicalJobTime.map { t: Double =>
+      (t / desiredRuntime).ceil.toInt
+    }
 
     LOG.info(s"""
       | - Typical job time: $typicalJobTime
@@ -120,23 +128,26 @@ trait InputScaledRuntimeReducerEstimator extends HistoryReducerEstimator {
   def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
-    LOG.info(
-      s"""|
+    LOG.info(s"""|
           |History items have the following numbers of tasks:
           | ${history.map(_.tasks.length)},
           |and the following numbers of tasks have valid task histories:
           | ${reduceTimes.map(_.length)}""".stripMargin)
 
     // total time taken in the step = time per reducer * number of reducers
-    val jobTimes: Seq[Option[Double]] = reduceTimes.map { xs => runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length) }
+    val jobTimes: Seq[Option[Double]] = reduceTimes.map { xs =>
+      runtimeEstimationScheme.estimateTaskTime(xs).map(_ * xs.length)
+    }
 
     // time-to-byte ratio for a step = time per reducer * number of reducers / number of bytes
     val timeToByteRatios: Seq[Double] =
-      jobTimes.zip { history.map(_.hdfsBytesRead) }
+      jobTimes
+        .zip { history.map(_.hdfsBytesRead) }
         .collect { case (Some(time), bytes) => time / bytes }
 
     // time-to-byte ratio, averaged over all the steps
-    val typicalTimeToByteRatio: Option[Double] = runtimeEstimationScheme.estimateJobTime(timeToByteRatios)
+    val typicalTimeToByteRatio: Option[Double] =
+      runtimeEstimationScheme.estimateJobTime(timeToByteRatios)
 
     val desiredRuntime = getRuntimePerReducer(info.step.getConfig)
     val inputBytes = Common.totalInputSize(info.step)
@@ -174,15 +185,16 @@ trait RuntimeReducerEstimator extends HistoryReducerEstimator {
       def historyService = history
     }
 
-    val combinedEstimator = if (RuntimeReducerEstimator.getRuntimeIgnoreInputSize(info.step.getConfig)) {
-      basicEstimator
-    } else {
-      val inputScaledEstimator = new InputScaledRuntimeReducerEstimator {
-        def runtimeEstimationScheme = estimationScheme
-        def historyService = history
+    val combinedEstimator =
+      if (RuntimeReducerEstimator.getRuntimeIgnoreInputSize(info.step.getConfig)) {
+        basicEstimator
+      } else {
+        val inputScaledEstimator = new InputScaledRuntimeReducerEstimator {
+          def runtimeEstimationScheme = estimationScheme
+          def historyService = history
+        }
+        ReducerEstimatorStepStrategy.estimatorMonoid.plus(inputScaledEstimator, basicEstimator)
       }
-      ReducerEstimatorStepStrategy.estimatorMonoid.plus(inputScaledEstimator, basicEstimator)
-    }
 
     combinedEstimator.estimateReducers(info)
   }

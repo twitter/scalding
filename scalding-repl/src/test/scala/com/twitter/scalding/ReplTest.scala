@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.tuple.Fields
@@ -68,7 +68,8 @@ class ReplTest extends WordSpec {
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
-        val s = TypedPipe.from(TextLine(helloPath))
+        val s = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .snapshot
 
@@ -82,7 +83,8 @@ class ReplTest extends WordSpec {
       }
 
       "tuples -- TypedPipe[(String,Int)]" in {
-        val s = TypedPipe.from(TextLine(helloPath))
+        val s = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .map(w => (w.toLowerCase, w.length))
           .snapshot
@@ -92,7 +94,8 @@ class ReplTest extends WordSpec {
       }
 
       "grouped -- Grouped[String,String]" which {
-        val grp = TypedPipe.from(TextLine(helloPath))
+        val grp = TypedPipe
+          .from(TextLine(helloPath))
           .groupBy(_.toLowerCase)
 
         val correct = helloRef.map(l => (l.toLowerCase, l))
@@ -108,14 +111,14 @@ class ReplTest extends WordSpec {
       }
 
       "joined -- CoGrouped[String, Long]" which {
-        val linesByWord = TypedPipe.from(TextLine(helloPath))
+        val linesByWord = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .groupBy(_.toLowerCase)
-        val wordScores = TypedPipe.from(TypedTsv[(String, Double)](tutorialData + "/word_scores.tsv")).group
+        val wordScores =
+          TypedPipe.from(TypedTsv[(String, Double)](tutorialData + "/word_scores.tsv")).group
 
-        val grp = linesByWord.join(wordScores)
-          .mapValues { case (text, score) => score }
-          .sum
+        val grp = linesByWord.join(wordScores).mapValues { case (text, score) => score }.sum
 
         val correct = Map("hello" -> 1.0, "goodbye" -> 3.0, "world" -> 4.0)
 
@@ -143,7 +146,8 @@ class ReplTest extends WordSpec {
 
     "run entire flow" in {
       resetFlowDef()
-      val hello = TypedPipe.from(TextLine(helloPath))
+      val hello = TypedPipe
+        .from(TextLine(helloPath))
         .flatMap(_.split("\\s+"))
         .map(_.toLowerCase)
         .distinct

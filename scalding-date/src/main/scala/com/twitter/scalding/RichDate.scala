@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import java.text.SimpleDateFormat
@@ -37,6 +37,7 @@ object RichDate {
 
   implicit def apply(d: Date): RichDate = RichDate(d.getTime)
   implicit def apply(d: Calendar): RichDate = RichDate(d.getTime)
+
   /**
    * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.
    * We allow either date, date with time in minutes, date with time down to seconds.
@@ -102,7 +103,8 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   /**
    * Use String.format to format the date, as opposed to toString, which uses SimpleDateFormat.
    */
-  def format(pattern: String)(implicit tz: TimeZone): String = String.format(pattern, toCalendar(tz))
+  def format(pattern: String)(implicit tz: TimeZone): String =
+    String.format(pattern, toCalendar(tz))
 
   /**
    * Make sure the hashCode is the same as Date for the (questionable) choice
@@ -129,4 +131,3 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
     sdfmt.format(cal.getTime)
   }
 }
-

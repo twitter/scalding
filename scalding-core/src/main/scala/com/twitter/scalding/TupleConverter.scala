@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
-import cascading.tuple.{ Tuple => CTuple }
+import cascading.tuple.{Tuple => CTuple}
 
 import scala.collection.breakOut
 
@@ -35,7 +35,9 @@ import scala.collection.breakOut
  * put everything into one postition in the tuple) are somewhat difficlut to
  * encode in scala.
  */
-trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.Serializable with TupleArity { self =>
+trait TupleConverter[@specialized(Int, Long, Float, Double) T]
+    extends java.io.Serializable
+    with TupleArity { self =>
   def apply(te: TupleEntry): T
   def andThen[U](fn: T => U): TupleConverter[U] = new TupleConverter[U] {
     def apply(te: TupleEntry) = fn(self(te))
@@ -44,7 +46,8 @@ trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.S
 }
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
-  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit g: TupleGetter[A]) =
+  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](
+      implicit g: TupleGetter[A]) =
     new TupleConverter[A] {
       def apply(tup: TupleEntry) = g.get(tup.getTuple, 0)
       def arity = 1
@@ -52,12 +55,14 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
 }
 
 object TupleConverter extends GeneratedTupleConverters {
+
   /**
    * Treat this TupleConverter as one for a superclass
    * We do this because we want to use implicit resolution invariantly,
    * but clearly, the operation is covariant
    */
-  def asSuperConverter[T, U >: T](tc: TupleConverter[T]): TupleConverter[U] = tc.asInstanceOf[TupleConverter[U]]
+  def asSuperConverter[T, U >: T](tc: TupleConverter[T]): TupleConverter[U] =
+    tc.asInstanceOf[TupleConverter[U]]
 
   def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] = new TupleConverter[T] {
     def apply(te: TupleEntry) = fn(te)
@@ -72,10 +77,11 @@ object TupleConverter extends GeneratedTupleConverters {
    * operation (and it is not safe to assume the consumer has not kept a ref
    * to this tuple)
    */
-  implicit lazy val TupleEntryConverter: TupleConverter[TupleEntry] = new TupleConverter[TupleEntry] {
-    override def apply(tup: TupleEntry) = new TupleEntry(tup)
-    override def arity = -1
-  }
+  implicit lazy val TupleEntryConverter: TupleConverter[TupleEntry] =
+    new TupleConverter[TupleEntry] {
+      override def apply(tup: TupleEntry) = new TupleEntry(tup)
+      override def arity = -1
+    }
 
   /**
    * Copies the tuple, since cascading may change it after the end of an
