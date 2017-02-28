@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
-import org.scalatest.{ PropSpec, Matchers, WordSpec }
-import org.scalacheck.{ Arbitrary, Properties }
+import org.scalatest.{Matchers, PropSpec, WordSpec}
+import org.scalacheck.{Arbitrary, Properties}
 import org.scalacheck.Prop.forAll
 import org.scalatest.prop.Checkers
 import org.scalacheck.Gen
@@ -54,12 +54,11 @@ class StringUtilityPropertyTest extends PropSpec with Checkers {
 
   property("fastSplit(s, sep) should match s.split(sep, -1) for non-regex sep") {
     check {
-      forAll(randomStringGen, randomSeparator) {
-        (str, separator) =>
-          val t = str.mkString("")
-          val r1 = t.split(separator, -1).toList
-          val r2 = StringUtility.fastSplit(t, separator)
-          r1 == r2
+      forAll(randomStringGen, randomSeparator) { (str, separator) =>
+        val t = str.mkString("")
+        val r1 = t.split(separator, -1).toList
+        val r2 = StringUtility.fastSplit(t, separator)
+        r1 == r2
       }
     }
   }

@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import java.util.{ Date, Calendar }
+import java.util.{Calendar, Date}
 import scala.annotation.tailrec
 
 /**
@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 object CalendarOps {
   def truncate(date: Calendar, field: Int): Calendar = {
     @tailrec
-    def truncateIter(cal: Calendar, field: Int, currentField: Int): Calendar = {
+    def truncateIter(cal: Calendar, field: Int, currentField: Int): Calendar =
       if (currentField > field) {
         currentField match {
           case Calendar.DAY_OF_MONTH => cal.set(currentField, 1)
@@ -26,7 +26,6 @@ object CalendarOps {
       } else {
         cal
       }
-    }
 
     val cloned = date.clone().asInstanceOf[Calendar]
 

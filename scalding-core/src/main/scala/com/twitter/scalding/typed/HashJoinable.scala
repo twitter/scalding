@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
@@ -32,8 +32,10 @@ import Dsl._
  * is CoGroupable, but not HashJoinable).
  */
 trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
+
   /** A HashJoinable has a single input into to the cogroup */
   override def inputs = List(mapped)
+
   /**
    * This fully replicates this entire Grouped to the argument: mapside.
    * This means that we never see the case where the key is absent in the pipe. This
@@ -45,7 +47,8 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * See hashjoin:
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
-  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
+  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(
+      joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
     // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
     // otherwise, there may be funky issues with cascading
     TypedPipeFactory({ (fd, mode) =>
@@ -54,10 +57,12 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
         Field.singleOrdered("key")(keyOrdering),
         getForceToDiskPipeIfNecessary(fd, mode),
         Field.singleOrdered("key1")(keyOrdering),
-        WrappedJoiner(new HashJoiner(joinFunction, joiner)))
+        WrappedJoiner(new HashJoiner(joinFunction, joiner))
+      )
 
       //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
+      TypedPipe
+        .from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
     })
 
   /**
@@ -119,27 +124,24 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
       case _ => false
     }
 
-  private def getHashJoinAutoForceRight(mode: Mode): Boolean = {
+  private def getHashJoinAutoForceRight(mode: Mode): Boolean =
     mode match {
       case h: HadoopMode =>
         val config = Config.fromHadoop(h.jobConf)
         config.getHashJoinAutoForceRight
       case _ => false //default to false
     }
-  }
 
-  private def getPreviousPipe(p: Pipe): Option[Pipe] = {
+  private def getPreviousPipe(p: Pipe): Option[Pipe] =
     if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
     else None
-  }
 
   /**
    * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
    * Splice.
    */
-  private def isSourcePipe(pipe: Pipe): Boolean = {
+  private def isSourcePipe(pipe: Pipe): Boolean =
     pipe.getParent == null &&
       (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
       (!pipe.isInstanceOf[Splice])
-  }
 }

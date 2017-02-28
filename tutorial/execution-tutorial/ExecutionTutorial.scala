@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.tutorial
 
 import java.io._
@@ -35,32 +35,32 @@ Run:
     --input tutorial/data/hello.txt \
     --output tutorial/data/execution_output.txt
 **/
-
 object MyExecJob extends ExecutionApp {
-  
+
   override def job = Execution.getConfig.flatMap { config =>
     val args = config.getArgs
-    
-    TypedPipe.from(TextLine(args("input")))
+
+    TypedPipe
+      .from(TextLine(args("input")))
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
       .toIterableExecution
       // toIterableExecution will materialize the outputs to submitter node when finish.
       // We can also write the outputs on HDFS via .writeExecution(TypedTsv(args("output")))
-      .onComplete { t => t match {
-        case Success(iter) => 
-          val file = new PrintWriter(new File(args("output")))
-          iter.foreach { case (k, v) =>
-              file.write(s"$k\t$v\n")
-          }
-          file.close
-        case Failure(e) => println("Error: " + e.toString)
+      .onComplete { t =>
+        t match {
+          case Success(iter) =>
+            val file = new PrintWriter(new File(args("output")))
+            iter.foreach {
+              case (k, v) =>
+                file.write(s"$k\t$v\n")
+            }
+            file.close
+          case Failure(e) => println("Error: " + e.toString)
         }
       }
       // use the result and map it to a Unit. Otherwise the onComplete call won't happen
       .unit
   }
 }
-
-

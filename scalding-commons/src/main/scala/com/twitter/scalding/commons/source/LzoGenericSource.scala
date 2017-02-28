@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.commons.source
 
@@ -26,11 +26,16 @@ import cascading.scheme.Scheme
 /**
  * Generic source with an underlying GenericScheme that uses the supplied BinaryConverter.
  */
-abstract class LzoGenericSource[T] extends FileSource with SingleMappable[T] with TypedSink[T] with LocalTapSource {
+abstract class LzoGenericSource[T]
+    extends FileSource
+    with SingleMappable[T]
+    with TypedSink[T]
+    with LocalTapSource {
   def clazz: Class[T]
   def conv: BinaryConverter[T]
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
-  override def hdfsScheme = HadoopSchemeInstance(LzoGenericScheme[T](conv, clazz).asInstanceOf[Scheme[_, _, _, _, _]])
+  override def hdfsScheme =
+    HadoopSchemeInstance(LzoGenericScheme[T](conv, clazz).asInstanceOf[Scheme[_, _, _, _, _]])
 }
 
 object LzoGenericSource {

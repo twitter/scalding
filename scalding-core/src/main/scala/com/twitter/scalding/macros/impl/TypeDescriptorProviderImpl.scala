@@ -22,16 +22,19 @@ import scala.reflect.runtime.universe._
 import com.twitter.scalding._
 import com.twitter.bijection.macros.IsCaseClass
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
+
 /**
  * This class contains the core macro implementations. This is in a separate module to allow it to be in
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 object TypeDescriptorProviderImpl {
 
-  def caseClassTypeDescriptorImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
+  def caseClassTypeDescriptorImpl[T](c: Context)(
+      implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
     caseClassTypeDescriptorCommonImpl(c, false)(T)
 
-  def caseClassTypeDescriptorWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
+  def caseClassTypeDescriptorWithUnknownImpl[T](c: Context)(
+      implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
     caseClassTypeDescriptorCommonImpl(c, true)(T)
 
   /**
@@ -83,7 +86,8 @@ object TypeDescriptorProviderImpl {
           (nextPos, ev)
         case _ if allowUnknown => thisColumn
         case t =>
-          c.abort(c.enclosingPosition, s"Case class ${tpe} at $t is not pure primitives or nested case classes")
+          c.abort(c.enclosingPosition,
+                  s"Case class ${tpe} at $t is not pure primitives or nested case classes")
       }
     }
     go(tpe, 0)._2
@@ -96,7 +100,8 @@ object TypeDescriptorProviderImpl {
 
   def isTuple[T](c: Context)(implicit T: c.WeakTypeTag[T]): Boolean = {
     import c.universe._
-    val tupleTypes = List(typeOf[Tuple1[Any]],
+    val tupleTypes = List(
+      typeOf[Tuple1[Any]],
       typeOf[Tuple2[Any, Any]],
       typeOf[Tuple3[Any, Any, Any]],
       typeOf[Tuple4[Any, Any, Any, Any]],
@@ -111,17 +116,137 @@ object TypeDescriptorProviderImpl {
       typeOf[Tuple13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
+      typeOf[
+        Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[
+        Tuple17[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]],
+      typeOf[
+        Tuple18[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]],
+      typeOf[
+        Tuple19[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]],
+      typeOf[
+        Tuple20[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]],
+      typeOf[
+        Tuple21[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]],
+      typeOf[
+        Tuple22[Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any,
+                Any]]
+    )
     (tupleTypes.exists { _ =:= T.tpe.erasure })
   }
 
-  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
+  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(
+      implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
     import c.universe._
 
     val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)

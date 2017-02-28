@@ -5,9 +5,8 @@ import org.slf4j.LoggerFactory
 object HasColumnProjection {
   val LOG = LoggerFactory.getLogger(this.getClass)
 
-  def requireNoSemiColon(glob: String) = {
+  def requireNoSemiColon(glob: String) =
     require(!glob.contains(";"), "A column projection glob cannot contain a ; character")
-  }
 }
 
 trait HasColumnProjection {
@@ -23,7 +22,8 @@ trait HasColumnProjection {
    * Note that the format described there says that multiple globs can be combined with a ; character.
    * Instead, we use a Set() here and will eventually join the set on the ; character for you.
    */
-  @deprecated(message = "Use withColumnProjections, which uses a different glob syntax", since = "0.15.1")
+  @deprecated(message = "Use withColumnProjections, which uses a different glob syntax",
+              since = "0.15.1")
   def withColumns: Set[String] = Set()
 
   /**
@@ -43,13 +43,14 @@ trait HasColumnProjection {
     val strict = withColumnProjections
 
     require(deprecated.isEmpty || strict.isEmpty,
-      "Cannot provide both withColumns and withColumnProjections")
+            "Cannot provide both withColumns and withColumnProjections")
 
     deprecated.foreach(requireNoSemiColon)
     strict.foreach(requireNoSemiColon)
 
     if (deprecated.nonEmpty) {
-      LOG.warn("withColumns is deprecated. Please use withColumnProjections, which uses a different glob syntax")
+      LOG.warn(
+        "withColumns is deprecated. Please use withColumnProjections, which uses a different glob syntax")
       Some(DeprecatedColumnProjectionString(deprecated))
     } else if (strict.nonEmpty) {
       Some(StrictColumnProjectionString(strict))
@@ -63,5 +64,6 @@ sealed trait ColumnProjectionString {
   def globStrings: Set[String]
   def asSemicolonString: String = globStrings.mkString(";")
 }
-case class DeprecatedColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
+case class DeprecatedColumnProjectionString(globStrings: Set[String])
+    extends ColumnProjectionString
 case class StrictColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString

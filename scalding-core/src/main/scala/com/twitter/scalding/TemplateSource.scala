@@ -12,13 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.tap.hadoop.Hfs
-import cascading.tap.hadoop.{ TemplateTap => HTemplateTap }
+import cascading.tap.hadoop.{TemplateTap => HTemplateTap}
 import cascading.tap.local.FileTap
-import cascading.tap.local.{ TemplateTap => LTemplateTap }
+import cascading.tap.local.{TemplateTap => LTemplateTap}
 import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.tuple.Fields
@@ -43,7 +43,7 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
    *
    * @return A cascading TemplateTap.
    */
-  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
+  override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     readOrWrite match {
       case Read => throw new InvalidSourceException("Cannot use TemplateSource for input")
       case Write => {
@@ -64,20 +64,18 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
         }
       }
     }
-  }
 
   /**
    * Validates the taps, makes sure there are no nulls as the path or template.
    *
    * @param mode The mode of the job.
    */
-  override def validateTaps(mode: Mode): Unit = {
+  override def validateTaps(mode: Mode): Unit =
     if (basePath == null) {
       throw new InvalidSourceException("basePath cannot be null for TemplateTap")
     } else if (template == null) {
       throw new InvalidSourceException("template cannot be null for TemplateTap")
     }
-  }
 }
 
 /**
@@ -90,14 +88,14 @@ abstract class TemplateSource extends SchemedSource with HfsTapProvider {
  * @param sinkMode How to handle conflicts with existing output.
  * @param fields The set of fields to apply to the output.
  */
-case class TemplatedTsv(
-  override val basePath: String,
-  override val template: String,
-  override val pathFields: Fields = Fields.ALL,
-  override val writeHeader: Boolean = false,
-  override val sinkMode: SinkMode = SinkMode.REPLACE,
-  override val fields: Fields = Fields.ALL)
-  extends TemplateSource with DelimitedScheme
+case class TemplatedTsv(override val basePath: String,
+                        override val template: String,
+                        override val pathFields: Fields = Fields.ALL,
+                        override val writeHeader: Boolean = false,
+                        override val sinkMode: SinkMode = SinkMode.REPLACE,
+                        override val fields: Fields = Fields.ALL)
+    extends TemplateSource
+    with DelimitedScheme
 
 /**
  * An implementation of SequenceFile output, split over a template tap.
@@ -108,13 +106,13 @@ case class TemplatedTsv(
  * @param pathFields The set of fields to apply to the path.
  * @param sinkMode How to handle conflicts with existing output.
  */
-case class TemplatedSequenceFile(
-  override val basePath: String,
-  override val template: String,
-  val sequenceFields: Fields = Fields.ALL,
-  override val pathFields: Fields = Fields.ALL,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
-  extends TemplateSource with SequenceFileScheme {
+case class TemplatedSequenceFile(override val basePath: String,
+                                 override val template: String,
+                                 val sequenceFields: Fields = Fields.ALL,
+                                 override val pathFields: Fields = Fields.ALL,
+                                 override val sinkMode: SinkMode = SinkMode.REPLACE)
+    extends TemplateSource
+    with SequenceFileScheme {
 
   override val fields = sequenceFields
 }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 /**
@@ -29,11 +29,12 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
     import NoStackAndThen._
     @annotation.tailrec
     def push(front: NoStackAndThen[A, Any],
-      next: NoStackAndThen[Any, Any],
-      toAndThen: ReversedStack[Any, C]): NoStackAndThen[A, C] =
+             next: NoStackAndThen[Any, Any],
+             toAndThen: ReversedStack[Any, C]): NoStackAndThen[A, C] =
       (next, toAndThen) match {
         case (NoStackWrap(fn), EmptyStack(fn2)) => NoStackMore(front, fn).andThen(fn2)
-        case (NoStackWrap(fn), NonEmpty(h, tail)) => push(NoStackMore(front, fn), NoStackAndThen.NoStackWrap(h), tail)
+        case (NoStackWrap(fn), NonEmpty(h, tail)) =>
+          push(NoStackMore(front, fn), NoStackAndThen.NoStackWrap(h), tail)
         case (NoStackMore(first, tail), _) => push(front, first, NonEmpty(tail, toAndThen))
         case (WithStackTrace(_, _), _) => sys.error("should be unreachable")
       }
@@ -48,15 +49,20 @@ sealed trait NoStackAndThen[-A, +B] extends java.io.Serializable {
 }
 
 object NoStackAndThen {
-  private[typed] def buildStackEntry: Array[StackTraceElement] = Thread.currentThread().getStackTrace
+  private[typed] def buildStackEntry: Array[StackTraceElement] =
+    Thread.currentThread().getStackTrace
 
-  def apply[A, B](fn: A => B): NoStackAndThen[A, B] = WithStackTrace(NoStackWrap(fn), buildStackEntry)
+  def apply[A, B](fn: A => B): NoStackAndThen[A, B] =
+    WithStackTrace(NoStackWrap(fn), buildStackEntry)
 
   private sealed trait ReversedStack[-A, +B]
   private case class EmptyStack[-A, +B](fn: A => B) extends ReversedStack[A, B]
-  private case class NonEmpty[-A, B, +C](head: A => B, rest: ReversedStack[B, C]) extends ReversedStack[A, C]
+  private case class NonEmpty[-A, B, +C](head: A => B, rest: ReversedStack[B, C])
+      extends ReversedStack[A, C]
 
-  private[scalding] case class WithStackTrace[A, B](inner: NoStackAndThen[A, B], stackEntry: Array[StackTraceElement]) extends NoStackAndThen[A, B] {
+  private[scalding] case class WithStackTrace[A, B](inner: NoStackAndThen[A, B],
+                                                    stackEntry: Array[StackTraceElement])
+      extends NoStackAndThen[A, B] {
     override def apply(a: A): B = inner(a)
 
     override def andThen[C](fn: B => C): NoStackAndThen[A, C] =
@@ -71,14 +77,16 @@ object NoStackAndThen {
     def apply(a: A) = fn(a)
   }
   // This is the defunctionalized andThen
-  private case class NoStackMore[A, B, C](first: NoStackAndThen[A, B], andThenFn: (B) => C) extends NoStackAndThen[A, C] {
+  private case class NoStackMore[A, B, C](first: NoStackAndThen[A, B], andThenFn: (B) => C)
+      extends NoStackAndThen[A, C] {
     /*
      * scala cannot optimize tail calls if the types change.
      * Any call that changes types, we replace that type with Any. These casts
      * can never fail, due to the structure above.
      */
     @annotation.tailrec
-    private def reversed(toPush: NoStackAndThen[A, Any], rest: ReversedStack[Any, C]): ReversedStack[A, C] =
+    private def reversed(toPush: NoStackAndThen[A, Any],
+                         rest: ReversedStack[Any, C]): ReversedStack[A, C] =
       toPush match {
         case NoStackWrap(fn) => NonEmpty(fn, rest)
         case NoStackMore(more, fn) => reversed(more, NonEmpty(fn, rest))
@@ -97,4 +105,3 @@ object NoStackAndThen {
     def apply(a: A): C = call(a, revStack)
   }
 }
-

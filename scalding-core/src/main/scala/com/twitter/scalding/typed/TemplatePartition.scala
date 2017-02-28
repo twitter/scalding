@@ -18,7 +18,7 @@ package typed
 import scala.collection.JavaConverters._
 
 import cascading.tap.partition.Partition
-import cascading.tuple.{ Fields, TupleEntry }
+import cascading.tuple.{Fields, TupleEntry}
 
 /**
  * Creates a partition using the given template string.
@@ -28,7 +28,9 @@ import cascading.tuple.{ Fields, TupleEntry }
 case class TemplatePartition(partitionFields: Fields, template: String) extends Partition {
   assert(
     partitionFields.size == "%s".r.findAllIn(template).length,
-    "Number of partition fields %s does not correspond to template (%s)".format(partitionFields, template))
+    "Number of partition fields %s does not correspond to template (%s)".format(partitionFields,
+                                                                                template)
+  )
 
   /** Regex pattern created from the template to extract the partition values from a path.*/
   lazy val pattern = template.replaceAll("%s", "(.*)").r.pattern

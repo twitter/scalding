@@ -3,16 +3,16 @@ package com.twitter.scalding.platform
 import cascading.flow.Flow
 import com.twitter.scalding._
 import org.apache.hadoop.mapred.JobConf
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
-case class HadoopPlatformExecutionTest(
-  cons: (Config) => Execution[_],
-  cluster: LocalCluster,
-  parameters: Map[String, String] = Map.empty,
-  dataToCreate: Seq[(String, Seq[String])] = Vector(),
-  sourceWriters: Seq[Config => Execution[_]] = Vector.empty,
-  sourceReaders: Seq[Mode => Unit] = Vector.empty,
-  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) extends HadoopPlatform[Config, Execution[_], HadoopPlatformExecutionTest] {
+case class HadoopPlatformExecutionTest(cons: (Config) => Execution[_],
+                                       cluster: LocalCluster,
+                                       parameters: Map[String, String] = Map.empty,
+                                       dataToCreate: Seq[(String, Seq[String])] = Vector(),
+                                       sourceWriters: Seq[Config => Execution[_]] = Vector.empty,
+                                       sourceReaders: Seq[Mode => Unit] = Vector.empty,
+                                       flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty)
+    extends HadoopPlatform[Config, Execution[_], HadoopPlatformExecutionTest] {
 
   def config: Config =
     Config.defaultFrom(cluster.mode) ++ Config.from(parameters)
@@ -29,7 +29,9 @@ case class HadoopPlatformExecutionTest(
     })
 
   override def sink[K](in: Mappable[K])(toExpect: (Seq[K]) => Unit): HadoopPlatformExecutionTest =
-    copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(config, m).toSeq) })
+    copy(sourceReaders = sourceReaders :+ { m: Mode =>
+      toExpect(in.toIterator(config, m).toSeq)
+    })
 
   override def run(): Unit = {
     System.setProperty("cascading.update.skip", "true")

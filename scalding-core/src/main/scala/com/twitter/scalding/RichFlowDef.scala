@@ -12,13 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 
-import java.util.{ Map => JMap, List => JList }
+import java.util.{Map => JMap, List => JList}
 
 /**
  * This is an enrichment-pattern class for cascading.flow.FlowDef.
@@ -57,12 +57,11 @@ class RichFlowDef(val fd: FlowDef) {
   private[this] def preferLeft[T](left: T, right: T): T =
     Option(left).getOrElse(right)
 
-  private[this] def mergeLeft[K, V](left: JMap[K, V], right: JMap[K, V]): Unit = {
+  private[this] def mergeLeft[K, V](left: JMap[K, V], right: JMap[K, V]): Unit =
     right.asScala.foreach {
       case (k, v) =>
         if (!left.containsKey(k)) left.put(k, v)
     }
-  }
   private[this] def appendLeft[T](left: JList[T], right: JList[T]): Unit = {
     val existing = left.asScala.toSet
     right.asScala
@@ -80,11 +79,14 @@ class RichFlowDef(val fd: FlowDef) {
 
     fd.mergeMiscFrom(o)
     // Merge the FlowState
-    FlowStateMap.get(o)
+    FlowStateMap
+      .get(o)
       .foreach { oFS =>
         FlowStateMap.mutate(fd) { current =>
           // overwrite the items from o with current
-          (current.copy(sourceMap = oFS.sourceMap ++ current.sourceMap, flowConfigUpdates = oFS.flowConfigUpdates ++ current.flowConfigUpdates), ())
+          (current.copy(sourceMap = oFS.sourceMap ++ current.sourceMap,
+                        flowConfigUpdates = oFS.flowConfigUpdates ++ current.flowConfigUpdates),
+           ())
         }
       }
   }
@@ -138,7 +140,8 @@ class RichFlowDef(val fd: FlowDef) {
       newFd.addTailSink(pipe, sinks.get(pipe.getName))
     }
     // Update the FlowState:
-    FlowStateMap.get(fd)
+    FlowStateMap
+      .get(fd)
       .foreach { thisFS =>
         val subFlowState = thisFS.sourceMap
           .foldLeft(Map[String, Source]()) {
@@ -146,7 +149,11 @@ class RichFlowDef(val fd: FlowDef) {
               if (headNames(name)) newfs + kv
               else newfs
           }
-        FlowStateMap.mutate(newFd) { oldFS => (oldFS.copy(sourceMap = subFlowState, flowConfigUpdates = thisFS.flowConfigUpdates ++ oldFS.flowConfigUpdates), ()) }
+        FlowStateMap.mutate(newFd) { oldFS =>
+          (oldFS.copy(sourceMap = subFlowState,
+                      flowConfigUpdates = thisFS.flowConfigUpdates ++ oldFS.flowConfigUpdates),
+           ())
+        }
       }
     newFd
   }

@@ -12,22 +12,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.parquet.thrift
 
 import cascading.scheme.Scheme
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.{
-  StrictColumnProjectionString,
   DeprecatedColumnProjectionString,
   HasColumnProjection,
   HasFilterPredicate,
-  ParquetValueScheme
+  ParquetValueScheme,
+  StrictColumnProjectionString
 }
-import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
+import com.twitter.scalding.source.{DailySuffixSource, HourlySuffixSource}
 import java.io.Serializable
-import org.apache.thrift.{ TBase, TFieldIdEnum }
+import org.apache.thrift.{TBase, TFieldIdEnum}
 
 import scala.reflect.ClassTag
 
@@ -35,7 +35,10 @@ object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
 }
 
-trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with HasColumnProjection {
+trait ParquetThriftBase[T]
+    extends LocalTapSource
+    with HasFilterPredicate
+    with HasColumnProjection {
 
   implicit def ct: ClassTag[T]
 
@@ -48,8 +51,10 @@ trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with H
     }
 
     val configWithProjection = columnProjectionString match {
-      case Some(s @ DeprecatedColumnProjectionString(_)) => configWithFp.withProjectionString(s.asSemicolonString)
-      case Some(s @ StrictColumnProjectionString(_)) => configWithFp.withStrictProjectionString(s.asSemicolonString)
+      case Some(s @ DeprecatedColumnProjectionString(_)) =>
+        configWithFp.withProjectionString(s.asSemicolonString)
+      case Some(s @ StrictColumnProjectionString(_)) =>
+        configWithFp.withStrictProjectionString(s.asSemicolonString)
       case None => configWithFp
     }
 
@@ -57,7 +62,11 @@ trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with H
   }
 }
 
-trait ParquetThriftBaseFileSource[T] extends FileSource with ParquetThriftBase[T] with SingleMappable[T] with TypedSink[T] {
+trait ParquetThriftBaseFileSource[T]
+    extends FileSource
+    with ParquetThriftBase[T]
+    with SingleMappable[T]
+    with TypedSink[T] {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
 }
 
@@ -111,15 +120,17 @@ trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBaseFile
  * val mySourceFilteredAndProjected = new MyParquetSource(dr, Some(myFp), Set("a.b.c", "x.y"))
  * }}}
  */
-class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
-  path: String,
-  dateRange: DateRange)(implicit override val ct: ClassTag[T])
-  extends DailySuffixSource(path, dateRange) with ParquetThrift[T]
+class DailySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dateRange: DateRange)(
+    implicit override val ct: ClassTag[T])
+    extends DailySuffixSource(path, dateRange)
+    with ParquetThrift[T]
 
-class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](
-  path: String,
-  dateRange: DateRange)(implicit override val ct: ClassTag[T])
-  extends HourlySuffixSource(path, dateRange) with ParquetThrift[T]
+class HourlySuffixParquetThrift[T <: ParquetThrift.ThriftBase](path: String, dateRange: DateRange)(
+    implicit override val ct: ClassTag[T])
+    extends HourlySuffixSource(path, dateRange)
+    with ParquetThrift[T]
 
-class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(implicit override val ct: ClassTag[T])
-  extends FixedPathSource(paths: _*) with ParquetThrift[T]
+class FixedPathParquetThrift[T <: ParquetThrift.ThriftBase](paths: String*)(
+    implicit override val ct: ClassTag[T])
+    extends FixedPathSource(paths: _*)
+    with ParquetThrift[T]

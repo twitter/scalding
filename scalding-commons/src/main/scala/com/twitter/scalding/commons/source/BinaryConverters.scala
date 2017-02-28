@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.commons.source
 
 import com.twitter.elephantbird.mapreduce.io.BinaryConverter
-import com.twitter.scrooge.{ BinaryThriftStructSerializer, ThriftStructCodec, ThriftStruct }
+import com.twitter.scrooge.{BinaryThriftStructSerializer, ThriftStruct, ThriftStructCodec}
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -33,12 +33,18 @@ case object IdentityBinaryConverter extends BinaryConverter[Array[Byte]] {
 object ScroogeBinaryConverter {
 
   // codec code borrowed from chill's ScroogeThriftStructSerializer class
-  private[this] def codecForNormal[T <: ThriftStruct](thriftStructClass: Class[T]): Try[ThriftStructCodec[T]] =
+  private[this] def codecForNormal[T <: ThriftStruct](
+      thriftStructClass: Class[T]): Try[ThriftStructCodec[T]] =
     Try(Class.forName(thriftStructClass.getName + "$").getField("MODULE$").get(null))
       .map(_.asInstanceOf[ThriftStructCodec[T]])
 
-  private[this] def codecForUnion[T <: ThriftStruct](maybeUnion: Class[T]): Try[ThriftStructCodec[T]] =
-    Try(Class.forName(maybeUnion.getName.reverse.dropWhile(_ != '$').reverse).getField("MODULE$").get(null))
+  private[this] def codecForUnion[T <: ThriftStruct](
+      maybeUnion: Class[T]): Try[ThriftStructCodec[T]] =
+    Try(
+      Class
+        .forName(maybeUnion.getName.reverse.dropWhile(_ != '$').reverse)
+        .getField("MODULE$")
+        .get(null))
       .map(_.asInstanceOf[ThriftStructCodec[T]])
 
   def apply[T <: ThriftStruct: ClassTag]: BinaryConverter[T] = {
@@ -53,4 +59,3 @@ object ScroogeBinaryConverter {
     }
   }
 }
-

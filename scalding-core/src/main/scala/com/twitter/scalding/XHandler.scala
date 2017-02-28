@@ -25,10 +25,10 @@ object RichXHandler {
   val Default = "Unknown type of throwable"
 
   val BinaryProblem = "GUESS: This may be a problem with the binary version of a dependency. " +
-    "Check which versions of dependencies you're pulling in."
+      "Check which versions of dependencies you're pulling in."
 
   val RequiredCascadingFabricNotInClassPath = "GUESS: Required Cascading fabric is not supplied in the classpath." +
-    "Check which versions and variants of dependencies you're pulling in."
+      "Check which versions and variants of dependencies you're pulling in."
 
   val DataIsMissing = "GUESS: Data is missing from the path you provided."
 
@@ -40,9 +40,11 @@ object RichXHandler {
     classOf[AbstractMethodError] -> BinaryProblem,
     classOf[NoSuchMethodError] -> BinaryProblem,
     classOf[InvalidSourceException] -> DataIsMissing,
-    classOf[PlannerException] -> RequireSinks)
+    classOf[PlannerException] -> RequireSinks
+  )
 
-  val gitHubUrl = "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
+  val gitHubUrl =
+    "https://github.com/twitter/scalding/wiki/Common-Exceptions-and-possible-reasons#"
 
   @annotation.tailrec
   final def rootOf(t: Throwable): Throwable =
@@ -66,7 +68,8 @@ object RichXHandler {
     new XHandler(xMap, dVal)
 
   def apply(t: Throwable): String =
-    mapping.get(peelUntilMappable(t))
+    mapping
+      .get(peelUntilMappable(t))
       .map(_ + "\n")
       .getOrElse("") +
       "If you know what exactly caused this error, please consider contributing to GitHub via following link.\n" +

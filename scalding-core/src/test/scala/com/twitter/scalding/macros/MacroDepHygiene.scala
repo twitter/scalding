@@ -16,7 +16,7 @@
 package com.twitter.scalding.macros
 
 import org.scalatest.WordSpec
-import com.twitter.scalding.macros.{ _ => _ }
+import com.twitter.scalding.macros.{_ => _}
 
 /**
  * This test is intended to ensure that the macros do not require any imported code in scope. This is why all
@@ -32,7 +32,8 @@ class MacroDepHygiene extends WordSpec {
   def isMg(a: Any) = a.isInstanceOf[com.twitter.bijection.macros.MacroGenerated]
 
   "TupleSetter macro" should {
-    def isTupleSetterAvailable[T](implicit proof: com.twitter.scalding.TupleSetter[T]) = isMg(proof)
+    def isTupleSetterAvailable[T](implicit proof: com.twitter.scalding.TupleSetter[T]) =
+      isMg(proof)
 
     "work fine without any imports" in {
       com.twitter.scalding.macros.Macros.caseClassTupleSetter[A]
@@ -51,7 +52,8 @@ class MacroDepHygiene extends WordSpec {
   }
 
   "TupleConverter macro" should {
-    def isTupleConverterAvailable[T](implicit proof: com.twitter.scalding.TupleConverter[T]) = isMg(proof)
+    def isTupleConverterAvailable[T](implicit proof: com.twitter.scalding.TupleConverter[T]) =
+      isMg(proof)
 
     "work fine without any imports" in {
       com.twitter.scalding.macros.Macros.caseClassTupleConverter[A]

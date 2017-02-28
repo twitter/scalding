@@ -3,7 +3,7 @@ package com.twitter.scalding.platform
 import com.twitter.scalding._
 import com.twitter.scalding.source.TypedText
 
-import java.io.{ BufferedWriter, File, FileWriter }
+import java.io.{BufferedWriter, File, FileWriter}
 
 import org.slf4j.LoggerFactory
 
@@ -55,7 +55,9 @@ trait HadoopPlatform[P, R, T <: HadoopPlatform[P, R, T]] {
         tmpFile.delete()
     }
 
-    sourceWriters.foreach { cons => execute(init(cons)) }
+    sourceWriters.foreach { cons =>
+      execute(init(cons))
+    }
   }
 
   protected def checkSinks(): Unit = {

@@ -2,7 +2,7 @@ package com.twitter.scalding.db.macros
 
 import scala.language.experimental.macros
 import com.twitter.scalding.db.macros.impl._
-import com.twitter.scalding.db.{ ColumnDefinitionProvider, DBTypeDescriptor }
+import com.twitter.scalding.db.{ColumnDefinitionProvider, DBTypeDescriptor}
 
 // This is the sealed base trait for scala runtime annotiations used by the JDBC macros.
 // These will read from these macros as a means to annotate fields to make up for the missing
@@ -30,6 +30,7 @@ class date() extends annotation.StaticAnnotation with ScaldingDBAnnotation
 // This is the entry point to explicitly calling the JDBC macros.
 // Most often the implicits will be used in the package however
 object DBMacro {
-  def toColumnDefinitionProvider[T]: ColumnDefinitionProvider[T] = macro ColumnDefinitionProviderImpl[T]
+  def toColumnDefinitionProvider[T]: ColumnDefinitionProvider[T] =
+    macro ColumnDefinitionProviderImpl[T]
   def toDBTypeDescriptor[T]: DBTypeDescriptor[T] = macro DBTypeDescriptorImpl[T]
 }

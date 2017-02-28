@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
@@ -27,9 +27,9 @@ import java.util.Comparator
 class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Serializable {
 
   val integralTypes: Set[Class[_]] = Set(classOf[java.lang.Long],
-    classOf[java.lang.Integer],
-    classOf[java.lang.Short],
-    classOf[java.lang.Byte])
+                                         classOf[java.lang.Integer],
+                                         classOf[java.lang.Short],
+                                         classOf[java.lang.Byte])
 
   def isIntegral(boxed: AnyRef) = integralTypes(boxed.getClass)
 
@@ -52,16 +52,13 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
       a1.asInstanceOf[Comparable[AnyRef]].compareTo(a2)
   }
 
-  override def hashCode(obj: AnyRef): Int = {
+  override def hashCode(obj: AnyRef): Int =
     if (obj == null) {
       0
     } else if (isIntegral(obj)) {
-      obj.asInstanceOf[Number]
-        .longValue
-        .hashCode
+      obj.asInstanceOf[Number].longValue.hashCode
     } else {
       //Use the default:
       obj.hashCode
     }
-  }
 }

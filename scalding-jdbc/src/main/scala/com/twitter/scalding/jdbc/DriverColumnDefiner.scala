@@ -27,12 +27,11 @@ trait DriverColumnDefiner[Type <: JdbcType] {
   def apply(name: String, nullable: IsNullable = NotNullable): ColumnDefinition
 
   //TODO should use the fact that now we have more typed typeName
-  protected def mkColumnDef(
-    name: String,
-    typeName: String,
-    nullable: IsNullable,
-    sizeOp: Option[Int] = None,
-    defOp: Option[String]) = {
+  protected def mkColumnDef(name: String,
+                            typeName: String,
+                            nullable: IsNullable,
+                            sizeOp: Option[Int] = None,
+                            defOp: Option[String]) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
     val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
     ColumnDefinition(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))

@@ -19,9 +19,8 @@ abstract class CascadeJob(args: Args) extends Job(args) {
     statsData.isSuccessful
   }
 
-  override def validate(): Unit = {
+  override def validate(): Unit =
     jobs.foreach { _.validate() }
-  }
 
   /*
    * Good for printing a dot file, setting the flow skip strategy, etc

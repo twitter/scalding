@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.commons.source
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import com.twitter.scalding._
 import com.twitter.scalding.commons.datastores.VersionedStore;
 import com.twitter.scalding.typed.IterablePipe
@@ -34,7 +34,9 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
-    .map{ k => (k, k) }
+    .map { k =>
+      (k, k)
+    }
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
@@ -45,7 +47,9 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
   implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
-    .map{ k => (k, k) }
+    .map { k =>
+      (k, k)
+    }
     .group
     .sum
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
@@ -60,9 +64,7 @@ class ToIteratorJob(args: Args) extends Job(args) {
 
   val duplicatedPipe = TypedPipe.from(source) ++ iteratorPipe
 
-  duplicatedPipe
-    .group
-    .sum
+  duplicatedPipe.group.sum
     .writeIncremental(VersionedKeyValSource[Int, Int]("output"))
 }
 
@@ -72,12 +74,19 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
   "A TypedWriteIncrementalJob" should {
     JobTest(new TypedWriteIncrementalJob(_))
       .source(TypedTsv[Int]("input"), input)
-      .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
-        "Outputs must be as expected" in {
-          assert(outputBuffer.size === input.size)
-          val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
-        }
+      .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) {
+        outputBuffer: Buffer[(Int, Int)] =>
+          "Outputs must be as expected" in {
+            assert(outputBuffer.size === input.size)
+            val singleInj = implicitly[Injection[Int, Array[Byte]]]
+            assert(
+              input
+                .map { k =>
+                  (k, k)
+                }
+                .sortBy(_._1)
+                .toString === outputBuffer.sortBy(_._1).toList.toString)
+          }
       }
       .run
       .finish()
@@ -86,12 +95,19 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
   "A MoreComplexTypedWriteIncrementalJob" should {
     JobTest(new MoreComplexTypedWriteIncrementalJob(_))
       .source(TypedTsv[Int]("input"), input)
-      .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
-        "Outputs must be as expected" in {
-          assert(outputBuffer.size === input.size)
-          val singleInj = implicitly[Injection[Int, Array[Byte]]]
-          assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
-        }
+      .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) {
+        outputBuffer: Buffer[(Int, Int)] =>
+          "Outputs must be as expected" in {
+            assert(outputBuffer.size === input.size)
+            val singleInj = implicitly[Injection[Int, Array[Byte]]]
+            assert(
+              input
+                .map { k =>
+                  (k, k)
+                }
+                .sortBy(_._1)
+                .toString === outputBuffer.sortBy(_._1).toList.toString)
+          }
       }
       .run
       .finish()
@@ -115,8 +131,9 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       val path = setupLocalVersionStore(100L to 102L)
 
       val thrown = the[InvalidSourceException] thrownBy { validateVersion(path, Some(103)) }
-      assert(thrown.getMessage === "Version 103 does not exist. " +
-        "Currently available versions are: [102, 101, 100]")
+      assert(
+        thrown.getMessage === "Version 103 does not exist. " +
+          "Currently available versions are: [102, 101, 100]")
 
       // should not throw
       validateVersion(path, Some(101))

@@ -1,9 +1,9 @@
 package com.twitter.scalding
 
 import cascading.tap.Tap
-import cascading.tuple.{ Fields, Tuple }
+import cascading.tuple.{Fields, Tuple}
 import scala.collection.mutable.Buffer
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class TestTapFactoryTest extends WordSpec with Matchers {
   "A test tap created by TestTapFactory" should {
@@ -22,7 +22,8 @@ class TestTapFactoryTest extends WordSpec with Matchers {
 
       the[IllegalArgumentException] thrownBy {
         createIllegalTap()
-      } should have message ("requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
+      } should have message ("requirement failed: " + TestTapFactory.sourceNotFoundError.format(
+        testSource))
     }
   }
 }

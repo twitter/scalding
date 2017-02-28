@@ -20,13 +20,17 @@ import scala.reflect.macros.Context
 import java.io.InputStream
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 import scala.reflect.ClassTag
 
-import scala.{ collection => sc }
-import scala.collection.{ immutable => sci }
+import scala.{collection => sc}
+import scala.collection.{immutable => sci}
 
 sealed trait ShouldSort
 case object DoSort extends ShouldSort
@@ -37,39 +41,63 @@ case object IsArray extends MaybeArray
 case object NotArray extends MaybeArray
 
 object TraversablesOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.erasure =:= c.universe.typeOf[Iterable[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Iterable[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.List[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Seq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[Vector[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Vector[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[IndexedSeq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.IndexedSeq[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Queue[Any]] => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
+    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    case tpe if tpe.erasure =:= c.universe.typeOf[Iterable[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Iterable[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[List[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.List[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Seq[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Seq[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Seq[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Vector[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Vector[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[IndexedSeq[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.IndexedSeq[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Queue[Any]] =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
     // Arrays are special in that the erasure doesn't do anything
-    case tpe if tpe.typeSymbol == c.universe.typeOf[Array[Any]].typeSymbol => TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, IsArray)
+    case tpe if tpe.typeSymbol == c.universe.typeOf[Array[Any]].typeSymbol =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, IsArray)
     // The erasure of a non-covariant is Set[_], so we need that here for sets
-    case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Set[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.HashSet[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.ListSet[Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Set[Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Set[Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Set[Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.HashSet[Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.ListSet[Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
 
-    case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Map[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.HashMap[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
-    case tpe if tpe.erasure =:= c.universe.typeOf[sci.ListMap[Any, Any]].erasure => TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Map[Any, Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sc.Map[Any, Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.Map[Any, Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.HashMap[Any, Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
+    case tpe if tpe.erasure =:= c.universe.typeOf[sci.ListMap[Any, Any]].erasure =>
+      TraversablesOrderedBuf(c)(buildDispatcher, tpe, DoSort, NotArray)
   }
 
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-    outerType: c.Type,
-    maybeSort: ShouldSort,
-    maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
+                        outerType: c.Type,
+                        maybeSort: ShouldSort,
+                        maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
 
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
@@ -81,7 +109,8 @@ object TraversablesOrderedBuf {
     // When dealing with a map we have 2 type args, and need to generate the tuple type
     // it would correspond to if we .toList the Map.
     val innerType = if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
-      val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0), outerType.asInstanceOf[TypeRefApi].args(1)) // linter:ignore
+      val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args(0),
+                          outerType.asInstanceOf[TypeRefApi].args(1)) // linter:ignore
       val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
       import compat._
       TypeRef.apply(containerType.pre, containerType.sym, List(tpe1, tpe2))
@@ -172,7 +201,8 @@ object TraversablesOrderedBuf {
             $element.foreach { t =>
               val $target = t
               $currentHash =
-                _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${innerBuf.hash(target)})
+                _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${innerBuf
+              .hash(target)})
               // go ahead and compute the length so we don't traverse twice for lists
               $len += 1
             }
@@ -257,8 +287,7 @@ object TraversablesOrderedBuf {
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
 
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
-
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
         innerBuf.length(q"$element.head") match {
           case const: ConstantLengthCalculation[_] =>
             FastLengthCalculation(c)(q"""{
@@ -296,8 +325,6 @@ object TraversablesOrderedBuf {
               }
             """)
         }
-      }
     }
   }
 }
-

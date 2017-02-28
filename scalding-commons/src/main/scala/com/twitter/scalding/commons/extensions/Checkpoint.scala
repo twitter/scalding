@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.commons.extensions
 
@@ -22,7 +22,7 @@ import com.twitter.scalding.Dsl._
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
-import org.slf4j.{ Logger, LoggerFactory => LogManager }
+import org.slf4j.{Logger, LoggerFactory => LogManager}
 
 /**
  * Checkpoint provides a simple mechanism to read and write intermediate results
@@ -59,7 +59,6 @@ import org.slf4j.{ Logger, LoggerFactory => LogManager }
  *
  * @author Mike Jahr
  */
-
 object Checkpoint {
   private val LOG: Logger = LogManager.getLogger(this.getClass)
 
@@ -79,8 +78,12 @@ object Checkpoint {
    *   conv:    provided by com.twitter.scalding.TupleConversions
    *   setter:  provided by com.twitter.scalding.TupleConversions
    */
-  def apply[A](checkpointName: String, resultFields: Fields)(flow: => Pipe)(implicit args: Args, mode: Mode, flowDef: FlowDef,
-    conv: TupleConverter[A], setter: TupleSetter[A]): Pipe = {
+  def apply[A](checkpointName: String, resultFields: Fields)(flow: => Pipe)(
+      implicit args: Args,
+      mode: Mode,
+      flowDef: FlowDef,
+      conv: TupleConverter[A],
+      setter: TupleSetter[A]): Pipe = {
     conv.assertArityMatches(resultFields)
     setter.assertArityMatches(resultFields)
 
@@ -93,8 +96,7 @@ object Checkpoint {
       case Some(name) if hasInput(checkpointName, name) =>
         // We have checkpoint input; read the file instead of executing the flow.
         LOG.info(s"""Checkpoint "${checkpointName}": reading ${format} input from "${name}"""")
-        getSource(format, name)
-          .read
+        getSource(format, name).read
           .mapTo(List.range(0, resultFields.size) -> resultFields)((x: A) => x)(conv, setter)
       // We don't have checkpoint input; execute the flow and project to the
       // requested fields.
@@ -110,8 +112,12 @@ object Checkpoint {
   }
 
   // Wrapper for Checkpoint when using a TypedPipe
-  def apply[A](checkpointName: String)(flow: => TypedPipe[A])(implicit args: Args, mode: Mode, flowDef: FlowDef,
-    conv: TupleConverter[A], setter: TupleSetter[A]): TypedPipe[A] = {
+  def apply[A](checkpointName: String)(flow: => TypedPipe[A])(
+      implicit args: Args,
+      mode: Mode,
+      flowDef: FlowDef,
+      conv: TupleConverter[A],
+      setter: TupleSetter[A]): TypedPipe[A] = {
     val rPipe = apply(checkpointName, Dsl.intFields(0 until conv.arity)) {
       flow.toPipe(Dsl.intFields(0 until conv.arity))
     }
@@ -138,7 +144,8 @@ object Checkpoint {
 
   // Returns the filename to use for the given checkpoint, or None if this
   // checkpoint is disabled.
-  private def getFilename(checkpointName: String)(implicit args: Args, mode: Mode): Option[String] = {
+  private def getFilename(checkpointName: String)(implicit args: Args,
+                                                  mode: Mode): Option[String] = {
     val fileArg = CheckpointArg(checkpointName, "file")
     if (fileArg.overrideValue.isDefined) {
       // The flag "--checkpoint.file.<name>=<filename>" is present; use its
@@ -164,16 +171,15 @@ object Checkpoint {
   }
 
   // Returns a source for the checkpoint in the given format.
-  private def getSource(format: String, filename: String)(implicit mode: Mode): Source = {
+  private def getSource(format: String, filename: String)(implicit mode: Mode): Source =
     format match {
       case "sequencefile" => SequenceFile(filename)
       case "tsv" => Tsv(filename)
       case _ => sys.error("Invalid value for --checkpoint.format: " + format)
     }
-  }
 
   // Returns true if the given checkpoint file exists and should be read.
-  private def hasInput(checkpointName: String, filename: String)(implicit args: Args, mode: Mode): Boolean = {
+  private def hasInput(checkpointName: String, filename: String)(implicit args: Args,
+                                                                 mode: Mode): Boolean =
     !CheckpointArg(checkpointName, "clobber").isTrue && mode.fileExists(filename)
-  }
 }

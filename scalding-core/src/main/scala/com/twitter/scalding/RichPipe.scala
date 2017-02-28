@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.property.ConfigDef.Getter
@@ -38,13 +38,15 @@ object RichPipe extends java.io.Serializable {
 
   private[scalding] val FormerNameBitLength = 12
   private[scalding] val FormerAssignedPipeNamePattern = "^_pipe_([0-9]+).*$".r
-  private[scalding] val FromUuidPattern = "^.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-([0-9a-f]{12}).*$".r
+  private[scalding] val FromUuidPattern =
+    "^.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-([0-9a-f]{12}).*$".r
 
   // grab some bit of the previous pipe name to help walk up the graph across name assignments
   private def getFormerNameBit(p: Pipe): String = p.getName match {
     case FormerAssignedPipeNamePattern(pipeNumber) => pipeNumber
     case FromUuidPattern(lastGroup) => lastGroup /* 12 characters */
-    case s if s.length > FormerNameBitLength => s.substring(s.length - FormerNameBitLength, s.length)
+    case s if s.length > FormerNameBitLength =>
+      s.substring(s.length - FormerNameBitLength, s.length)
     case s => s
   }
 
@@ -58,6 +60,7 @@ object RichPipe extends java.io.Serializable {
   def assignName(p: Pipe): Pipe = new Pipe(getNextName + "-" + getFormerNameBit(p), p)
 
   private val REDUCER_KEY = "mapred.reduce.tasks"
+
   /**
    * Gets the underlying config for this pipe and sets the number of reducers
    * useful for cascading GroupBy/CoGroup pipes.
@@ -69,22 +72,21 @@ object RichPipe extends java.io.Serializable {
       p.getStepConfigDef()
         .setProperty(Config.WithReducersSetExplicitly, "true")
     } else if (reducers != -1) {
-      throw new IllegalArgumentException(s"Number of reducers must be non-negative. Got: ${reducers}")
+      throw new IllegalArgumentException(
+        s"Number of reducers must be non-negative. Got: ${reducers}")
     }
     p
   }
 
   // A pipe can have more than one description when merged together, so we store them delimited with 255.toChar.
   // Cannot use 1.toChar as we get an error if it is not a printable character.
-  private def encodePipeDescriptions(descriptions: Seq[String]): String = {
+  private def encodePipeDescriptions(descriptions: Seq[String]): String =
     descriptions.map(_.replace(255.toChar, ' ')).filter(_.nonEmpty).mkString(255.toChar.toString)
-  }
 
-  private def decodePipeDescriptions(encoding: String): Seq[String] = {
+  private def decodePipeDescriptions(encoding: String): Seq[String] =
     encoding.split(255.toChar).toSeq
-  }
 
-  def getPipeDescriptions(p: Pipe): Seq[String] = {
+  def getPipeDescriptions(p: Pipe): Seq[String] =
     if (p.getStepConfigDef.isEmpty)
       Nil
     else {
@@ -98,12 +100,11 @@ object RichPipe extends java.io.Serializable {
         .map(decodePipeDescriptions)
         .getOrElse(Nil)
     }
-  }
 
   def setPipeDescriptions(p: Pipe, descriptions: Seq[String]): Pipe = {
-    p.getStepConfigDef().setProperty(
-      Config.PipeDescriptions,
-      encodePipeDescriptions(getPipeDescriptions(p) ++ descriptions))
+    p.getStepConfigDef()
+      .setProperty(Config.PipeDescriptions,
+                   encodePipeDescriptions(getPipeDescriptions(p) ++ descriptions))
     p
   }
 
@@ -140,13 +141,17 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     /**
      * For pure side effect.
      */
-    def foreach[A](f: Fields)(fn: (C, A) => Unit)(implicit conv: TupleConverter[A], set: TupleSetter[Unit], flowDef: FlowDef, mode: Mode) = {
+    def foreach[A](f: Fields)(fn: (C, A) => Unit)(implicit conv: TupleConverter[A],
+                                                  set: TupleSetter[Unit],
+                                                  flowDef: FlowDef,
+                                                  mode: Mode) = {
       conv.assertArityMatches(f)
-      val newPipe = new Each(pipe, f, new SideEffectMapFunction(bf, fn,
-        new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C): Unit = { c.release() }
-        },
-        Fields.NONE, conv, set))
+      val newPipe = new Each(
+        pipe,
+        f,
+        new SideEffectMapFunction(bf, fn, new Function1[C, Unit] with java.io.Serializable {
+          def apply(c: C): Unit = c.release()
+        }, Fields.NONE, conv, set))
       NullSource.writeFrom(newPipe)(flowDef, mode)
       newPipe
     }
@@ -154,28 +159,28 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     /**
      * map with state
      */
-    def map[A, T](fs: (Fields, Fields))(fn: (C, A) => T)(implicit conv: TupleConverter[A], set: TupleSetter[T]) = {
+    def map[A, T](fs: (Fields, Fields))(fn: (C, A) => T)(implicit conv: TupleConverter[A],
+                                                         set: TupleSetter[T]) = {
       conv.assertArityMatches(fs._1)
       set.assertArityMatches(fs._2)
-      val mf = new SideEffectMapFunction(bf, fn,
-        new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C): Unit = { c.release() }
-        },
-        fs._2, conv, set)
+      val mf = new SideEffectMapFunction(bf, fn, new Function1[C, Unit] with java.io.Serializable {
+        def apply(c: C): Unit = c.release()
+      }, fs._2, conv, set)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
     }
 
     /**
      * flatMap with state
      */
-    def flatMap[A, T](fs: (Fields, Fields))(fn: (C, A) => TraversableOnce[T])(implicit conv: TupleConverter[A], set: TupleSetter[T]) = {
+    def flatMap[A, T](fs: (Fields, Fields))(fn: (C, A) => TraversableOnce[T])(
+        implicit conv: TupleConverter[A],
+        set: TupleSetter[T]) = {
       conv.assertArityMatches(fs._1)
       set.assertArityMatches(fs._2)
-      val mf = new SideEffectFlatMapFunction(bf, fn,
-        new Function1[C, Unit] with java.io.Serializable {
-          def apply(c: C): Unit = { c.release() }
-        },
-        fs._2, conv, set)
+      val mf =
+        new SideEffectFlatMapFunction(bf, fn, new Function1[C, Unit] with java.io.Serializable {
+          def apply(c: C): Unit = c.release()
+        }, fs._2, conv, set)
       new Each(pipe, fs._1, mf, defaultMode(fs._1, fs._2))
     }
   }
@@ -229,7 +234,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Merge or Concatenate several pipes together with this one:
    */
-  def ++(that: Pipe): Pipe = {
+  def ++(that: Pipe): Pipe =
     if (this.pipe == that) {
       // Cascading fails on self merge:
       // solution by Jack Guo
@@ -237,7 +242,6 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     } else {
       new Merge(assignName(this.pipe), assignName(that))
     }
-  }
 
   /**
    * Group all tuples down to one reducer.
@@ -258,14 +262,16 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * or count all the rows.
    */
   def groupAll(gs: GroupBuilder => GroupBuilder) =
-    map(() -> '__groupAll__) { (u: Unit) => 1 }
-      .groupBy('__groupAll__) { gs(_).reducers(1) }
+    map(() -> '__groupAll__) { (u: Unit) =>
+      1
+    }.groupBy('__groupAll__) { gs(_).reducers(1) }
       .discard('__groupAll__)
 
   /**
    * Force a random shuffle of all the data to exactly n reducers
    */
   def shard(n: Int): Pipe = groupRandomly(n) { _.pass }
+
   /**
    * Force a random shuffle of all the data to exactly n reducers,
    * with a given seed if you need repeatability.
@@ -290,16 +296,20 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   // achieves the behavior that reducer i gets i_th shard
   // by relying on cascading to use java's hashCode, which hash ints
   // to themselves
-  protected def groupRandomlyAux(n: Int, optSeed: Option[Long])(gs: GroupBuilder => GroupBuilder): Pipe = {
+  protected def groupRandomlyAux(n: Int, optSeed: Option[Long])(
+      gs: GroupBuilder => GroupBuilder): Pipe =
     using(statefulRandom(optSeed))
-      .map(() -> '__shard__) { (r: Random, _: Unit) => r.nextInt(n) }
+      .map(() -> '__shard__) { (r: Random, _: Unit) =>
+        r.nextInt(n)
+      }
       .groupBy('__shard__) { gs(_).reducers(n) }
       .discard('__shard__)
-  }
 
   private def statefulRandom(optSeed: Option[Long]): Random with Stateful = {
     val random = new Random with Stateful
-    optSeed.foreach { x => random.setSeed(x) }
+    optSeed.foreach { x =>
+      random.setSeed(x)
+    }
     random
   }
 
@@ -324,14 +334,16 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   def groupAndShuffleRandomly(reducers: Int, seed: Long)(gs: GroupBuilder => GroupBuilder): Pipe =
     groupAndShuffleRandomlyAux(reducers, Some(seed))(gs)
 
-  private def groupAndShuffleRandomlyAux(reducers: Int, optSeed: Option[Long])(gs: GroupBuilder => GroupBuilder): Pipe = {
+  private def groupAndShuffleRandomlyAux(reducers: Int, optSeed: Option[Long])(
+      gs: GroupBuilder => GroupBuilder): Pipe =
     using(statefulRandom(optSeed))
-      .map(() -> ('__shuffle__)) { (r: Random, _: Unit) => r.nextDouble() }
-      .groupRandomlyAux(reducers, optSeed){ g: GroupBuilder =>
+      .map(() -> ('__shuffle__)) { (r: Random, _: Unit) =>
+        r.nextDouble()
+      }
+      .groupRandomlyAux(reducers, optSeed) { g: GroupBuilder =>
         gs(g.sortBy('__shuffle__))
       }
       .discard('__shuffle__)
-  }
 
   /**
    * Adds a field with a constant value.
@@ -342,7 +354,9 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * }}}
    */
   def insert[A](fs: Fields, value: A)(implicit setter: TupleSetter[A]): Pipe =
-    map[Unit, A](() -> fs) { _: Unit => value }(implicitly[TupleConverter[Unit]], setter)
+    map[Unit, A](() -> fs) { _: Unit =>
+      value
+    }(implicitly[TupleConverter[Unit]], setter)
 
   /**
    * Rename some set of N fields as another set of N fields
@@ -392,9 +406,10 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * Text files can have corrupted data. If you use this function and a
    * cascading trap you can filter out corrupted data from your pipe.
    */
-  def verifyTypes[A](f: Fields)(implicit conv: TupleConverter[A]): Pipe = {
-    pipe.filter(f) { (a: A) => true }
-  }
+  def verifyTypes[A](f: Fields)(implicit conv: TupleConverter[A]): Pipe =
+    pipe.filter(f) { (a: A) =>
+      true
+    }
 
   /**
    * Given a function, partitions the pipe into several groups based on the
@@ -407,8 +422,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * .partition('age -> 'isAdult) { _ > 18 } { _.average('weight) }
    * pipe now contains the average weights of adults and minors.
    */
-  def partition[A, R](fs: (Fields, Fields))(fn: (A) => R)(
-    builder: GroupBuilder => GroupBuilder)(
+  def partition[A, R](fs: (Fields, Fields))(fn: (A) => R)(builder: GroupBuilder => GroupBuilder)(
       implicit conv: TupleConverter[A],
       ord: Ordering[R],
       rset: TupleSetter[R]): Pipe = {
@@ -421,7 +435,9 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
 
     map(fromFields -> tmpFields)(fn)(conv, TupleSetter.singleSetter[R])
       .groupBy(tmpFields)(builder)
-      .map[R, R](tmpFields -> toFields){ (r: R) => r }(TupleConverter.singleConverter[R], rset)
+      .map[R, R](tmpFields -> toFields) { (r: R) =>
+        r
+      }(TupleConverter.singleConverter[R], rset)
       .discard(tmpFields)
   }
 
@@ -455,22 +471,28 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * Using mapTo is the same as using map followed by a project for
    * selecting just the output fields
    */
-  def map[A, T](fs: (Fields, Fields))(fn: A => T)(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def map[A, T](fs: (Fields, Fields))(fn: A => T)(implicit conv: TupleConverter[A],
+                                                  setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     each(fs)(new MapFunction[A, T](fn, _, conv, setter))
   }
-  def mapTo[A, T](fs: (Fields, Fields))(fn: A => T)(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def mapTo[A, T](fs: (Fields, Fields))(fn: A => T)(implicit conv: TupleConverter[A],
+                                                    setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     eachTo(fs)(new MapFunction[A, T](fn, _, conv, setter))
   }
-  def flatMap[A, T](fs: (Fields, Fields))(fn: A => TraversableOnce[T])(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def flatMap[A, T](fs: (Fields, Fields))(fn: A => TraversableOnce[T])(
+      implicit conv: TupleConverter[A],
+      setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     each(fs)(new FlatMapFunction[A, T](fn, _, conv, setter))
   }
-  def flatMapTo[A, T](fs: (Fields, Fields))(fn: A => TraversableOnce[T])(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def flatMapTo[A, T](fs: (Fields, Fields))(fn: A => TraversableOnce[T])(
+      implicit conv: TupleConverter[A],
+      setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     eachTo(fs)(new FlatMapFunction[A, T](fn, _, conv, setter))
@@ -479,12 +501,16 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Filters all data that is defined for this partial function and then applies that function
    */
-  def collect[A, T](fs: (Fields, Fields))(fn: PartialFunction[A, T])(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def collect[A, T](fs: (Fields, Fields))(fn: PartialFunction[A, T])(
+      implicit conv: TupleConverter[A],
+      setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     pipe.each(fs)(new CollectFunction[A, T](fn, _, conv, setter))
   }
-  def collectTo[A, T](fs: (Fields, Fields))(fn: PartialFunction[A, T])(implicit conv: TupleConverter[A], setter: TupleSetter[T]): Pipe = {
+  def collectTo[A, T](fs: (Fields, Fields))(fn: PartialFunction[A, T])(
+      implicit conv: TupleConverter[A],
+      setter: TupleSetter[T]): Pipe = {
     conv.assertArityMatches(fs._1)
     setter.assertArityMatches(fs._2)
     pipe.eachTo(fs)(new CollectFunction[A, T](fn, _, conv, setter))
@@ -499,8 +525,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    *
    * Common enough to be useful.
    */
-  def flatten[T](fs: (Fields, Fields))(implicit conv: TupleConverter[TraversableOnce[T]], setter: TupleSetter[T]): Pipe =
-    flatMap[TraversableOnce[T], T](fs)({ it: TraversableOnce[T] => it })(conv, setter)
+  def flatten[T](fs: (Fields, Fields))(implicit conv: TupleConverter[TraversableOnce[T]],
+                                       setter: TupleSetter[T]): Pipe =
+    flatMap[TraversableOnce[T], T](fs)({ it: TraversableOnce[T] =>
+      it
+    })(conv, setter)
 
   /**
    * the same as
@@ -511,8 +540,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    *
    * Common enough to be useful.
    */
-  def flattenTo[T](fs: (Fields, Fields))(implicit conv: TupleConverter[TraversableOnce[T]], setter: TupleSetter[T]): Pipe =
-    flatMapTo[TraversableOnce[T], T](fs)({ it: TraversableOnce[T] => it })(conv, setter)
+  def flattenTo[T](fs: (Fields, Fields))(implicit conv: TupleConverter[TraversableOnce[T]],
+                                         setter: TupleSetter[T]): Pipe =
+    flatMapTo[TraversableOnce[T], T](fs)({ it: TraversableOnce[T] =>
+      it
+    })(conv, setter)
 
   /**
    * Force a materialization to disk in the flow.
@@ -524,16 +556,14 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Convenience method for integrating with existing cascading Functions
    */
-  def each(fs: (Fields, Fields))(fn: Fields => Function[_]) = {
+  def each(fs: (Fields, Fields))(fn: Fields => Function[_]) =
     new Each(pipe, fs._1, fn(fs._2), defaultMode(fs._1, fs._2))
-  }
 
   /**
    * Same as above, but only keep the results field.
    */
-  def eachTo(fs: (Fields, Fields))(fn: Fields => Function[_]) = {
+  def eachTo(fs: (Fields, Fields))(fn: Fields => Function[_]) =
     new Each(pipe, fs._1, fn(fs._2), Fields.RESULTS)
-  }
 
   /**
    * This is an analog of the SQL/Excel unpivot function which converts columns of data
@@ -563,7 +593,10 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   def unpivot(fieldDef: (Fields, Fields)): Pipe = {
     assert(fieldDef._2.size == 2, "Must specify exactly two Field names for the results")
     // toKeyValueList comes from TupleConversions
-    pipe.flatMap(fieldDef) { te: TupleEntry => TupleConverter.KeyValueList(te) }
+    pipe
+      .flatMap(fieldDef) { te: TupleEntry =>
+        TupleConverter.KeyValueList(te)
+      }
       .discard(fieldDef._1)
   }
 
@@ -587,8 +620,10 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * you can provide a seed to get reproducible results
    *
    */
-  def sampleWithReplacement(fraction: Double): Pipe = new Each(pipe, new SampleWithReplacement(fraction), Fields.ALL)
-  def sampleWithReplacement(fraction: Double, seed: Int): Pipe = new Each(pipe, new SampleWithReplacement(fraction, seed), Fields.ALL)
+  def sampleWithReplacement(fraction: Double): Pipe =
+    new Each(pipe, new SampleWithReplacement(fraction), Fields.ALL)
+  def sampleWithReplacement(fraction: Double, seed: Int): Pipe =
+    new Each(pipe, new SampleWithReplacement(fraction, seed), Fields.ALL)
 
   /**
    * Print all the tuples that pass to stderr
@@ -610,7 +645,7 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
     A -> FlatMap -> write(tsv) -> FlatMap
     in the second flatmap cascading will read from the written tsv for running it. However TSV's use toString and so is not a bijection.
     here we stick in an identity function before the tsv write to keep to force cascading to do any fork/split beforehand.
-    */
+     */
     val writePipe: Pipe = outsource match {
       case t: Tsv => new Each(pipe, Fields.ALL, IdentityFunction, Fields.REPLACE)
       case _ => pipe
@@ -646,10 +681,10 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   def normalize(f: Fields, useTiny: Boolean = true): Pipe = {
     val total = groupAll { _.sum[Double](f -> '__total_for_normalize__) }
     (if (useTiny) {
-      crossWithTiny(total)
-    } else {
-      crossWithSmaller(total)
-    })
+       crossWithTiny(total)
+     } else {
+       crossWithSmaller(total)
+     })
       .map(Fields.merge(f, '__total_for_normalize__) -> f) { args: (Double, Double) =>
         args._1 / args._2
       }
@@ -666,21 +701,27 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    * can be cast into integers. The output field 'field3 will be of tupel `(Int, Int)`
    *
    */
-  def pack[T](fs: (Fields, Fields))(implicit packer: TuplePacker[T], setter: TupleSetter[T]): Pipe = {
+  def pack[T](fs: (Fields, Fields))(implicit packer: TuplePacker[T],
+                                    setter: TupleSetter[T]): Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
     val conv = packer.newConverter(fromFields)
-    pipe.map(fs) { input: T => input } (conv, setter)
+    pipe.map(fs) { input: T =>
+      input
+    }(conv, setter)
   }
 
   /**
    * Same as pack but only the to fields are preserved.
    */
-  def packTo[T](fs: (Fields, Fields))(implicit packer: TuplePacker[T], setter: TupleSetter[T]): Pipe = {
+  def packTo[T](fs: (Fields, Fields))(implicit packer: TuplePacker[T],
+                                      setter: TupleSetter[T]): Pipe = {
     val (fromFields, toFields) = fs
     assert(toFields.size == 1, "Can only output 1 field in pack")
     val conv = packer.newConverter(fromFields)
-    pipe.mapTo(fs) { input: T => input } (conv, setter)
+    pipe.mapTo(fs) { input: T =>
+      input
+    }(conv, setter)
   }
 
   /**
@@ -693,23 +734,29 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    *
    * will unpack 'field1 into 'field2 and 'field3
    */
-  def unpack[T](fs: (Fields, Fields))(implicit unpacker: TupleUnpacker[T], conv: TupleConverter[T]): Pipe = {
+  def unpack[T](fs: (Fields, Fields))(implicit unpacker: TupleUnpacker[T],
+                                      conv: TupleConverter[T]): Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
     val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.map(fields) { input: T => input } (conv, setter)
+    pipe.map(fields) { input: T =>
+      input
+    }(conv, setter)
   }
 
   /**
    * Same as unpack but only the to fields are preserved.
    */
-  def unpackTo[T](fs: (Fields, Fields))(implicit unpacker: TupleUnpacker[T], conv: TupleConverter[T]): Pipe = {
+  def unpackTo[T](fs: (Fields, Fields))(implicit unpacker: TupleUnpacker[T],
+                                        conv: TupleConverter[T]): Pipe = {
     val (fromFields, toFields) = fs
     assert(fromFields.size == 1, "Can only take 1 input field in unpack")
     val fields = (fromFields, unpacker.getResultFields(toFields))
     val setter = unpacker.newSetter(toFields)
-    pipe.mapTo(fields) { input: T => input } (conv, setter)
+    pipe.mapTo(fields) { input: T =>
+      input
+    }(conv, setter)
   }
 
   /**
@@ -717,7 +764,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    */
   def upstreamPipes: Set[Pipe] =
     Iterator
-      .iterate(Seq(pipe))(pipes => for (p <- pipes; prev <- p.getPrevious) yield prev)
+      .iterate(Seq(pipe))(pipes =>
+        for {
+          p <- pipes
+          prev <- p.getPrevious
+        } yield prev)
       .takeWhile(_.length > 0)
       .flatten
       .toSet
@@ -729,9 +780,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
    */
   private[scalding] def applyFlowConfigProperties(flowDef: FlowDef): Pipe = {
     case class ToVisit[T](queue: Queue[T], inQueue: Set[T]) {
-      def maybeAdd(t: T): ToVisit[T] = if (inQueue(t)) this else {
-        ToVisit(queue :+ t, inQueue + t)
-      }
+      def maybeAdd(t: T): ToVisit[T] =
+        if (inQueue(t)) this
+        else {
+          ToVisit(queue :+ t, inQueue + t)
+        }
       def next: Option[(T, ToVisit[T])] =
         if (inQueue.isEmpty) None
         else Some((queue.head, ToVisit(queue.tail, inQueue - queue.head)))

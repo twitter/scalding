@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import java.io.InputStream
@@ -31,8 +31,8 @@ trait Reader[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) +T] {
 object Reader {
   import JavaStreamEnrichments._
 
-  def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
-    is: InputStream)(implicit r: Reader[T]): T = r.read(is)
+  def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](is: InputStream)(
+      implicit r: Reader[T]): T = r.read(is)
   /*
    * Instances below
    */
@@ -90,7 +90,8 @@ object Reader {
     def read(is: InputStream) = (r1.read(is), r2.read(is))
   }
 
-  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Reader: ClassTag]: Reader[Array[T]] =
+  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Reader: ClassTag]
+    : Reader[Array[T]] =
     new Reader[Array[T]] {
       val readerT = implicitly[Reader[T]]
       def read(is: InputStream) = {
@@ -109,22 +110,23 @@ object Reader {
     }
 
   // Scala seems to have issues with this being implicit
-  def collection[T: Reader, C](implicit cbf: CanBuildFrom[Nothing, T, C]): Reader[C] = new Reader[C] {
-    val readerT = implicitly[Reader[T]]
-    def read(is: InputStream): C = {
-      val builder = cbf()
-      val size = is.readPosVarInt
-      builder.sizeHint(size)
-      @annotation.tailrec
-      def go(idx: Int): Unit =
-        if (idx == size) ()
-        else {
-          builder += readerT.read(is)
-          go(idx + 1)
-        }
+  def collection[T: Reader, C](implicit cbf: CanBuildFrom[Nothing, T, C]): Reader[C] =
+    new Reader[C] {
+      val readerT = implicitly[Reader[T]]
+      def read(is: InputStream): C = {
+        val builder = cbf()
+        val size = is.readPosVarInt
+        builder.sizeHint(size)
+        @annotation.tailrec
+        def go(idx: Int): Unit =
+          if (idx == size) ()
+          else {
+            builder += readerT.read(is)
+            go(idx + 1)
+          }
 
-      go(0)
-      builder.result
+        go(0)
+        builder.result
+      }
     }
-  }
 }

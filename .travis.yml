@@ -106,6 +106,7 @@ matrix:
     - scala: 2.11.8
       env: BUILD="test repl and typed tutorials and microsite"
       script:
+      - ./sbt scalafmtTest
       - ./sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite
       - "scripts/build_assembly_no_test.sh scalding-repl"
       - "scripts/test_repl_tutorial.sh"

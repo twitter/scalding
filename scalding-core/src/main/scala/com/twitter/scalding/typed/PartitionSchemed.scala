@@ -16,8 +16,8 @@ package com.twitter.scalding
 package typed
 
 import cascading.tap.hadoop.PartitionTap
-import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
-import cascading.tap.{ SinkMode, Tap }
+import cascading.tap.local.{FileTap, PartitionTap => LocalPartitionTap}
+import cascading.tap.{SinkMode, Tap}
 import cascading.tuple.Fields
 
 /**
@@ -27,7 +27,11 @@ import cascading.tuple.Fields
  * Note that for both of them the sink fields need to be set to only include the actual fields
  * that should be written to file and not the partition fields.
  */
-trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with Mappable[(P, T)] with HfsTapProvider {
+trait PartitionSchemed[P, T]
+    extends SchemedSource
+    with TypedSink[(P, T)]
+    with Mappable[(P, T)]
+    with HfsTapProvider {
   def path: String
   def template: String
   def valueSetter: TupleSetter[T]
@@ -63,7 +67,9 @@ trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with M
     mode match {
       case Local(_) => {
         val fileTap = new FileTap(localScheme, path, SinkMode.REPLACE)
-        new LocalPartitionTap(fileTap, new TemplatePartition(partitionFields, template), SinkMode.UPDATE)
+        new LocalPartitionTap(fileTap,
+                              new TemplatePartition(partitionFields, template),
+                              SinkMode.UPDATE)
           .asInstanceOf[Tap[_, _, _]]
       }
       case Hdfs(_, _) => {

@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest.{Matchers, WordSpec}
 
 class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
   // Deal with when a key appears in left but not right
@@ -26,7 +26,7 @@ class TypedSketchJoinJobForEmptyKeysTest extends WordSpec with Matchers {
         .sink[(Int, Int, Int)](TypedTsv[(Int, Int, Int)]("output")) { outBuf =>
           outBuf should have size 1
           val unordered = outBuf.toSet
-          unordered should contain (1, 1111, -1)
+          unordered should contain(1, 1111, -1)
         }
         .run
         .finish()

@@ -8,11 +8,10 @@ Check the output:
   cat tutorial/data/jsonoutput0.tsv
 
 **/
+import com.twitter.scalding.{Args, Job, JsonLine, Tsv}
 
-import com.twitter.scalding.{Job, Args, JsonLine, Tsv}
- 
 class JsonTutorial0(args: Args) extends Job(args) {
   JsonLine("tutorial/data/session.json", ('sessionId)).read
-    .groupBy('sessionId){_.size}
+    .groupBy('sessionId) { _.size }
     .write(Tsv("tutorial/data/jsonoutput0.tsv"))
 }

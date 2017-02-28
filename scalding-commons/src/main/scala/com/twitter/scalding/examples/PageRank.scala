@@ -35,23 +35,26 @@ class PageRank(args: Args) extends Job(args) {
   //columns: source node, comma separated (no spaces) destination nodes as a string, and
   //initial rank (default to 1.0 if you are starting from nothing)
   initialize('src, 'dst, 'rank)
-    /*
-  * This algorithm works by having two types of rows that have the same column structure.
-  * the node -> list(neighbors), and node -> individual neighbor.
-  * We distinguish these two types with an id which nodes if this is a NODESET or an EDGE.
-  * The first step is to append that value.  We also need to have a column for the degree.
-  * It doesn't matter what the initial degree is, we recompute below
-  */
-    .map(() -> ('rowtype, 'd_src)) { (u: Unit) => (NODESET, -1) }
-    .thenDo(doPageRank(STEPS)_)
+  /*
+     * This algorithm works by having two types of rows that have the same column structure.
+     * the node -> list(neighbors), and node -> individual neighbor.
+     * We distinguish these two types with an id which nodes if this is a NODESET or an EDGE.
+     * The first step is to append that value.  We also need to have a column for the degree.
+     * It doesn't matter what the initial degree is, we recompute below
+     */
+    .map(() -> ('rowtype, 'd_src)) { (u: Unit) =>
+      (NODESET, -1)
+    }
+    .thenDo(doPageRank(STEPS) _)
     .thenDo(computeError _)
     .thenDo(output _)
 
   /**
    * Here is where we check for convergence and then run the next job if we're not converged
    */
-  override def next: Option[Job] = {
-    args.optional("convergence")
+  override def next: Option[Job] =
+    args
+      .optional("convergence")
       .flatMap { convErr =>
         /*
          * It's easy for this to seem broken, so think about it twice:
@@ -60,9 +63,9 @@ class PageRank(args: Args) extends Job(args) {
          * and output should be swapping.
          */
         val nextArgs = args + ("input", Some(args("output"))) +
-          ("temp", Some(args("output"))) +
-          ("output", Some(args("temp"))) +
-          ("jobCount", Some((JOB_COUNT + 1).toString))
+            ("temp", Some(args("output"))) +
+            ("output", Some(args("temp"))) +
+            ("jobCount", Some((JOB_COUNT + 1).toString))
         //Actually read the error:
         val error = TypedTsv[Double](args("errorOut")).toIterator.next;
         // The last job should be even numbered so output is not in temp.
@@ -76,7 +79,7 @@ class PageRank(args: Args) extends Job(args) {
           None
         }
       }
-  }
+
   /**
    * override this function to change how you generate a pipe of
    * (Long, String, Double)
@@ -88,41 +91,45 @@ class PageRank(args: Args) extends Job(args) {
    * NOTE: if you want to run until convergence, the initialize method must read the same
    * EXACT format as the output method writes.  This is your job!
    */
-  def initialize(nodeCol: Symbol, neighCol: Symbol, pageRank: Symbol) = {
+  def initialize(nodeCol: Symbol, neighCol: Symbol, pageRank: Symbol) =
     Tsv(args("input")).read
-      //Just to name the columns:
-      .mapTo((0, 1, 2) -> (nodeCol, neighCol, pageRank)) {
-        input: (Long, String, Double) => input
+    //Just to name the columns:
+      .mapTo((0, 1, 2) -> (nodeCol, neighCol, pageRank)) { input: (Long, String, Double) =>
+        input
       }
-  }
 
   /**
    * The basic idea is to groupBy the dst key with BOTH the nodeset and the edge rows.
    * the nodeset rows have the old page-rank, the edge rows are reversed, so we can get
    * the incoming page-rank from the nodes that point to each destination.
    */
-
   @tailrec
-  final def doPageRank(steps: Int)(pagerank: RichPipe): RichPipe = {
-    if (steps <= 0) { pagerank }
-    else {
+  final def doPageRank(steps: Int)(pagerank: RichPipe): RichPipe =
+    if (steps <= 0) { pagerank } else {
       val nodeRows = pagerank
-        //remove any EDGE rows from the previous loop
-        .filter('rowtype) { (rowtype: Int) => rowtype == NODESET }
-      //compute the incremental rank due to the random jump:
-      val randomJump = nodeRows.map('rank -> 'rank) { (rank: Double) => ALPHA }
-      //expand the neighbor list inte an edge list and out-degree of the src
-      val edges = nodeRows.flatMap(('dst, 'd_src) -> ('dst, 'd_src)) { args: (String, Long) =>
-        if (args._1.length > 0) {
-          val dsts = args._1.split(",")
-          //Ignore the old degree:
-          val deg = dsts.size
-          dsts.map { str => (str.toLong, deg) }
-        } else {
-          //Here is a node that points to no other nodes (dangling)
-          Nil
+      //remove any EDGE rows from the previous loop
+        .filter('rowtype) { (rowtype: Int) =>
+          rowtype == NODESET
         }
+      //compute the incremental rank due to the random jump:
+      val randomJump = nodeRows.map('rank -> 'rank) { (rank: Double) =>
+        ALPHA
       }
+      //expand the neighbor list inte an edge list and out-degree of the src
+      val edges = nodeRows
+        .flatMap(('dst, 'd_src) -> ('dst, 'd_src)) { args: (String, Long) =>
+          if (args._1.length > 0) {
+            val dsts = args._1.split(",")
+            //Ignore the old degree:
+            val deg = dsts.size
+            dsts.map { str =>
+              (str.toLong, deg)
+            }
+          } else {
+            //Here is a node that points to no other nodes (dangling)
+            Nil
+          }
+        }
         //Here we make a false row that we use to tell dst how much incoming
         //Page rank it needs to add to itself:
         .map(('src, 'd_src, 'dst, 'rank, 'rowtype) -> ('src, 'd_src, 'dst, 'rank, 'rowtype)) {
@@ -132,6 +139,7 @@ class PageRank(args: Args) extends Job(args) {
             //We swap destination into the source position
             (dst, -1L, "", rank * (1.0 - ALPHA) / d_src, EDGE)
         }
+
       /**
        * Here we do the meat of the algorithm:
        * if N = number of nodes, pr(N_i) prob of walking to node i, then:
@@ -152,19 +160,19 @@ class PageRank(args: Args) extends Job(args) {
       //Must call ourselves in the tail position:
       doPageRank(steps - 1)(nextPr)
     }
-  }
 
   //This outputs in the same format as the input, so you can run the job
   //iteratively, subclass to change the final behavior
-  def output(pipe: RichPipe) = {
+  def output(pipe: RichPipe) =
     pipe.project('src, 'dst, 'rank).write(Tsv(args("output")))
-  }
 
   //Optionally compute the average error:
   def computeError(pr: RichPipe): RichPipe = {
     args.optional("errorOut").map { errOut =>
       Tsv(args("input")).read
-        .mapTo((0, 1, 2) -> ('src0, 'dst0, 'rank0)) { tup: (Long, String, Double) => tup }
+        .mapTo((0, 1, 2) -> ('src0, 'dst0, 'rank0)) { tup: (Long, String, Double) =>
+          tup
+        }
         .joinWithSmaller('src0 -> 'src, pr)
         .mapTo(('rank0, 'rank) -> 'err) { ranks: (Double, Double) =>
           scala.math.abs(ranks._1 - ranks._2)

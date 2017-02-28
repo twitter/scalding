@@ -56,9 +56,9 @@ object ScroogeEnumOrderedBuf {
         _root_.java.lang.Integer.compare($elementA.value, $elementB.value) : Int
         """
 
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = CompileTimeLengthTypes.FastLengthCalculation(c)(q"posVarIntSize($element.value)")
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
+        CompileTimeLengthTypes.FastLengthCalculation(c)(q"posVarIntSize($element.value)")
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
     }
   }
 }
-

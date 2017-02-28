@@ -12,15 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.serialization
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
 
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
-class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B]) extends Serialization[(A, B)] {
+class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B])
+    extends Serialization[(A, B)] {
   override def hash(x: (A, B)) = {
     import MurmurHashUtils._
     val h1 = mixH1(seed, serA.hash(x._1))
@@ -51,25 +52,30 @@ class Serialization2[A, B](val serA: Serialization[A], val serB: Serialization[B
     b <- serB.staticSize
   } yield a + b
 
-  override def dynamicSize(t: (A, B)) = if (staticSize.isDefined) staticSize
-  else for {
-    a <- serA.dynamicSize(t._1)
-    b <- serB.dynamicSize(t._2)
-  } yield a + b
+  override def dynamicSize(t: (A, B)) =
+    if (staticSize.isDefined) staticSize
+    else
+      for {
+        a <- serA.dynamicSize(t._1)
+        b <- serB.dynamicSize(t._2)
+      } yield a + b
 }
 
 object OrderedSerialization2 {
-  def maybeOrderedSerialization2[A, B](implicit ordA: Ordering[A], ordB: Ordering[B]): Ordering[(A, B)] = {
+  def maybeOrderedSerialization2[A, B](implicit ordA: Ordering[A],
+                                       ordB: Ordering[B]): Ordering[(A, B)] =
     (ordA, ordB) match {
       case (ordA: OrderedSerialization[_], ordB: OrderedSerialization[_]) =>
-        new OrderedSerialization2(ordA.asInstanceOf[OrderedSerialization[A]], ordB.asInstanceOf[OrderedSerialization[B]])
+        new OrderedSerialization2(ordA.asInstanceOf[OrderedSerialization[A]],
+                                  ordB.asInstanceOf[OrderedSerialization[B]])
       case _ => Ordering.Tuple2(ordA, ordB)
     }
-  }
 }
 
 class OrderedSerialization2[A, B](val ordA: OrderedSerialization[A],
-  val ordB: OrderedSerialization[B]) extends Serialization2[A, B](ordA, ordB) with OrderedSerialization[(A, B)] {
+                                  val ordB: OrderedSerialization[B])
+    extends Serialization2[A, B](ordA, ordB)
+    with OrderedSerialization[(A, B)] {
   override def compare(x: (A, B), y: (A, B)) = {
     val ca = ordA.compare(x._1, y._1)
     if (ca != 0) ca

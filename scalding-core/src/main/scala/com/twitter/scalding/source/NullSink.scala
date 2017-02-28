@@ -3,7 +3,7 @@ package com.twitter.scalding.source
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import com.twitter.scalding.typed.TypedSink
-import com.twitter.scalding.{ BaseNullSource, Mode, TupleSetter }
+import com.twitter.scalding.{BaseNullSource, Mode, TupleSetter}
 
 /**
  * This can be used to cause cascading to run a flow, but discard

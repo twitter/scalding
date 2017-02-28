@@ -12,12 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter
 
-import org.apache.hadoop.fs.{ Path, PathFilter }
+import org.apache.hadoop.fs.{Path, PathFilter}
 
 package object scalding {
+
   /**
    * The objects for the Typed-API live in the scalding.typed package
    * but are aliased here.
@@ -42,35 +43,29 @@ package object scalding {
 
   class RichPathFilter(f: PathFilter) {
 
-    def and(filters: PathFilter*): PathFilter = {
+    def and(filters: PathFilter*): PathFilter =
       new AndPathFilter(Seq(f) ++ filters)
-    }
 
-    def or(filters: PathFilter*): PathFilter = {
+    def or(filters: PathFilter*): PathFilter =
       new OrPathFilter(Seq(f) ++ filters)
-    }
 
-    def not: PathFilter = {
+    def not: PathFilter =
       new NotPathFilter(f)
-    }
 
   }
 
   private[this] class AndPathFilter(filters: Seq[PathFilter]) extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       filters.forall(_.accept(p))
-    }
   }
 
   private[this] class OrPathFilter(filters: Seq[PathFilter]) extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       filters.exists(_.accept(p))
-    }
   }
 
   private[this] class NotPathFilter(filter: PathFilter) extends PathFilter {
-    override def accept(p: Path): Boolean = {
+    override def accept(p: Path): Boolean =
       !filter.accept(p)
-    }
   }
 }

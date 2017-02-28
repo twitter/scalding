@@ -3,9 +3,10 @@ package com.twitter.scalding.reducer_estimation
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 object RatioBasedEstimator {
+
   /**
    * RatioBasedEstimator optionally ignores history items whose input size is
    * drastically different than the current job. This parameter specifies the
@@ -32,8 +33,9 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
   private def acceptableInputRatio(current: Long, past: Long, threshold: Double): Boolean = {
     val ratio = current / past.toDouble
     if (threshold > 0 && (ratio < threshold || ratio > 1 / threshold)) {
-      LOG.warn("Input sizes differ too much to use for estimation: " +
-        "current: " + current + ", past: " + past)
+      LOG.warn(
+        "Input sizes differ too much to use for estimation: " +
+          "current: " + current + ", past: " + past)
       false
     } else true
   }
@@ -70,14 +72,16 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
           } else {
             val reducerRatio = ratios.sum / ratios.length
             LOG.info("Getting base estimate from InputSizeReducerEstimator")
-            val inputSizeBasedEstimate = InputSizeReducerEstimator.estimateReducersWithoutRounding(info)
+            val inputSizeBasedEstimate =
+              InputSizeReducerEstimator.estimateReducersWithoutRounding(info)
             inputSizeBasedEstimate.map { baseEstimate =>
               // scale reducer estimate based on the historical input ratio
               val e = (baseEstimate * reducerRatio).ceil.toInt.max(1)
 
-              LOG.info("\nRatioBasedEstimator"
-                + "\n - past reducer ratio: " + reducerRatio
-                + "\n - reducer estimate:   " + e)
+              LOG.info(
+                "\nRatioBasedEstimator"
+                  + "\n - past reducer ratio: " + reducerRatio
+                  + "\n - reducer estimate:   " + e)
 
               e
             }

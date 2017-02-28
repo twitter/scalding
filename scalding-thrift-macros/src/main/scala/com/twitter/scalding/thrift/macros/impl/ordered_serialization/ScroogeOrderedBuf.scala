@@ -16,7 +16,7 @@
 package com.twitter.scalding.thrift.macros.impl.ordered_serialization
 
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
-import com.twitter.scrooge.{ ThriftStruct, ThriftUnion }
+import com.twitter.scrooge.{ThriftStruct, ThriftUnion}
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -27,18 +27,23 @@ import scala.reflect.macros.Context
   fields named after the thrift fields. So we look at the companion object to figure out those fields names.
   Then we scan the trait for those methods to build the similar listing as is used in products. Other than that we use
   the same constructor approach to case classes in calling the companion object over calling new on the trait
-  */
+ */
 object ScroogeOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
+    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if tpe <:< typeOf[ThriftStruct] && !(tpe =:= typeOf[ThriftStruct]) && !(tpe <:< typeOf[ThriftUnion]) => ScroogeOrderedBuf(c)(buildDispatcher, tpe)
+      case tpe
+          if tpe <:< typeOf[ThriftStruct] && !(tpe =:= typeOf[ThriftStruct]) && !(tpe <:< typeOf[
+            ThriftUnion]) =>
+        ScroogeOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+                        outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -46,27 +51,30 @@ object ScroogeOrderedBuf {
 
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
-    val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType
-      .declarations
+    val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType.declarations
       .filter(_.name.decoded.endsWith("Field "))
       .collect { case s: TermSymbol => s }
       .filter(_.isStatic)
       .filter(_.isVal)
       .map { t =>
         val decodedName = t.name.decoded // Looks like "MethodNameField "
-        decodedName.dropRight(6).toLowerCase //  These things end in "Field " , yes there is a space in there
-      }.toList
+        decodedName
+          .dropRight(6)
+          .toLowerCase //  These things end in "Field " , yes there is a space in there
+      }
+      .toList
 
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType
-        .declarations
+      outerType.declarations
         .collect { case m: MethodSymbol => m }
         .filter(m => fieldNames.contains(m.name.toTermName.toString.toLowerCase))
         .map { accessorMethod =>
-          val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
+          val fieldType =
+            accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod.name.toTermName, b)
-        }.toList
+        }
+        .toList
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -74,7 +82,8 @@ object ScroogeOrderedBuf {
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
         ProductLike.compareBinary(c)(inputStreamA, inputStreamB)(elementData)
 
-      override def hash(element: ctx.TermName): ctx.Tree = ProductLike.hash(c)(element)(elementData)
+      override def hash(element: ctx.TermName): ctx.Tree =
+        ProductLike.hash(c)(element)(elementData)
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         ProductLike.put(c)(inputStream, element)(elementData)
@@ -107,4 +116,3 @@ object ScroogeOrderedBuf {
     }
   }
 }
-

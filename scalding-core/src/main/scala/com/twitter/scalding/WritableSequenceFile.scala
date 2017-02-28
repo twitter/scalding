@@ -12,16 +12,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import cascading.scheme.hadoop.{ WritableSequenceFile => CHWritableSequenceFile }
+import cascading.scheme.hadoop.{WritableSequenceFile => CHWritableSequenceFile}
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
 
 import org.apache.hadoop.io.Writable
 
 trait WritableSequenceFileScheme extends SchemedSource {
+
   /**
    * There are three allowed cases:
    * fields.size == 1 and keyType == null
@@ -34,24 +35,28 @@ trait WritableSequenceFileScheme extends SchemedSource {
 
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme =
-    HadoopSchemeInstance(new CHWritableSequenceFile(fields, keyType, valueType).asInstanceOf[cascading.scheme.Scheme[_, _, _, _, _]])
+    HadoopSchemeInstance(
+      new CHWritableSequenceFile(fields, keyType, valueType)
+        .asInstanceOf[cascading.scheme.Scheme[_, _, _, _, _]])
 }
 
 object WritableSequenceFile {
+
   /** by default uses the first two fields in the tuple */
-  def apply[K <: Writable: Manifest, V <: Writable: Manifest](path: String): WritableSequenceFile[K, V] =
+  def apply[K <: Writable: Manifest, V <: Writable: Manifest](
+      path: String): WritableSequenceFile[K, V] =
     WritableSequenceFile(path, Dsl.intFields(0 to 1))
 }
 
 case class WritableSequenceFile[K <: Writable: Manifest, V <: Writable: Manifest](
-  p: String,
-  f: Fields,
-  override val sinkMode: SinkMode = SinkMode.REPLACE)
-  extends FixedPathSource(p)
-  with WritableSequenceFileScheme
-  with LocalTapSource
-  with TypedSink[(K, V)]
-  with Mappable[(K, V)] {
+    p: String,
+    f: Fields,
+    override val sinkMode: SinkMode = SinkMode.REPLACE)
+    extends FixedPathSource(p)
+    with WritableSequenceFileScheme
+    with LocalTapSource
+    with TypedSink[(K, V)]
+    with Mappable[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].runtimeClass.asInstanceOf[Class[_ <: Writable]]
@@ -67,8 +72,10 @@ case class WritableSequenceFile[K <: Writable: Manifest, V <: Writable: Manifest
 }
 
 object MultipleWritableSequenceFiles {
+
   /** by default uses the first two fields in the tuple */
-  def apply[K <: Writable: Manifest, V <: Writable: Manifest](paths: Seq[String]): MultipleWritableSequenceFiles[K, V] =
+  def apply[K <: Writable: Manifest, V <: Writable: Manifest](
+      paths: Seq[String]): MultipleWritableSequenceFiles[K, V] =
     MultipleWritableSequenceFiles(paths, Dsl.intFields(0 to 1))
 }
 
@@ -77,11 +84,12 @@ object MultipleWritableSequenceFiles {
  * is not well defined
  */
 case class MultipleWritableSequenceFiles[K <: Writable: Manifest, V <: Writable: Manifest](
-  p: Seq[String], f: Fields)
-  extends FixedPathSource(p: _*)
-  with WritableSequenceFileScheme
-  with LocalTapSource
-  with Mappable[(K, V)] {
+    p: Seq[String],
+    f: Fields)
+    extends FixedPathSource(p: _*)
+    with WritableSequenceFileScheme
+    with LocalTapSource
+    with Mappable[(K, V)] {
 
   override val fields = f
   override val keyType = manifest[K].runtimeClass.asInstanceOf[Class[_ <: Writable]]

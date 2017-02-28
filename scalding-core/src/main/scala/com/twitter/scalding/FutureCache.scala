@@ -1,7 +1,8 @@
 package com.twitter.scalding
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.concurrent.{ Future, Promise }
+import scala.concurrent.{Future, Promise}
+
 /**
  * This is a map for values that are produced in futures
  * as is common in Execution

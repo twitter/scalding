@@ -34,8 +34,8 @@ object UnsignedComparisonLaws extends Properties("UnsignedComparisonLaws") {
       case (true, false) => cmp < 0 // negative is bigger
       case (false, true) => cmp > 0
       // Convert to positive ints
-      case (false, false) => cmp == java.lang.Integer.compare(l1 & Byte.MaxValue, l2 & Byte.MaxValue)
+      case (false, false) =>
+        cmp == java.lang.Integer.compare(l1 & Byte.MaxValue, l2 & Byte.MaxValue)
     }
   }
 }
-

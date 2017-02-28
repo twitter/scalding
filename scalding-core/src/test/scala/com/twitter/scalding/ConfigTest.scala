@@ -12,14 +12,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import com.twitter.scalding.filecache.{ HadoopCachedFile, URIHasher }
+import com.twitter.scalding.filecache.{HadoopCachedFile, URIHasher}
 import java.net.URI
 import org.apache.hadoop.mapreduce.MRJobConfig
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest.{Matchers, WordSpec}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
@@ -30,8 +30,7 @@ class ConfigTest extends WordSpec with Matchers {
   "A Config" should {
     "cascadingAppJar works" in {
       val cls = getClass
-      Config.default.setCascadingAppJar(cls)
-        .getCascadingAppJar should contain (Success(cls))
+      Config.default.setCascadingAppJar(cls).getCascadingAppJar should contain(Success(cls))
     }
     "default has serialization set" in {
       val sers = Config.default.get("io.serializations").get.split(",").toList
@@ -44,9 +43,9 @@ class ConfigTest extends WordSpec with Matchers {
       val date = RichDate.now
       val (oldDate, newConf) = Config.empty.maybeSetSubmittedTimestamp(date)
       oldDate shouldBe empty
-      newConf.getSubmittedTimestamp should contain (date)
+      newConf.getSubmittedTimestamp should contain(date)
       val (stillOld, new2) = newConf.maybeSetSubmittedTimestamp(date + Seconds(1))
-      stillOld should contain (date)
+      stillOld should contain(date)
       new2 shouldBe newConf
     }
     "adding UniqueIDs works" in {
@@ -66,8 +65,7 @@ class ConfigTest extends WordSpec with Matchers {
     }
     "Default serialization should have tokens" in {
       Config.default.getCascadingSerializationTokens should not be empty
-      Config.default.getCascadingSerializationTokens
-        .values
+      Config.default.getCascadingSerializationTokens.values
         .map(Class.forName)
         .filter(c => c.isPrimitive || c.isArray) shouldBe empty
 
@@ -81,8 +79,15 @@ class ConfigTest extends WordSpec with Matchers {
       // the only Kryo classes we don't assign tokens for are the primitives + array
       (kryoClasses -- tokenClasses).forall { c =>
         // primitives cannot be forName'd
-        val prim = Set(classOf[Boolean], classOf[Byte], classOf[Short],
-          classOf[Int], classOf[Long], classOf[Float], classOf[Double], classOf[Char], classOf[Unit])
+        val prim = Set(classOf[Boolean],
+                       classOf[Byte],
+                       classOf[Short],
+                       classOf[Int],
+                       classOf[Long],
+                       classOf[Float],
+                       classOf[Double],
+                       classOf[Char],
+                       classOf[Unit])
           .map(_.getName)
 
         prim(c) || Class.forName(c).isArray
@@ -91,8 +96,7 @@ class ConfigTest extends WordSpec with Matchers {
     "addDistributedCacheFile works" in {
       val (cachedFile, path) = ConfigTest.makeCachedFileAndPath("test.txt")
 
-      Config
-        .empty
+      Config.empty
         .addDistributedCacheFiles(cachedFile)
         .get(MRJobConfig.CACHE_FILES) shouldBe Some(path)
     }
@@ -100,13 +104,11 @@ class ConfigTest extends WordSpec with Matchers {
       val (cachedFileFirst, pathFirst) = ConfigTest.makeCachedFileAndPath("first.txt")
       val (cachedFileSecond, pathSecond) = ConfigTest.makeCachedFileAndPath("second.txt")
 
-      Config
-        .empty
+      Config.empty
         .addDistributedCacheFiles(cachedFileFirst, cachedFileSecond)
         .get(MRJobConfig.CACHE_FILES) shouldBe Some(s"$pathFirst,$pathSecond")
 
-      Config
-        .empty
+      Config.empty
         .addDistributedCacheFiles(cachedFileFirst)
         .addDistributedCacheFiles(cachedFileSecond)
         .get(MRJobConfig.CACHE_FILES) shouldBe Some(s"$pathFirst,$pathSecond")
@@ -142,12 +144,20 @@ object ConfigProps extends Properties("Config") {
   property("++ == c2.orElse(c1)") = forAll { (c1: Config, c2: Config, keys: Set[String]) =>
     val merged = c1 ++ c2
     val testKeys = c1.toMap.keySet | c2.toMap.keySet ++ keys
-    testKeys.forall { k => merged.get(k) == c2.get(k).orElse(c1.get(k)) }
+    testKeys.forall { k =>
+      merged.get(k) == c2.get(k).orElse(c1.get(k))
+    }
   }
   property("adding many UniqueIDs works") = forAll { (l: List[String]) =>
-    val uids = l.filterNot { s => s.isEmpty || s.contains(",") }.map(UniqueID(_))
-    (uids.foldLeft(Config.empty) { (conf, id) =>
-      conf.addUniqueId(id)
-    }.getUniqueIds == uids.toSet)
+    val uids = l
+      .filterNot { s =>
+        s.isEmpty || s.contains(",")
+      }
+      .map(UniqueID(_))
+    (uids
+      .foldLeft(Config.empty) { (conf, id) =>
+        conf.addUniqueId(id)
+      }
+      .getUniqueIds == uids.toSet)
   }
 }

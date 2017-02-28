@@ -39,7 +39,10 @@ object TupleFieldSetter extends CaseClassFieldSetter {
     q"""$container.set($idx, $fieldValue)"""
   }
 
-  override def from(c: Context)(fieldType: c.Type, idx: Int, container: c.TermName, fieldValue: c.Tree): Try[c.Tree] = Try {
+  override def from(c: Context)(fieldType: c.Type,
+                                idx: Int,
+                                container: c.TermName,
+                                fieldValue: c.Tree): Try[c.Tree] = Try {
     import c.universe._
 
     def simpleType(accessor: Tree) = q"""${accessor}(${idx}, $fieldValue)"""

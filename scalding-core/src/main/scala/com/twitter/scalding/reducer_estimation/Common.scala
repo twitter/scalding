@@ -1,16 +1,16 @@
 package com.twitter.scalding.reducer_estimation
 
-import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
+import cascading.flow.{Flow, FlowStep, FlowStepStrategy}
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{ StringUtility, Config }
-import cascading.tap.{ Tap, CompositeTap }
+import com.twitter.scalding.{Config, StringUtility}
+import cascading.tap.{CompositeTap, Tap}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
 import org.slf4j.LoggerFactory
-import java.util.{ List => JList }
+import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Failure, Success, Try}
 
 object EstimatorConfig {
 
@@ -59,19 +59,21 @@ object Common {
 
     FileInputFormat
       .getInputPaths(conf)
-      .map { path => path -> path.getFileSystem(conf).getContentSummary(path).getLength }
+      .map { path =>
+        path -> path.getFileSystem(conf).getContentSummary(path).getLength
+      }
   }
 
   def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
 
 }
 
-case class FlowStrategyInfo(
-  flow: Flow[JobConf],
-  predecessorSteps: Seq[FlowStep[JobConf]],
-  step: FlowStep[JobConf])
+case class FlowStrategyInfo(flow: Flow[JobConf],
+                            predecessorSteps: Seq[FlowStep[JobConf]],
+                            step: FlowStep[JobConf])
 
 trait ReducerEstimator {
+
   /**
    * Estimate how many reducers should be used. Called for each FlowStep before
    * it is scheduled. Custom reducer estimators should override this rather than
@@ -111,10 +113,12 @@ trait HistoryReducerEstimator extends ReducerEstimator {
     }
   }
 
-  protected def estimateReducers(info: FlowStrategyInfo, history: Seq[FlowStepHistory]): Option[Int]
+  protected def estimateReducers(info: FlowStrategyInfo,
+                                 history: Seq[FlowStepHistory]): Option[Int]
 }
 
-case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator) extends ReducerEstimator {
+case class FallbackEstimator(first: ReducerEstimator, fallback: ReducerEstimator)
+    extends ReducerEstimator {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
@@ -145,8 +149,8 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
    * Called by Cascading at the start of each job step.
    */
   final override def apply(flow: Flow[JobConf],
-    preds: JList[FlowStep[JobConf]],
-    step: FlowStep[JobConf]): Unit = {
+                           preds: JList[FlowStep[JobConf]],
+                           step: FlowStep[JobConf]): Unit = {
 
     val conf = step.getConfig
     // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
@@ -155,8 +159,7 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
       case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
       case _ =>
         if (skipReducerEstimation(step)) {
-          LOG.info(
-            s"""
+          LOG.info(s"""
                |Flow step ${step.getName} was configured with reducers
                |set explicitly (${Config.WithReducersSetExplicitly}=true) and the estimator
                |explicit override turned off (${Config.ReducerEstimatorOverride}=false). Skipping
@@ -180,16 +183,16 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
     reducersSetExplicitly(step) && !overrideExplicitReducers(step)
 
   private def estimate(flow: Flow[JobConf],
-    preds: JList[FlowStep[JobConf]],
-    step: FlowStep[JobConf]): Unit = {
+                       preds: JList[FlowStep[JobConf]],
+                       step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
 
     val stepNumReducers = conf.get(Config.HadoopNumReducers)
     Option(conf.get(Config.ReducerEstimators)).foreach { clsNames =>
-
       val clsLoader = Thread.currentThread.getContextClassLoader
 
-      val estimators = StringUtility.fastSplit(clsNames, ",")
+      val estimators = StringUtility
+        .fastSplit(clsNames, ",")
         .map(clsLoader.loadClass(_).newInstance.asInstanceOf[ReducerEstimator])
       val combinedEstimator = Monoid.sum(estimators)
 
@@ -200,11 +203,11 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
       // apply cap if needed
       val cappedNumReducers = estimatedNumReducers.map { n =>
-        val configuredMax = conf.getInt(EstimatorConfig.maxEstimatedReducersKey, EstimatorConfig.defaultMaxEstimatedReducers)
+        val configuredMax = conf.getInt(EstimatorConfig.maxEstimatedReducersKey,
+                                        EstimatorConfig.defaultMaxEstimatedReducers)
 
         if (n > configuredMax) {
-          LOG.warn(
-            s"""
+          LOG.warn(s"""
                |Reducer estimator estimated $n reducers, which is more than the configured maximum of $configuredMax.
                |Will use $configuredMax instead.
              """.stripMargin)
@@ -231,39 +234,35 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
  * Info about a prior FlowStep, provided by implementers of HistoryService
  */
 final case class FlowStepHistory(keys: FlowStepKeys,
-  submitTime: Long,
-  launchTime: Long,
-  finishTime: Long,
-  totalMaps: Long,
-  totalReduces: Long,
-  finishedMaps: Long,
-  finishedReduces: Long,
-  failedMaps: Long,
-  failedReduces: Long,
-  mapFileBytesRead: Long,
-  mapFileBytesWritten: Long,
-  mapOutputBytes: Long,
-  reduceFileBytesRead: Long,
-  hdfsBytesRead: Long,
-  hdfsBytesWritten: Long,
-  mapperTimeMillis: Long,
-  reducerTimeMillis: Long,
-  reduceShuffleBytes: Long,
-  cost: Double,
-  tasks: Seq[Task])
+                                 submitTime: Long,
+                                 launchTime: Long,
+                                 finishTime: Long,
+                                 totalMaps: Long,
+                                 totalReduces: Long,
+                                 finishedMaps: Long,
+                                 finishedReduces: Long,
+                                 failedMaps: Long,
+                                 failedReduces: Long,
+                                 mapFileBytesRead: Long,
+                                 mapFileBytesWritten: Long,
+                                 mapOutputBytes: Long,
+                                 reduceFileBytesRead: Long,
+                                 hdfsBytesRead: Long,
+                                 hdfsBytesWritten: Long,
+                                 mapperTimeMillis: Long,
+                                 reducerTimeMillis: Long,
+                                 reduceShuffleBytes: Long,
+                                 cost: Double,
+                                 tasks: Seq[Task])
 
 final case class FlowStepKeys(jobName: String,
-  user: String,
-  priority: String,
-  status: String,
-  version: String,
-  queue: String)
+                              user: String,
+                              priority: String,
+                              status: String,
+                              version: String,
+                              queue: String)
 
-final case class Task(
-  taskType: String,
-  status: String,
-  startTime: Long,
-  finishTime: Long)
+final case class Task(taskType: String, status: String, startTime: Long, finishTime: Long)
 
 /**
  * Provider of information about prior runs.

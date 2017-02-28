@@ -12,25 +12,26 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.serialization
 
 import cascading.flow.Flow
 import cascading.flow.planner.BaseFlowStep
-import cascading.tuple.{ Hasher => CHasher, StreamComparator }
+import cascading.tuple.{Hasher => CHasher, StreamComparator}
 import com.twitter.scalding.ExecutionContext.getDesc
 import java.io.InputStream
 import java.util.Comparator
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * This is the type that should be fed to cascading to enable binary comparators
  */
-class CascadingBinaryComparator[T](ob: OrderedSerialization[T]) extends Comparator[T]
-  with StreamComparator[InputStream]
-  with CHasher[T]
-  with Serializable {
+class CascadingBinaryComparator[T](ob: OrderedSerialization[T])
+    extends Comparator[T]
+    with StreamComparator[InputStream]
+    with CHasher[T]
+    with Serializable {
 
   override def compare(a: T, b: T) = ob.compare(a, b)
   override def hashCode(t: T): Int = ob.hash(t)
@@ -70,7 +71,8 @@ object CascadingBinaryComparator {
              */
             if (fields.getComparators()(0).isInstanceOf[CascadingBinaryComparator[_]])
               Success(())
-            else failure(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
+            else
+              failure(s"pipe: $s, fields: $fields, comparators: ${fields.getComparators.toList}")
         })
       }
     }
@@ -78,10 +80,10 @@ object CascadingBinaryComparator {
     def getDescriptionsForMissingOrdSer[U](bfs: BaseFlowStep[U]): Option[String] =
       // does this job have any Splices without OrderedSerialization:
       if (bfs.getGraph.vertexSet.asScala.exists {
-        case gb: GroupBy => check(gb).isFailure
-        case cg: CoGroup => check(cg).isFailure
-        case _ => false // only do sorting in groupBy/cogroupBy
-      }) {
+            case gb: GroupBy => check(gb).isFailure
+            case cg: CoGroup => check(cg).isFailure
+            case _ => false // only do sorting in groupBy/cogroupBy
+          }) {
         Some(getDesc(bfs).mkString(", "))
       } else None
 

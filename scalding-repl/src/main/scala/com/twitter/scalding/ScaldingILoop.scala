@@ -23,6 +23,7 @@ import scala.tools.nsc.interpreter.JPrintWriter
 import scala.tools.nsc.GenericRunnerSettings
 
 object ScaldingILoop {
+
   /**
    * Search for files with the given name in all directories from current directory
    * up to root.
@@ -49,26 +50,28 @@ object ScaldingILoop {
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
-class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
-  extends ILoopCompat(in, out) {
+class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter) extends ILoopCompat(in, out) {
   def this() = this(None, new JPrintWriter(Console.out, true))
 
-  settings = new GenericRunnerSettings({ s => echo(s) })
+  settings = new GenericRunnerSettings({ s =>
+    echo(s)
+  })
 
   override def printWelcome(): Unit = {
     val fc = Console.YELLOW
     val wc = Console.RED
     def wrapFlames(s: String) = s.replaceAll("[()]+", fc + "$0" + wc)
-    echo(fc +
-      " (                                           \n" +
-      " )\\ )            (   (                       \n" +
-      "(()/(         )  )\\  )\\ )  (          (  (   \n" +
-      " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
-      "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
-      wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
-      wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
-      "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
-      "                                    |___/   ")
+    echo(
+      fc +
+        " (                                           \n" +
+        " )\\ )            (   (                       \n" +
+        "(()/(         )  )\\  )\\ )  (          (  (   \n" +
+        " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
+        "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
+        wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
+        wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
+        "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
+        "                                    |___/   ")
   }
 
   /**
@@ -98,11 +101,11 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
 
-  protected def imports: List[String] = List(
-    "com.twitter.scalding._",
-    "com.twitter.scalding.ReplImplicits._",
-    "com.twitter.scalding.ReplImplicitContext._",
-    "com.twitter.scalding.ReplState._")
+  protected def imports: List[String] =
+    List("com.twitter.scalding._",
+         "com.twitter.scalding.ReplImplicits._",
+         "com.twitter.scalding.ReplImplicitContext._",
+         "com.twitter.scalding.ReplState._")
 
   override def createInterpreter(): Unit = {
     super.createInterpreter()

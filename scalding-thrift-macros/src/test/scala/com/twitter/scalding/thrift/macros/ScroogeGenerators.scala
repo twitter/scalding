@@ -1,12 +1,12 @@
 package com.twitter.scalding.thrift.macros
 
 import com.twitter.scalding.thrift.macros.scalathrift._
-import org.scalacheck.{ Arbitrary, Gen, Prop }
-import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import org.scalacheck.{Arbitrary, Gen, Prop}
+import org.scalacheck.Arbitrary.{arbitrary => arb}
 import java.nio.ByteBuffer
 
 private object Perturbers {
-  def perturb(t0: TestStruct, t1: TestStruct, i: Int): TestStruct = {
+  def perturb(t0: TestStruct, t1: TestStruct, i: Int): TestStruct =
     i match {
       case 1 => t0.copy(aString = t1.aString)
       case 2 => t0.copy(aI32 = t1.aI32)
@@ -14,8 +14,7 @@ private object Perturbers {
       case 4 => t0
       case x => sys.error("Can't perturb TestStruct field: " + x)
     }
-  }
-  def perturb(t0: TestTypes, t1: TestTypes, i: Int): TestTypes = {
+  def perturb(t0: TestTypes, t1: TestTypes, i: Int): TestTypes =
     i match {
       case 1 => t0.copy(aBool = t1.aBool)
       case 2 => t0.copy(aByte = t1.aByte)
@@ -29,8 +28,7 @@ private object Perturbers {
       case 10 => t0
       case x => sys.error("Can't perturb TestTypes field: " + x)
     }
-  }
-  def perturb(t0: TestLists, t1: TestLists, i: Int): TestLists = {
+  def perturb(t0: TestLists, t1: TestLists, i: Int): TestLists =
     i match {
       case 1 => t0.copy(aBoolList = t1.aBoolList)
       case 2 => t0.copy(aByteList = t1.aByteList)
@@ -46,8 +44,7 @@ private object Perturbers {
       case 12 => t0
       case x => sys.error("Can't perturb TestLists field: " + x)
     }
-  }
-  def perturb(t0: TestSets, t1: TestSets, i: Int): TestSets = {
+  def perturb(t0: TestSets, t1: TestSets, i: Int): TestSets =
     i match {
       case 1 => t0.copy(aBoolSet = t1.aBoolSet)
       case 2 => t0.copy(aByteSet = t1.aByteSet)
@@ -63,8 +60,7 @@ private object Perturbers {
       case 12 => t0
       case x => sys.error("Can't perturb TestSets field: " + x)
     }
-  }
-  def perturb(t0: TestMaps, t1: TestMaps, i: Int): TestMaps = {
+  def perturb(t0: TestMaps, t1: TestMaps, i: Int): TestMaps =
     i match {
       case 1 => t0.copy(aBoolMap = t1.aBoolMap)
       case 2 => t0.copy(aByteMap = t1.aByteMap)
@@ -80,7 +76,6 @@ private object Perturbers {
       case 12 => t0
       case x => sys.error("Can't perturb TestMaps field: " + x)
     }
-  }
 }
 
 object ScroogeGenerators {
@@ -167,7 +162,18 @@ object ScroogeGenerators {
       aListList <- Gen.listOf(Gen.listOf(Gen.alphaStr))
       aSetList <- Gen.listOf(Gen.listOf(Gen.alphaStr).map(_.toSet))
       aMapList <- Gen.listOf(Gen.listOf(arb[(Int, Int)]).map(_.toMap))
-    } yield TestLists(aBoolList, aByteList, aI16List, aI32List, aI64List, aDoubleList, aStringList, aStructList, aListList, aSetList, aMapList)
+    } yield
+      TestLists(aBoolList,
+                aByteList,
+                aI16List,
+                aI32List,
+                aI64List,
+                aDoubleList,
+                aStringList,
+                aStructList,
+                aListList,
+                aSetList,
+                aMapList)
   }
   case class TestListsPair(a: TestLists, b: TestLists)
   implicit def arbitraryTestListsPair: Arbitrary[TestListsPair] = Arbitrary {
@@ -187,10 +193,28 @@ object ScroogeGenerators {
       aDoubleSet <- Gen.listOf(arb[Double]).map(_.toSet)
       aStringSet <- Gen.listOf(Gen.alphaStr).map(_.toSet)
       aStructSet <- Gen.listOf(arb[TestStruct]).map(_.toSet)
-      aListSet <- Gen.listOf(Gen.listOf(Gen.alphaStr).map(l => l.to[collection.Seq])).map(_.to[collection.Set])
-      aSetSet <- Gen.listOf(Gen.listOf(Gen.alphaStr).map(l => l.to[collection.Set])).map(_.to[collection.Set])
-      aMapSet <- Gen.listOf(Gen.listOf(arb[(Int, Int)]).map(l => l.toMap.asInstanceOf[collection.Map[Int, Int]])).map(_.to[collection.Set])
-    } yield TestSets(aBoolSet, aByteSet, aI16Set, aI32Set, aI64Set, aDoubleSet, aStringSet, aStructSet, aListSet, aSetSet, aMapSet)
+      aListSet <- Gen
+        .listOf(Gen.listOf(Gen.alphaStr).map(l => l.to[collection.Seq]))
+        .map(_.to[collection.Set])
+      aSetSet <- Gen
+        .listOf(Gen.listOf(Gen.alphaStr).map(l => l.to[collection.Set]))
+        .map(_.to[collection.Set])
+      aMapSet <- Gen
+        .listOf(
+          Gen.listOf(arb[(Int, Int)]).map(l => l.toMap.asInstanceOf[collection.Map[Int, Int]]))
+        .map(_.to[collection.Set])
+    } yield
+      TestSets(aBoolSet,
+               aByteSet,
+               aI16Set,
+               aI32Set,
+               aI64Set,
+               aDoubleSet,
+               aStringSet,
+               aStructSet,
+               aListSet,
+               aSetSet,
+               aMapSet)
   }
   case class TestSetsPair(a: TestSets, b: TestSets)
   implicit def arbitraryTestSetsPair: Arbitrary[TestSetsPair] = Arbitrary {
@@ -210,10 +234,36 @@ object ScroogeGenerators {
       aDoubleMap <- Gen.listOf(arb[(Double, Byte)]).map(_.toMap)
       aStringMap <- Gen.listOf(arb[(String, Boolean)]).map(_.toMap)
       aStructMap <- Gen.listOf(arb[(TestStruct, List[String])]).map(_.toMap)
-      aListMap <- Gen.listOf(arb[(List[String], TestStruct)]).map(_.toMap.map { case (k, v) => k.to[collection.Seq] -> v }.asInstanceOf[collection.Map[collection.Seq[String], TestStruct]])
-      aSetMap <- Gen.listOf(arb[(Set[String], Set[String])]).map(_.toMap.map { case (k, v) => k.to[collection.Set] -> v.to[collection.Set] }.asInstanceOf[collection.Map[collection.Set[String], collection.Set[String]]])
-      aMapMap <- Gen.listOf(arb[(Map[Int, Int], Map[Int, Int])]).map(_.toMap.map { case (k, v) => k.asInstanceOf[collection.Map[Int, Int]] -> v.asInstanceOf[collection.Map[Int, Int]] }.asInstanceOf[collection.Map[collection.Map[Int, Int], collection.Map[Int, Int]]])
-    } yield TestMaps(aBoolMap, aByteMap, aI16Map, aI32Map, aI64Map, aDoubleMap, aStringMap, aStructMap, aListMap, aSetMap, aMapMap)
+      aListMap <- Gen
+        .listOf(arb[(List[String], TestStruct)])
+        .map(_.toMap
+          .map { case (k, v) => k.to[collection.Seq] -> v }
+          .asInstanceOf[collection.Map[collection.Seq[String], TestStruct]])
+      aSetMap <- Gen
+        .listOf(arb[(Set[String], Set[String])])
+        .map(_.toMap
+          .map { case (k, v) => k.to[collection.Set] -> v.to[collection.Set] }
+          .asInstanceOf[collection.Map[collection.Set[String], collection.Set[String]]])
+      aMapMap <- Gen
+        .listOf(arb[(Map[Int, Int], Map[Int, Int])])
+        .map(_.toMap
+          .map {
+            case (k, v) =>
+              k.asInstanceOf[collection.Map[Int, Int]] -> v.asInstanceOf[collection.Map[Int, Int]]
+          }
+          .asInstanceOf[collection.Map[collection.Map[Int, Int], collection.Map[Int, Int]]])
+    } yield
+      TestMaps(aBoolMap,
+               aByteMap,
+               aI16Map,
+               aI32Map,
+               aI64Map,
+               aDoubleMap,
+               aStringMap,
+               aStructMap,
+               aListMap,
+               aSetMap,
+               aMapMap)
   }
   case class TestMapsPair(a: TestMaps, b: TestMaps)
   implicit def arbitraryTestMapsPair: Arbitrary[TestMapsPair] = Arbitrary {

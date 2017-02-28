@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 /**
  * Simple identity job that reads from a Tsv and writes to a Tsv with no change.
@@ -24,16 +24,20 @@ class JobTestTest extends WordSpec with Matchers {
       val incorrectSource = Tsv("different-input")
 
       // A method that runs a JobTest where the sources don't match
-      def runJobTest() = JobTest(new SimpleTestJob(_))
-        .arg("input", "input")
-        .arg("output", "output")
-        .source(incorrectSource, testInput)
-        .sink[(String, Int)](Tsv("output")){ outBuf => { outBuf shouldBe testInput } }
-        .run
+      def runJobTest() =
+        JobTest(new SimpleTestJob(_))
+          .arg("input", "input")
+          .arg("output", "output")
+          .source(incorrectSource, testInput)
+          .sink[(String, Int)](Tsv("output")) { outBuf =>
+            { outBuf shouldBe testInput }
+          }
+          .run
 
       the[IllegalArgumentException] thrownBy {
         runJobTest()
-      } should have message (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(requiredSource))
+      } should have message (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError
+        .format(requiredSource))
     }
   }
 }

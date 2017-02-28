@@ -1,7 +1,7 @@
 package com.twitter.scalding.examples
 
 import com.twitter.scalding._
-import com.twitter.scalding.mathematics.{ Matrix, ColVector }
+import com.twitter.scalding.mathematics.{ColVector, Matrix}
 import com.twitter.scalding.mathematics.Matrix._
 
 /**
@@ -87,18 +87,16 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
    * between the previous and next vectors. This stores the result after
    * calculation.
    */
-  def measureConvergenceAndStore(): Unit = {
-    (previousVector - nextVector).
-      mapWithIndex { case (value, index) => math.abs(value) }.
-      sum.
-      write(TypedTsv[Double](diffLoc))
-  }
+  def measureConvergenceAndStore(): Unit =
+    (previousVector - nextVector)
+      .mapWithIndex { case (value, index) => math.abs(value) }
+      .sum
+      .write(TypedTsv[Double](diffLoc))
 
   /**
    * Load or generate on first iteration the matrix M^ given A.
    */
-  def M_hat: Matrix[Int, Int, Double] = {
-
+  def M_hat: Matrix[Int, Int, Double] =
     if (currentIteration == 0) {
       val A = matrixFromTsv(edgesLoc)
       val M = A.rowL1Normalize.transpose
@@ -108,13 +106,11 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     } else {
       matrixFromTsv(rootDir + "/constants/M_hat")
     }
-  }
 
   /**
    * Load or generate on first iteration the prior vector given d and n.
    */
-  def priorVector: ColVector[Int, Double] = {
-
+  def priorVector: ColVector[Int, Double] =
     if (currentIteration == 0) {
       val onesVector = colVectorFromTsv(onesVectorLoc)
       val priorVector = ((1 - d) / n) * onesVector.toMatrix(0)
@@ -123,7 +119,6 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     } else {
       colVectorFromTsv(rootDir + "/constants/priorVector")
     }
-  }
 
   def matrixFromTsv(input: String): Matrix[Int, Int, Double] =
     TypedTsv[(Int, Int, Double)](input).toMatrix

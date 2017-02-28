@@ -18,10 +18,10 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FsShell, FileSystem }
+import org.apache.hadoop.fs.{FileSystem, FsShell}
 import typed.KeyedListLike
-import scala.util.{ Failure, Success }
-import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
+import scala.util.{Failure, Success}
+import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL.
@@ -36,8 +36,10 @@ trait BaseReplState {
 
   /** Implicit flowDef for this Scalding shell session. */
   var flowDef: FlowDef = getEmptyFlowDef
+
   /** Defaults to running in local mode if no mode is specified. */
   var mode: Mode = com.twitter.scalding.Local(false)
+
   /**
    * If the repl is started in Hdfs mode, this field is used to preserve the settings
    * when switching Modes.
@@ -56,12 +58,13 @@ trait BaseReplState {
   }
 
   /** Switch to Hdfs mode */
-  private def useHdfsMode_(): Unit = {
+  private def useHdfsMode_(): Unit =
     storedHdfsMode match {
       case Some(hdfsMode) => mode = hdfsMode
-      case None => println("To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
+      case None =>
+        println(
+          "To use HDFS/Hadoop mode, you must *start* the repl in hadoop mode to get the hadoop configuration from the hadoop command.")
     }
-  }
 
   def useHdfsMode(): Unit = {
     useHdfsMode_()
@@ -97,12 +100,11 @@ trait BaseReplState {
     println(s"#### User home: ${homeDir}${Console.RESET}")
   }
 
-  private def modeHadoopConf: Configuration = {
+  private def modeHadoopConf: Configuration =
     mode match {
       case hdfsMode: Hdfs => hdfsMode.jobConf
       case _ => new Configuration(false)
     }
-  }
 
   /**
    * Access to Hadoop FsShell
@@ -110,9 +112,8 @@ trait BaseReplState {
    * @param cmdArgs list of command line parameters for FsShell, one per method argument
    * @return
    */
-  def fsShellExp(cmdArgs: String*): Int = {
+  def fsShellExp(cmdArgs: String*): Int =
     new FsShell(modeHadoopConf).run(cmdArgs.toArray)
-  }
 
   /**
    * Access to Hadoop FsShell
@@ -120,9 +121,8 @@ trait BaseReplState {
    * @param cmdLine command line parameters for FsShell as a single string
    * @return
    */
-  def fsShell(cmdLine: String): Int = {
+  def fsShell(cmdLine: String): Int =
     new FsShell(modeHadoopConf).run(cmdLine.trim.split(" "))
-  }
 
   /**
    * Configuration to use for REPL executions.
@@ -149,7 +149,10 @@ trait BaseReplState {
         case Some(jar) =>
           Map("tmpjars" -> {
             // Use tmpjars already in the configuration.
-            config.get("tmpjars").map(_ + ",").getOrElse("")
+            config
+              .get("tmpjars")
+              .map(_ + ",")
+              .getOrElse("")
               // And a jar of code compiled by the REPL.
               .concat("file://" + jar.getAbsolutePath)
           })
@@ -163,9 +166,8 @@ trait BaseReplState {
   /**
    * Sets the flow definition in implicit scope to an empty flow definition.
    */
-  def resetFlowDef(): Unit = {
+  def resetFlowDef(): Unit =
     flowDef = getEmptyFlowDef
-  }
 
   /**
    * Gets a new, empty, flow definition.
@@ -195,7 +197,8 @@ trait BaseReplState {
   /*
    * Starts the Execution, but does not wait for the result
    */
-  def asyncExecute[T](execution: Execution[T])(implicit ec: ConcurrentExecutionContext): Future[T] =
+  def asyncExecute[T](execution: Execution[T])(
+      implicit ec: ConcurrentExecutionContext): Future[T] =
     execution.run(executionConfig, mode)
 
   /*
@@ -243,11 +246,9 @@ object ReplImplicits extends FieldConversions {
    * @param converter implicitly retrieved and used to convert the specified iterable into a Source.
    * @return a Source backed by the specified iterable.
    */
-  implicit def iterableToSource[T](
-    iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T]): Source = {
+  implicit def iterableToSource[T](iterable: Iterable[T])(implicit setter: TupleSetter[T],
+                                                          converter: TupleConverter[T]): Source =
     IterableSource[T](iterable)(setter, converter)
-  }
 
   /**
    * Converts an iterable into a Pipe with index (int-based) fields.
@@ -257,11 +258,11 @@ object ReplImplicits extends FieldConversions {
    * @param converter implicitly retrieved and used to convert the specified iterable into a Pipe.
    * @return a Pipe backed by the specified iterable.
    */
-  implicit def iterableToPipe[T](
-    iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T], flowDef: FlowDef, mode: Mode): Pipe = {
+  implicit def iterableToPipe[T](iterable: Iterable[T])(implicit setter: TupleSetter[T],
+                                                        converter: TupleConverter[T],
+                                                        flowDef: FlowDef,
+                                                        mode: Mode): Pipe =
     iterableToSource(iterable)(setter, converter).read
-  }
 
   /**
    * Converts an iterable into a RichPipe with index (int-based) fields.
@@ -272,31 +273,34 @@ object ReplImplicits extends FieldConversions {
    *     RichPipe.
    * @return a RichPipe backed by the specified iterable.
    */
-  implicit def iterableToRichPipe[T](
-    iterable: Iterable[T])(implicit setter: TupleSetter[T],
-      converter: TupleConverter[T], flowDef: FlowDef, mode: Mode): RichPipe = {
+  implicit def iterableToRichPipe[T](iterable: Iterable[T])(implicit setter: TupleSetter[T],
+                                                            converter: TupleConverter[T],
+                                                            flowDef: FlowDef,
+                                                            mode: Mode): RichPipe =
     RichPipe(iterableToPipe(iterable)(setter, converter, flowDef, mode))
-  }
 
   /**
    * Convert KeyedListLike to enriched ShellTypedPipe
    * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
    */
-  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T])(implicit state: BaseReplState) =
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](
+      kll: KeyedListLike[K, V, T])(implicit state: BaseReplState) =
     new ShellTypedPipe(kll.toTypedPipe)(state)
 
   /**
    * Enrich TypedPipe for the shell
    * (e.g. allows .snapshot to be called on it)
    */
-  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T])(implicit state: BaseReplState): ShellTypedPipe[T] =
+  implicit def typedPipeToShellTypedPipe[T](pipe: TypedPipe[T])(
+      implicit state: BaseReplState): ShellTypedPipe[T] =
     new ShellTypedPipe[T](pipe)(state)
 
   /**
    * Enrich ValuePipe for the shell
    * (e.g. allows .toOption to be called on it)
    */
-  implicit def valuePipeToShellValuePipe[T](pipe: ValuePipe[T])(implicit state: BaseReplState): ShellValuePipe[T] =
+  implicit def valuePipeToShellValuePipe[T](pipe: ValuePipe[T])(
+      implicit state: BaseReplState): ShellValuePipe[T] =
     new ShellValuePipe[T](pipe)(state)
 
 }
@@ -308,12 +312,16 @@ object ReplState extends BaseReplState
  * used everywhere.
  */
 object ReplImplicitContext {
+
   /** Implicit execution context for using the Execution monad */
   implicit val executionContext = ConcurrentExecutionContext.global
+
   /** Implicit repl state used for ShellPipes */
   implicit def stateImpl = ReplState
+
   /** Implicit flowDef for this Scalding shell session. */
   implicit def flowDefImpl = ReplState.flowDef
+
   /** Defaults to running in local mode if no mode is specified. */
   implicit def modeImpl = ReplState.mode
   implicit def configImpl = ReplState.config

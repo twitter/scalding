@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import java.io.OutputStream
@@ -29,8 +29,9 @@ trait Writer[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) -T] {
 object Writer {
   import JavaStreamEnrichments._
 
-  def write[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](os: OutputStream,
-    t: T)(implicit w: Writer[T]): Unit =
+  def write[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
+      os: OutputStream,
+      t: T)(implicit w: Writer[T]): Unit =
     w.write(os, t)
   /*
    * Instances below
@@ -100,7 +101,8 @@ object Writer {
     }
   }
 
-  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Writer]: Writer[Array[T]] =
+  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Writer]
+    : Writer[Array[T]] =
     new Writer[Array[T]] {
       val writerT = implicitly[Writer[T]]
       def write(os: OutputStream, a: Array[T]) = {
@@ -127,4 +129,3 @@ object Writer {
     }
   }
 }
-

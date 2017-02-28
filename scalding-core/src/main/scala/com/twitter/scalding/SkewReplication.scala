@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 /**
@@ -53,7 +53,7 @@ case class SkewReplicationA(replicationFactor: Int = 1) extends SkewReplication 
  * See https://github.com/twitter/scalding/pull/229#issuecomment-10792296
  */
 case class SkewReplicationB(maxKeysInMemory: Int = 1E6.toInt, maxReducerOutput: Int = 1E7.toInt)
-  extends SkewReplication {
+    extends SkewReplication {
 
   override def getReplications(leftCount: Int, rightCount: Int, reducers: Int) = {
     val numReducers = if (reducers <= 0) DEFAULT_NUM_REDUCERS else reducers

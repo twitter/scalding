@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 import com.twitter.scalding._
 
 /**
@@ -44,8 +44,7 @@ Note that the line order may no longer be the same as the input file.
 That's parallelism, man.
 
 **/
-
-class Tutorial5(args : Args) extends Job(args) {
+class Tutorial5(args: Args) extends Job(args) {
 
   /**
   We'll start with the dict data source.
@@ -54,25 +53,25 @@ class Tutorial5(args : Args) extends Job(args) {
   the 'num field to be 'score. Also, we want to normalize
   the words to be lowercase.
   **/
+  val scores = TextLine(args("words")).read
+    .rename('offset, 'score)
+    .map('line -> 'dictWord) { line: String =>
+      line.toLowerCase
+    }
+    .project('score, 'dictWord)
 
-  val scores = TextLine(args("words"))
-                .read
-                .rename('offset, 'score)
-                .map('line -> 'dictWord){line : String => line.toLowerCase}
-                .project('score, 'dictWord)
+  TextLine(args("input")).read
 
-  TextLine(args("input"))
-    .read
-
-    //split and normalize to lowercase
-    .flatMap('line -> 'word){ line : String => line.split("\\s").map{_.toLowerCase}}
+  //split and normalize to lowercase
+    .flatMap('line -> 'word) { line: String =>
+      line.split("\\s").map { _.toLowerCase }
+    }
 
     /**
     When we join, we need to specify which fields from each side of the join should match.
     This is like a SQL inner join: we end up with a new row that combines each possible
     matching pair, with all of the fields of both the left and right side.
     **/
-
     .joinWithLarger('word -> 'dictWord, scores)
 
     /**
@@ -80,7 +79,8 @@ class Tutorial5(args : Args) extends Job(args) {
     and sum up the word scores. Sum is another common aggregation that GroupBuilder
     provides; we just need to specify which field to sum by.
     **/
-
-    .groupBy('line){group => group.sum[Double]('score)}
+    .groupBy('line) { group =>
+      group.sum[Double]('score)
+    }
     .write(Tsv(args("output")))
 }
