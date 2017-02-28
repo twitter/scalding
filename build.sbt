@@ -2,12 +2,10 @@ import AssemblyKeys._
 import ReleaseTransformations._
 import com.twitter.scrooge.ScroogeSBT
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import sbtassembly.Plugin._
 import sbtunidoc.Plugin.UnidocKeys._
 import scala.collection.JavaConverters._
-import scalariform.formatter.preferences._
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.10" => "2.10"
@@ -45,14 +43,12 @@ val macroCompatVersion = "1.1.1"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
+val sharedSettings = assemblySettings ++ Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.8",
 
   crossScalaVersions := Seq("2.10.6", scalaVersion.value),
-
-  ScalariformKeys.preferences := formattingPreferences,
 
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -260,13 +256,6 @@ lazy val scaldingAssembly = Project(
   maple,
   scaldingSerialization
 )
-
-lazy val formattingPreferences = {
-  import scalariform.formatter.preferences._
-  FormattingPreferences().
-    setPreference(AlignParameters, false).
-    setPreference(PreserveSpaceBeforeArguments, true)
-}
 
 lazy val noPublishSettings = Seq(
     publish := (),
