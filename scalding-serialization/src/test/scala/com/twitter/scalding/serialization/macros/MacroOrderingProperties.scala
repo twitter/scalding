@@ -23,7 +23,7 @@ import com.twitter.scalding.serialization.{ JavaStreamEnrichments, Law, Law1, La
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import org.scalacheck.{ Arbitrary, Gen, Prop }
 import org.scalatest.prop.{ Checkers, PropertyChecks }
-import org.scalatest.{ FunSuite, ShouldMatchers }
+import org.scalatest.{ FunSuite, Matchers }
 
 import scala.collection.immutable.Queue
 import scala.language.experimental.macros
@@ -202,7 +202,7 @@ object Container {
   type SetAlias = Set[Double]
   case class InnerCaseClass(e: SetAlias)
 }
-class MacroOrderingProperties extends FunSuite with PropertyChecks with ShouldMatchers with LowerPriorityImplicit {
+class MacroOrderingProperties extends FunSuite with PropertyChecks with Matchers with LowerPriorityImplicit {
   type SetAlias = Set[Double]
 
   import ByteBufferArb._

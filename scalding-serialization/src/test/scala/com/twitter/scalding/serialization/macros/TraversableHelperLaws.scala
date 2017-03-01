@@ -16,13 +16,13 @@ limitations under the License.
 
 package com.twitter.scalding.serialization.macros
 
-import org.scalatest.{ FunSuite, ShouldMatchers }
+import org.scalatest.{ FunSuite, Matchers }
 import org.scalatest.prop.Checkers
 import org.scalatest.prop.PropertyChecks
 
 import impl.ordered_serialization.runtime_helpers.TraversableHelpers._
 
-class TraversableHelperLaws extends FunSuite with PropertyChecks with ShouldMatchers {
+class TraversableHelperLaws extends FunSuite with PropertyChecks with Matchers {
   test("Iterator ordering should be Iterable ordering") {
     forAll { (l1: List[Int], l2: List[Int]) =>
       assert(iteratorCompare[Int](l1.iterator, l2.iterator) ===
