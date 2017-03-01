@@ -337,7 +337,8 @@ lazy val scaldingCommons = module("commons").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.thrift" % "libthrift" % thriftVersion,
     // TODO: split this out into a scalding-scrooge
-    scrooge(scalaVersion.value) % "provided",
+    scrooge(scalaVersion.value) % "provided"
+      exclude("com.google.guava", "guava"),
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
     "junit" % "junit" % junitVersion % "test"
@@ -358,7 +359,8 @@ lazy val scaldingParquetFixtures = module("parquet-fixtures")
      scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
      scroogeLanguages in Test := Seq("java", "scala"),
      libraryDependencies ++= Seq(
-       scrooge(scalaVersion.value) % "provided",
+       scrooge(scalaVersion.value) % "provided"
+         exclude("com.google.guava", "guava"),
        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
        "org.apache.thrift" % "libthrift" % thriftVersion
      )
@@ -393,7 +395,8 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     scroogeLanguages in Test := Seq("java", "scala"),
     libraryDependencies ++= Seq(
-      scrooge(scalaVersion.value) % "provided",
+      scrooge(scalaVersion.value) % "provided"
+        exclude("com.google.guava", "guava"),
       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
       "org.apache.thrift" % "libthrift" % thriftVersion
   )
@@ -408,7 +411,8 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
-      scrooge(scalaVersion.value),
+      scrooge(scalaVersion.value)
+        exclude("com.google.guava", "guava"),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
@@ -565,7 +569,8 @@ lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
   .settings(
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     libraryDependencies ++= Seq(
-      scrooge(scalaVersion.value) % "provided",
+      scrooge(scalaVersion.value) % "provided"
+        exclude("com.google.guava", "guava"),
       "org.apache.thrift" % "libthrift" % thriftVersion
     )
 )
@@ -576,7 +581,8 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" % "chill-thrift" % chillVersion % "test",
-    scrooge(scalaVersion.value) % "provided",
+    scrooge(scalaVersion.value) % "provided"
+      exclude("com.google.guava", "guava"),
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
