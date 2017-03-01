@@ -14,7 +14,6 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.12" => "2.12"
   case _ => sys.error("unknown error")
 }
-def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
 val algebirdVersion = "0.13.0"
 val apacheCommonsVersion = "2.2"
@@ -32,27 +31,16 @@ val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
 val protobufVersion = "2.4.1"
-val quasiquotesVersion = "2.0.1"
 val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "4.12.0"
-val scroogeVersion210 = "4.7.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
 
-def quasiquotes(scalaVersion: String) =
-  if (isScala210x(scalaVersion))
-    Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion)
-  else Seq()
-
-def scrooge(scalaVersion: String) =
-  if (isScala210x(scalaVersion))
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion210
-  else
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion
+def scrooge(scalaVersion: String) = "com.twitter" %% "scrooge-serializer" % scroogeVersion
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -61,7 +49,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.8",
 
-  crossScalaVersions := Seq("2.10.6", scalaVersion.value, "2.12.1"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.1"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -114,13 +102,6 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       "-language:higherKinds",
       "-language:existentials"
     ),
-
-  scalacOptions ++= {
-    if (isScala210x(scalaVersion.value))
-      Seq("-Xdivergence211")
-    else
-      Seq()
-  },
 
   /**
    * add linter for common scala issues:
@@ -338,7 +319,7 @@ lazy val scaldingCore = module("core").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++ quasiquotes(scalaVersion.value),
+    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
@@ -401,7 +382,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "com.twitter" %% "chill-bijection" % chillVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
     "org.typelevel" %% "macro-compat" % macroCompatVersion
-    ) ++ quasiquotes(scalaVersion.value),
+    ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
 
@@ -498,7 +479,7 @@ lazy val scaldingRepl = module("repl")
 lazy val scaldingSerialization = module("serialization").settings(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  ) ++ quasiquotes(scalaVersion.value),
+  ),
 addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 )
 
@@ -576,7 +557,7 @@ lazy val scaldingDb = module("db").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion
-  ) ++ quasiquotes(scalaVersion.value),
+  ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingCore)
 
@@ -606,7 +587,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
-  ) ++ quasiquotes(scalaVersion.value),
+  ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(
     scaldingCore,
@@ -614,16 +595,8 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     scaldingSerialization,
     scaldingThriftMacrosFixtures % "test->test")
 
-/**
-  * Remove 2.10 projects from doc generation, as the macros used in the projects
-  * cause problems generating the documentation on scala 2.10. As the APIs for 2.10
-  * and 2.11 are the same this has no effect on the resultant documentation, though
-  * it does mean that the scaladocs cannot be generated when the build is in 2.10 mode.
-  */
-def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
-  CrossVersion.partialVersion(sv) match {
-    case Some((2, 10)) => (false, Nil)
-    case _ => (true, Seq(
+def docsSourcesAndProjects(sv: String): Seq[ProjectReference] =
+    Seq(
       scaldingArgs,
       scaldingDate,
       scaldingCore
@@ -639,8 +612,7 @@ def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
       // maple,
       // scaldingSerialization,
       // scaldingThriftMacros
-    ))
-  }
+    )
 
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
@@ -666,7 +638,7 @@ lazy val docSettings = Seq(
     "white-color" -> "#FFFFFF"),
   autoAPIMappings := true,
   unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-    inProjects(docsSourcesAndProjects(scalaVersion.value)._2:_*),
+    inProjects(docsSourcesAndProjects(scalaVersion.value):_*),
   docsMappingsAPIDir := "api",
   addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), docsMappingsAPIDir),
   ghpagesNoJekyll := false,
