@@ -9,7 +9,8 @@ import scala.collection.JavaConverters._
 
 object HipJob {
   val InSrcFileSize = 2496L
-  val inSrc = TextLine(getClass.getResource("/hipster.txt").toString) // file size is 2496 bytes
+  val inPath = getClass.getResource("/hipster.txt") // file size is 2496 bytes
+  val inSrc = TextLine(inPath.toString)
   val InScoresFileSize = 174L
   val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString) // file size is 174 bytes
   val out = TypedTsv[Double]("output")
@@ -49,6 +50,24 @@ class HipJob(args: Args, customConfig: Config) extends Job(args) {
 
 class SimpleJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
+
+  override def config = super.config ++ customConfig.toMap.toMap
+
+  TypedPipe.from(inSrc)
+    .flatMap(_.split("[^\\w]+"))
+    .map(_.toLowerCase -> 1)
+    .group
+    // force the number of reducers to two, to test with/without estimation
+    .withReducers(2)
+    .sum
+    .write(counts)
+}
+
+class SimpleGlobJob(args: Args, customConfig: Config) extends Job(args) {
+  import HipJob._
+
+  val inSrcGlob = inPath.toString.replace("hipster", "*")
+  val inSrc = TextLine(inSrcGlob)
 
   override def config = super.config ++ customConfig.toMap.toMap
 
@@ -104,6 +123,24 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           conf.get(EstimatorConfig.originalNumReducers) should be (None)
         }
         .run()
+    }
+
+    "run with correct number of reducers when we have a glob pattern in path" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (Config.ReducerEstimatorOverride -> "true")
+
+      HadoopPlatformJobTest(new SimpleGlobJob(_, customConfig), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.getNumReducers should contain (3)
+          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
+        }
+        .run()
+
     }
 
     "run with correct number of reducers when overriding set values" in {
