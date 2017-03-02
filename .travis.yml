@@ -73,6 +73,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.8
+      jdk: oraclejdk8
       env: BUILD="base" TEST_TARGET="scalding-thrift-macros"
       script: "scripts/run_test.sh"
 
