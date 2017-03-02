@@ -54,12 +54,23 @@ object Common {
   def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
     unrollTaps(step.getSources.asScala.toSeq)
 
+  /**
+   * Get the total size of the input paths, which may contain a glob
+   * pattern in its path, so we must be ready to handle that case.
+   */
   def inputSizes(step: FlowStep[JobConf]): Seq[(Path, Long)] = {
     val conf = step.getConfig
 
     FileInputFormat
       .getInputPaths(conf)
-      .map { path => path -> path.getFileSystem(conf).getContentSummary(path).getLength }
+      .map { path =>
+        val fs = path.getFileSystem(conf)
+        val size = fs.globStatus(path)
+          .map(status => fs.getContentSummary(status.getPath).getLength)
+          .sum
+
+        path -> size
+      }
   }
 
   def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
