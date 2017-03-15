@@ -185,9 +185,13 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
     val init = base ++ modeConf
 
+    val usedClasses: Set[Class[_]] = if (args.boolean("scalding.nojobclassreflection")) Set.empty else {
+      JobClassFinder.findUsedClasses(getClass)
+    }
+
     defaultComparator.map(init.setDefaultComparator)
       .getOrElse(init)
-      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations, usedClasses)
       .setScaldingVersion
       .setCascadingAppName(name)
       .setCascadingAppId(name)

@@ -178,7 +178,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   // Registers test files, initializes the global mode, and creates a job.
-  private def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
+  private[scalding] def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
     // Create a global mode to use for testing.
     val testMode: TestMode =
       if (useHadoop) {
