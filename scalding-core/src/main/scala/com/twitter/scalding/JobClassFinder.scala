@@ -36,18 +36,17 @@ object JobClassFinder {
   }
 
   private def getClassesForType(typeSignature: universe.Type): Seq[Class[_]] = typeSignature match {
-    case universe.NullaryMethodType(resultType) => resultType match {
-      case universe.TypeRef(_, _, args) =>
-        args.flatMap { generic =>
-          //If the wrapped type is a Tuple2, recurse into its types
-          if (generic.typeSymbol.fullName == "scala.Tuple2") {
-            getClassesForType(generic)
-          } else {
-            getClassOpt(generic.typeSymbol.fullName)
-          }
+    case universe.TypeRef(_, _, args) =>
+      args.flatMap { generic =>
+        //If the wrapped type is a Tuple2, recurse into its types
+        if (generic.typeSymbol.fullName == "scala.Tuple2") {
+          getClassesForType(generic)
+        } else {
+          getClassOpt(generic.typeSymbol.fullName)
         }
-      case _ => Nil
-    }
+      }
+    //.member returns the accessor method for the variable unless the field is private[this], so inspect the return type
+    case universe.NullaryMethodType(resultType) => getClassesForType(resultType)
     case _ => Nil
   }
 
