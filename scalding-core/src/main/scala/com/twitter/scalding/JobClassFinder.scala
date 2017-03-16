@@ -1,6 +1,7 @@
 package com.twitter.scalding
 
 import com.twitter.scalding.typed.CoGroupable
+
 import scala.reflect.runtime.universe
 
 object JobClassFinder {
@@ -27,22 +28,27 @@ object JobClassFinder {
     (for {
       field <- jobClazz.getDeclaredFields
       if baseContainers.exists(_.isAssignableFrom(field.getType))
-      scalaSignature = scalaType.member(universe.TermName(field.getName)).typeSignature
+      scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
       clazz <- getClassesForType(scalaSignature)
     } yield {
       clazz
     }).toSet
   }
 
-  private def getClassesForType(typeSignature: universe.Type): Seq[Class[_]] = {
-    typeSignature.resultType.typeArgs.flatMap { generic =>
-      //If the wrapped type is a Tuple2, recurse into its types
-      if (generic.typeSymbol.fullName == "scala.Tuple2") {
-        getClassesForType(generic)
-      } else {
-        getClassOpt(generic.typeSymbol.fullName)
-      }
+  private def getClassesForType(typeSignature: universe.Type): Seq[Class[_]] = typeSignature match {
+    case universe.NullaryMethodType(resultType) => resultType match {
+      case universe.TypeRef(_, _, args) =>
+        args.flatMap { generic =>
+          //If the wrapped type is a Tuple2, recurse into its types
+          if (generic.typeSymbol.fullName == "scala.Tuple2") {
+            getClassesForType(generic)
+          } else {
+            getClassOpt(generic.typeSymbol.fullName)
+          }
+        }
+      case _ => Nil
     }
+    case _ => Nil
   }
 
   private def getClassOpt(name: String): Option[Class[_]] = {
