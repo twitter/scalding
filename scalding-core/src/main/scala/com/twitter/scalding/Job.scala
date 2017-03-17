@@ -185,13 +185,10 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
     val init = base ++ modeConf
 
-    val usedClasses: Set[Class[_]] = if (args.boolean("scalding.nojobclassreflection")) Set.empty else {
-      JobClassFinder.findUsedClasses(getClass)
-    }
-
     defaultComparator.map(init.setDefaultComparator)
       .getOrElse(init)
-      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations, usedClasses)
+      .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .addCascadingClassSerializationTokens(reflectedClasses)
       .setScaldingVersion
       .setCascadingAppName(name)
       .setCascadingAppId(name)
@@ -199,6 +196,10 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setArgs(args)
       .maybeSetSubmittedTimestamp()._2
       .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
+  }
+
+  def reflectedClasses: Set[Class[_]] = if (args.boolean("scalding.nojobclassreflection")) Set.empty else {
+    ReferencedClassFinder.findReferencedClasses(getClass)
   }
 
   /**

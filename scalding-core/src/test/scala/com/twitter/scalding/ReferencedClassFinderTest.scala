@@ -11,7 +11,7 @@ trait TraitType {
   val tp2 = TypedPipe.from(List(C4(0), C4(1)))
 }
 
-class JobClassFinderExample(args: Args) extends Job(args) with TraitType {
+class ReferencedClassFinderExample(args: Args) extends Job(args) with TraitType {
   val tp = TypedPipe.from(List(C1(1), C1(1), C1(2), C1(3), C1(5)))
   val grouped = tp.groupBy(c => C2(c.a))(new Ordering[C2] {
     override def compare(a: C2, b: C2) = b.b - a.b
@@ -21,10 +21,10 @@ class JobClassFinderExample(args: Args) extends Job(args) with TraitType {
   withTuple.write(TypedTsv[(C2, C3)](args("output")))
 }
 
-class JobClassFinderTest extends WordSpec with Matchers {
+class ReferencedClassFinderTest extends WordSpec with Matchers {
   "JobClassFinder" should {
     "Identify and tokenize used case classes" in {
-      val job = JobTest(new JobClassFinderExample(_))
+      val job = JobTest(new ReferencedClassFinderExample(_))
         .arg("output", "outputFile")
         .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")){ _: Any => Unit }.initJob(false)
       val tokenizedClasses = Config.tryFrom(job.config).get.getCascadingSerializationTokens.values.toSet

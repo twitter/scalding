@@ -184,10 +184,8 @@ trait Config extends Serializable {
    * with a class to serialize to bootstrap the process:
    * Left((classOf[serialization.KryoHadoop], myInstance))
    */
-  def setSerialization(
-    kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
-    userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil,
-    additionalSerializedClasses: Set[Class[_]] = Set.empty): Config = {
+  def setSerialization(kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
+    userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil): Config = {
 
     // Hadoop and Cascading should come first
     val first: Seq[Class[_ <: HSerialization[_]]] =
@@ -214,7 +212,7 @@ trait Config extends Serializable {
       .filterNot(_.isPrimitive) // Cascading handles primitives and arrays
       .filterNot(_.isArray)
 
-    withKryo.addCascadingClassSerializationTokens(kryoClasses ++ additionalSerializedClasses)
+    withKryo.addCascadingClassSerializationTokens(kryoClasses)
   }
 
   /*
