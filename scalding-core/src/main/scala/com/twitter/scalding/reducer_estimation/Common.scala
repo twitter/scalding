@@ -5,7 +5,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ StringUtility, Config }
 import cascading.tap.{ Tap, CompositeTap }
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapred.{FileInputFormat, JobConf}
+import org.apache.hadoop.mapred.{ FileInputFormat, JobConf }
 import org.slf4j.LoggerFactory
 import java.util.{ List => JList }
 
