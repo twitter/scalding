@@ -205,8 +205,8 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
   override def equals(other: Any): Boolean = {
     //removed from Scala 2.12
     def _equals(x: Product, y: Any): Boolean = y match {
-      case y: Product if x.productArity == y.productArity => x.productIterator sameElements y
-        .productIterator
+      case y: Product if x.productArity == y.productArity =>
+        x.productIterator sameElements y.productIterator
       case _ => false
     }
 
