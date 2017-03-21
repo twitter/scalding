@@ -39,6 +39,7 @@ val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
+val jlineVersion = "2.14.3"
 
 def scrooge(scalaVersion: String) = "com.twitter" %% "scrooge-serializer" % scroogeVersion
 
@@ -163,6 +164,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     case s if s.endsWith("pom.xml") => MergeStrategy.last
     case s if s.endsWith(".jnilib") => MergeStrategy.rename
     case s if s.endsWith("jansi.dll") => MergeStrategy.rename
+    case s if s.endsWith("libjansi.so") => MergeStrategy.rename
     case s if s.endsWith("properties") => MergeStrategy.filterDistinctLines
     case x => (mergeStrategy in assembly).value(x)
   },
@@ -458,7 +460,7 @@ lazy val scaldingRepl = module("repl")
       import com.twitter.scalding.ReplImplicitContext._
       """,
     libraryDependencies ++= Seq(
-      "jline" % "jline" % scalaVersion.value.take(4),
+      "jline" % "jline" % jlineVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
