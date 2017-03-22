@@ -69,6 +69,11 @@ case class ExhaustiveJdbcCaseClass(
   optiLong: Option[Long] // Nullable long
   )
 
+private final case class VerticaCaseClass(
+  verticaLong: Long,
+  @date verticaDate: Date,
+  @varchar @size(size = 1) verticaVarchar1: String)
+
 case class CaseClassWithDate(
   id: Long,
   myDateWithTime: Date,
@@ -224,6 +229,42 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     assert(DBMacro.toDBTypeDescriptor[User].columnDefn.columns.toList === expectedColumns)
 
+  }
+
+  "interoperates with Vertica, which uses different type names" should {
+    val typeDescriptor = DBMacro.toDBTypeDescriptor[VerticaCaseClass]
+    val expectedColumns = List(
+      ColumnDefinition(BIGINT, ColumnName("verticaLong"), NotNullable, None, None),
+      ColumnDefinition(DATE, ColumnName("verticaDate"), NotNullable, None, None),
+      ColumnDefinition(VARCHAR, ColumnName("verticaVarchar1"), NotNullable, Some(1), None))
+    assert(typeDescriptor.columnDefn.columns.toList === expectedColumns)
+
+    // Vertica uses `Integer`
+    val int64TypeNames = List("Integer", "INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
+      "TINYINT", "SMALLINT", "MEDIUMINT")
+    // Vertica uses `Date`
+    val dateTypeNames = List("Date", "DATE")
+    // Vertica uses `Varchar`
+    val varcharTypeNames = List("Varchar", "VARCHAR")
+
+    int64TypeNames foreach { int64TypeName =>
+      dateTypeNames foreach { dateTypeName =>
+        varcharTypeNames foreach { varcharTypeName =>
+          val resultSetMetaData = mock[ResultSetMetaData]
+          when(resultSetMetaData.getColumnTypeName(1)) thenReturn (int64TypeName)
+          when(resultSetMetaData.isNullable(1)) thenReturn (ResultSetMetaData.columnNoNulls)
+          when(resultSetMetaData.getColumnTypeName(2)) thenReturn (dateTypeName)
+          when(resultSetMetaData.isNullable(2)) thenReturn (ResultSetMetaData.columnNoNulls)
+          when(resultSetMetaData.getColumnTypeName(3)) thenReturn (varcharTypeName)
+          when(resultSetMetaData.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls)
+
+          val validationResult =
+            typeDescriptor.columnDefn.resultSetExtractor.validate(resultSetMetaData)
+
+          assert(validationResult.isSuccess, validationResult)
+        }
+      }
+    }
   }
 
   "Big Jdbc Test" should {
