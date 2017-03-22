@@ -1,16 +1,16 @@
 package com.twitter.scalding.reducer_estimation
 
-import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowStep, FlowStepStrategy }
+import cascading.tap.hadoop.Hfs
+import cascading.tap.{ CompositeTap, Tap }
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{ StringUtility, Config }
-import cascading.tap.{ Tap, CompositeTap }
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapred.{ FileInputFormat, JobConf }
-import org.slf4j.LoggerFactory
+import com.twitter.scalding.tap.GlobHfs
+import com.twitter.scalding.{ Config, StringUtility }
 import java.util.{ List => JList }
-
+import org.apache.hadoop.mapred.JobConf
+import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 object EstimatorConfig {
 
@@ -44,6 +44,8 @@ object EstimatorConfig {
 }
 
 object Common {
+  private[this] val LOG = LoggerFactory.getLogger(this.getClass)
+
   private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
     taps.flatMap {
       case multi: CompositeTap[_] =>
@@ -54,23 +56,15 @@ object Common {
   def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
     unrollTaps(step.getSources.asScala.toSeq)
 
-  /**
-   * Get the total size of the input paths, which may contain a glob
-   * pattern in its path, so we must be ready to handle that case.
-   */
-  def inputSizes(step: FlowStep[JobConf]): Seq[(Path, Long)] = {
+  def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
     val conf = step.getConfig
-
-    FileInputFormat
-      .getInputPaths(conf)
-      .map { path =>
-        val fs = path.getFileSystem(conf)
-        val size = fs.globStatus(path)
-          .map(status => fs.getContentSummary(status.getPath).getLength)
-          .sum
-
-        path -> size
-      }
+    unrollTaps(step).flatMap {
+      case tap: GlobHfs => Some(tap.toString -> tap.getSize(conf))
+      case tap: Hfs => Some(tap.toString -> GlobHfs.getSize(tap.getPath, conf))
+      case tap =>
+        LOG.warn("InputSizeReducerEstimator unable to calculate size: " + tap)
+        None
+    }
   }
 
   def totalInputSize(step: FlowStep[JobConf]): Long = inputSizes(step).map(_._2).sum
