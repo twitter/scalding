@@ -212,8 +212,6 @@ object ColumnDefinitionProviderImpl {
           case "BIGINT" =>
             q"""List("INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
                "TINYINT", "SMALLINT", "MEDIUMINT").contains($typeNameTerm)"""
-          // for Vertica support
-          case "DATE" => q"""List("DATE").contains($typeNameTerm)"""
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""
