@@ -562,7 +562,7 @@ object BoxedLambdas {
    * using `Any` here instead of parametrizing everything over a type parameter
    * `K`.
    */
-  val boxes1 = List(
+  private[serialization] val boxes1 = List(
     ({ t: Any => new Boxed0(t) }, classOf[Boxed0[Any]]),
     ({ t: Any => new Boxed1(t) }, classOf[Boxed1[Any]]),
     ({ t: Any => new Boxed2(t) }, classOf[Boxed2[Any]]),
@@ -689,7 +689,7 @@ object BoxedLambdas {
     ({ t: Any => new Boxed123(t) }, classOf[Boxed123[Any]]),
     ({ t: Any => new Boxed124(t) }, classOf[Boxed124[Any]]))
 
-  val boxes2 = List(
+  private[serialization] val boxes2 = List(
     ({ t: Any => new Boxed125(t) }, classOf[Boxed125[Any]]),
     ({ t: Any => new Boxed126(t) }, classOf[Boxed126[Any]]),
     ({ t: Any => new Boxed127(t) }, classOf[Boxed127[Any]]),
