@@ -2,14 +2,14 @@ package com.twitter.scalding.hraven.reducer_estimation
 
 import java.io.IOException
 import cascading.flow.FlowStep
-import com.twitter.hraven.{Constants, CounterMap, Flow, HistoryFileType, JobDetails}
+import com.twitter.hraven.{ Constants, CounterMap, Flow, HistoryFileType, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
-import com.twitter.hraven.JobDescFactory.{JOBTRACKER_KEY, RESOURCE_MANAGER_KEY}
-import scala.util.{Failure, Success, Try}
+import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
+import scala.util.{ Failure, Success, Try }
 
 object HRavenClient {
   import HRavenHistoryService.jobConfToRichConfig

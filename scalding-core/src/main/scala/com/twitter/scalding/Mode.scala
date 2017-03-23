@@ -247,7 +247,7 @@ case class HadoopTest(@transient conf: Configuration,
      * functions, and those functions have been documented accordingly to
      * warn about this invariant.
      */
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial")) // Get the buffer for the given source, and empty it:
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial")) // Get the buffer for the given source, and empty it:
     val buf = buffers(src).get
     buf.clear()
     // Now fill up this buffer with the content of the file

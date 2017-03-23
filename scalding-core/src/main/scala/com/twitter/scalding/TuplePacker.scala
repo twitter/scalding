@@ -67,7 +67,7 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   /* The `_.get` is safe because of the `_.isEmpty` check.  ScalaTest does not
    * seem to support a more type safe way of doing this.
    */
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def validate(): Unit = {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.
