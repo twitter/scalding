@@ -21,6 +21,9 @@ class ReferencedClassFinderExample(args: Args) extends Job(args) with TraitType 
   private[this] val withTuple = grouped.toList.mapValues(list => C3(list.length))
   // Verify that we don't assign a >= 128 token to a class that has a < 128 token
   val bw = TypedPipe.from(List(new BytesWritable(Array[Byte](0, 1, 2))))
+  // Verify we don't tokenize scala's array & primitive wrappers.
+  val ints = TypedPipe.from(List(0, 1, 2))
+  val arr = TypedPipe.from(List(Array(0L), Array(1L), Array(2L)))
 
   withTuple.write(TypedTsv[(C2, C3)](args("output")))
 }
@@ -37,6 +40,9 @@ class ReferencedClassFinderTest extends WordSpec with Matchers {
       tokenizedClasses should contain(classOf[C3].getName)
       tokenizedClasses should contain(classOf[C4].getName)
       tokenizedClasses should not contain (classOf[BytesWritable].getName)
+      // classOf[Int] will return the primitive int, so manually pass in scala's wrapper
+      tokenizedClasses should not contain ("scala.Int")
+      tokenizedClasses should not contain ("scala.Array")
     }
 
     "Run successfully" in {

@@ -21,8 +21,9 @@ object ReferencedClassFinder {
   def addCascadingTokensFrom(c: Class[_], config: Config): Config = {
     CascadingTokenUpdater.update(config, findReferencedClasses(c) + c)
   }
+
   /**
-   * Reflect over a scalding  to try and identify types it uses so they can be tokenized by cascading.
+   * Reflect over a scalding job to try and identify types it uses so they can be tokenized by cascading.
    * Since scala reflection is broken with the Hadoop InterfaceAudiance annotation (see
    * https://issues.scala-lang.org/browse/SI-10129), we can't iterate over scalaType.members, so we instead use java
    * reflection to iterate over fields to find the ones we care about, and then look those up in scala reflection to
@@ -32,6 +33,7 @@ object ReferencedClassFinder {
    * referred to in a field
    */
   def findReferencedClasses(outerClass: Class[_]): Set[Class[_]] = {
+    val scalaPackage = Package.getPackage("scala")
     val mirror = universe.runtimeMirror(outerClass.getClassLoader)
     val scalaType = mirror.classSymbol(outerClass).toType
     (for {
@@ -39,6 +41,11 @@ object ReferencedClassFinder {
       if baseContainers.exists(_.isAssignableFrom(field.getType))
       scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
       clazz <- getClassesForType(scalaSignature)
+      /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
+       * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
+       * of the ones we care about (eg tuples) get tokenized in cascading.
+       */
+      if !(clazz.isPrimitive || clazz.isArray || clazz.getPackage.equals(scalaPackage))
     } yield {
       clazz
     }).toSet
