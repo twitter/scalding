@@ -7,6 +7,8 @@ import org.scalatest.{ Matchers, WordSpec }
 
 import scala.collection.JavaConverters._
 
+import java.io.FileNotFoundException
+
 object HipJob {
   val InSrcFileSize = 2496L
   val inPath = getClass.getResource("/hipster.txt") // file size is 2496 bytes
@@ -81,6 +83,43 @@ class SimpleGlobJob(args: Args, customConfig: Config) extends Job(args) {
     .write(counts)
 }
 
+class SimpleMemoryJob(args: Args, customConfig: Config) extends Job(args) {
+  import HipJob._
+
+  val inSrc = IterableSource(List(
+    "Direct trade American Apparel squid umami tote bag. Lo-fi XOXO gluten-free meh literally, typewriter readymade wolf salvia whatever drinking vinegar organic. Four loko literally bicycle rights drinking vinegar Cosby sweater hella stumptown. Dreamcatcher iPhone 90's organic chambray cardigan, wolf fixie gluten-free Brooklyn four loko. Mumblecore ennui twee, 8-bit food truck sustainable tote bag Williamsburg mixtape biodiesel. Semiotics Helvetica put a bird on it, roof party fashion axe organic post-ironic readymade Wes Anderson Pinterest keffiyeh. Craft beer meggings sartorial, butcher Marfa kitsch art party mustache Brooklyn vinyl.",
+    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."
+  ))
+
+  override def config = super.config ++ customConfig.toMap.toMap
+
+  TypedPipe.from(inSrc)
+    .flatMap(_.split("[^\\w]+"))
+    .map(_.toLowerCase -> 1)
+    .group
+    // force the number of reducers to two, to test with/without estimation
+    .withReducers(2)
+    .sum
+    .write(counts)
+}
+
+class SimpleFileNotFoundJob(args: Args, customConfig: Config) extends Job(args) {
+  import HipJob._
+
+  val inSrc = TextLine("file.txt")
+
+  override def config = super.config ++ customConfig.toMap.toMap
+
+  TypedPipe.from(inSrc)
+    .flatMap(_.split("[^\\w]+"))
+    .map(_.toLowerCase -> 1)
+    .group
+    // force the number of reducers to two, to test with/without estimation
+    .withReducers(2)
+    .sum
+    .write(counts)
+}
+
 class GroupAllJob(args: Args, customConfig: Config) extends Job(args) {
 
   import HipJob._
@@ -140,7 +179,6 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
         }
         .run()
-
     }
 
     "run with correct number of reducers when overriding set values" in {
@@ -178,7 +216,34 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           conf.getNumReducers should contain (10)
         }
         .run()
+    }
 
+    "ignore memory source in input size estimation" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (Config.ReducerEstimatorOverride -> "true")
+
+      HadoopPlatformJobTest(new SimpleMemoryJob(_, customConfig), cluster)
+        .inspectCompletedFlow { flow =>
+          val steps = flow.getFlowSteps.asScala
+          steps should have size 1
+
+          val conf = Config.fromHadoop(steps.head.getConfig)
+          conf.getNumReducers should contain (2)
+          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
+        }
+        .run()
+    }
+
+    "throw FileNotFoundException during estimation" in {
+      val customConfig = Config.empty.addReducerEstimator(classOf[InputSizeReducerEstimator]) +
+        (InputSizeReducerEstimator.BytesPerReducer -> (1L << 10).toString) +
+        (Config.ReducerEstimatorOverride -> "true")
+
+      HadoopPlatformJobTest(new SimpleFileNotFoundJob(_, customConfig), cluster)
+        .runExpectFailure { case error: FlowException =>
+          error.getCause.getClass should be(classOf[FileNotFoundException])
+        }
     }
   }
 

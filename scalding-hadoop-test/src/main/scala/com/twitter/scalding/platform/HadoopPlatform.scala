@@ -7,6 +7,8 @@ import java.io.{ BufferedWriter, File, FileWriter }
 
 import org.slf4j.LoggerFactory
 
+import scala.util.Try
+
 trait HadoopPlatform[P, R, T <: HadoopPlatform[P, R, T]] {
   private val LOG = LoggerFactory.getLogger(getClass)
 
@@ -32,6 +34,9 @@ trait HadoopPlatform[P, R, T <: HadoopPlatform[P, R, T]] {
   def sink[K](in: Mappable[K])(toExpect: Seq[K] => Unit): T
 
   def run(): Unit
+
+  def runExpectFailure[K](fn: Throwable => K): K =
+    fn(Try { run() }.failed.get)
 
   def init(cons: P => R): R
 

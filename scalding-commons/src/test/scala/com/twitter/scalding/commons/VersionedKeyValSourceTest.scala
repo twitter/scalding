@@ -17,13 +17,12 @@ package com.twitter.scalding.commons.source
 
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
-import com.twitter.scalding.commons.datastores.VersionedStore;
+import com.twitter.scalding.commons.datastores.VersionedStore
 import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
 import org.apache.hadoop.mapred.JobConf
-
-import java.io.File
+import java.io.{ File, FileWriter }
 // Use the scalacheck generators
 import scala.collection.mutable.Buffer
 
@@ -124,18 +123,42 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       // should not throw
       validateVersion(path)
     }
+
+    "calculate right size of source" in {
+      val oldContent = "size of old content should be ignored"
+      val content = "Hello World"
+      val contentSize = content.getBytes.length
+      val path = setupLocalVersionStore(100L to 102L, {
+        case 102L => Some(content)
+        case _ => Some(oldContent)
+      })
+
+      val keyValueSize = VersionedKeyValSource(path)
+        .source
+        .getSize(new JobConf())
+
+      contentSize should be (keyValueSize)
+    }
   }
 
   /**
    * Creates a temp dir and then creates the provided versions within it.
    */
-  private def setupLocalVersionStore(versions: Seq[Long]): String = {
+  private def setupLocalVersionStore(versions: Seq[Long], contentFn: Long => Option[String] = _ => None): String = {
     val root = Files.createTempDir()
     root.deleteOnExit()
     val store = new VersionedStore(root.getAbsolutePath)
     versions foreach { v =>
       val p = store.createVersion(v)
       new File(p).mkdirs()
+
+      contentFn(v)
+        .foreach { text =>
+          val content = new FileWriter(new File(p + "/test"))
+          content.write(text)
+          content.close()
+        }
+
       store.succeedVersion(p)
     }
 
