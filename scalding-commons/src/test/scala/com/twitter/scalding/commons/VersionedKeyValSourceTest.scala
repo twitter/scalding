@@ -30,7 +30,7 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   import RichPipeEx._
   val pipe = TypedPipe.from(TypedTsv[Int]("input"))
 
-  implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
+  implicit val inj: Injection[(Int, Int), (Array[Byte], Array[Byte])] = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
     .map{ k => (k, k) }
@@ -41,7 +41,7 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
   import RichPipeEx._
   val pipe = TypedPipe.from(TypedTsv[Int]("input"))
 
-  implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
+  implicit val inj: Injection[(Int, Int), (Array[Byte], Array[Byte])] = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
     .map{ k => (k, k) }

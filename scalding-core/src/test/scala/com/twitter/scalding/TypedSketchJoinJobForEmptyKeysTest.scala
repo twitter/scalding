@@ -7,7 +7,7 @@ class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
   val leftTypedPipe = TypedPipe.from(List((1, 1111)))
   val rightTypedPipe = TypedPipe.from(List((3, 3333), (4, 4444)))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
   leftTypedPipe
     .sketch(1)
     .leftJoin(rightTypedPipe)

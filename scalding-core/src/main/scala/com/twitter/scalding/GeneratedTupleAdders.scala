@@ -95,7 +95,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup1ToAdder[A](tup: Tuple1[A]) = new Tuple1Adder(tup)
+  implicit def tup1ToAdder[A](tup: Tuple1[A]): Tuple1Adder[A] = new Tuple1Adder(tup)
 
   class Tuple2Adder[A, B](tup: Tuple2[A, B]) {
     def :+[C](other: C) = {
@@ -186,7 +186,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup2ToAdder[A, B](tup: Tuple2[A, B]) = new Tuple2Adder(tup)
+  implicit def tup2ToAdder[A, B](tup: Tuple2[A, B]): Tuple2Adder[A, B] = new Tuple2Adder(tup)
 
   class Tuple3Adder[A, B, C](tup: Tuple3[A, B, C]) {
     def :+[D](other: D) = {
@@ -273,7 +273,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup3ToAdder[A, B, C](tup: Tuple3[A, B, C]) = new Tuple3Adder(tup)
+  implicit def tup3ToAdder[A, B, C](tup: Tuple3[A, B, C]): Tuple3Adder[A, B, C] = new Tuple3Adder(tup)
 
   class Tuple4Adder[A, B, C, D](tup: Tuple4[A, B, C, D]) {
     def :+[E](other: E) = {
@@ -356,7 +356,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup4ToAdder[A, B, C, D](tup: Tuple4[A, B, C, D]) = new Tuple4Adder(tup)
+  implicit def tup4ToAdder[A, B, C, D](tup: Tuple4[A, B, C, D]): Tuple4Adder[A, B, C, D] = new Tuple4Adder(tup)
 
   class Tuple5Adder[A, B, C, D, E](tup: Tuple5[A, B, C, D, E]) {
     def :+[F](other: F) = {
@@ -435,7 +435,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup5ToAdder[A, B, C, D, E](tup: Tuple5[A, B, C, D, E]) = new Tuple5Adder(tup)
+  implicit def tup5ToAdder[A, B, C, D, E](tup: Tuple5[A, B, C, D, E]): Tuple5Adder[A, B, C, D, E] = new Tuple5Adder(tup)
 
   class Tuple6Adder[A, B, C, D, E, F](tup: Tuple6[A, B, C, D, E, F]) {
     def :+[G](other: G) = {
@@ -510,7 +510,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup6ToAdder[A, B, C, D, E, F](tup: Tuple6[A, B, C, D, E, F]) = new Tuple6Adder(tup)
+  implicit def tup6ToAdder[A, B, C, D, E, F](tup: Tuple6[A, B, C, D, E, F]): Tuple6Adder[A, B, C, D, E, F] = new Tuple6Adder(tup)
 
   class Tuple7Adder[A, B, C, D, E, F, G](tup: Tuple7[A, B, C, D, E, F, G]) {
     def :+[H](other: H) = {
@@ -581,7 +581,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup7ToAdder[A, B, C, D, E, F, G](tup: Tuple7[A, B, C, D, E, F, G]) = new Tuple7Adder(tup)
+  implicit def tup7ToAdder[A, B, C, D, E, F, G](tup: Tuple7[A, B, C, D, E, F, G]): Tuple7Adder[A, B, C, D, E, F, G] = new Tuple7Adder(tup)
 
   class Tuple8Adder[A, B, C, D, E, F, G, H](tup: Tuple8[A, B, C, D, E, F, G, H]) {
     def :+[I](other: I) = {
@@ -648,7 +648,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup8ToAdder[A, B, C, D, E, F, G, H](tup: Tuple8[A, B, C, D, E, F, G, H]) = new Tuple8Adder(tup)
+  implicit def tup8ToAdder[A, B, C, D, E, F, G, H](tup: Tuple8[A, B, C, D, E, F, G, H]): Tuple8Adder[A, B, C, D, E, F, G, H] = new Tuple8Adder(tup)
 
   class Tuple9Adder[A, B, C, D, E, F, G, H, I](tup: Tuple9[A, B, C, D, E, F, G, H, I]) {
     def :+[J](other: J) = {
@@ -711,7 +711,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup9ToAdder[A, B, C, D, E, F, G, H, I](tup: Tuple9[A, B, C, D, E, F, G, H, I]) = new Tuple9Adder(tup)
+  implicit def tup9ToAdder[A, B, C, D, E, F, G, H, I](tup: Tuple9[A, B, C, D, E, F, G, H, I]): Tuple9Adder[A, B, C, D, E, F, G, H, I] = new Tuple9Adder(tup)
 
   class Tuple10Adder[A, B, C, D, E, F, G, H, I, J](tup: Tuple10[A, B, C, D, E, F, G, H, I, J]) {
     def :+[K](other: K) = {
@@ -770,7 +770,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup10ToAdder[A, B, C, D, E, F, G, H, I, J](tup: Tuple10[A, B, C, D, E, F, G, H, I, J]) = new Tuple10Adder(tup)
+  implicit def tup10ToAdder[A, B, C, D, E, F, G, H, I, J](tup: Tuple10[A, B, C, D, E, F, G, H, I, J]): Tuple10Adder[A, B, C, D, E, F, G, H, I, J] = new Tuple10Adder(tup)
 
   class Tuple11Adder[A, B, C, D, E, F, G, H, I, J, K](tup: Tuple11[A, B, C, D, E, F, G, H, I, J, K]) {
     def :+[L](other: L) = {
@@ -825,7 +825,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup11ToAdder[A, B, C, D, E, F, G, H, I, J, K](tup: Tuple11[A, B, C, D, E, F, G, H, I, J, K]) = new Tuple11Adder(tup)
+  implicit def tup11ToAdder[A, B, C, D, E, F, G, H, I, J, K](tup: Tuple11[A, B, C, D, E, F, G, H, I, J, K]): Tuple11Adder[A, B, C, D, E, F, G, H, I, J, K] = new Tuple11Adder(tup)
 
   class Tuple12Adder[A, B, C, D, E, F, G, H, I, J, K, L](tup: Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]) {
     def :+[M](other: M) = {
@@ -876,7 +876,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup12ToAdder[A, B, C, D, E, F, G, H, I, J, K, L](tup: Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]) = new Tuple12Adder(tup)
+  implicit def tup12ToAdder[A, B, C, D, E, F, G, H, I, J, K, L](tup: Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]): Tuple12Adder[A, B, C, D, E, F, G, H, I, J, K, L] = new Tuple12Adder(tup)
 
   class Tuple13Adder[A, B, C, D, E, F, G, H, I, J, K, L, M](tup: Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]) {
     def :+[N](other: N) = {
@@ -923,7 +923,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup13ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M](tup: Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]) = new Tuple13Adder(tup)
+  implicit def tup13ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M](tup: Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]): Tuple13Adder[A, B, C, D, E, F, G, H, I, J, K, L, M] = new Tuple13Adder(tup)
 
   class Tuple14Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N](tup: Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) {
     def :+[O](other: O) = {
@@ -966,7 +966,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup14ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N](tup: Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) = new Tuple14Adder(tup)
+  implicit def tup14ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N](tup: Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]): Tuple14Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N] = new Tuple14Adder(tup)
 
   class Tuple15Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](tup: Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) {
     def :+[P](other: P) = {
@@ -1005,7 +1005,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup15ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](tup: Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) = new Tuple15Adder(tup)
+  implicit def tup15ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](tup: Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]): Tuple15Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O] = new Tuple15Adder(tup)
 
   class Tuple16Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](tup: Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) {
     def :+[Q](other: Q) = {
@@ -1040,7 +1040,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup16ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](tup: Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) = new Tuple16Adder(tup)
+  implicit def tup16ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](tup: Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]): Tuple16Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P] = new Tuple16Adder(tup)
 
   class Tuple17Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](tup: Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]) {
     def :+[R](other: R) = {
@@ -1071,7 +1071,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup17ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](tup: Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]) = new Tuple17Adder(tup)
+  implicit def tup17ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](tup: Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]): Tuple17Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q] = new Tuple17Adder(tup)
 
   class Tuple18Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](tup: Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]) {
     def :+[S](other: S) = {
@@ -1098,7 +1098,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup18ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](tup: Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]) = new Tuple18Adder(tup)
+  implicit def tup18ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](tup: Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]): Tuple18Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R] = new Tuple18Adder(tup)
 
   class Tuple19Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](tup: Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]) {
     def :+[T](other: T) = {
@@ -1121,7 +1121,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup19ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](tup: Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]) = new Tuple19Adder(tup)
+  implicit def tup19ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](tup: Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]): Tuple19Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S] = new Tuple19Adder(tup)
 
   class Tuple20Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](tup: Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]) {
     def :+[U](other: U) = {
@@ -1140,7 +1140,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup20ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](tup: Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]) = new Tuple20Adder(tup)
+  implicit def tup20ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](tup: Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]): Tuple20Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T] = new Tuple20Adder(tup)
 
   class Tuple21Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](tup: Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]) {
     def :+[V](other: V) = {
@@ -1155,7 +1155,7 @@ trait GeneratedTupleAdders {
     }
   }
 
-  implicit def tup21ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](tup: Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]) = new Tuple21Adder(tup)
+  implicit def tup21ToAdder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](tup: Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]): Tuple21Adder[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U] = new Tuple21Adder(tup)
 
 }
 // end of autogenerated

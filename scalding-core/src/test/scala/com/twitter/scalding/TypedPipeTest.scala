@@ -1365,7 +1365,7 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)
@@ -1384,7 +1384,7 @@ class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)

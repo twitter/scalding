@@ -257,7 +257,7 @@ package com.twitter.scalding {
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[MapsideCache[K, V]]): Unit = {
       val cache = functionCall.getContext
-      implicit val sg = boxedSemigroup.get
+      implicit val sg: Semigroup[V] = boxedSemigroup.get
       val res: Map[K, V] = mergeTraversableOnce(lockedFn.get(functionCall.getArguments))
       val evicted = cache.putAll(res)
       add(evicted, functionCall)

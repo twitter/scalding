@@ -265,7 +265,7 @@ trait TypedPipe[+T] extends Serializable {
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
 
     // Semigroup to handle duplicates for a given key might have different values.
-    implicit val sg = new Semigroup[T] {
+    implicit val sg: Semigroup[T] = new Semigroup[T] {
       def plus(a: T, b: T) = b
     }
 
@@ -473,7 +473,7 @@ trait TypedPipe[+T] extends Serializable {
    */
   def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = {
     // every 1000 items, compact.
-    lazy implicit val batchedSG = Batched.compactingSemigroup[U](1000)
+    lazy implicit val batchedSG: Semigroup[Batched[U]] = Batched.compactingSemigroup[U](1000)
     ComputedValue(map { t => ((), Batched[U](t)) }
       .sumByLocalKeys
       // remove the Batched before going to the reducers

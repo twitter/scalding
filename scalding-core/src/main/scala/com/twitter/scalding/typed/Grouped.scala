@@ -322,7 +322,7 @@ case class UnsortedIdentityReduce[K, V1](
       // If you care which items you take, you should sort by a random number
       // or the value itself.
       val fakeOrdering: Ordering[V1] = Ordering.by { v: V1 => v.hashCode }
-      implicit val mon = new PriorityQueueMonoid[V1](n)(fakeOrdering)
+      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(fakeOrdering)
       // Do the heap-sort on the mappers:
       val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
         .sumByLocalKeys
@@ -408,7 +408,7 @@ case class IdentityValueSortedReduce[K, V1](
       // This means don't take anything, which is legal, but strange
       filterKeys(_ => false)
     } else {
-      implicit val mon = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
+      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
       // Do the heap-sort on the mappers:
       val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
         .sumByLocalKeys
