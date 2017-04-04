@@ -151,10 +151,10 @@ object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
   private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
-    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
       case _ => List() // no descriptions
-    })
+    }
   }
   /*
    * implicit val ec = ExecutionContext.newContext(config)
