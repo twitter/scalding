@@ -116,7 +116,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit protected val flowDef = {
+  implicit protected val flowDef: FlowDef = {
     val fd = new FlowDef
     fd.setName(name)
     fd
@@ -265,7 +265,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     }
     // Print custom counters unless --scalding.nocounters is used or there are no custom stats
     if (!args.boolean("scalding.nocounters")) {
-      implicit val statProvider = statsData
+      implicit val statProvider: CascadingStats = statsData
       val jobStats = Stats.getAllCustomCounters
       if (!jobStats.isEmpty) {
         println("Dumping custom counters:")
@@ -389,7 +389,7 @@ trait DefaultDateRangeJob extends Job {
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC
-  implicit lazy val tz = args.optional("tz") match {
+  implicit lazy val tz: java.util.TimeZone = args.optional("tz") match {
     case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
     case None => defaultTimeZone
   }
@@ -410,7 +410,7 @@ trait DefaultDateRangeJob extends Job {
     (s, e)
   }
 
-  implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
+  implicit lazy val dateRange: DateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
 
   override def next: Option[Job] =
     if (period > 0) {

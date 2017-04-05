@@ -87,7 +87,7 @@ object WrappedSerialization {
   type ClassSerialization[T] = (Class[T], Serialization[T])
 
   private def getSerializer[U]: Injection[Externalizer[U], String] = {
-    implicit val initialInj = JavaSerializationInjection[Externalizer[U]]
+    implicit val initialInj: Injection[Externalizer[U], Array[Byte]] = JavaSerializationInjection[Externalizer[U]]
     Injection.connect[Externalizer[U], Array[Byte], Base64String, String]
   }
 

@@ -316,24 +316,24 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with Matchers
     check[Boolean]
   }
   test("Test out jl.Boolean") {
-    implicit val a = arbMap { b: Boolean => java.lang.Boolean.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Boolean] = arbMap { b: Boolean => java.lang.Boolean.valueOf(b) }
     check[java.lang.Boolean]
   }
   test("Test out Byte") { check[Byte] }
   test("Test out jl.Byte") {
-    implicit val a = arbMap { b: Byte => java.lang.Byte.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Byte] = arbMap { b: Byte => java.lang.Byte.valueOf(b) }
     check[java.lang.Byte]
     checkCollisions[java.lang.Byte]
   }
   test("Test out Short") { check[Short] }
   test("Test out jl.Short") {
-    implicit val a = arbMap { b: Short => java.lang.Short.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Short] = arbMap { b: Short => java.lang.Short.valueOf(b) }
     check[java.lang.Short]
     checkCollisions[java.lang.Short]
   }
   test("Test out Char") { check[Char] }
   test("Test out jl.Char") {
-    implicit val a = arbMap { b: Char => java.lang.Character.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Character] = arbMap { b: Char => java.lang.Character.valueOf(b) }
     check[java.lang.Character]
     checkCollisions[java.lang.Character]
   }
@@ -368,26 +368,26 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with Matchers
   }
 
   test("Test out jl.Integer") {
-    implicit val a = arbMap { b: Int => java.lang.Integer.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Integer] = arbMap { b: Int => java.lang.Integer.valueOf(b) }
     check[java.lang.Integer]
     checkCollisions[java.lang.Integer]
 
   }
   test("Test out Float") { check[Float] }
   test("Test out jl.Float") {
-    implicit val a = arbMap { b: Float => java.lang.Float.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Float] = arbMap { b: Float => java.lang.Float.valueOf(b) }
     check[java.lang.Float]
     checkCollisions[java.lang.Float]
   }
   test("Test out Long") { check[Long] }
   test("Test out jl.Long") {
-    implicit val a = arbMap { b: Long => java.lang.Long.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Long] = arbMap { b: Long => java.lang.Long.valueOf(b) }
     check[java.lang.Long]
     checkCollisions[java.lang.Long]
   }
   test("Test out Double") { check[Double] }
   test("Test out jl.Double") {
-    implicit val a = arbMap { b: Double => java.lang.Double.valueOf(b) }
+    implicit val a: Arbitrary[java.lang.Double] = arbMap { b: Double => java.lang.Double.valueOf(b) }
     check[java.lang.Double]
     checkCollisions[java.lang.Double]
   }
@@ -412,27 +412,27 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with Matchers
     checkCollisions[List[Float]]
   }
   test("Test out Queue[Int]") {
-    implicit val isa = collectionArb[Queue, Int]
+    implicit val isa: Arbitrary[Queue[Int]] = collectionArb[Queue, Int]
     primitiveOrderedBufferSupplier[Queue[Int]]
     check[Queue[Int]]
     checkCollisions[Queue[Int]]
   }
   test("Test out IndexedSeq[Int]") {
-    implicit val isa = collectionArb[IndexedSeq, Int]
+    implicit val isa: Arbitrary[IndexedSeq[Int]] = collectionArb[IndexedSeq, Int]
     primitiveOrderedBufferSupplier[IndexedSeq[Int]]
     check[IndexedSeq[Int]]
     checkCollisions[IndexedSeq[Int]]
   }
   test("Test out HashSet[Int]") {
     import scala.collection.immutable.HashSet
-    implicit val isa = collectionArb[HashSet, Int]
+    implicit val isa: Arbitrary[HashSet[Int]] = collectionArb[HashSet, Int]
     primitiveOrderedBufferSupplier[HashSet[Int]]
     check[HashSet[Int]]
     checkCollisions[HashSet[Int]]
   }
   test("Test out ListSet[Int]") {
     import scala.collection.immutable.ListSet
-    implicit val isa = collectionArb[ListSet, Int]
+    implicit val isa: Arbitrary[ListSet[Int]] = collectionArb[ListSet, Int]
     primitiveOrderedBufferSupplier[ListSet[Int]]
     check[ListSet[Int]]
     checkCollisions[ListSet[Int]]
@@ -526,14 +526,14 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with Matchers
   }
   test("Test out HashMap[Long, Long]") {
     import scala.collection.immutable.HashMap
-    implicit val isa = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(HashMap(_: _*)))
+    implicit val isa: Arbitrary[HashMap[Long, Long]] = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(HashMap(_: _*)))
     primitiveOrderedBufferSupplier[HashMap[Long, Long]]
     check[HashMap[Long, Long]]
     checkCollisions[HashMap[Long, Long]]
   }
   test("Test out ListMap[Long, Long]") {
     import scala.collection.immutable.ListMap
-    implicit val isa = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(ListMap(_: _*)))
+    implicit val isa: Arbitrary[ListMap[Long, Long]] = Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(ListMap(_: _*)))
     primitiveOrderedBufferSupplier[ListMap[Long, Long]]
     check[ListMap[Long, Long]]
     checkCollisions[ListMap[Long, Long]]

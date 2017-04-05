@@ -38,11 +38,11 @@ trait TuplePacker[T] extends java.io.Serializable {
 object TuplePacker extends CaseClassPackers
 
 trait CaseClassPackers extends LowPriorityTuplePackers {
-  implicit def caseClassPacker[T <: Product](implicit mf: Manifest[T]) = new OrderedTuplePacker[T]
+  implicit def caseClassPacker[T <: Product](implicit mf: Manifest[T]): OrderedTuplePacker[T] = new OrderedTuplePacker[T]
 }
 
 trait LowPriorityTuplePackers extends java.io.Serializable {
-  implicit def genericTuplePacker[T: Manifest] = new ReflectionTuplePacker[T]
+  implicit def genericTuplePacker[T: Manifest]: ReflectionTuplePacker[T] = new ReflectionTuplePacker[T]
 }
 
 /**

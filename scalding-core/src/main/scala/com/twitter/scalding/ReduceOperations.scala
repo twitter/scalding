@@ -110,7 +110,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x: Double) = scala.math.log(x) / scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
-    implicit val hmm = new HyperLogLogMonoid(bits)
+    implicit val hmm: HyperLogLogMonoid = new HyperLogLogMonoid(bits)
     mapPlusMap(f) { (t: T) => hmm.create(t) } (fn)
   }
 
@@ -391,7 +391,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   def sortedTake[T](f: (Fields, Fields), k: Int)(implicit conv: TupleConverter[T], ord: Ordering[T]): Self = {
 
     assert(f._2.size == 1, "output field size must be 1")
-    implicit val mon = new PriorityQueueMonoid[T](k)
+    implicit val mon: PriorityQueueMonoid[T] = new PriorityQueueMonoid[T](k)
     mapPlusMap(f) { (tup: T) => mon.build(tup) } {
       (lout: PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
     }

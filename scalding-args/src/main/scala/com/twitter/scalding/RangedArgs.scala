@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding
 
 object RangedArgs {
-  implicit def rangedFromArgs(args: Args) = new RangedArgs(args)
+  implicit def rangedFromArgs(args: Args): RangedArgs = new RangedArgs(args)
 }
 
 case class Range[T](lower: T, upper: T)(implicit ord: Ordering[T]) {

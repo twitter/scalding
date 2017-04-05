@@ -110,8 +110,8 @@ object MultipleGroupByJobData {
 class MultipleGroupByJob(args: Args) extends Job(args) {
   import com.twitter.scalding.serialization._
   import MultipleGroupByJobData._
-  implicit val stringOrdSer = new StringOrderedSerialization()
-  implicit val stringTup2OrdSer = new OrderedSerialization2(stringOrdSer, stringOrdSer)
+  implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization()
+  implicit val stringTup2OrdSer: OrderedSerialization[(String, String)] = new OrderedSerialization2(stringOrdSer, stringOrdSer)
   val otherStream = TypedPipe.from(data).map{ k => (k, k) }.group
 
   TypedPipe.from(data)
@@ -284,7 +284,7 @@ class GroupedLimitJobWithSteps(args: Args) extends Job(args) {
 }
 
 object OrderedSerializationTest {
-  implicit val genASGK = Arbitrary {
+  implicit val genASGK: Arbitrary[NestedCaseClass] = Arbitrary {
     for {
       ts <- Arbitrary.arbitrary[Long]
       b <- Gen.nonEmptyListOf(Gen.alphaNumChar).map (_.mkString)

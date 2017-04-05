@@ -173,8 +173,8 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
 
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
-  implicit def pipeExtensions[P <% Pipe](p: P) = new MatrixPipeExtensions(p)
-  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode) =
+  implicit def pipeExtensions[P <% Pipe](p: P): MatrixPipeExtensions = new MatrixPipeExtensions(p)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode): MatrixMappableExtensions[T] =
     new MatrixMappableExtensions(mt)(fd, mode)
 
   def filterOutZeros[ValT](fSym: Symbol, group: Monoid[ValT])(fpipe: Pipe): Pipe = {
@@ -189,7 +189,7 @@ object Matrix {
     vct.map { tup => (tup._1, tup._2 - avg) }
   }
 
-  implicit def literalToScalar[ValT](v: ValT) = new LiteralScalar(v)
+  implicit def literalToScalar[ValT](v: ValT): LiteralScalar[ValT] = new LiteralScalar(v)
 
   // Converts to Matrix for addition
   implicit def diagonalToMatrix[RowT, ValT](diag: DiagonalMatrix[RowT, ValT]): Matrix[RowT, RowT, ValT] = {
