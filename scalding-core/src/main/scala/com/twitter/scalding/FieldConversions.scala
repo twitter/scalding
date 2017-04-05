@@ -52,10 +52,8 @@ trait LowPriorityFieldConversions {
   implicit def productToFields(f: Product): Fields = {
     val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq: _*)
     f.productIterator.foreach {
-      _ match {
-        case field: Field[_] => fields.setComparator(field.id, field.ord)
-        case _ =>
-      }
+      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case _ =>
     }
     fields
   }
@@ -185,10 +183,8 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T): Fields = {
     val fields = new Fields(anyf.toSeq.map { anyToFieldArg }: _*)
     anyf.foreach {
-      _ match {
-        case field: Field[_] => fields.setComparator(field.id, field.ord)
-        case _ =>
-      }
+      case field: Field[_] => fields.setComparator(field.id, field.ord)
+      case _ =>
     }
     fields
   }
