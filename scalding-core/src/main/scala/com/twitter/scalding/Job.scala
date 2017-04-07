@@ -198,11 +198,11 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
   }
 
-  def reflectedClasses: Set[Class[_]] = {
+  private def reflectedClasses: Set[Class[_]] =
     if (args.optional(Args.jobClassReflection).map(_.toBoolean).getOrElse(true)) {
       ReferencedClassFinder.findReferencedClasses(getClass)
     } else Set.empty
-  }
+
 
   /**
    * This is here so that Mappable.toIterator can find an implicit config
