@@ -101,13 +101,13 @@ The current groupid and version for all modules is, respectively, `"com.twitter"
 
 Current published artifacts are
 
-* `scalding-core_2.10`, `scalding-core_2.11`
-* `scalding-args_2.10`, `scalding-args_2.11`
-* `scalding-date_2.10`, `scalding-date_2.11`
-* `scalding-commons_2.10`, `scalding-commons_2.11`
-* `scalding-avro_2.10`, `scalding-avro_2.11`
-* `scalding-parquet_2.10`, `scalding-parquet_2.11`
-* `scalding-repl_2.10`, `scalding-repl_2.11`
+* `scalding-core_2.11`, `scalding-core_2.12`
+* `scalding-args_2.11`, `scalding-args_2.12`
+* `scalding-date_2.11`, `scalding-date_2.12`
+* `scalding-commons_2.11`, `scalding-commons_2.12`
+* `scalding-avro_2.11`, `scalding-avro_2.12`
+* `scalding-parquet_2.11`, `scalding-parquet_2.12`
+* `scalding-repl_2.11`, `scalding-repl_2.12`
 
 
 The suffix denotes the scala version.
