@@ -188,6 +188,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     defaultComparator.map(init.setDefaultComparator)
       .getOrElse(init)
       .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .addCascadingClassSerializationTokens(reflectedClasses)
       .setScaldingVersion
       .setCascadingAppName(name)
       .setCascadingAppId(name)
@@ -195,6 +196,12 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setArgs(args)
       .maybeSetSubmittedTimestamp()._2
       .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
+  }
+
+  def reflectedClasses: Set[Class[_]] = {
+    if (args.optional(Args.jobClassReflection).map(_.toBoolean).getOrElse(true)) {
+      ReferencedClassFinder.findReferencedClasses(getClass)
+    } else Set.empty
   }
 
   /**
