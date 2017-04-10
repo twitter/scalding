@@ -20,7 +20,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (A, B, C)] = nested.mapValues { tup => FlattenGroup.flattenNestedTuple(tup) }
   }
 
-  implicit def toFlattenLeftJoin3[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C](nested: KLL[KEY, ((A, B), C)]) = new FlattenLeftJoin3(nested)
+  implicit def toFlattenLeftJoin3[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C](nested: KLL[KEY, ((A, B), C)]): FlattenGroup.FlattenLeftJoin3[KEY, KLL, A, B, C] = new FlattenLeftJoin3(nested)
 
   def flattenNestedTuple[A, B, C, D](nested: (((A, B), C), D)): (A, B, C, D) = {
     val (((a, b), c), d) = nested
@@ -31,7 +31,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (A, B, C, D)] = nested.mapValues { tup => FlattenGroup.flattenNestedTuple(tup) }
   }
 
-  implicit def toFlattenLeftJoin4[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D](nested: KLL[KEY, (((A, B), C), D)]) = new FlattenLeftJoin4(nested)
+  implicit def toFlattenLeftJoin4[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D](nested: KLL[KEY, (((A, B), C), D)]): FlattenGroup.FlattenLeftJoin4[KEY, KLL, A, B, C, D] = new FlattenLeftJoin4(nested)
 
   def flattenNestedTuple[A, B, C, D, E](nested: ((((A, B), C), D), E)): (A, B, C, D, E) = {
     val ((((a, b), c), d), e) = nested
@@ -42,7 +42,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (A, B, C, D, E)] = nested.mapValues { tup => FlattenGroup.flattenNestedTuple(tup) }
   }
 
-  implicit def toFlattenLeftJoin5[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E](nested: KLL[KEY, ((((A, B), C), D), E)]) = new FlattenLeftJoin5(nested)
+  implicit def toFlattenLeftJoin5[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E](nested: KLL[KEY, ((((A, B), C), D), E)]): FlattenGroup.FlattenLeftJoin5[KEY, KLL, A, B, C, D, E] = new FlattenLeftJoin5(nested)
 
   def flattenNestedTuple[A, B, C, D, E, F](nested: (((((A, B), C), D), E), F)): (A, B, C, D, E, F) = {
     val (((((a, b), c), d), e), f) = nested
@@ -53,7 +53,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (A, B, C, D, E, F)] = nested.mapValues { tup => FlattenGroup.flattenNestedTuple(tup) }
   }
 
-  implicit def toFlattenLeftJoin6[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E, F](nested: KLL[KEY, (((((A, B), C), D), E), F)]) = new FlattenLeftJoin6(nested)
+  implicit def toFlattenLeftJoin6[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E, F](nested: KLL[KEY, (((((A, B), C), D), E), F)]): FlattenGroup.FlattenLeftJoin6[KEY, KLL, A, B, C, D, E, F] = new FlattenLeftJoin6(nested)
 
   def flattenNestedTuple[A, B, C, D, E, F, G](nested: ((((((A, B), C), D), E), F), G)): (A, B, C, D, E, F, G) = {
     val ((((((a, b), c), d), e), f), g) = nested
@@ -147,7 +147,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (Option[A], Option[B], Option[C])] = nested.mapValues { tup => FlattenGroup.flattenNestedOptionTuple(tup) }
   }
 
-  implicit def toFlattenOuterJoin3[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C](nested: KLL[KEY, (Option[(Option[A], Option[B])], Option[C])]) = new FlattenOuterJoin3(nested)
+  implicit def toFlattenOuterJoin3[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C](nested: KLL[KEY, (Option[(Option[A], Option[B])], Option[C])]): FlattenGroup.FlattenOuterJoin3[KEY, KLL, A, B, C] = new FlattenOuterJoin3(nested)
 
   def flattenNestedOptionTuple[A, B, C, D](nested: (Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])): (Option[A], Option[B], Option[C], Option[D]) = {
     val (rest1, d) = nested
@@ -160,7 +160,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (Option[A], Option[B], Option[C], Option[D])] = nested.mapValues { tup => FlattenGroup.flattenNestedOptionTuple(tup) }
   }
 
-  implicit def toFlattenOuterJoin4[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D](nested: KLL[KEY, (Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])]) = new FlattenOuterJoin4(nested)
+  implicit def toFlattenOuterJoin4[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D](nested: KLL[KEY, (Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])]): FlattenGroup.FlattenOuterJoin4[KEY, KLL, A, B, C, D] = new FlattenOuterJoin4(nested)
 
   def flattenNestedOptionTuple[A, B, C, D, E](nested: (Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])): (Option[A], Option[B], Option[C], Option[D], Option[E]) = {
     val (rest1, e) = nested
@@ -174,7 +174,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (Option[A], Option[B], Option[C], Option[D], Option[E])] = nested.mapValues { tup => FlattenGroup.flattenNestedOptionTuple(tup) }
   }
 
-  implicit def toFlattenOuterJoin5[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E](nested: KLL[KEY, (Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])]) = new FlattenOuterJoin5(nested)
+  implicit def toFlattenOuterJoin5[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E](nested: KLL[KEY, (Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])]): FlattenGroup.FlattenOuterJoin5[KEY, KLL, A, B, C, D, E] = new FlattenOuterJoin5(nested)
 
   def flattenNestedOptionTuple[A, B, C, D, E, F](nested: (Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])], Option[F])): (Option[A], Option[B], Option[C], Option[D], Option[E], Option[F]) = {
     val (rest1, f) = nested
@@ -189,7 +189,7 @@ object FlattenGroup {
     def flattenValueTuple: KLL[KEY, (Option[A], Option[B], Option[C], Option[D], Option[E], Option[F])] = nested.mapValues { tup => FlattenGroup.flattenNestedOptionTuple(tup) }
   }
 
-  implicit def toFlattenOuterJoin6[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E, F](nested: KLL[KEY, (Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])], Option[F])]) = new FlattenOuterJoin6(nested)
+  implicit def toFlattenOuterJoin6[KEY, KLL[KLL_K, +KLL_V] <: KeyedListLike[KLL_K, KLL_V, KLL], A, B, C, D, E, F](nested: KLL[KEY, (Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])], Option[F])]): FlattenGroup.FlattenOuterJoin6[KEY, KLL, A, B, C, D, E, F] = new FlattenOuterJoin6(nested)
 
   def flattenNestedOptionTuple[A, B, C, D, E, F, G](nested: (Option[(Option[(Option[(Option[(Option[(Option[A], Option[B])], Option[C])], Option[D])], Option[E])], Option[F])], Option[G])): (Option[A], Option[B], Option[C], Option[D], Option[E], Option[F], Option[G]) = {
     val (rest1, g) = nested

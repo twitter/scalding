@@ -45,15 +45,15 @@ trait TypedPipeOperationsConversions {
     override def apply(pipes: List[TypedPipe[_]]): TypedPipe[TypeOut] = op(pipes)
   }
 
-  implicit def fromSingleTypedPipeFunctionToOperation[TypeIn, TypeOut](op: TypedPipe[TypeIn] => TypedPipe[TypeOut]) =
+  implicit def fromSingleTypedPipeFunctionToOperation[TypeIn, TypeOut](op: TypedPipe[TypeIn] => TypedPipe[TypeOut]): OneTypedPipeOperation[TypeIn, TypeOut] =
     new OneTypedPipeOperation[TypeIn, TypeOut](op)
 
-  implicit def fromTwoTypedPipesFunctionToOperation[TypeIn1, TypeIn2, TypeOut](op: (TypedPipe[TypeIn1], TypedPipe[TypeIn2]) => TypedPipe[TypeOut]) =
+  implicit def fromTwoTypedPipesFunctionToOperation[TypeIn1, TypeIn2, TypeOut](op: (TypedPipe[TypeIn1], TypedPipe[TypeIn2]) => TypedPipe[TypeOut]): TwoTypedPipesOperation[TypeIn1, TypeIn2, TypeOut] =
     new TwoTypedPipesOperation[TypeIn1, TypeIn2, TypeOut](op)
 
-  implicit def fromThreeTypedPipesFunctionToOperation[TypeIn1, TypeIn2, TypeIn3, TypeOut](op: (TypedPipe[TypeIn1], TypedPipe[TypeIn2], TypedPipe[TypeIn3]) => TypedPipe[TypeOut]) =
+  implicit def fromThreeTypedPipesFunctionToOperation[TypeIn1, TypeIn2, TypeIn3, TypeOut](op: (TypedPipe[TypeIn1], TypedPipe[TypeIn2], TypedPipe[TypeIn3]) => TypedPipe[TypeOut]): ThreeTypedPipesOperation[TypeIn1, TypeIn2, TypeIn3, TypeOut] =
     new ThreeTypedPipesOperation[TypeIn1, TypeIn2, TypeIn3, TypeOut](op)
 
-  implicit def fromListOfTypedPipesFunctionToOperation[TypeOut](op: List[TypedPipe[_]] => TypedPipe[TypeOut]) =
+  implicit def fromListOfTypedPipesFunctionToOperation[TypeOut](op: List[TypedPipe[_]] => TypedPipe[TypeOut]): ListOfTypedPipesOperations[TypeOut] =
     new ListOfTypedPipesOperations[TypeOut](op)
 }

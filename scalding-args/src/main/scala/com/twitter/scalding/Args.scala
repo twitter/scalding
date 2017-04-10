@@ -61,6 +61,11 @@ object Args {
       case e: NumberFormatException => false
     }
   }
+
+  /**
+   * By default, scalding will use reflection to try and identify classes to tokenize. Set to false to disable
+   */
+  val jobClassReflection = "scalding.job.classreflection"
 }
 
 class Args(val m: Map[String, List[String]]) extends java.io.Serializable {

@@ -124,7 +124,7 @@ trait BaseScaldingShell extends MainGenericRunner {
    * @param args from the command line.
    */
   def main(args: Array[String]): Unit = {
-    val retVal = process(args)
+    val retVal = process(ExpandLibJarsGlobs(args))
     if (!retVal) {
       sys.exit(1)
     }

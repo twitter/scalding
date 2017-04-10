@@ -59,6 +59,7 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
 
   def hdfsScheme: Option[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
 
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     mode match {
       case Test(buffers) => {

@@ -69,6 +69,11 @@ case class ExhaustiveJdbcCaseClass(
   optiLong: Option[Long] // Nullable long
   )
 
+private final case class VerticaCaseClass(
+  verticaLong: Long,
+  @date verticaDate: Date,
+  @varchar @size(size = 1) verticaVarchar1: String)
+
 case class CaseClassWithDate(
   id: Long,
   myDateWithTime: Date,
@@ -182,6 +187,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getString("gender")) thenReturn ("F")
 
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == User(123, "alice", Some(26), "F"))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "Produces the ColumnDefinition for nested case class " should {
@@ -208,6 +214,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getString("gender")) thenReturn ("F")
 
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == User2(123, "alice", Demographics(Some(26), "F")))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "Produces the DBTypeDescriptor" should {
@@ -223,7 +230,43 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
     assert(DBMacro.toDBTypeDescriptor[User].columnDefn.columns.toList === expectedColumns)
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
+  }
 
+  "interoperates with Vertica, which uses different type names" should {
+    val typeDescriptor = DBMacro.toDBTypeDescriptor[VerticaCaseClass]
+    val expectedColumns = List(
+      ColumnDefinition(BIGINT, ColumnName("verticaLong"), NotNullable, None, None),
+      ColumnDefinition(DATE, ColumnName("verticaDate"), NotNullable, None, None),
+      ColumnDefinition(VARCHAR, ColumnName("verticaVarchar1"), NotNullable, Some(1), None))
+    assert(typeDescriptor.columnDefn.columns.toList === expectedColumns)
+
+    // Vertica uses `Integer`
+    val int64TypeNames = List("Integer", "INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
+      "TINYINT", "SMALLINT", "MEDIUMINT")
+    // Vertica uses `Date`
+    val dateTypeNames = List("Date", "DATE")
+    // Vertica uses `Varchar`
+    val varcharTypeNames = List("Varchar", "VARCHAR")
+
+    int64TypeNames foreach { int64TypeName =>
+      dateTypeNames foreach { dateTypeName =>
+        varcharTypeNames foreach { varcharTypeName =>
+          val resultSetMetaData = mock[ResultSetMetaData]
+          when(resultSetMetaData.getColumnTypeName(1)) thenReturn (int64TypeName)
+          when(resultSetMetaData.isNullable(1)) thenReturn (ResultSetMetaData.columnNoNulls)
+          when(resultSetMetaData.getColumnTypeName(2)) thenReturn (dateTypeName)
+          when(resultSetMetaData.isNullable(2)) thenReturn (ResultSetMetaData.columnNoNulls)
+          when(resultSetMetaData.getColumnTypeName(3)) thenReturn (varcharTypeName)
+          when(resultSetMetaData.isNullable(3)) thenReturn (ResultSetMetaData.columnNoNulls)
+
+          val validationResult =
+            typeDescriptor.columnDefn.resultSetExtractor.validate(resultSetMetaData)
+
+          assert(validationResult.isSuccess, validationResult)
+        }
+      }
+    }
   }
 
   "Big Jdbc Test" should {
@@ -319,6 +362,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
         new Date(1111L),
         new Date(1112L),
         Some(1113L)))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "TupleConverter for Date" should {
@@ -331,6 +375,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     t.set(1, date1)
     t.set(2, date2)
     assert(CaseClassWithDate(99L, date1, date2) == converter(new TupleEntry(t)))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "ResultSetExtractor validation for nullable columns" should {
@@ -355,6 +400,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.isNullable(7)) thenReturn (ResultSetMetaData.columnNullable)
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "ResultSetExtractor when nullable values are not null" should {
@@ -379,6 +425,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
       CaseClassWithOptions(Some(26), Some("alice"), Some(new Date(1111L)),
         Some(true), Some(2), Some(2000L), Some(2.2)))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "ResultSetExtractor when null values" should {
@@ -402,6 +449,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
       CaseClassWithOptions(None, None, None,
         None, None, None, None))
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
   "ResultSetExtractor for DB schema type mismatch" in {

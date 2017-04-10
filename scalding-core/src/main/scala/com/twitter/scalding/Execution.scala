@@ -201,8 +201,14 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
     Zipped(this, that)
 
   override val hashCode: Int = ScalaRunTime._hashCode(self)
-  override def equals(other: Any): Boolean =
-    hashCode == other.hashCode && ScalaRunTime._equals(self, other)
+
+  override def equals(other: Any): Boolean = {
+    other match {
+      case p: Product if self.productArity == p.productArity =>
+        self.hashCode == p.hashCode && (self.productIterator sameElements p.productIterator)
+      case _ => false
+    }
+  }
 }
 
 /**

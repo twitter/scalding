@@ -4,6 +4,8 @@ import com.twitter.scalding.thrift.macros.scalathrift._
 import org.scalacheck.{ Arbitrary, Gen, Prop }
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import java.nio.ByteBuffer
+import org.scalacheck.Gen.Parameters
+import org.scalacheck.rng.Seed
 
 private object Perturbers {
   def perturb(t0: TestStruct, t1: TestStruct, i: Int): TestStruct = {
@@ -88,11 +90,8 @@ object ScroogeGenerators {
   def dataProvider[T: Arbitrary](i: Int): T = {
     @annotation.tailrec
     def g(innerI: Int, loops: Int): T = {
-      val p = new org.scalacheck.Gen.Parameters {
-        override val size = 2
-        override val rng = new scala.util.Random(innerI)
-      }
-      implicitly[Arbitrary[T]].arbitrary(p) match {
+      val p = Parameters.default.withSize(2)
+      implicitly[Arbitrary[T]].arbitrary(p, Seed(innerI)) match {
         case Some(s) => s
         case None if loops < 5 => g(innerI + 1, loops + 1)
         case None => sys.error("Cannot appear to get Some for this generator.")

@@ -1,6 +1,5 @@
 import AssemblyKeys._
 import ReleaseTransformations._
-import com.twitter.scrooge.ScroogeSBT
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
@@ -15,33 +14,32 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.12" => "2.12"
   case _ => sys.error("unknown error")
 }
-def isScala210x(scalaVersion: String) = scalaBinaryVersion(scalaVersion) == "2.10"
 
 val algebirdVersion = "0.13.0"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
-val bijectionVersion = "0.9.1"
+val bijectionVersion = "0.9.5"
 val cascadingAvroVersion = "2.1.2"
-val chillVersion = "0.8.3"
-val elephantbirdVersion = "4.8"
+val chillVersion = "0.8.4"
+val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
 val hravenVersion = "0.9.17.t05"
-val jacksonVersion = "2.4.2"
-val json4SVersion = "3.2.11"
+val jacksonVersion = "2.8.7"
+val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
 val parquetVersion = "1.8.1"
 val protobufVersion = "2.4.1"
-val quasiquotesVersion = "2.0.1"
-val scalaCheckVersion = "1.12.2"
-val scalaTestVersion = "2.2.6"
-val scalameterVersion = "0.6"
-val scroogeVersion = "3.20.0"
+val scalameterVersion = "0.8.2"
+val scalaCheckVersion = "1.13.4"
+val scalaTestVersion = "3.0.1"
+val scroogeVersion = "4.12.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
+val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -50,7 +48,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.8",
 
-  crossScalaVersions := Seq("2.10.6", scalaVersion.value),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.1"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -69,10 +67,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   ),
 
   resolvers ++= Seq(
-    "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-    "maven central" at "https://repo.maven.apache.org/maven2",
-    "releases" at "https://oss.sonatype.org/content/repositories/releases",
-    "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+    Opts.resolver.mavenLocalFile,
+    Opts.resolver.sonatypeSnapshots,
+    Opts.resolver.sonatypeReleases,
     "Concurrent Maven Repo" at "http://conjars.org/repo",
     "Twitter Maven" at "http://maven.twttr.com",
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
@@ -104,13 +101,6 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       "-language:higherKinds",
       "-language:existentials"
     ),
-
-  scalacOptions ++= {
-    if (isScala210x(scalaVersion.value))
-      Seq("-Xdivergence211")
-    else
-      Seq()
-  },
 
   /**
    * add linter for common scala issues:
@@ -172,6 +162,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     case s if s.endsWith("pom.xml") => MergeStrategy.last
     case s if s.endsWith(".jnilib") => MergeStrategy.rename
     case s if s.endsWith("jansi.dll") => MergeStrategy.rename
+    case s if s.endsWith("libjansi.so") => MergeStrategy.rename
     case s if s.endsWith("properties") => MergeStrategy.filterDistinctLines
     case x => (mergeStrategy in assembly).value(x)
   },
@@ -212,12 +203,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 lazy val scalding = Project(
   id = "scalding",
   base = file("."),
-  settings = sharedSettings
-).settings(
-  test := {},
-  publish := {}, // skip publishing for this root project.
-  publishLocal := {}
-).aggregate(
+  settings = sharedSettings)
+ .settings(noPublishSettings)
+ .aggregate(
   scaldingArgs,
   scaldingDate,
   scaldingCore,
@@ -240,12 +228,9 @@ lazy val scalding = Project(
 lazy val scaldingAssembly = Project(
   id = "scalding-assembly",
   base = file("assembly"),
-  settings = sharedSettings
-).settings(
-  test := {},
-  publish := {}, // skip publishing for this root project.
-  publishLocal := {}
-).aggregate(
+  settings = sharedSettings)
+ .settings(noPublishSettings)
+ .aggregate(
   scaldingArgs,
   scaldingDate,
   scaldingCore,
@@ -279,11 +264,11 @@ lazy val noPublishSettings = Seq(
  * This returns the youngest jar we released that is compatible with
  * the current.
  */
-val unreleasedModules = Set[String]("hadoop-test") //releases 0.11
+val ignoredModules = Set[String]("benchmarks")
 
 def youngestForwardCompatible(subProj: String) =
   Some(subProj)
-    .filterNot(unreleasedModules.contains(_))
+    .filterNot(ignoredModules.contains(_))
     .map {
     s => "com.twitter" %% (s"scalding-$s") % "0.16.0"
   }
@@ -306,14 +291,15 @@ lazy val cascadingVersion =
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
-lazy val scaldingBenchmarks = module("benchmarks").settings(
-  libraryDependencies ++= Seq(
-    "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
-  ),
-  testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-  parallelExecution in Test := false
-).dependsOn(scaldingCore)
+lazy val scaldingBenchmarks = module("benchmarks")
+  .settings(
+    libraryDependencies ++= Seq(
+        "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
+        "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+      ),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+    parallelExecution in Test := false
+  ).dependsOn(scaldingCore)
 
 lazy val scaldingCore = module("core").settings(
   libraryDependencies ++= Seq(
@@ -333,10 +319,7 @@ lazy val scaldingCore = module("core").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided") ++
-    (if (isScala210x(scalaVersion.value))
-      Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion)
-    else Seq()),
+    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
 
@@ -354,7 +337,8 @@ lazy val scaldingCommons = module("commons").settings(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.thrift" % "libthrift" % thriftVersion,
     // TODO: split this out into a scalding-scrooge
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+      exclude("com.google.guava", "guava"),
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
     "junit" % "junit" % junitVersion % "test"
@@ -373,18 +357,10 @@ lazy val scaldingAvro = module("avro").settings(
 lazy val scaldingParquetFixtures = module("parquet-fixtures")
    .settings(
      scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-     sourceGenerators in Test += Def.task {
-       val sources = (scroogeThriftSources in Test).value
-       val out = streams.value
-       // for some reason, sbt sometimes calls us multiple times, often with no source files.
-       if ((scroogeIsDirty in Test).value && sources.nonEmpty) {
-         out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
-         ScroogeSBT.compile(out.log, sourceManaged.value, sources.toSet, Set(), Map(), "java", Set("--language", "java"))
-       }
-       (sourceManaged.value ** "*.java").get.toSeq
-     }.taskValue,
+     scroogeLanguages in Test := Seq("java", "scala"),
      libraryDependencies ++= Seq(
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+         exclude("com.google.guava", "guava"),
        "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
        "org.apache.thrift" % "libthrift" % thriftVersion
      )
@@ -408,7 +384,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "com.twitter" %% "chill-bijection" % chillVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
     "org.typelevel" %% "macro-compat" % macroCompatVersion
-    ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % quasiquotesVersion) else Seq()),
+    ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
 
@@ -417,18 +393,10 @@ lazy val scaldingParquet = module("parquet").settings(
 lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   .settings(
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-    sourceGenerators in Test += Def.task {
-        val sources = (scroogeThriftSources in Test).value
-        val out = streams.value
-        // for some reason, sbt sometimes calls us multiple times, often with no source files.
-        if ((scroogeIsDirty in Test).value && sources.nonEmpty) {
-          out.log.info("Generating scrooge thrift for %s ...".format(sources.mkString(", ")))
-          ScroogeSBT.compile(out.log, sourceManaged.value, sources.toSet, Set(), Map(), "java", Set())
-        }
-          (sourceManaged.value ** "*.java").get.toSeq
-      }.taskValue,
+    scroogeLanguages in Test := Seq("java", "scala"),
     libraryDependencies ++= Seq(
-      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+        exclude("com.google.guava", "guava"),
       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
       "org.apache.thrift" % "libthrift" % thriftVersion
   )
@@ -443,7 +411,8 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion
+        exclude("com.google.guava", "guava"),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
@@ -489,7 +458,7 @@ lazy val scaldingRepl = module("repl")
       import com.twitter.scalding.ReplImplicitContext._
       """,
     libraryDependencies ++= Seq(
-      "jline" % "jline" % scalaVersion.value.take(4),
+      "jline" % "jline" % jlineVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
@@ -514,7 +483,7 @@ lazy val scaldingRepl = module("repl")
 lazy val scaldingSerialization = module("serialization").settings(
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
+  ),
 addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 )
 
@@ -592,15 +561,16 @@ lazy val scaldingDb = module("db").settings(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion
-  ) ++ (if(isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
-addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  ),
+  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingCore)
 
 lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
   .settings(
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     libraryDependencies ++= Seq(
-      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+        exclude("com.google.guava", "guava"),
       "org.apache.thrift" % "libthrift" % thriftVersion
     )
 )
@@ -611,7 +581,8 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" % "chill-thrift" % chillVersion % "test",
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided",
+    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+      exclude("com.google.guava", "guava"),
     "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
     "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
@@ -622,7 +593,7 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
     "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
-  ) ++ (if (isScala210x(scalaVersion.value)) Seq("org.scalamacros" %% "quasiquotes" % "2.0.1") else Seq()),
+  ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(
     scaldingCore,
@@ -630,16 +601,8 @@ lazy val scaldingThriftMacros = module("thrift-macros")
     scaldingSerialization,
     scaldingThriftMacrosFixtures % "test->test")
 
-/**
-  * Remove 2.10 projects from doc generation, as the macros used in the projects
-  * cause problems generating the documentation on scala 2.10. As the APIs for 2.10
-  * and 2.11 are the same this has no effect on the resultant documentation, though
-  * it does mean that the scaladocs cannot be generated when the build is in 2.10 mode.
-  */
-def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
-  CrossVersion.partialVersion(sv) match {
-    case Some((2, 10)) => (false, Nil)
-    case _ => (true, Seq(
+def docsSourcesAndProjects(sv: String): Seq[ProjectReference] =
+    Seq(
       scaldingArgs,
       scaldingDate,
       scaldingCore
@@ -655,8 +618,7 @@ def docsSourcesAndProjects(sv: String): (Boolean, Seq[ProjectReference]) =
       // maple,
       // scaldingSerialization,
       // scaldingThriftMacros
-    ))
-  }
+    )
 
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
@@ -682,7 +644,7 @@ lazy val docSettings = Seq(
     "white-color" -> "#FFFFFF"),
   autoAPIMappings := true,
   unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-    inProjects(docsSourcesAndProjects(scalaVersion.value)._2:_*),
+    inProjects(docsSourcesAndProjects(scalaVersion.value):_*),
   docsMappingsAPIDir := "api",
   addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), docsMappingsAPIDir),
   ghpagesNoJekyll := false,

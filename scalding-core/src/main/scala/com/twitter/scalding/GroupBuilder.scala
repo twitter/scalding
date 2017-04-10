@@ -289,6 +289,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     gb
   }
 
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def schedule(name: String, pipe: Pipe): Pipe = {
     val maybeProjectedPipe = projectFields.map { pipe.project(_) }.getOrElse(pipe)
     groupMode match {
@@ -381,7 +382,7 @@ class ScanLeftIterator[T, U](it: Iterator[T], init: U, fn: (U, T) => U) extends 
   protected var prev: Option[U] = None
   def hasNext: Boolean = { prev.isEmpty || it.hasNext }
   // Don't use pattern matching in a performance-critical section
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def next = {
     prev = prev.map { fn(_, it.next) }
       .orElse(Some(init))

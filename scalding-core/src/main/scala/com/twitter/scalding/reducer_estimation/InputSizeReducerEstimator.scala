@@ -32,7 +32,7 @@ object InputSizeReducerEstimator {
     Common.inputSizes(info.step) match {
       case Nil =>
         LOG.warn("InputSizeReducerEstimator unable to estimate reducers; " +
-          "cannot compute size of:\n - " +
+          "cannot compute size of (is it a non hfs tap?):\n - " +
           Common.unrollTaps(info.step).filterNot(_.isInstanceOf[Hfs]).mkString("\n - "))
         None
       case inputSizes =>

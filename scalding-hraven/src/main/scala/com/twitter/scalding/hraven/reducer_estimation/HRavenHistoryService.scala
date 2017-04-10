@@ -1,16 +1,14 @@
 package com.twitter.scalding.hraven.reducer_estimation
 
 import java.io.IOException
-
 import cascading.flow.FlowStep
-import com.twitter.hraven.{ Flow, JobDetails }
+import com.twitter.hraven.{ Constants, CounterMap, Flow, HistoryFileType, JobDetails }
 import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.scalding.reducer_estimation._
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 import com.twitter.hraven.JobDescFactory.{ JOBTRACKER_KEY, RESOURCE_MANAGER_KEY }
-
 import scala.util.{ Failure, Success, Try }
 
 object HRavenClient {
@@ -46,6 +44,7 @@ object HRavenHistoryService extends HistoryService {
     "status",
     "startTime",
     "finishTime").asJava
+  private val MapOutputBytesKey = "MAP_OUTPUT_BYTES"
 
   val RequiredJobConfigs = Seq("cascading.flow.step.num")
 
@@ -179,7 +178,7 @@ object HRavenHistoryService extends HistoryService {
       } yield toFlowStepHistory(keys, step, tasks)
     }
 
-  private def toFlowStepHistory(keys: FlowStepKeys, step: JobDetails, tasks: Seq[Task]) =
+  private def toFlowStepHistory(keys: FlowStepKeys, step: JobDetails, tasks: Seq[Task]) = {
     FlowStepHistory(
       keys = keys,
       submitTime = step.getSubmitTime,
@@ -193,6 +192,7 @@ object HRavenHistoryService extends HistoryService {
       failedReduces = step.getFailedReduces,
       mapFileBytesRead = step.getMapFileBytesRead,
       mapFileBytesWritten = step.getMapFileBytesWritten,
+      mapOutputBytes = mapOutputBytes(step),
       reduceFileBytesRead = step.getReduceFileBytesRead,
       hdfsBytesRead = step.getHdfsBytesRead,
       hdfsBytesWritten = step.getHdfsBytesWritten,
@@ -201,6 +201,20 @@ object HRavenHistoryService extends HistoryService {
       reduceShuffleBytes = step.getReduceShuffleBytes,
       cost = 0,
       tasks = tasks)
+  }
+
+  private def mapOutputBytes(step: JobDetails): Long = {
+    if (step.getHistoryFileType == HistoryFileType.TWO) {
+      getCounterValueAsLong(step.getMapCounters, Constants.TASK_COUNTER_HADOOP2, MapOutputBytesKey)
+    } else {
+      getCounterValueAsLong(step.getMapCounters, Constants.TASK_COUNTER, MapOutputBytesKey)
+    }
+  }
+
+  private def getCounterValueAsLong(counters: CounterMap, counterGroupName: String, counterName: String): Long = {
+    val counter = counters.getCounter(counterGroupName, counterName)
+    if (counter != null) counter.getValue else 0L
+  }
 }
 
 class HRavenRatioBasedEstimator extends RatioBasedEstimator {

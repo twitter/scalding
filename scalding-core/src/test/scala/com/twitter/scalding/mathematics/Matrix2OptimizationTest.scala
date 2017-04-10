@@ -36,8 +36,8 @@ class Matrix2OptimizationSpec extends WordSpec with Matchers {
   import Dsl._
   import com.twitter.scalding.Test
 
-  implicit val mode = Test(Map())
-  implicit val fd = new FlowDef
+  implicit val mode: Test = Test(Map())
+  implicit val fd: FlowDef = new FlowDef
 
   val globM = TypedPipe.from(IterableSource(List((1, 2, 3.0), (2, 2, 4.0))))
 
@@ -190,8 +190,8 @@ class Matrix2OptimizationSpec extends WordSpec with Matchers {
 object Matrix2Props extends Properties("Matrix2") {
   import com.twitter.scalding.Test
 
-  implicit val mode = Test(Map())
-  implicit val fd = new FlowDef
+  implicit val mode: Test = Test(Map())
+  implicit val fd: FlowDef = new FlowDef
   val globM = TypedPipe.from(IterableSource(List((1, 2, 3.0), (2, 2, 4.0))))
 
   implicit val ring: Ring[Double] = Ring.doubleRing

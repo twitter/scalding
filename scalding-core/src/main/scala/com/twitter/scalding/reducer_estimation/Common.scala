@@ -1,16 +1,16 @@
 package com.twitter.scalding.reducer_estimation
 
-import cascading.flow.{ FlowStep, Flow, FlowStepStrategy }
-import com.twitter.algebird.Monoid
-import com.twitter.scalding.{ StringUtility, Config }
-import cascading.tap.{ Tap, CompositeTap }
+import cascading.flow.{ Flow, FlowStep, FlowStepStrategy }
 import cascading.tap.hadoop.Hfs
+import cascading.tap.{ CompositeTap, Tap }
+import com.twitter.algebird.Monoid
+import com.twitter.scalding.tap.GlobHfs
+import com.twitter.scalding.{ Config, StringUtility }
+import java.util.{ List => JList }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
-import java.util.{ List => JList }
-
 import scala.collection.JavaConverters._
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 object EstimatorConfig {
 
@@ -44,6 +44,8 @@ object EstimatorConfig {
 }
 
 object Common {
+  private[this] val LOG = LoggerFactory.getLogger(this.getClass)
+
   private def unrollTaps(taps: Seq[Tap[_, _, _]]): Seq[Tap[_, _, _]] =
     taps.flatMap {
       case multi: CompositeTap[_] =>
@@ -54,22 +56,14 @@ object Common {
   def unrollTaps(step: FlowStep[JobConf]): Seq[Tap[_, _, _]] =
     unrollTaps(step.getSources.asScala.toSeq)
 
-  /**
-   * Get the total size of the file(s) specified by the Hfs, which may contain a glob
-   * pattern in its path, so we must be ready to handle that case.
-   */
-  def size(f: Hfs, conf: JobConf): Long = {
-    val fs = f.getPath.getFileSystem(conf)
-    fs.globStatus(f.getPath)
-      .map{ s => fs.getContentSummary(s.getPath).getLength }
-      .sum
-  }
-
   def inputSizes(step: FlowStep[JobConf]): Seq[(String, Long)] = {
     val conf = step.getConfig
     unrollTaps(step).flatMap {
-      case tap: Hfs => Some(tap.toString -> size(tap, conf))
-      case _ => None
+      case tap: GlobHfs => Some(tap.toString -> tap.getSize(conf))
+      case tap: Hfs => Some(tap.toString -> GlobHfs.getSize(tap.getPath, conf))
+      case tap =>
+        LOG.warn("InputSizeReducerEstimator unable to calculate size: " + tap)
+        None
     }
   }
 
@@ -253,6 +247,7 @@ final case class FlowStepHistory(keys: FlowStepKeys,
   failedReduces: Long,
   mapFileBytesRead: Long,
   mapFileBytesWritten: Long,
+  mapOutputBytes: Long,
   reduceFileBytesRead: Long,
   hdfsBytesRead: Long,
   hdfsBytesWritten: Long,

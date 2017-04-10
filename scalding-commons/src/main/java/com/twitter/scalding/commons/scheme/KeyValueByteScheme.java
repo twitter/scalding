@@ -11,15 +11,16 @@ import org.apache.hadoop.mapred.RecordReader;
 import cascading.flow.FlowProcess;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
-import cascading.scheme.hadoop.WritableSequenceFile;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.twitter.elephantbird.cascading2.scheme.CombinedWritableSequenceFile;
+
 /**
  *
  */
-public class KeyValueByteScheme extends WritableSequenceFile {
+public class KeyValueByteScheme extends CombinedWritableSequenceFile {
   public KeyValueByteScheme(Fields fields) {
     super(fields, BytesWritable.class, BytesWritable.class);
   }

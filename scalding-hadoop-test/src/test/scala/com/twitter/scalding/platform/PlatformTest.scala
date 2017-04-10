@@ -110,8 +110,8 @@ object MultipleGroupByJobData {
 class MultipleGroupByJob(args: Args) extends Job(args) {
   import com.twitter.scalding.serialization._
   import MultipleGroupByJobData._
-  implicit val stringOrdSer = new StringOrderedSerialization()
-  implicit val stringTup2OrdSer = new OrderedSerialization2(stringOrdSer, stringOrdSer)
+  implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization()
+  implicit val stringTup2OrdSer: OrderedSerialization[(String, String)] = new OrderedSerialization2(stringOrdSer, stringOrdSer)
   val otherStream = TypedPipe.from(data).map{ k => (k, k) }.group
 
   TypedPipe.from(data)
@@ -284,7 +284,7 @@ class GroupedLimitJobWithSteps(args: Args) extends Job(args) {
 }
 
 object OrderedSerializationTest {
-  implicit val genASGK = Arbitrary {
+  implicit val genASGK: Arbitrary[NestedCaseClass] = Arbitrary {
     for {
       ts <- Arbitrary.arbitrary[Long]
       b <- Gen.nonEmptyListOf(Gen.alphaNumChar).map (_.mkString)
@@ -297,8 +297,13 @@ object OrderedSerializationTest {
 
 case class NestedCaseClass(day: RichDate, key: (String, String))
 
-class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+// Need to define this in a separate companion object to work around Scala 2.12 compile issues
+object OrderedSerializationImplicitDefs {
   implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+}
+
+class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> 1L).group.sorted.mapValueStream(_.map(_ * 2)).toTypedPipe.group
 
@@ -316,7 +321,7 @@ class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
 }
 
 class ComplexJob2(input: List[NestedCaseClass], args: Args) extends Job(args) {
-  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> (1L, "asfg"))
 
@@ -516,12 +521,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(16, 18, 19, 22, 23).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:$i"
-          }
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
