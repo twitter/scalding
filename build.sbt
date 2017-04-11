@@ -102,6 +102,11 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       "-language:existentials"
     ),
 
+  scalacOptions in(Compile, doc) ++= Seq(scalaVersion.value).flatMap {
+    case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
+    case _ => Seq()
+  },
+
   /**
    * add linter for common scala issues:
    * https://github.com/HairyFotr/linter
