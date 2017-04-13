@@ -1,5 +1,7 @@
 # A Random Walk Down Executions or: You Could Have Invented Executions or: Learn You An Execution For Greater Good
 
+The following is a guide to understanding Scalding's [com.twitter.scalding.Execution](https://github.com/twitter/scalding/blob/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala)` type.
+
 ## What is a Scalding Execution?
 
 A Scalding job (lowercase 'j') is the distributed completion of a DAG of Hadoop jobs that read, transform, and write data, usually to the Hadoop Distributed File System. A Scalding `Execution` is conceptually a plan to run zero or more Scalding jobs. The Scalding library has another paradigm, the Scalding `Job` class, that enables users to plan a single Scalding job in the constructor of a class. `Execution` is a newer, more composable, and more functional approach to running Scalding jobs.
@@ -12,23 +14,26 @@ Scalding `Execution`, on the other hand, is inspired by functional programming a
 
 * Calling out to a service asynchronously to read or write some state before or after a Scalding job runs
 * Running multiple Scalding jobs or not running any Scalding jobs at all
-* Unit testing
 * Using the output of one Scalding job to decide how to plan future jobs
+* Running one Scalding job repeatedly until some condition is met, such as for Machine Learning applications
+* Unit testing
 
 These situations come up frequently when integrating Scalding jobs into an analytics workflow.
 
-We may want to avoid using Scalding `Execution` because it is more challenging to understand for newcomers to applied category theory (e.g. functors, applicative functors, and monads). This tutorial does not assume any knowledge of these concepts, but familiarity with them will make these explanations much easier to understand. In this respect, Scalding `Job` is simpler because it requires understanding less paradigms.
+## Reasoning about how Executions work
 
-## Reasoning about how executions work
+A good starting model for thinking about Scalding `Execution` is scala's asynchronous primitive `Future`, which is a container for some value that will either be available in the future or throw an `Exception`. A Scalding `Execution` is similar in that it computes a value in a analytics-focused environment or throws an `Exception`. Like `Future`, `Execution`s can also can be chained together for great effect (as we'll examine later); however, a fundamental difference is that a `Future` represents a computation that has already been scheduled, whereas an `Execution` is a plan to run some computation. For now, we will use a simplified version of `Execution` to understand it.
 
-At its heart, a Scalding `Execution` wraps a function that takes in a Scalding `Config` and a Scalding `Mode` and does *something*. A `Config` contains configuration properties for the running of a Scalding job (although we can access the `Config` properties when creating a Scalding `Execution`, so theoretically they can be used for anything). The `Mode` tells the Scalding job what environment (in-memory, in a local Hadoop cluster, in a remote Hadoop cluster) to run under. The Scalding `Mode` also contains an `Args` object, which represent Scalding-specific arguments passed on the command line.
+At its heart, a Scalding `Execution` wraps a function that takes in a Scalding `Config` and a Scalding `Mode` and does *something*. A `Config` contains configuration properties for the running of a Scalding job. The `Mode` tells the Scalding job what environment (in-memory, in a local Hadoop cluster, in a remote Hadoop cluster) to run under. The Scalding `Mode` also contains an `Args` object, which represent Scalding-specific arguments passed on the command line.
 
-For now, let's define a simplified `Execution` like so:
+Here's our simplified `Execution`:
 
 ```scala
+import com.twitter.scalding.{Config, Mode}
+
 case class Execution[T](private doSomething: (Config, Mode) => T) {
   final def run(config: Config, mode: Mode): T = {
-    doSomething(config, mode)
+    this.doSomething(config, mode)
   }
 }
 
@@ -52,8 +57,11 @@ So, the function `doSomething` above takes in a `Config` and `Mode` and gives us
 There's also a companion object `Execution` that enables us get the `Config` or `Mode`. A use of `Execution` might look like:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
+import com.twitter.scalding.Local
+
+val config: Config = Config.default
+val mode: Mode = Local(true)
+
 Execution.getConfig.run(config, mode)
 ```
 
@@ -67,7 +75,7 @@ Just like scala's `Seq`, `Option`, `Future`, etc., `Execution` can be *mapped ov
 case class Execution[T](private doSomething: (Config, Mode) => T) {
   final def map[U](transform: T => U): Execution[U] = {
     def newDoSomething(config: Config, mode: Mode): U = {
-      val result = doSomething(config, mode))
+      val result = this.doSomething(config, mode))
       transform(result)
     }
 
@@ -81,10 +89,7 @@ case class Execution[T](private doSomething: (Config, Mode) => T) {
 This is pretty powerful. `Execution` can now be used to access anything in the `Config` or `Mode`, or even do arbitrary work:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
-
-val config: ConfigFunProperty = Execution
+val funProperty: String = Execution
   .getConfig
   .map { config => config.get("fun") }
   .run(config, mode)
@@ -96,11 +101,11 @@ val fivePlusThree = Execution
 
 ### From
 
-*Lifting* arbitrary code into `Execution` is used so frequent that we're going to add a helper method, `from`, for it:
+We take an arbitrary scala expression and wrapping it in `Execution` so frequently that we're going to add a helper method, `from`, for it:
 
-```
+```scala
 object Execution {
-  final def from[T](value: => T): Execution[U] = {
+  final def from[T](value: => T): Execution[T] = {
     def newDoSomething(config: Config, mode: Mode) = value
     Execution(newDoSomething)
   }
@@ -114,9 +119,9 @@ Why is it `value: => T` and not `value: T`? This scala syntax here `=>` is "call
 At this point, we can write an `Execution` that reads from a service and uses its result to do something:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
-val service: String => String = // ...
+val config: Config = ???
+val mode: Mode = ???
+val service: String => String = ???
 
 val callOutToService = Execution.from {
   service("eat galaxies")
@@ -134,12 +139,12 @@ reversedServiceResult.run(config, mode)
 Writing a single Scalding job with `TypedPipe` and `Grouped` will not be covered in this tutorial; however, in order to run Scalding jobs with `Execution`, we need to be familiar with with 2 methods on `TypedPipe`: `writeExecution` and `toIterableExecution`:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
+val config: Config = ???
+val mode: Mode = ???
 
-val source: TypedSource[Int] = // ...
-val transform: Int => String = // ...
-val sink: TypedSink[String] = // ...
+val source: TypedSource[Int] = ???
+val transform: Int => String = ???
+val sink: TypedSink[String] = ???
 
 val scaldingJob: Execution[Unit] = TypedPipe
   .from(source)
@@ -164,17 +169,17 @@ The `TypedPipe` method `toIterableExecution` creates an `Execution` plan to expo
 
 ### Flatmap
 
-So far, we've seen how to examine the `Config`, `Mode`, lift a value into the Execution environment, and run a Scalding job. We've alluded to the idea that we can use the output of one `Execution` to plan another, but haven't talked about how to do that. One may be familiar with the method `flatMap` on various collections in scala, just like `map`. `flatMap` acts differently depending on the type of collection:
+So far, we've seen how to examine the `Config`, `Mode`, lift an arbitrary value into an `Execution` object, and run a Scalding job. We've alluded to the idea that we can use the output of one `Execution` to plan another, but haven't talked about how to do that. One may be familiar with the method `flatMap` on various types in scala, just like `map`. `flatMap` behaves differently depending on the type.
+
+For example, an `Option` contains either one value (`Some`) or no (`None`) values. When we `flatMap` on an `Option`, if there's a value in the `Option` (`Some`), the function we pass to `flatMap` examines the value inside the `Option` to produce a new `Option`:
 
 ```scala
-val toThree        = Seq.range(0, 3)                    // Seq(0, 1, 2)
-val toThreeDoubled = toThree.flatMap { n => Seq(n, n) } // Seq(0, 0, 1, 1, 2, 2)
-
-val maybeToThree   = Some(zeroToThree)                  // Some(Seq(0, 1, 2))
-val maybeZero      = maybeToThree.flatMap(_.headOption) // Some(0)
+def isEven(i: Int) = i % 2 == 0
+val maybePrimes = Some(Seq(2, 3, 5))                     // Some(Seq(2, 3, 5))
+val maybeFirstEven = maybePrimes.flatMap(_.find(isEven)) // Some(2)
 ```
 
-In the case of `Execution`, the `flatMap` method enables us to use the result of one `Execution` to plan another:
+`Execution`s focus on planning analytical work (like Scalding jobs), so `Execution`'s `flatMap` method behaves analogously to `Option`'s and enables us to use the result of one `Execution` to plan another:
 
 ```scala
 case class Execution[T](private doSomething: (Config, Mode) => T) {
@@ -182,7 +187,7 @@ case class Execution[T](private doSomething: (Config, Mode) => T) {
   def flatMap[U](planNextExecution: T => Execution[U]) = {
 
     def newDoSomething(config: Config, mode: Mode): U = {
-      val firstResult = doSomething(config, mode)
+      val firstResult = this.doSomething(config, mode)
       val nextExecution = planNextExecution(firstResult)
       nextExecution.run(config, mode)
     }
@@ -199,9 +204,9 @@ Again, remember the `Execution` is just a plan until we call the `run` method wi
 At this point, we have most of the methods necessary to do some pretty useful work:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
-val loggingService: String => Unit = // ...
+val config: Config = ???
+val mode: Mode = ???
+val loggingService: String => Unit = ???
 
 val announceStart = Execution.from(loggingService("Starting job"))
 val announceStop = Execution.from(loggingService("Stopping job"))
@@ -220,7 +225,22 @@ val scaldingJobWithAnnouncements =
 scaldingJobWithAnnouncements.run(config, mode)
 ```
 
-As always, remember that we are creating a plan to run a Scalding job (and logging service announcements). not actually running this code. Until we've called `Execution`'s `run` method, no work has been done (besides instantiating the loggingService. Also note that while code run in the `TypedPipe` methods `map`, `filter`, etc. may happen in a different run environment according on the `Mode` (e.g. remote Hadoop cluster), everything else is happening locally such as the calls to the `loggingService`.
+As always, remember that we are creating a plan to run a Scalding job (and logging service announcements). not actually running this code. Until we've called `Execution`'s `run` method, no work has been done (besides instantiating the loggingService).
+
+While the code we run in the `TypedPipe` methods `map`, `filter`, etc. may happen in a different run environment according on the `Mode` (e.g. remote Hadoop cluster), everything else is happening locally such as the calls to the `loggingService`.
+
+Also note that we have to call `flatMap` twice here. If we had written
+
+```scala
+val scaldingJobWithAnnouncements =
+  announceStart.flatMap {
+    scaldingJob
+    announceStop
+  }
+}
+```
+
+the `scaldingJob` `Execution` would be "orphaned" and never run. We would be constructing a plan to run `scaldingJob`, but then throwing it away and making `announceStop` follow after `announceStart` because it is the value that is returned.
 
 ## The Real Execution
 
@@ -239,11 +259,11 @@ Execution.fromFuture { implicit executor: ExecutionContext =>
 Additionally, the `run` method from our simplified `Execution` above, in the real `Execution`, takes in a scala `ExecutionContext` and yields a `Future`, so we can actually run `Execution` alongside other asynchronous scala code:
 
 ```scala
-val config: Config = // ...
-val mode: Mode = // ...
+val config: Config = ???
+val mode: Mode = ???
 
-val scaldingJob: Execution[Unit] = // ...
-implicit val executor: ExecutionContext = // ...
+val scaldingJob: Execution[Unit] = ???
+implicit val executor: ExecutionContext = ???
 
 Future { /* ... asynchronous task ... */ }
   .flatMap{ _ => scaldingJob.run(config, mode)(executor) }
@@ -286,8 +306,8 @@ object MyExecutionApp extends ExecutionApp {
 
 object MyExecution {
   def fromDateRange(dateRange: DateRange): Execution[Unit] = {
-    val source: DateRange => TypedSource[T] = // ...
-    val sink: DateRange => TypedSink[T] = // ...
+    val source: DateRange => TypedSource[T] = ???
+    val sink: DateRange => TypedSink[T] = ???
 
     TypedPipe
       .from(source(dateRange))
@@ -305,7 +325,7 @@ Much like scala's `Try` and `Future` types, `Execution`s can either succeed with
 def withRetries(retries: Int)(execution: Execution[Unit]): Execution[Unit] = {
   execution.recoverWith {
     case t: Throwable if retries > 0 =>
-      logger.waring(t, s"Failed to run execution. Retrying $retries more time(s).")
+      logger.warning(t, s"Failed to run execution. Retrying $retries more time(s).")
       withRetries(retries - 1)(Execution.withNewCache(execution))
   }
 }
@@ -322,8 +342,8 @@ When running an `Execution`, it keeps a cache of the previously computed `Execut
 To run multiple `Execution`s at the same time, there is a method `zip` defined both on the `Execution` type and companion object. The `zip` method will run multiple `Execution`s concurrently and yield their results once all the `Execution`s have finished as a tuple:
 
 ```scala
-val sumExec: Execution[Double] = // ...
-val countExec: Execution[Long] = // ...
+val sumExec: Execution[Double] = ???
+val countExec: Execution[Long] = ???
 
 val averageExec: Execution[Double] = Execution
   .zip(sumExec, countExec)
@@ -333,7 +353,7 @@ val averageExec: Execution[Double] = Execution
 There's a convenience method on the `Execution` companion object called `sequence` that will run a `Seq[Execution]` in parallel and expose the results as a `Seq`. Additionally, the method `withParallelism` enables running only a specific number of a `Seq[Execution]` at once:
 
 ```scala
-val count: Int => Execution[Int] = // ...
+val count: Int => Execution[Int] = ???
 
 val counts: Seq[Execution[Int]] = Seq.fill(10)(count)
 
@@ -351,7 +371,7 @@ Execution
 In each example above, the `Config` object never changes. Sometimes, we desire to set a `Config` property for only one `Execution`, but not the others. `Execution.withConfig` applies a transformation to the `Config` object, localized to one `Execution`:
 
 ```scala
-val execution: Execution[Unit] = // ...
+val execution: Execution[Unit] = ???
 
 Execution.withConfig(execution){ config =>
   config + ("mapred.min.split.size", "67108864")
