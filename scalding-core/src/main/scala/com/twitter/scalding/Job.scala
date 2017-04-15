@@ -15,14 +15,18 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.hadoop.MapReduceFlow
 import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.Semigroup
 import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
 import cascading.property.AppProps
 import cascading.stats.CascadingStats
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
+import org.apache.hadoop.mapred.{FileOutputFormat, FileInputFormat, JobConf}
 
 import scala.concurrent.{ Future, Promise }
 import scala.util.Try
@@ -542,4 +546,69 @@ private[scalding] case class FlowStepStrategies[A]() extends Semigroup[FlowStepS
         r.apply(flow, predecessorSteps, flowStep)
       }
     }
+}
+
+/*                                                                             
+ * Run a pre-existing MapReduce job with Scalding.
+ * Note that it is up to the user to properly configure the job.                                      
+ */
+class MapReduceJob(args: Args) extends Job(args) {
+  val conf: Configuration = mode match {
+    case h: HadoopMode => h.jobConf
+    case _ => new Configuration
+  }
+  protected val job = new JobConf(conf, classOf[MapReduceJob])
+
+  def setupMapReduce: Flow[_] = {
+    val input = args.getOrElse("mapreducejob.input", "")
+    val output = args.getOrElse("mapreducejob.output", "")
+    FileInputFormat.addInputPath(job, new Path(input))
+    FileOutputFormat.setOutputPath(job, new Path(output))
+    processJobSpecifics
+    new MapReduceFlow(job)
+  }
+
+  def processJobSpecifics(): Unit = {
+    /* Set up map output K/V class and output K/V class here...
+       *
+       * job.setMapOutputKeyClass(classOf[Text])
+       * job.setMapOutputValueClass(classOf[LongWritable])
+       *
+       * job.setOutputKeyClass(classOf[Text])
+       * job.setOutputValueClass(classOf[Text])
+       *
+       * Set up mapper/reducer class here...
+       *
+       * job.setMapperClass(classOf[Mapper])
+       * job.setReducerClass(classOf[Reducer])
+       */
+  }
+
+  def buildFlowMapReduce(flow: Flow[_]): Flow[_] = {
+    listeners.foreach { flow.addListener(_) }
+    stepListeners.foreach { flow.addStepListener(_) }
+    skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+    stepStrategy.foreach { strategy =>
+      val existing = flow.getFlowStepStrategy
+      val composed =
+        if (existing == null)
+          strategy
+        else
+          FlowStepStrategies[Any].plus(
+            existing.asInstanceOf[FlowStepStrategy[Any]],
+            strategy.asInstanceOf[FlowStepStrategy[Any]])
+      flow.setFlowStepStrategy(composed)
+    }
+    flow
+  }
+
+  override def run: Boolean = {
+    val flow = buildFlowMapReduce(setupMapReduce)
+    flow.complete
+    flow.getFlowStats.isSuccessful
+    val statsData = flow.getFlowStats
+    handleStats(statsData)
+    completedFlow = Some(flow)
+    statsData.isSuccessful
+  }
 }
