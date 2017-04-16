@@ -521,7 +521,7 @@ sealed trait TypedPipe[+T] extends Serializable {
       tmpDir + "/scalding/snapshot-" + uuid + ".seq"
     }
 
-    def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
+    def hadoopTypedSource(conf: Config): Mappable[T] with TypedSink[T] = {
       // come up with unique temporary filename, use the config here
       // TODO: refactor into TemporarySequenceFile class
       val tmpSeq = temporaryPath(conf, cachedRandomUUID)
@@ -566,8 +566,18 @@ sealed trait TypedPipe[+T] extends Serializable {
    * the Iterable forces a read of the entire thing. If you need it to
    * be lazy, call .iterator and use the Iterator inside instead.
    */
-  def toIterableExecution: Execution[Iterable[T]] =
-    forceToDiskExecution.flatMap(_.toIterableExecution)
+  def toIterableExecution: Execution[Iterable[T]] = this match {
+    case TypedPipe.IterablePipe(iter) => Execution.from(iter)
+    case TypedPipe.SourcePipe(src: Mappable[T]) =>
+      Execution.getConfigMode.map { case (conf, mode) =>
+        new Iterable[T] {
+          def iterator = src.toIterator(conf, mode)
+        }
+      }
+    case other =>
+      // after we force, we have a source pipe or an Iterable Pipe
+      forceToDiskExecution.flatMap(_.toIterableExecution)
+  }
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
