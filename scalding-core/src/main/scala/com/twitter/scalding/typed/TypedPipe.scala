@@ -57,7 +57,7 @@ object TypedPipe extends Serializable {
    * Create a TypedPipe from an Iterable in memory.
    */
   def from[T](iter: Iterable[T]): TypedPipe[T] =
-    IterablePipe[T](iter)
+    if (iter.isEmpty) empty else IterablePipe[T](iter)
 
   /**
    * Input must be a Pipe with exactly one Field
@@ -567,6 +567,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * be lazy, call .iterator and use the Iterator inside instead.
    */
   def toIterableExecution: Execution[Iterable[T]] = this match {
+    case TypedPipe.EmptyTypedPipe => Execution.from(Nil)
     case TypedPipe.IterablePipe(iter) => Execution.from(iter)
     case TypedPipe.SourcePipe(src: Mappable[T]) =>
       Execution.getConfigMode.map { case (conf, mode) =>

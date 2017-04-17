@@ -57,14 +57,11 @@ class ReplTest extends WordSpec {
         // shallow verification that the snapshot was created correctly without
         // actually running a new flow to check the contents (just check that
         // it's a TypedPipe from a MemorySink or SequenceFile)
-        assert(s.toString.contains("IterablePipe") || s.toString.contains("TypedPipeFactory"))
-
-        val pipeName = mode match {
-          case m: HadoopMode => m.jobConf.get("hadoop.tmp.dir")
-          case _ => "IterableSource"
+        s match {
+          case TypedPipe.IterablePipe(_) => succeed
+          case TypedPipe.SourcePipe(s) => assert(s.toString.contains("SequenceFile"))
+          case _ => fail(s"expected an IterablePipe or source from a SequenceFile, found: $s")
         }
-        assert(s.toPipe(Fields.ALL).toString.contains(pipeName))
-
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
