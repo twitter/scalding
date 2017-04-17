@@ -10,23 +10,9 @@ import scala.reflect.macros.whitebox.Context
  *
  * This function makes the ordering stable using a list ordered by the
  * full name of the types.
- *
- * Note: because of an implementation detail, immutable Scala sets
- * preserve the insertion ordering for up to four elements (see `Set1`,
- * `Set2`, etc). This method maintains the same behavior for backward
- * compatibility.
  */
 object StableKnownDirectSubclasses {
 
-  def apply(c: Context)(tpe: c.Type): List[c.universe.TypeSymbol] = {
-    import c.universe._
-
-    def sort(types: List[TypeSymbol]) =
-      if (types.size <= 4)
-        types
-      else
-        types.sortBy(_.fullName)
-
-    sort(tpe.typeSymbol.asClass.knownDirectSubclasses.map(_.asType).toList)
-  }
+  def apply(c: Context)(tpe: c.Type): List[c.universe.TypeSymbol] = 
+    tpe.typeSymbol.asClass.knownDirectSubclasses.map(_.asType).toList.sortBy(_.fullName)
 }
