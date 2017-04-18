@@ -16,17 +16,17 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
 import cascading.flow.planner.BaseFlowStep
+import cascading.flow.{ Flow, FlowDef, FlowStepStrategy }
 import cascading.pipe.Pipe
-import com.twitter.scalding.memory_estimation.MemoryEstimatorStepStrategy
+import com.twitter.scalding.estimation.memory.MemoryEstimatorStepStrategy
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
-import org.slf4j.{ Logger, LoggerFactory }
 
 /*
  * This has all the state needed to build a single flow
