@@ -374,7 +374,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * topClicks will be a List[(Long,Long)]
    */
   def sortWithTake[T: TupleConverter](f: (Fields, Fields), k: Int)(lt: (T, T) => Boolean): Self = {
-    val ord = Ordering.fromLessThan(lt);
+    val ord = Ordering.fromLessThan(lt)
     sortedTake(f, k)(implicitly[TupleConverter[T]], ord)
   }
 
