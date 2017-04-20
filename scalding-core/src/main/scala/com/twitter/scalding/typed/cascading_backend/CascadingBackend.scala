@@ -98,7 +98,7 @@ object CascadingBackend {
           case FilterKeys(IterablePipe(iter), fn) =>
             loop[(K, V)](IterablePipe(iter.filter { case (k, v) => fn(k) }), rest, descriptions)
           case _ =>
-            loop[(K, V)](node.input, rest.compose(FlatMapping.filterKeys(node.fn)), descriptions)
+            loop[(K, V)](node.input, rest.runAfter(FlatMapping.filterKeys(node.fn)), descriptions)
         }
         go(fk)
 
@@ -107,13 +107,13 @@ object CascadingBackend {
         def go[T1 <: T](f: Filter[T1]) = f match {
           case Filter(IterablePipe(iter), fn) => loop(IterablePipe(iter.filter(fn)), rest, descriptions)
           case _ =>
-            loop[T1](f.input, rest.compose(FlatMapping.filter(f.fn)), descriptions)
+            loop[T1](f.input, rest.runAfter(FlatMapping.filter(f.fn)), descriptions)
         }
         go(f)
 
       case f@FlatMapValues(_, _) =>
         def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe =
-          loop(node.input, rest.compose(
+          loop(node.input, rest.runAfter(
             FlatMapping.FlatM[(K, V), (K, U)] { case (k, v) =>
               node.fn(v).map((k, _))
             }), descriptions)
@@ -121,7 +121,7 @@ object CascadingBackend {
         go(f)
 
       case FlatMapped(prev, fn) =>
-        loop(prev, rest.compose(FlatMapping.FlatM(fn)), descriptions)
+        loop(prev, rest.runAfter(FlatMapping.FlatM(fn)), descriptions)
 
       case ForceToDisk(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
       case ForceToDisk(i@IterablePipe(iter)) => loop(i, rest, descriptions)
@@ -138,12 +138,12 @@ object CascadingBackend {
 
       case f@MapValues(_, _) =>
         def go[K, V, U](node: MapValues[K, V, U]): Pipe =
-          loop(node.input, rest.compose(
+          loop(node.input, rest.runAfter(
             FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, node.fn(v)) }), descriptions)
 
         go(f)
 
-      case Mapped(input, fn) => loop(input, rest.compose(FlatMapping.Map(fn)), descriptions)
+      case Mapped(input, fn) => loop(input, rest.runAfter(FlatMapping.Map(fn)), descriptions)
 
       case MergedTypedPipe(left, right) =>
         @annotation.tailrec

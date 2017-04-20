@@ -47,7 +47,7 @@ object FlatMapping {
 sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
   import FlatMappedFn._
 
-  final def compose[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
+  final def runAfter[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
     case Single(FlatMapping.Identity(_)) => Single(fn.asInstanceOf[FlatMapping[Z, B]]) // since we have A =:= B, we know this cast is safe
     case notId => fn match {
       case FlatMapping.Identity(ev) => this.asInstanceOf[FlatMappedFn[Z, B]] // we have Z =:= A we know this cast is safe
@@ -55,29 +55,38 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
     }
   }
 
-  final def apply(a: A): TraversableOnce[B] = {
+  /**
+   * We interpret this composition once to minimize pattern matching when we execute
+   */
+  private[this] val toFn: A => TraversableOnce[B] = {
     import FlatMapping._
 
-    @annotation.tailrec
-    def loop(t: Any, fn: FlatMappedFn[Any, B]): TraversableOnce[B] = fn match {
-      case Single(Identity(ev)) => Iterator.single(ev(t))
-      case Single(Filter(f, ev)) => if (f(t)) Iterator.single(ev(t)) else Iterator.empty
-      case Single(Map(f)) => Iterator.single(f(t))
-      case Single(FlatM(f)) => f(t)
-      case Series(Identity(ev), rest) => loop(ev(t), rest)
-      case Series(Filter(f, ev), rest) => if (f(t)) loop(ev(t), rest) else Iterator.empty
-      case Series(Map(f), rest) => loop(f(t), rest)
-      case Series(FlatM(f), rest) => f(t).flatMap(cheat(_, rest))
+    def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
+      case Single(Identity(ev)) =>
+        { (t: A1) => Iterator.single(t.asInstanceOf[B1]) } // A1 =:= B1
+      case Single(Filter(f, ev)) =>
+        { (t: A1) => if (f(t)) Iterator.single(t.asInstanceOf[B1]) else Iterator.empty } // A1 =:= B1
+      case Single(Map(f)) => f.andThen(Iterator.single)
+      case Single(FlatM(f)) => f
+      case Series(Identity(ev), rest) => loop(rest).asInstanceOf[A1 => TraversableOnce[B1]] // we know that A1 =:= C
+      case Series(Filter(f, ev), rest) =>
+        val next = loop(rest).asInstanceOf[A1 => TraversableOnce[B1]] // A1 =:= C
+
+        { (t: A1) => if (f(t)) next(t) else Iterator.empty }
+      case Series(Map(f), rest) =>
+        val next = loop(rest)
+        f.andThen(next)
+      case Series(FlatM(f), rest) =>
+        val next = loop(rest)
+        f.andThen(_.flatMap(next))
     }
 
-    // here to cheat on tailrec
-    def cheat(a: Any, f: FlatMappedFn[Any, B]): TraversableOnce[B] =
-      loop(a, f)
-
-    // the cast is so we can get a tailrec loop (which can't deal with changing types
-    loop(a, this.asInstanceOf[FlatMappedFn[Any, B]])
+    loop(this)
   }
+
+  def apply(a: A): TraversableOnce[B] = toFn(a)
 }
+
 object FlatMappedFn {
   import FlatMapping._
 
