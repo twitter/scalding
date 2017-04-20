@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingWithHitsCache, AdaptiveCache }
+  import com.twitter.algebird.{ Semigroup, SummingWithHitsCache, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -653,7 +653,7 @@ package com.twitter.scalding {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[Poisson]): Unit = {
       super.prepare(flowProcess, operationCall)
       val p = new Poisson(frac, seed)
-      operationCall.setContext(p);
+      operationCall.setContext(p)
     }
 
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Poisson]): Unit = {

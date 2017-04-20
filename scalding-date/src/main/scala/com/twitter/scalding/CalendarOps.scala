@@ -34,10 +34,10 @@ object CalendarOps {
   }
 
   def truncate(date: Date, field: Int): Date = {
-    val cal = Calendar.getInstance();
-    cal.setTime(date);
+    val cal = Calendar.getInstance()
+    cal.setTime(date)
 
-    truncate(cal, field).getTime();
+    truncate(cal, field).getTime()
   }
 
 }
