@@ -44,7 +44,7 @@ object TypedPipe extends Serializable {
    */
   def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[T]): TypedPipe[T] = {
     val localFlow = flowDef.onlyUpstreamFrom(pipe)
-    CascadingPipe[T](pipe, fields, localFlow, mode, conv)
+    CascadingPipe[T](pipe, fields, localFlow, mode, conv).withLine
   }
 
   /**
@@ -147,7 +147,7 @@ object TypedPipe extends Serializable {
    case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
    case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
    case class TrappedPipe[T, U >: T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[U]) extends TypedPipe[U]
-   case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String) extends TypedPipe[T]
+   case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
    case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
    case object EmptyTypedPipe extends TypedPipe[Nothing]
    case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)],
@@ -171,13 +171,19 @@ object TypedPipe extends Serializable {
  */
 sealed trait TypedPipe[+T] extends Serializable {
 
+  protected def withLine: TypedPipe[T] =
+    LineNumber.tryNonScaldingCaller.map(_.toString) match {
+      case None => this
+      case Some(desc) => TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
+    }
+
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
    * {code for { l <- list1; l2 <- list2 } yield (l, l2) }
    */
   def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
-    TypedPipe.CrossPipe(this, tiny)
+    TypedPipe.CrossPipe(this, tiny).withLine
 
   /**
    * This is the fundamental mapper operation.
@@ -193,7 +199,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * or even a combination of all of the above at once.
    */
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    TypedPipe.FlatMapped(this, f)
+    TypedPipe.FlatMapped(this, f).withLine
 
   /**
    * Export back to a raw cascading Pipe. useful for interop with the scalding
@@ -203,7 +209,7 @@ sealed trait TypedPipe[+T] extends Serializable {
   final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
     // we have to be cafeful to pass the setter we want since a low priority implicit can always be
     // found :(
-    CascadingBackend.toPipe[U](this, fieldNames)(flowDef, mode, setter)
+    cascading_backend.CascadingBackend.toPipe[U](withLine, fieldNames)(flowDef, mode, setter)
 
   /**
    * Merge two TypedPipes (no order is guaranteed)
@@ -211,7 +217,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * performed.
    */
   def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] =
-    TypedPipe.MergedTypedPipe(this, other)
+    TypedPipe.MergedTypedPipe(this, other).withLine
 
   /**
    * Aggregate all items in this pipe into a single ValuePipe
@@ -251,15 +257,15 @@ sealed trait TypedPipe[+T] extends Serializable {
    * Attach a ValuePipe to each element this TypedPipe
    */
   def cross[V](p: ValuePipe[V]): TypedPipe[(T, V)] =
-    TypedPipe.CrossValue(this, p)
+    TypedPipe.CrossValue(this, p).withLine
 
   /** prints the current pipe to stdout */
   def debug: TypedPipe[T] =
-    TypedPipe.DebugPipe(this)
+    TypedPipe.DebugPipe(this).withLine
 
   /** adds a description to the pipe */
   def withDescription(description: String): TypedPipe[T] =
-    TypedPipe.WithDescriptionTypedPipe[T](this, description)
+    TypedPipe.WithDescriptionTypedPipe[T](this, description, false)
 
   /**
    * Returns the set of distinct elements in the TypedPipe
@@ -321,7 +327,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    *
    * Ideally the planner would see this
    */
-  def fork: TypedPipe[T] = TypedPipe.Fork(this)
+  def fork: TypedPipe[T] = TypedPipe.Fork(this).withLine
 
   /**
    * limit the output to at most count items, if at least count items exist.
@@ -331,21 +337,21 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   /** Transform each element via the function f */
   def map[U](f: T => U): TypedPipe[U] =
-    TypedPipe.Mapped(this, f)
+    TypedPipe.Mapped(this, f).withLine
 
   /** Transform only the values (sometimes requires giving the types due to scala type inference) */
   def mapValues[K, V, U](f: V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
-    TypedPipe.MapValues(raiseTo[(K, V)], f)
+    TypedPipe.MapValues(raiseTo[(K, V)], f).withLine
 
   /** Similar to mapValues, but allows to return a collection of outputs for each input value */
   def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
-    TypedPipe.FlatMapValues(raiseTo[(K, V)], f)
+    TypedPipe.FlatMapValues(raiseTo[(K, V)], f).withLine
 
   /**
    * Keep only items that satisfy this predicate
    */
   def filter(f: T => Boolean): TypedPipe[T] =
-    TypedPipe.Filter(this, f)
+    TypedPipe.Filter(this, f).withLine
 
   // This is just to appease for comprehension
   def withFilter(f: T => Boolean): TypedPipe[T] = filter(f)
@@ -357,7 +363,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * This is here to match the function in KeyedListLike, where it is optimized
    */
   def filterKeys[K, V](fn: K => Boolean)(implicit ev: T <:< (K, V)): TypedPipe[(K, V)] =
-    TypedPipe.FilterKeys(raiseTo[(K, V)], fn)
+    TypedPipe.FilterKeys(raiseTo[(K, V)], fn).withLine
 
   /**
    * Keep only items that don't satisfy the predicate.
@@ -384,7 +390,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * slower performance.
    */
   def forceToDisk: TypedPipe[T] =
-    TypedPipe.ForceToDisk(this)
+    TypedPipe.ForceToDisk(this).withLine
 
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
@@ -396,7 +402,7 @@ sealed trait TypedPipe[+T] extends Serializable {
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(raiseTo[(K, V)]).withDescription(LineNumber.tryNonScaldingCaller.map(_.toString))
+    Grouped(raiseTo[(K, V)].withLine)
 
   /** Send all items to a single reducer */
   def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
@@ -468,7 +474,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * such as is often done in a data cube.
    */
   def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
-    TypedPipe.SumByLocalKeys(raiseTo[(K, V)], sg)
+    TypedPipe.SumByLocalKeys(raiseTo[(K, V)], sg).withLine
 
   /**
    * Used to force a shuffle into a given size of nodes.
@@ -594,7 +600,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * has completed.
    */
   def onComplete(fn: () => Unit): TypedPipe[T] =
-    TypedPipe.WithOnComplete[T](this, fn)
+    TypedPipe.WithOnComplete[T](this, fn).withLine
 
   /**
    * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
@@ -718,7 +724,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * if there are no values for this key K.
    */
   def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
-    TypedPipe.HashCoGroup(ev(this), smaller, joiner)
+    TypedPipe.HashCoGroup(ev(this), smaller, joiner).withLine
 
   /** Do an inner-join without shuffling this TypedPipe, but replicating argument to all tasks */
   def hashJoin[K, V, W](smaller: HashJoinable[K, W])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, (V, W))] =
@@ -763,7 +769,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * If any errors happen below this line, but before a groupBy, write to a TypedSink
    */
   def addTrap[U >: T](trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[U]): TypedPipe[U] =
-    TypedPipe.TrappedPipe[T, U](this, trapSink, conv)
+    TypedPipe.TrappedPipe[T, U](this, trapSink, conv).withLine
 }
 
 /**

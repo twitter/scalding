@@ -42,7 +42,7 @@ object FlatMapping {
 }
 
 /**
- * This is a composition of one or more FlattMappings
+ * This is a composition of one or more FlatMappings
  */
 sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
   import FlatMappedFn._
@@ -51,7 +51,7 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
     case Single(FlatMapping.Identity(_)) => Single(fn.asInstanceOf[FlatMapping[Z, B]]) // since we have A =:= B, we know this cast is safe
     case notId => fn match {
       case FlatMapping.Identity(ev) => this.asInstanceOf[FlatMappedFn[Z, B]] // we have Z =:= A we know this cast is safe
-      case notIdFn => Series(fn, notId)
+      case notIdFn => Series(notIdFn, notId) // only make a Series without either side being identity
     }
   }
 
@@ -83,6 +83,11 @@ object FlatMappedFn {
 
   def asId[A, B](f: FlatMappedFn[A, B]): Option[(_ >: A) =:= (_ <: B)] = f match {
     case Single(i@Identity(_)) => Some(i.ev)
+    case _ => None
+  }
+
+  def asFilter[A, B](f: FlatMappedFn[A, B]): Option[(A => Boolean, (_ >: A) =:= (_ <: B))] = f match {
+    case Single(filter@Filter(_, _)) => Some((filter.fn, filter.ev))
     case _ => None
   }
 

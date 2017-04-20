@@ -45,14 +45,6 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * See hashjoin:
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
-  //def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
-  // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
-  // otherwise, there may be funky issues with cascading
-  // TypedPipeFactory({ (fd, mode) =>
-  //   val newPipe = hashPipe(mapside)(joiner)(fd, mode)
-  //   //Construct the new TypedPipe
-  //   TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
-  // })
 
   private[typed] def hashPipe[V1, R](mapside: TypedPipe[(K, V1)])(
     joiner: (K, V1, Iterable[V]) => Iterator[R])(implicit fd: FlowDef, mode: Mode): Pipe =
@@ -103,8 +95,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
 
   /**
    * Checks the transform to deduce if it is safe to skip the force to disk.
-   * If the FlatMapFunction is a converter / EmptyFn / IdentityFn then we can skip
-   * For FilteredFn we could potentially save substantially so we want to forceToDisk
+   * If the FlatMappedFn is an identity operation then we can skip
    * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
    * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
    */
