@@ -45,20 +45,15 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
    * See hashjoin:
    * http://docs.cascading.org/cascading/2.0/javadoc/cascading/pipe/HashJoin.html
    */
-  def hashCogroupOn[V1, R](mapside: TypedPipe[(K, V1)])(joiner: (K, V1, Iterable[V]) => Iterator[R]): TypedPipe[(K, R)] =
-    // Note, the Ordering must have that compare(x,y)== 0 being consistent with hashCode and .equals to
-    // otherwise, there may be funky issues with cascading
-    TypedPipeFactory({ (fd, mode) =>
-      val newPipe = new HashJoin(
-        RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
-        Field.singleOrdered("key")(keyOrdering),
-        getForceToDiskPipeIfNecessary(fd, mode),
-        Field.singleOrdered("key1")(keyOrdering),
-        WrappedJoiner(new HashJoiner(joinFunction, joiner)))
 
-      //Construct the new TypedPipe
-      TypedPipe.from[(K, R)](newPipe.project('key, 'value), ('key, 'value))(fd, mode, tuple2Converter)
-    })
+  private[typed] def hashPipe[V1, R](mapside: TypedPipe[(K, V1)])(
+    joiner: (K, V1, Iterable[V]) => Iterator[R])(implicit fd: FlowDef, mode: Mode): Pipe =
+    new HashJoin(
+      RichPipe.assignName(mapside.toPipe(('key, 'value))(fd, mode, tup2Setter)),
+      Field.singleOrdered("key")(keyOrdering),
+      getForceToDiskPipeIfNecessary(fd, mode),
+      Field.singleOrdered("key1")(keyOrdering),
+      WrappedJoiner(new HashJoiner(joinFunction, joiner)))
 
   /**
    * Returns a Pipe for the mapped (rhs) pipe with checkpointing (forceToDisk) applied if needed.
@@ -100,8 +95,7 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
 
   /**
    * Checks the transform to deduce if it is safe to skip the force to disk.
-   * If the FlatMapFunction is a converter / EmptyFn / IdentityFn then we can skip
-   * For FilteredFn we could potentially save substantially so we want to forceToDisk
+   * If the FlatMappedFn is an identity operation then we can skip
    * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
    * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
    */
@@ -109,11 +103,11 @@ trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
     eachOperation match {
       case f: FlatMapFunction[_, _] =>
         f.getFunction match {
-          case _: Converter[_] => true
-          case _: FilteredFn[_] => false //we'd like to forceToDisk after a filter
-          case _: MapFn[_, _] => false
-          case _: FlatMappedFn[_, _] => false
-          case _ => false // treat empty fn as a Filter all so forceToDisk
+          case fmp: FlatMappedFn[_, _] if (FlatMappedFn.asId(fmp).isDefined) =>
+            // This is an operation that is doing nothing
+            true
+          case _ =>
+            false
         }
       case _: CleanupIdentityFunction => true
       case _ => false

@@ -18,7 +18,6 @@ package com.twitter.scalding.commons.source
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.scalding.commons.datastores.VersionedStore
-import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
 import org.apache.hadoop.mapred.JobConf
@@ -55,7 +54,7 @@ class ToIteratorJob(args: Args) extends Job(args) {
   val source = VersionedKeyValSource[Int, Int]("input")
 
   val iteratorCopy = source.toIterator.toList
-  val iteratorPipe = IterablePipe(iteratorCopy)
+  val iteratorPipe = TypedPipe.from(iteratorCopy)
 
   val duplicatedPipe = TypedPipe.from(source) ++ iteratorPipe
 

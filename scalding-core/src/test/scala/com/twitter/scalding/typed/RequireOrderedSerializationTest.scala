@@ -55,7 +55,7 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
           .run
           .finish()
       }
-      ex.getMessage should include("SerializationTest.scala:29")
+      ex.getMessage should include("SerializationTest.scala:")
     }
   }
   "A OrderedSerJob" should {

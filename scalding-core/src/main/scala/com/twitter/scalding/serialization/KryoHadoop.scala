@@ -51,6 +51,8 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
     // Don't serialize Boxed instances using Kryo.
     newK.addDefaultSerializer(classOf[com.twitter.scalding.serialization.Boxed[_]], new ThrowingSerializer)
+    newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.TypedPipe[_]], new SerializeAsUnit)
+    newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.ReduceStep[_, _]], new SerializeAsUnit)
     /**
      * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here
