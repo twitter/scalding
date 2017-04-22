@@ -1,7 +1,7 @@
 package com.twitter.scalding.db.macros.impl
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
@@ -50,6 +50,7 @@ object ColumnDefinitionProviderImpl {
         This will mean the macro is operating on a non-resolved type.""")
 
     // Field To JDBCColumn
+    @tailrec
     def matchField(accessorTree: List[MethodSymbol],
       oTpe: Type,
       fieldName: FieldName,
@@ -98,8 +99,8 @@ object ColumnDefinitionProviderImpl {
           case (k, l) =>
             (k, l.map(_._2).reduce(_ ++ _))
         }.filter {
-          case (k, v) =>
-            !v.isEmpty
+          case (_, v) =>
+            v.nonEmpty
         }
 
       outerTpe
