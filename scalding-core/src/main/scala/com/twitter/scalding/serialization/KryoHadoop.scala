@@ -92,9 +92,14 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     /**
      * Register any cascading tokenized classes not already registered
      */
-    val tokenizedClasses = CascadingTokenUpdater.parseTokens(config.get(ScaldingConfig.CascadingSerializationTokens)).values
+    val tokenizedClasses =
+      CascadingTokenUpdater
+        .parseTokens(config.get(ScaldingConfig.CascadingSerializationTokens))
+        .toList
+        .sorted // Go through this list in order the tokens were allocated
+
     for {
-      className <- tokenizedClasses
+      (id, className) <- tokenizedClasses
       clazz <- getClassOpt(className)
       if !newK.alreadyRegistered(clazz)
     } {
@@ -104,13 +109,12 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK
   }
 
-  private def getClassOpt(name: String): Option[Class[_]] = {
+  private def getClassOpt(name: String): Option[Class[_]] =
     try {
       Some(Class.forName(name))
     } catch {
       case _: ClassNotFoundException => None
     }
-  }
 
   /**
    * If you override KryoHadoop, prefer to add registrations here instead of overriding [[newKryo]].
