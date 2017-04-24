@@ -155,11 +155,7 @@ object TypedPipe extends Serializable {
     joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
 
    case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
-   // TODO: ReduceStepPipe is still tightly bound to cascading
-   case class ReduceStepPipe[K, V1, V2](
-     reduce: ReduceStep[K, V1],
-     valueOrd: Option[Ordering[_ >: V1]],
-     op: GroupBuilder => GroupBuilder) extends TypedPipe[(K, V2)]
+   case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
 }
 
 /**
