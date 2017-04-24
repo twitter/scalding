@@ -193,7 +193,7 @@ sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
    */
   def mapped: TypedPipe[(K, V1)]
 
-  def toTypedPipe: TypedPipe[(K, V2)]
+  def toTypedPipe: TypedPipe[(K, V2)] = TypedPipe.ReduceStepPipe(this)
 }
 
 case class IdentityReduce[K, V1](
@@ -248,13 +248,6 @@ case class IdentityReduce[K, V1](
     // there is no sort, mapValueStream or force to reducers:
     val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
-  }
-
-  override lazy val toTypedPipe = reducers match {
-    case None => mapped // free case
-    case Some(reds) =>
-      // This is weird, but it is sometimes used to force a partition
-      TypedPipe.ReduceStepPipe(this)
   }
 
   /** This is just an identity that casts the result to V1 */
@@ -324,13 +317,6 @@ case class UnsortedIdentityReduce[K, V1](
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
   }
 
-  override lazy val toTypedPipe = reducers match {
-    case None => mapped // free case
-    case Some(reds) =>
-      // This is weird, but it is sometimes used to force a partition
-      TypedPipe.ReduceStepPipe(this)
-  }
-
   /** This is just an identity that casts the result to V1 */
   override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
@@ -393,8 +379,6 @@ case class IdentityValueSortedReduce[K, V1](
   override def take(n: Int) =
     if (n <= 1) bufferedTake(n)
     else mapValueStream(_.take(n))
-
-  override def toTypedPipe = TypedPipe.ReduceStepPipe(this)
 }
 
 case class ValueSortedReduce[K, V1, V2](
@@ -436,8 +420,6 @@ case class ValueSortedReduce[K, V1, V2](
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers, descriptions)
   }
-
-  override def toTypedPipe = TypedPipe.ReduceStepPipe(this)
 }
 
 case class IteratorMappedReduce[K, V1, V2](
@@ -473,8 +455,6 @@ case class IteratorMappedReduce[K, V1, V2](
     }
     copy(reduceFn = newReduce)
   }
-
-  override def toTypedPipe = TypedPipe.ReduceStepPipe(this)
 
   override def joinFunction = {
     // don't make a closure
