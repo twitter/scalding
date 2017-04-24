@@ -1,13 +1,14 @@
 package com.twitter.scalding.typed.cascading_backend
 
 import cascading.flow.FlowDef
-import cascading.pipe.{ Each, Pipe }
+import cascading.operation.Operation
+import cascading.pipe.{ Each, Pipe, HashJoin }
 import cascading.tuple.{ Fields, TupleEntry }
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
-  CleanupIdentityFunction, Dsl, GroupBuilder, LineNumber, IterableSource, MapsideReduce, Mode,
-  RichPipe, TupleConverter, TupleSetter, TypedBufferOp, Write
+  CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, GroupBuilder, HadoopMode, LineNumber, IterableSource, MapsideReduce, Mode,
+  RichPipe, TupleConverter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.serialization.{ CascadingBinaryComparator, OrderedSerialization, Boxed }
@@ -229,7 +230,7 @@ object CascadingBackend {
           // TODO we can push up filterKeys on both the left and right
           // and mapValues/flatMapValues on the result
           val cp = cacheGet(hcg, mode) { implicit fd =>
-            val kvPipe = hcg.right.hashPipe(hcg.left)(hcg.joiner)(fd, mode)
+            val kvPipe = planHashJoin(hcg.left, hcg.right, hcg.joiner, hcg.right.keyOrdering, fd, mode)
             CascadingPipe(kvPipe, kvfields, fd, mode, tuple2Converter[K, R])
           }
           loop(cp, rest, descriptions)
@@ -253,6 +254,89 @@ object CascadingBackend {
     }
 
     RichPipe(loop(p, FlatMappedFn.identity[U], Nil)).applyFlowConfigProperties(flowDef)
+  }
+
+  private def planHashJoin[K, V1, V2, R](left: TypedPipe[(K, V1)],
+    right: HashJoinable[K, V2],
+    joiner: (K, V1, Iterable[V2]) => Iterator[R],
+    keyOrdering: Ordering[K],
+    fd: FlowDef,
+    mode: Mode): Pipe = {
+
+    val getHashJoinAutoForceRight: Boolean =
+      mode match {
+        case h: HadoopMode =>
+          val config = Config.fromHadoop(h.jobConf)
+          config.getHashJoinAutoForceRight
+        case _ => false //default to false
+      }
+
+    /**
+     * Checks the transform to deduce if it is safe to skip the force to disk.
+     * If the FlatMappedFn is an identity operation then we can skip
+     * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
+     * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
+     */
+     def canSkipEachOperation(eachOperation: Operation[_]): Boolean =
+      eachOperation match {
+        case f: FlatMapFunction[_, _] =>
+          f.getFunction match {
+            case fmp: FlatMappedFn[_, _] if (FlatMappedFn.asId(fmp).isDefined) =>
+              // This is an operation that is doing nothing
+              true
+            case _ =>
+              false
+          }
+        case _: CleanupIdentityFunction => true
+        case _ => false
+      }
+
+    /**
+     * Computes if it is safe to skip a force to disk (only if the user hasn't turned this off using
+     * Config.HashJoinAutoForceRight).
+     * If we know the pipe is persisted,we can safely skip. If the Pipe is an Each operator, we check
+     * if the function it holds can be skipped and we recurse to check its parent pipe.
+     * Recursion handles situations where we have a couple of Each ops in a row.
+     * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
+     */
+    def isSafeToSkipForceToDisk(pipe: Pipe): Boolean = {
+      import cascading.pipe._
+
+      pipe match {
+        case eachPipe: Each =>
+          if (canSkipEachOperation(eachPipe.getOperation)) {
+            //need to recurse down to see if parent pipe is ok
+            RichPipe.getSinglePreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe))
+          } else false
+        case _: Checkpoint => true
+        case _: GroupBy => true
+        case _: CoGroup => true
+        case _: Every => true
+        case p if RichPipe.isSourcePipe(p) => true
+        case _ => false
+      }
+    }
+    /**
+     * Returns a Pipe for the mapped (rhs) pipe with checkpointing (forceToDisk) applied if needed.
+     * Currently we skip checkpointing if we're confident that the underlying rhs Pipe is persisted
+     * (e.g. a source / Checkpoint / GroupBy / CoGroup / Every) and we have 0 or more Each operator Fns
+     * that are not doing any real work (e.g. Converter, CleanupIdentityFunction)
+     */
+    val getForceToDiskPipeIfNecessary: Pipe = {
+      val mappedPipe = right.mapped.toPipe(new Fields("key1", "value1"))(fd, mode, tup2Setter)
+
+      // if the user has turned off auto force right, we fall back to the old behavior and
+      //just return the mapped pipe
+      if (!getHashJoinAutoForceRight || isSafeToSkipForceToDisk(mappedPipe)) mappedPipe
+      else RichPipe(mappedPipe).forceToDisk
+    }
+
+    new HashJoin(
+      RichPipe.assignName(left.toPipe(Grouped.kvFields)(fd, mode, tup2Setter)),
+      Field.singleOrdered("key")(keyOrdering),
+      getForceToDiskPipeIfNecessary,
+      Field.singleOrdered("key1")(keyOrdering),
+      WrappedJoiner(new HashJoiner(right.joinFunction, joiner)))
   }
 
   private def planReduceStep[K, V1, V2](rsp: ReduceStepPipe[K, V1, V2], mode: Mode): TypedPipe[(K, V2)] = {

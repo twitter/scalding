@@ -84,13 +84,12 @@ object TypedPipe extends Serializable {
    * This method is the Vitaly-was-right method.
    */
   implicit def toHashJoinable[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]): HashJoinable[K, V] =
-    new HashJoinable[K, V] {
-      def mapped = pipe
-      def keyOrdering = ord
-      def reducers = None
-      val descriptions: Seq[String] = LineNumber.tryNonScaldingCaller.map(_.toString).toList
-      def joinFunction = CoGroupable.castingJoinFunction[V]
-    }
+    /*
+     * Note, it would not be safe to make the return type of this Grouped[K, V] since that has some
+     * different semantics than TypedPipe, however, it is not unclear when we only go to
+     * HashJoinable
+     */
+    pipe.group
 
   /**
    * TypedPipe instances are monoids. They are isomorphic to multisets.

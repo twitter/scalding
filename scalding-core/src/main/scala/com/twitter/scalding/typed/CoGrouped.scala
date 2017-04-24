@@ -75,7 +75,7 @@ trait CoGroupable[K, +R] extends HasReducers with HasDescription with java.io.Se
    * how to achieve, and since it is an internal function, not clear it
    * would actually help anyone for it to be type-safe
    */
-  protected def joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[R]
+  private[scalding] def joinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[R]
 
   /**
    * Smaller is about average values/key not total size (that does not matter, but is

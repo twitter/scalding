@@ -37,6 +37,15 @@ import scala.collection.JavaConverters._
 import Dsl._
 
 /**
+ * If we can HashJoin, then we can CoGroup, but not vice-versa
+ * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
+ * is CoGroupable, but not HashJoinable).
+ */
+sealed trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
+  /** A HashJoinable has a single input into to the cogroup */
+  override def inputs = List(mapped)
+}
+/**
  * This encodes the rules that
  * 1) sorting is only possible before doing any reduce,
  * 2) reversing is only possible after sorting.
