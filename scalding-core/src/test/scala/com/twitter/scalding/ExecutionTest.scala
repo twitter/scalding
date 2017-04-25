@@ -32,6 +32,7 @@ import ExecutionContext._
 import com.twitter.scalding.Execution.TempFileCleanup
 import org.apache.hadoop.conf.Configuration
 
+
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
     TypedPipe.from(TextLine(in))
@@ -100,6 +101,7 @@ class ZippedExecutionWithTempFiles(args: Args, tempFileOne: String, tempFileTwo:
 }
 
 case class MyCustomType(s: String)
+case class SomeOther(date: RichDate, custom: MyCustomType)
 
 class ExecutionTest extends WordSpec with Matchers {
   implicit class ExecutionTestHelper[T](ex: Execution[T]) {
@@ -772,6 +774,23 @@ class ExecutionTest extends WordSpec with Matchers {
       "Execution.sequence" in {
         mutableLaws(SequenceMutable(), Some({ x: Int => Seq(x, x * 3) }))
       }
+    }
+  }
+  "Execution toIterableExecution" should {
+    val ex = TypedPipe.from(0 to 100)
+      .groupBy(_ % 4)
+      .sum
+      .map { case (k, v) => SomeOther(RichDate(k), MyCustomType(s"($k, $v)")) }
+      .toIterableExecution
+      .map(_.map(_.custom).toSet)
+
+    "serialize a custom class" in {
+      val mode = Hdfs(true, new Configuration)
+      val conf = Config.defaultFrom(mode)
+      val res = ex.waitFor(conf, mode).get
+
+      val expected = (0 to 100).groupBy(_ % 4).mapValues(_.sum).map { case (k, v) => MyCustomType(s"($k, $v)") }.toSet
+      res shouldBe expected
     }
   }
 }
