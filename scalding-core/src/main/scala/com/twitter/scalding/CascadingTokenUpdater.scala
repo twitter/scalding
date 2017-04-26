@@ -28,11 +28,11 @@ object CascadingTokenUpdater {
     else
       tokClass
         .split(",")
-        .map(_.trim)
-        .filter(_.size > 1)
         .toIterator
+        .map(_.trim)
+        .filter(_.nonEmpty)
         .map(_.split("="))
-        .filter(_.size == 2)
+        .filter(_.length == 2)
         .map { ary => (ary(0).toInt, ary(1)) }
         .toMap
 
