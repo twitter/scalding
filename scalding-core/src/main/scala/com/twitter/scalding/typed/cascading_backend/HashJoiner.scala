@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
 /**
  * Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
  */
-class HashJoiner[K, V, W, R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[W],
+class HashJoiner[K, V, W, R](rightGetter: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[W],
   joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
 
   override def getIterator(jc: JoinerClosure) = {
@@ -40,7 +40,7 @@ class HashJoiner[K, V, W, R](rightGetter: (K, Iterator[CTuple], Seq[Iterable[CTu
 
       // It is safe to iterate over the right side again and again
       val rightIterable = new Iterable[W] {
-        def iterator = rightGetter(key, jc.getIterator(1).asScala, Nil)
+        def iterator = rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil)
       }
 
       left.flatMap { kv =>

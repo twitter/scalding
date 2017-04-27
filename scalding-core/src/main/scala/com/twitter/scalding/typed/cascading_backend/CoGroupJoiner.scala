@@ -8,7 +8,7 @@ import scala.collection.JavaConverters._
 
 abstract class CoGroupedJoiner[K](inputSize: Int,
   getter: TupleGetter[K],
-  @transient inJoinFunction: (K, Iterator[CTuple], Seq[Iterable[CTuple]]) => Iterator[Any]) extends CJoiner {
+  @transient inJoinFunction: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[Any]) extends CJoiner {
 
   /**
    * We have a test that should fail if Externalizer is not used here.
@@ -34,10 +34,15 @@ abstract class CoGroupedJoiner[K](inputSize: Int,
       .get // One of these must have a key
     val key = getter.get(keyTuple, 0)
 
-    val leftMost = iters.head
+    def unbox(it: Iterator[CTuple]): Iterator[Any] =
+      it.map(_.getObject(1): Any)
+
+    val leftMost = unbox(iters.head)
 
     def toIterable(didx: Int) =
-      new Iterable[CTuple] { def iterator = jc.getIterator(didx).asScala }
+      new Iterable[Any] {
+        def iterator = unbox(jc.getIterator(didx).asScala)
+      }
 
     val rest = restIndices.map(toIterable(_))
     joinFunction.get(key, leftMost, rest).map { rval =>
