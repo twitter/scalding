@@ -15,26 +15,10 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
-import cascading.tuple.{ Fields, Tuple => CTuple }
-import com.twitter.algebird.mutable.PriorityQueueMonoid
+import cascading.tuple.{ Tuple => CTuple }
 import com.twitter.algebird.Semigroup
-import com.twitter.scalding.TupleConverter.tuple2Converter
-import com.twitter.scalding.TupleSetter.tup2Setter
-import com.twitter.scalding._
-import com.twitter.scalding.serialization.{
-  Boxed,
-  BoxedOrderedSerialization,
-  CascadingBinaryComparator,
-  EquivSerialization,
-  OrderedSerialization,
-  WrappedSerialization
-}
-import java.io.Serializable
+import com.twitter.algebird.mutable.PriorityQueueMonoid
 import scala.collection.JavaConverters._
-
-import Dsl._
 
 /**
  * If we can HashJoin, then we can CoGroup, but not vice-versa
@@ -87,80 +71,9 @@ sealed trait UnsortedGrouped[K, +V]
 
 object Grouped {
   val ValuePosition: Int = 1 // The values are kept in this position in a Tuple
-  val valueField: Fields = new Fields("value")
-  val kvFields: Fields = new Fields("key", "value")
 
   def apply[K, V](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
     IdentityReduce(ordering, pipe, None, Nil)
-
-  def valueSorting[V](ord: Ordering[V]): Fields = Field.singleOrdered[V]("value")(ord)
-
-  /**
-   * If we are using OrderedComparable, we need to box the key
-   * to prevent other serializers from handling the key
-   */
-  private[scalding] def getBoxFnAndOrder[K](ordser: OrderedSerialization[K], flowDef: FlowDef): (K => Boxed[K], BoxedOrderedSerialization[K]) = {
-    // We can only supply a cacheKey if the equals and hashcode are known sane
-    val (boxfn, cls) = Boxed.nextCached[K](if (ordser.isInstanceOf[EquivSerialization[_]]) Some(ordser) else None)
-    val boxordSer = BoxedOrderedSerialization(boxfn, ordser)
-
-    WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
-      {
-        case (k: String, v: String) =>
-          FlowStateMap.mutate(flowDef) { st =>
-            val newSt = st.addConfigSetting(k + cls, v)
-            (newSt, ())
-          }
-      })
-    (boxfn, boxordSer)
-  }
-
-  // TODO move this to CascadingBackend when we refactor joins
-  private[scalding] def maybeBox[K, V](ord: Ordering[K], flowDef: FlowDef)(op: (TupleSetter[(K, V)], Fields) => Pipe): Pipe =
-    ord match {
-      case ordser: OrderedSerialization[K] =>
-        val (boxfn, boxordSer) = getBoxFnAndOrder[K](ordser, flowDef)
-
-        val ts = tup2Setter[(Boxed[K], V)].contraMap { kv1: (K, V) => (boxfn(kv1._1), kv1._2) }
-        val keyF = new Fields("key")
-        keyF.setComparator("key", new CascadingBinaryComparator(boxordSer))
-        op(ts, keyF)
-      case _ =>
-        val ts = tup2Setter[(K, V)]
-        val keyF = Field.singleOrdered("key")(ord)
-        op(ts, keyF)
-    }
-
-  def tuple2Conv[K, V](ord: Ordering[K]): TupleConverter[(K, V)] =
-    ord match {
-      case _: OrderedSerialization[_] =>
-        tuple2Converter[Boxed[K], V].andThen { kv =>
-          (kv._1.get, kv._2)
-        }
-      case _ => tuple2Converter[K, V]
-    }
-
-  def valueConverter[V](optOrd: Option[Ordering[_ >: V]]): TupleConverter[V] =
-    optOrd.map {
-      case _: OrderedSerialization[_] =>
-        TupleConverter.singleConverter[Boxed[V]].andThen(_.get)
-      case _ => TupleConverter.singleConverter[V]
-    }.getOrElse(TupleConverter.singleConverter[V])
-
-  def keyConverter[K](ord: Ordering[K]): TupleConverter[K] =
-    ord match {
-      case _: OrderedSerialization[_] =>
-        TupleConverter.singleConverter[Boxed[K]].andThen(_.get)
-      case _ => TupleConverter.singleConverter[K]
-    }
-  def keyGetter[K](ord: Ordering[K]): TupleGetter[K] =
-    ord match {
-      case _: OrderedSerialization[K] =>
-        new TupleGetter[K] {
-          def get(tup: CTuple, i: Int) = tup.getObject(i).asInstanceOf[Boxed[K]].get
-        }
-      case _ => TupleGetter.castingGetter
-    }
 
   def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] = {
     (key: K, iter: Iterator[V1]) => if (iter.nonEmpty) fn(key, iter) else Iterator.empty
