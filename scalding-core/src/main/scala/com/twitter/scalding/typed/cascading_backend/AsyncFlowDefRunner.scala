@@ -23,6 +23,8 @@ import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecution
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
+import Execution.{ Writer, ToWrite }
+
 object AsyncFlowDefRunner {
   /**
    * We send messages from other threads into the submit thread here
@@ -70,7 +72,7 @@ object AsyncFlowDefRunner {
  * a Config, Mode, FlowDef and return a Future holding the
  * JobStats
  */
-class AsyncFlowDefRunner { self =>
+class AsyncFlowDefRunner extends Writer { self =>
   import AsyncFlowDefRunner._
 
   private[this] val filesToCleanup = mutable.Set[String]()
@@ -173,4 +175,27 @@ class AsyncFlowDefRunner { self =>
       (id, jobStats) <- runFlowDef(conf, mode, flowDef)
       _ = FlowStateMap.clear(flowDef)
     } yield Map(id -> ExecutionCounters.fromJobStats(jobStats))
+
+  def execute(
+    conf: Config,
+    mode: Mode,
+    head: ToWrite,
+    rest: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
+
+    import Execution.ToWrite._
+
+    def prepareFD(c: Config, m: Mode): FlowDef = {
+      val fd = new FlowDef
+      (head :: rest).foreach {
+        case SimpleWrite(pipe, sink) =>
+          pipe.write(sink)(fd, m)
+        case PreparedWrite(fn) =>
+          val SimpleWrite(pipe, sink) = fn(c, m)
+          pipe.write(sink)(fd, m)
+      }
+      fd
+    }
+
+    validateAndRun(conf, mode)(prepareFD _)
+  }
 }

@@ -551,20 +551,23 @@ object Execution {
    * but with proof that pipe matches sink
    */
 
-  private trait ToWrite {
-    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit
-  }
-  private case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite {
-    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit = {
-      // This has the side effect of mutating flowDef
-      pipe.write(sink)(flowDef, mode)
-      ()
-    }
+  sealed trait ToWrite
+  object ToWrite {
+    case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite
+    case class PreparedWrite[T](fn: (Config, Mode) => SimpleWrite[T]) extends ToWrite
   }
 
-  private case class PreparedWrite[T](fn: (Config, Mode) => SimpleWrite[T]) extends ToWrite {
-    def write(config: Config, flowDef: FlowDef, mode: Mode): Unit =
-      fn(config, mode).write(config, flowDef, mode)
+  /**
+   * Something that can handle a batch of writes that may be optimized
+   * before running. Return a unique Long for each run and Counters
+   */
+  trait Writer {
+    def execute(
+      conf: Config,
+      mode: Mode,
+      head: ToWrite,
+      rest: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]]
+
   }
 
   /**
@@ -583,21 +586,6 @@ object Execution {
      */
     override def map[U](mapFn: T => U): Execution[U] =
       WriteExecution(head, tail, { (conf: Config, mode: Mode) => mapFn(fn(conf, mode)) })
-
-    /* Run a list of ToWrite elements */
-    private[this] def scheduleToWrites(conf: Config,
-      mode: Mode,
-      runner: AsyncFlowDefRunner,
-      head: ToWrite,
-      tail: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
-
-      def makeFD(c: Config, m: Mode): FlowDef = {
-        val fd = new FlowDef
-        (head :: tail).foreach(_.write(c, fd, m))
-        fd
-      }
-      runner.validateAndRun(conf, mode)(makeFD)
-    }
 
     def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
       case (a, Left(b)) :: tail =>
@@ -627,7 +615,7 @@ object Execution {
               weDoOperation match {
                 case all @ (h :: tail) =>
                   val futCounters: Future[Map[Long, ExecutionCounters]] =
-                    scheduleToWrites(conf, mode, cache.runner, h._1, tail.map(_._1))
+                    cache.runner.execute(conf, mode, h._1, tail.map(_._1))
                   // Complete all of the promises we put into the cache
                   // with this future counters set
                   all.foreach {
@@ -731,7 +719,7 @@ object Execution {
    * type U for the resultant execution.
    */
   private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], generatorFn: (Config, Mode) => U): Execution[U] =
-    WriteExecution(SimpleWrite(pipe, sink), Nil, generatorFn)
+    WriteExecution(ToWrite.SimpleWrite(pipe, sink), Nil, generatorFn)
 
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
@@ -740,7 +728,7 @@ object Execution {
     write(pipe, sink, ())
 
   private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], presentType: => U): Execution[U] =
-    WriteExecution(SimpleWrite(pipe, sink), Nil, { (_: Config, _: Mode) => presentType })
+    WriteExecution(ToWrite.SimpleWrite(pipe, sink), Nil, { (_: Config, _: Mode) => presentType })
 
   /**
    * Here we allow both the targets to write and the sources to be generated from the config and mode.
@@ -748,9 +736,9 @@ object Execution {
    */
   private[scalding] def write[T, U](fn: (Config, Mode) => (TypedPipe[T], TypedSink[T]), generatorFn: (Config, Mode) => U,
                                     tempFilesToCleanup: (Config, Mode) => Set[String] = (_, _) => Set()): Execution[U] =
-    WriteExecution(PreparedWrite({ (cfg: Config, m: Mode) =>
+    WriteExecution(ToWrite.PreparedWrite({ (cfg: Config, m: Mode) =>
       val r = fn(cfg, m)
-      SimpleWrite(r._1, r._2)
+      ToWrite.SimpleWrite(r._1, r._2)
     }), Nil, generatorFn, tempFilesToCleanup)
 
   /**
