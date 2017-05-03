@@ -15,22 +15,16 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.{ Reader, Trampoline }
+import cascading.flow.{ FlowDef, Flow }
+import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
-import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
-import com.twitter.scalding.Dsl.flowDefToRichFlowDef
-import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
-import scala.util.{ Failure, Success, Try }
-import scala.util.control.NonFatal
-import cascading.flow.{ FlowDef, Flow }
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
-import org.slf4j.LoggerFactory
-
+import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import scala.collection.mutable
+import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.runtime.ScalaRunTime
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Execution[T] represents and computation that can be run and
