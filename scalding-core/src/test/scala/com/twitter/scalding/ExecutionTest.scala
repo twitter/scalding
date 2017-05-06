@@ -29,7 +29,7 @@ import scala.concurrent.{Await, Future, Promise, ExecutionContext => ConcurrentE
 import scala.util.Random
 import scala.util.{Failure, Success, Try}
 import ExecutionContext._
-import com.twitter.scalding.Execution.TempFileCleanup
+import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileCleanup
 import org.apache.hadoop.conf.Configuration
 
 object ExecutionTestJobs {
@@ -330,7 +330,7 @@ class ExecutionTest extends WordSpec with Matchers {
       Files.exists(tempFileOne) should be(true)
       Files.exists(tempFileTwo) should be(true)
 
-      val cleanupThread = TempFileCleanup(Seq(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
+      val cleanupThread = TempFileCleanup(List(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
       cleanupThread.run()
 
       Files.exists(tempFileOne) should be(false)
