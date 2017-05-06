@@ -84,11 +84,16 @@ class AsyncFlowDefRunner extends Writer { self =>
   private[this] val mutex = new AnyRef
 
   private case class State(
-    filesToCleanup: Set[String],
+    filesToCleanup: Map[Mode, Set[String]],
     forcedPipes: Map[(Config, Mode, TypedPipe[Any]), Future[TypedPipe[Any]]]) {
 
-    def addFilesToCleanup(s: TraversableOnce[String]): State =
-      copy(filesToCleanup = filesToCleanup ++ s)
+    def addFilesToCleanup(m: Mode, s: Option[String]): State =
+      s match {
+        case Some(path) =>
+          val newFs = filesToCleanup.getOrElse(m, Set.empty[String]) + path
+          copy(filesToCleanup = filesToCleanup + (m -> newFs))
+        case None => this
+      }
 
     def addPipe[T](c: Config,
       m: Mode,
@@ -102,7 +107,7 @@ class AsyncFlowDefRunner extends Writer { self =>
       }
   }
 
-  private[this] var state: State = State(Set.empty, Map.empty)
+  private[this] var state: State = State(Map.empty, Map.empty)
 
   private def updateState[S](fn: State => (State, S)): S =
     mutex.synchronized {
@@ -184,20 +189,14 @@ class AsyncFlowDefRunner extends Writer { self =>
   /*
    * This is called after we are done submitting all jobs
    */
-  def finished(mode: Mode): Unit = {
+  def finished(): Unit = {
     messageQueue.put(Stop)
     // get an immutable copy
-    val cleanUp = getState.filesToCleanup.toList
-    if (cleanUp.nonEmpty) {
-      Runtime.getRuntime.addShutdownHook(TempFileCleanup(cleanUp, mode))
+    val cleanUp = getState.filesToCleanup
+    cleanUp.foreach { case (mode, filesToRm) =>
+      Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.toList, mode))
     }
   }
-
-  private def toFuture[T](t: Try[T]): Future[T] =
-    t match {
-      case Success(s) => Future.successful(s)
-      case Failure(err) => Future.failed(err)
-    }
 
   /**
    * This evaluates the fn in a Try, validates the sources
@@ -205,18 +204,18 @@ class AsyncFlowDefRunner extends Writer { self =>
    */
   def validateAndRun(conf: Config, mode: Mode)(
     fn: (Config, Mode) => FlowDef)(
-      implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] =
+      implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] =
     for {
-      flowDef <- toFuture(Try(fn(conf, mode)))
+      flowDef <- Future(fn(conf, mode))
       _ = FlowStateMap.validateSources(flowDef, mode)
       (id, jobStats) <- runFlowDef(conf, mode, flowDef)
       _ = FlowStateMap.clear(flowDef)
-    } yield Map(id -> ExecutionCounters.fromJobStats(jobStats))
+    } yield (id, ExecutionCounters.fromJobStats(jobStats))
 
   def execute(
     conf: Config,
     mode: Mode,
-    writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
+    writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
     import Execution.ToWrite._
 
@@ -234,7 +233,7 @@ class AsyncFlowDefRunner extends Writer { self =>
             .map { nextState =>
               val uuid = UUID.randomUUID
               val (sink, forcedPipe, clean) = forceToDisk(uuid, c, m, t)
-              (nextState.addFilesToCleanup(clean), Some((sink, forcedPipe)))
+              (nextState.addFilesToCleanup(m, clean), Some((sink, forcedPipe)))
             }
             .getOrElse((s, None))
         }

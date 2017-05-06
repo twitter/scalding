@@ -143,13 +143,13 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
    * Seriously: pro-style is for this to be called only once in a program.
    */
   final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] = {
-    val writer = new AsyncFlowDefRunner
+    val writer: Execution.Writer = new AsyncFlowDefRunner
     val ec = new EvalCache(writer)
     val confWithId = conf.setScaldingExecutionId(UUID.randomUUID.toString)
     // get on Trampoline
     val result = runStats(confWithId, mode, ec)(cec).get.map(_._1)
     // When the final future in complete we stop the submit thread
-    result.onComplete { _ => writer.finished(mode) }
+    result.onComplete { _ => writer.finished() }
     // wait till the end to start the thread in case the above throws
     writer.start()
     result
@@ -534,7 +534,7 @@ object Execution {
       lazy val future = {
         cache.writer match {
           case ar: AsyncFlowDefRunner =>
-            ar.validateAndRun(conf, mode)(result).map { m => ((), m) }
+            ar.validateAndRun(conf, mode)(result).map { m => ((), Map(m)) }
           case other =>
             Future.failed(
               new Exception(
@@ -564,6 +564,16 @@ object Execution {
    */
   trait Writer {
     /**
+     * This is called by an Execution to begin processing
+     */
+    def start(): Unit
+
+    /**
+     * This is called by an Execution to end processing
+     */
+    def finished(): Unit
+
+    /**
      * do a batch of writes, possibly optimizing, and return a new unique
      * Long.
      *
@@ -572,14 +582,20 @@ object Execution {
     def execute(
       conf: Config,
       mode: Mode,
-      writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]]
+      writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)]
 
+    /**
+     * This should only be called after a call to execute
+     */
     private[Execution] def getForced[T](
       conf: Config,
       mode: Mode,
       initial: TypedPipe[T]
       )(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]]
 
+    /**
+     * This should only be called after a call to execute
+     */
     private[Execution] def getIterable[T](
       conf: Config,
       mode: Mode,
@@ -636,7 +652,10 @@ object Execution {
               weDoOperation match {
                 case all @ (h :: tail) =>
                   val futCounters: Future[Map[Long, ExecutionCounters]] =
-                    cache.writer.execute(conf, mode, all.map(_._1))
+                    cache.writer
+                      .execute(conf, mode, all.map(_._1))
+                      .map(Map(_))
+
                   // Complete all of the promises we put into the cache
                   // with this future counters set
                   all.foreach {
