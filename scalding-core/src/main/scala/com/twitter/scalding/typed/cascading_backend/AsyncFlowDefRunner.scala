@@ -74,6 +74,7 @@ object AsyncFlowDefRunner {
 
 /**
  * This holds an internal thread to run
+ * This holds an internal thread to submit run
  * a Config, Mode, FlowDef and return a Future holding the
  * JobStats
  */
