@@ -20,8 +20,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
-import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
-import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
+import com.twitter.scalding.TupleConverter.singleConverter
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization.Result
@@ -510,54 +509,8 @@ sealed trait TypedPipe[+T] extends Serializable {
    * This writes the current TypedPipe into a temporary file
    * and then opens it after complete so that you can continue from that point
    */
-  def forceToDiskExecution: Execution[TypedPipe[T]] = {
-    val cachedRandomUUID = java.util.UUID.randomUUID
-    lazy val inMemoryDest = new MemorySink[T]
-
-    def temporaryPath(conf: Config, uuid: UUID): String = {
-      val tmpDir = conf.get("hadoop.tmp.dir")
-        .orElse(conf.get("cascading.tmp.dir"))
-        .getOrElse("/tmp")
-
-      tmpDir + "/scalding/snapshot-" + uuid + ".seq"
-    }
-
-    def hadoopTypedSource(conf: Config): Mappable[T] with TypedSink[T] = {
-      // come up with unique temporary filename, use the config here
-      // TODO: refactor into TemporarySequenceFile class
-      val tmpSeq = temporaryPath(conf, cachedRandomUUID)
-      source.TypedSequenceFile[T](tmpSeq)
-
-    }
-    val writeFn = { (conf: Config, mode: Mode) =>
-      mode match {
-        case _: CascadingLocal => // Local or Test mode
-          (this, inMemoryDest)
-        case _: HadoopMode =>
-          (this, hadoopTypedSource(conf))
-      }
-    }
-
-    val readFn = { (conf: Config, mode: Mode) =>
-      mode match {
-        case _: CascadingLocal => // Local or Test mode
-          TypedPipe.from(inMemoryDest.readResults)
-        case _: HadoopMode =>
-          TypedPipe.from(hadoopTypedSource(conf))
-      }
-    }
-
-    val filesToDeleteFn = { (conf: Config, mode: Mode) =>
-      mode match {
-        case _: CascadingLocal => // Local or Test mode
-          Set[String]()
-        case _: HadoopMode =>
-          Set(temporaryPath(conf, cachedRandomUUID))
-      }
-    }
-
-    Execution.write(writeFn, readFn, filesToDeleteFn)
-  }
+  def forceToDiskExecution: Execution[TypedPipe[T]] =
+    Execution.forceToDisk(this)
 
   /**
    * This gives an Execution that when run evaluates the TypedPipe,
@@ -567,19 +520,8 @@ sealed trait TypedPipe[+T] extends Serializable {
    * the Iterable forces a read of the entire thing. If you need it to
    * be lazy, call .iterator and use the Iterator inside instead.
    */
-  def toIterableExecution: Execution[Iterable[T]] = this match {
-    case TypedPipe.EmptyTypedPipe => Execution.from(Nil)
-    case TypedPipe.IterablePipe(iter) => Execution.from(iter)
-    case TypedPipe.SourcePipe(src: Mappable[T]) =>
-      Execution.getConfigMode.map { case (conf, mode) =>
-        new Iterable[T] {
-          def iterator = src.toIterator(conf, mode)
-        }
-      }
-    case other =>
-      // after we force, we have a source pipe or an Iterable Pipe
-      forceToDiskExecution.flatMap(_.toIterableExecution)
-  }
+  def toIterableExecution: Execution[Iterable[T]] =
+    Execution.toIterable(this)
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {

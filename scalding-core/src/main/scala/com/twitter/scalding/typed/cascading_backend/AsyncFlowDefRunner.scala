@@ -2,6 +2,8 @@ package com.twitter.scalding.typed.cascading_backend
 
 import cascading.flow.{ FlowDef, Flow }
 import com.twitter.scalding.{
+  source,
+  typed,
   CascadingLocal,
   Config,
   Execution,
@@ -11,9 +13,12 @@ import com.twitter.scalding.{
   FutureCache,
   HadoopMode,
   JobStats,
-  Mode
+  Mappable,
+  Mode,
+  TypedPipe
 }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
+import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
@@ -68,14 +73,45 @@ object AsyncFlowDefRunner {
 }
 
 /**
- * This holds an internal thread to submit run
+ * This holds an internal thread to run
  * a Config, Mode, FlowDef and return a Future holding the
  * JobStats
  */
 class AsyncFlowDefRunner extends Writer { self =>
   import AsyncFlowDefRunner._
 
-  private[this] val filesToCleanup = mutable.Set[String]()
+  private[this] val mutex = new AnyRef
+
+  private case class State(
+    filesToCleanup: Set[String],
+    forcedPipes: Map[(Config, Mode, TypedPipe[Any]), Future[TypedPipe[Any]]]) {
+
+    def addFilesToCleanup(s: TraversableOnce[String]): State =
+      copy(filesToCleanup = filesToCleanup ++ s)
+
+    def addPipe[T](c: Config,
+      m: Mode,
+      init: TypedPipe[T],
+      p: Future[TypedPipe[T]]): Option[State] =
+
+      forcedPipes.get((c, m, init)) match {
+        case None =>
+          Some(copy(forcedPipes = forcedPipes + ((c, m, init) -> p)))
+        case Some(exists) => None
+      }
+  }
+
+  private[this] var state: State = State(Set.empty, Map.empty)
+
+  private def updateState[S](fn: State => (State, S)): S =
+    mutex.synchronized {
+      val (st1, s) = fn(state)
+      state = st1
+      s
+    }
+  private def getState: State =
+    updateState { s => (s, s) }
+
   private val messageQueue: LinkedBlockingQueue[AsyncFlowDefRunner.FlowDefAction] =
     new LinkedBlockingQueue[AsyncFlowDefRunner.FlowDefAction]()
 
@@ -90,15 +126,20 @@ class AsyncFlowDefRunner extends Writer { self =>
         case Stop => ()
         case RunFlowDef(conf, mode, fd, promise) =>
           try {
-            val ctx = ExecutionContext.newContext(conf)(fd, mode)
-            ctx.buildFlow match {
-              case Success(flow) =>
-                val future = FlowListenerPromise
-                  .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
+            if (fd.getSinks.isEmpty) {
+              // These is nothing to do:
+              promise.success((id, JobStats.empty))
+            } else {
+              val ctx = ExecutionContext.newContext(conf)(fd, mode)
+              ctx.buildFlow match {
+                case Success(flow) =>
+                  val future = FlowListenerPromise
+                    .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
 
-                promise.completeWith(future)
-              case Failure(err) =>
-                promise.failure(err)
+                  promise.completeWith(future)
+                case Failure(err) =>
+                  promise.failure(err)
+              }
             }
           } catch {
             case t: Throwable =>
@@ -145,16 +186,11 @@ class AsyncFlowDefRunner extends Writer { self =>
   def finished(mode: Mode): Unit = {
     messageQueue.put(Stop)
     // get an immutable copy
-    val cleanUp = filesToCleanup.synchronized { filesToCleanup.toList }
+    val cleanUp = getState.filesToCleanup.toList
     if (cleanUp.nonEmpty) {
       Runtime.getRuntime.addShutdownHook(TempFileCleanup(cleanUp, mode))
     }
   }
-
-  def addFilesToCleanup(files: TraversableOnce[String]): Unit =
-    filesToCleanup.synchronized {
-      filesToCleanup ++= files
-    }
 
   private def toFuture[T](t: Try[T]): Future[T] =
     t match {
@@ -179,23 +215,123 @@ class AsyncFlowDefRunner extends Writer { self =>
   def execute(
     conf: Config,
     mode: Mode,
-    head: ToWrite,
-    rest: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
+    writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[Map[Long, ExecutionCounters]] = {
 
     import Execution.ToWrite._
 
+    val done = Promise[Unit]()
+
     def prepareFD(c: Config, m: Mode): FlowDef = {
       val fd = new FlowDef
-      (head :: rest).foreach {
+
+      def force[A](t: TypedPipe[A]): Unit = {
+        val pipePromise = Promise[TypedPipe[A]]()
+        val fut = pipePromise.future
+        // This updates mutable state
+        val sinkOpt = updateState { s =>
+          s.addPipe(conf, mode, t, fut)
+            .map { nextState =>
+              val uuid = UUID.randomUUID
+              val (sink, forcedPipe, clean) = forceToDisk(uuid, c, m, t)
+              (nextState.addFilesToCleanup(clean), Some((sink, forcedPipe)))
+            }
+            .getOrElse((s, None))
+        }
+
+        sinkOpt.foreach {
+          case (sink, fp) =>
+            t.write(sink)(fd, m)
+            val pipeFut = done.future.map(_ => fp())
+            pipePromise.completeWith(pipeFut)
+        }
+      }
+
+      writes.foreach {
+        case Force(pipe) => force(pipe)
+        case ToIterable(pipe) =>
+          def step[A](t: TypedPipe[A]): Unit = {
+            t match {
+              case TypedPipe.EmptyTypedPipe => ()
+              case TypedPipe.IterablePipe(_) => ()
+              case TypedPipe.SourcePipe(src: Mappable[A]) => ()
+              case other =>
+                // we need to write the pipe out first.
+                force(other)
+              // now, when we go to check for the pipe later, it
+              // will be a SourcePipe of a Mappable by construction
+            }
+          }
+          step(pipe)
+
         case SimpleWrite(pipe, sink) =>
           pipe.write(sink)(fd, m)
-        case PreparedWrite(fn) =>
-          val SimpleWrite(pipe, sink) = fn(c, m)
-          pipe.write(sink)(fd, m)
       }
+
       fd
     }
 
-    validateAndRun(conf, mode)(prepareFD _)
+    val resultFuture = validateAndRun(conf, mode)(prepareFD _)
+
+    // When we are done, the forced pipes are ready:
+    done.completeWith(resultFuture.map(_ => ()))
+    resultFuture
   }
+
+  def getForced[T](
+    conf: Config,
+    m: Mode,
+    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] =
+
+    getState.forcedPipes.get((conf, m, initial)) match {
+      case Some(fut) => fut.asInstanceOf[Future[TypedPipe[T]]]
+      case None =>
+        val msg =
+          s"logic error: getForced($conf, $m, $initial) does not have a forced pipe"
+        Future.failed(new Exception(msg))
+    }
+
+  def getIterable[T](
+    conf: Config,
+    m: Mode,
+    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]] = initial match {
+    case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
+    case TypedPipe.IterablePipe(iter) => Future.successful(iter)
+    case TypedPipe.SourcePipe(src: Mappable[T]) =>
+      Future.successful(
+        new Iterable[T] {
+          def iterator = src.toIterator(conf, m)
+        })
+    case other =>
+      // this should have been forced:
+      getForced(conf, m, initial).flatMap(getIterable(conf, m, _))
+  }
+
+  private def forceToDisk[T](
+    uuid: UUID,
+    conf: Config,
+    mode: Mode,
+    pipe: TypedPipe[T] // note, we don't use this, but it fixes the type T
+    ): (typed.TypedSink[T], () => TypedPipe[T], Option[String]) =
+
+    mode match {
+      case _: CascadingLocal => // Local or Test mode
+        val inMemoryDest = new typed.MemorySink[T]
+        /**
+         * This is a bit tricky. readResults has to be called after the job has
+         * run, so we need to do this inside the function which will
+         * be called after the job has run
+         */
+        (inMemoryDest, () => TypedPipe.from(inMemoryDest.readResults), None)
+      case _: HadoopMode =>
+        val temporaryPath: String = {
+          val tmpDir = conf.get("hadoop.tmp.dir")
+            .orElse(conf.get("cascading.tmp.dir"))
+            .getOrElse("/tmp")
+
+          tmpDir + "/scalding/snapshot-" + uuid + ".seq"
+        }
+        val cleanup = Some(temporaryPath)
+        val srcSink = source.TypedSequenceFile[T](temporaryPath)
+        (srcSink, () => TypedPipe.from(srcSink), cleanup)
+    }
 }

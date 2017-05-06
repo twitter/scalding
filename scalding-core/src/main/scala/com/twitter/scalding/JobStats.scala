@@ -21,6 +21,7 @@ import cascading.stats.{ CascadeStats, CascadingStats, FlowStats }
 import scala.util.{ Failure, Try }
 
 object JobStats {
+  def empty: JobStats = new JobStats(Map("counters" -> Map.empty))
   def apply(stats: CascadingStats): JobStats = {
     val m: Map[String, Any] = statsMap(stats)
     new JobStats(
