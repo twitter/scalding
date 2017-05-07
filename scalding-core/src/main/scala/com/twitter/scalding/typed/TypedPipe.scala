@@ -44,7 +44,20 @@ object TypedPipe extends Serializable {
    */
   def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[T]): TypedPipe[T] = {
     val localFlow = flowDef.onlyUpstreamFrom(pipe)
-    CascadingPipe[T](pipe, fields, localFlow, mode, conv).withLine
+    val pipeSrc = new TypedSource[T] {
+      def converter[U >: T]: TupleConverter[U] =
+        TupleConverter.asSuperConverter[T, U](conv)
+      def read(implicit fd: FlowDef, m: Mode): Pipe = {
+        // This check is not likely to fail unless someone does something really strange.
+        // for historical reasons, it is not checked by the typed system
+        require(m == mode,
+          s"Cannot switch Mode between TypedPipe.from and toPipe calls. Pipe: $pipe, pipe mode: $m, outer mode: $mode")
+        fd.mergeFrom(localFlow)
+        pipe
+      }
+      override def sourceFields: Fields = fields
+    }
+    from(pipeSrc)
   }
 
   /**
@@ -112,13 +125,6 @@ object TypedPipe extends Serializable {
       override def hash(x: Int): Int = x
     }
   }
-
-   // TODO: CascadingPipe is still tightly bound to cascading
-   case class CascadingPipe[T](pipe: Pipe,
-    fields: Fields,
-    @transient localFlowDef: FlowDef, // not serializable.
-    @transient mode: Mode,
-    converter: TupleConverter[T]) extends TypedPipe[T]
 
    case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
