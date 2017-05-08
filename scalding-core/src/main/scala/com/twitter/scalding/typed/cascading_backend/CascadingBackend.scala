@@ -154,6 +154,12 @@ object CascadingBackend {
       RichPipe.setPipeDescriptions(p, ordered ::: unordered)
     }
 
+    /*
+     * This creates a mapping operation on a Pipe. It does so
+     * by merging the local FlowDef of the CascadingPipe into
+     * the one passed to this method, then running the FlatMappedFn
+     * and finally applying the descriptions.
+     */
     def finish[T](cp: CascadingPipe[T],
       rest: FlatMappedFn[T, U],
       descriptions: List[(String, Boolean)]): Pipe = {
@@ -199,11 +205,14 @@ object CascadingBackend {
         go(f)
 
       case f@FlatMapValues(_, _) =>
-        def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe =
+        def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe = {
+          // don't capture node, which is a TypedPipe, which we avoid serializing
+          val fn = node.fn
           loop(node.input, rest.runAfter(
             FlatMapping.FlatM[(K, V), (K, U)] { case (k, v) =>
-              node.fn(v).map((k, _))
+              fn(v).map((k, _))
             }), descriptions)
+        }
 
         go(f)
 
@@ -223,9 +232,12 @@ object CascadingBackend {
         loop(SourcePipe(toSrc), rest, descriptions)
 
       case f@MapValues(_, _) =>
-        def go[K, V, U](node: MapValues[K, V, U]): Pipe =
+        def go[K, V, U](node: MapValues[K, V, U]): Pipe = {
+          // don't capture node, which is a TypedPipe, which we avoid serializing
+          val mvfn = node.fn
           loop(node.input, rest.runAfter(
-            FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, node.fn(v)) }), descriptions)
+            FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, mvfn(v)) }), descriptions)
+        }
 
         go(f)
 
