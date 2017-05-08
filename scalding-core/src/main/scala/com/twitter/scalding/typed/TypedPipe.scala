@@ -36,15 +36,40 @@ import scala.util.Try
  * the functions in the object, which we do not see how to hide with package object tricks.
  */
 object TypedPipe extends Serializable {
-  import Dsl.flowDefToRichFlowDef
 
   /**
    * Create a TypedPipe from a cascading Pipe, some Fields and the type T
    * Avoid this if you can. Prefer from(TypedSource).
    */
   def from[T](pipe: Pipe, fields: Fields)(implicit flowDef: FlowDef, mode: Mode, conv: TupleConverter[T]): TypedPipe[T] = {
-    val localFlow = flowDef.onlyUpstreamFrom(pipe)
-    CascadingPipe[T](pipe, fields, localFlow, mode, conv).withLine
+
+    /*
+     * This could be in TypedSource, but we don't want to encourage users
+     * to work directly with Pipe
+     */
+    case class WrappingSource[T](pipe: Pipe,
+      fields: Fields,
+      @transient localFlow: FlowDef, // FlowDef is not serializable. We shouldn't need to, but being paranoid
+      mode: Mode,
+      conv: TupleConverter[T]) extends TypedSource[T] {
+
+      def converter[U >: T]: TupleConverter[U] =
+        TupleConverter.asSuperConverter[T, U](conv)
+
+      def read(implicit fd: FlowDef, m: Mode): Pipe = {
+        // This check is not likely to fail unless someone does something really strange.
+        // for historical reasons, it is not checked by the typed system
+        require(m == mode,
+          s"Cannot switch Mode between TypedPipe.from and toPipe calls. Pipe: $pipe, pipe mode: $m, outer mode: $mode")
+        Dsl.flowDefToRichFlowDef(fd).mergeFrom(localFlow)
+        pipe
+      }
+
+      override def sourceFields: Fields = fields
+    }
+
+    val localFlow = Dsl.flowDefToRichFlowDef(flowDef).onlyUpstreamFrom(pipe)
+    from(WrappingSource(pipe, fields, localFlow, mode, conv))
   }
 
   /**
@@ -112,13 +137,6 @@ object TypedPipe extends Serializable {
       override def hash(x: Int): Int = x
     }
   }
-
-   // TODO: CascadingPipe is still tightly bound to cascading
-   case class CascadingPipe[T](pipe: Pipe,
-    fields: Fields,
-    @transient localFlowDef: FlowDef, // not serializable.
-    @transient mode: Mode,
-    converter: TupleConverter[T]) extends TypedPipe[T]
 
    case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =

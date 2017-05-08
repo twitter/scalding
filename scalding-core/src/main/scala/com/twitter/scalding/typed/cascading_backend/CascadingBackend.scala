@@ -100,6 +100,11 @@ object CascadingBackend {
         op(ts, keyF)
     }
 
+   private case class CascadingPipe[T](pipe: Pipe,
+    fields: Fields,
+    @transient localFlowDef: FlowDef, // not serializable.
+    converter: TupleConverter[T])
+
   /**
    * we want to cache renderings of some TypedPipe to Pipe so cascading
    * will see them as the same. Without this, it is very easy to have
@@ -139,7 +144,7 @@ object CascadingBackend {
       cacheGet(t, mode) { localFD =>
         val pipe = toPipe(t, f0)(localFD, mode, singleSetter)
         val p = if (force) RichPipe(pipe).forceToDisk else pipe
-        CascadingPipe[T](p, f0, localFD, mode, singleConverter)
+        CascadingPipe[T](p, f0, localFD, singleConverter)
       }
 
     def applyDescriptions(p: Pipe, descriptions: List[(String, Boolean)]): Pipe = {
@@ -149,21 +154,24 @@ object CascadingBackend {
       RichPipe.setPipeDescriptions(p, ordered ::: unordered)
     }
 
+    /*
+     * This creates a mapping operation on a Pipe. It does so
+     * by merging the local FlowDef of the CascadingPipe into
+     * the one passed to this method, then running the FlatMappedFn
+     * and finally applying the descriptions.
+     */
+    def finish[T](cp: CascadingPipe[T],
+      rest: FlatMappedFn[T, U],
+      descriptions: List[(String, Boolean)]): Pipe = {
+
+      Dsl.flowDefToRichFlowDef(flowDef).mergeFrom(cp.localFlowDef)
+      val withRest = RichPipe(cp.pipe)
+        .flatMapTo[T, U](cp.fields -> fieldNames)(rest)(cp.converter, setter)
+
+      applyDescriptions(withRest, descriptions)
+    }
+
     def loop[T](t: TypedPipe[T], rest: FlatMappedFn[T, U], descriptions: List[(String, Boolean)]): Pipe = t match {
-      case cp@CascadingPipe(_, fields, localFlowDef, m, _) =>
-        import Dsl.flowDefToRichFlowDef
-        // This check is not likely to fail unless someone does something really strange.
-        // for historical reasons, it is not checked by the typed system
-        require(m == mode,
-          s"Cannot switch Mode between TypedSource.read and toPipe calls. Pipe: $p, pipe mode: $m, outer mode: $mode")
-        flowDef.mergeFrom(localFlowDef)
-
-        def go[T1 <: T](cp: CascadingPipe[T1]): Pipe = {
-          val withRest = RichPipe(cp.pipe).flatMapTo[T1, U](fields -> fieldNames)(rest)(cp.converter, setter)
-          applyDescriptions(withRest, descriptions)
-        }
-        go(cp)
-
       case cp@CrossPipe(_, _) => loop(cp.viaHashJoin, rest, descriptions)
 
       case cv@CrossValue(_, _) => loop(cv.viaHashJoin, rest, descriptions)
@@ -197,11 +205,14 @@ object CascadingBackend {
         go(f)
 
       case f@FlatMapValues(_, _) =>
-        def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe =
+        def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe = {
+          // don't capture node, which is a TypedPipe, which we avoid serializing
+          val fn = node.fn
           loop(node.input, rest.runAfter(
             FlatMapping.FlatM[(K, V), (K, U)] { case (k, v) =>
-              node.fn(v).map((k, _))
+              fn(v).map((k, _))
             }), descriptions)
+        }
 
         go(f)
 
@@ -210,21 +221,23 @@ object CascadingBackend {
 
       case ForceToDisk(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
       case ForceToDisk(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-      case ForceToDisk(pipe) => loop(singlePipe(pipe, force = true), rest, descriptions)
+      case ForceToDisk(pipe) => finish(singlePipe(pipe, force = true), rest, descriptions)
 
       case Fork(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
       case Fork(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-      case Fork(pipe) => loop(singlePipe(pipe), rest, descriptions)
+      case Fork(pipe) => finish(singlePipe(pipe), rest, descriptions)
 
       case IterablePipe(iterable) =>
-        val pipe = IterableSource(iterable, f0)(singleSetter[T], singleConverter[T]).read(flowDef, mode)
-        val withRest = RichPipe(pipe).flatMapTo[T, U](f0 -> fieldNames)(rest)
-        applyDescriptions(withRest, descriptions)
+        val toSrc = IterableSource(iterable, f0)(singleSetter[T], singleConverter[T])
+        loop(SourcePipe(toSrc), rest, descriptions)
 
       case f@MapValues(_, _) =>
-        def go[K, V, U](node: MapValues[K, V, U]): Pipe =
+        def go[K, V, U](node: MapValues[K, V, U]): Pipe = {
+          // don't capture node, which is a TypedPipe, which we avoid serializing
+          val mvfn = node.fn
           loop(node.input, rest.runAfter(
-            FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, node.fn(v)) }), descriptions)
+            FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, mvfn(v)) }), descriptions)
+        }
 
         go(f)
 
@@ -271,9 +284,14 @@ object CascadingBackend {
             val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
             applyDescriptions(merged, ds ::: descriptions)
         }
-      case SourcePipe(source) =>
-        val pipe = source.read(flowDef, mode)
-        RichPipe(pipe).flatMapTo[T, U](source.sourceFields -> fieldNames)(rest)(source.converter, setter)
+      case src@SourcePipe(_) =>
+        def go[A](sp: SourcePipe[A]): CascadingPipe[A] =
+          cacheGet[A](sp, mode) { implicit localFD =>
+            val source = sp.source
+            val pipe = source.read(localFD, mode)
+            CascadingPipe[A](pipe, source.sourceFields, localFD, source.converter[A])
+          }
+        finish(go(src), rest, descriptions)
 
       case slk@SumByLocalKeys(_, _) =>
         def sum[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] =
@@ -281,9 +299,9 @@ object CascadingBackend {
             val pairPipe = toPipe(sblk.input, kvFields)(localFD, mode, tup2Setter)
             val msr = new MapsideReduce(sblk.semigroup, new Fields("key"), valueField, None)(singleConverter[V], singleSetter[V])
             val kvpipe = RichPipe(pairPipe).eachTo(kvFields -> kvFields) { _ => msr }
-            CascadingPipe(kvpipe, kvFields, localFD, mode, tuple2Converter)
+            CascadingPipe(kvpipe, kvFields, localFD, tuple2Converter)
           }
-        loop(sum(slk), rest, descriptions)
+        finish(sum(slk), rest, descriptions)
 
       case tp@TrappedPipe(_, _, _) =>
         def go[T0, T1 >: T0](tp: TrappedPipe[T0, T1], r: FlatMappedFn[T1, U]): Pipe = {
@@ -293,9 +311,9 @@ object CascadingBackend {
             val pp = toPipe[T0](tp.input, sfields)(fd, mode, tp.sink.setter)
             val pipe = RichPipe.assignName(pp)
             flowDef.addTrap(pipe, tp.sink.createTap(Write)(mode))
-            CascadingPipe[T1](pipe, sfields, fd, mode, tp.conv)
+            CascadingPipe[T1](pipe, sfields, fd, tp.conv)
           }
-          loop(cp, r, descriptions)
+          finish(cp, r, descriptions)
         }
         go(tp, rest)
 
@@ -311,10 +329,15 @@ object CascadingBackend {
           // TODO we can push up filterKeys on both the left and right
           // and mapValues/flatMapValues on the result
           val cp = cacheGet(hcg, mode) { implicit fd =>
-            val kvPipe = planHashJoin(hcg.left, hcg.right, hcg.joiner, hcg.right.keyOrdering, fd, mode)
-            CascadingPipe(kvPipe, kvFields, fd, mode, tuple2Converter[K, R])
+            val kvPipe = planHashJoin(hcg.left,
+              hcg.right,
+              hcg.joiner,
+              hcg.right.keyOrdering,
+              fd,
+              mode)
+            CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, R])
           }
-          loop(cp, rest, descriptions)
+          finish(cp, rest, descriptions)
         }
         go(hcg)
 
@@ -324,14 +347,17 @@ object CascadingBackend {
           // and mapValues/flatMapValues on the result
           val cp = cacheGet(cgp, mode) { implicit fd =>
             val kvPipe = planCoGroup(cgp.cogrouped, fd, mode)
-            CascadingPipe(kvPipe, kvFields, fd, mode, tuple2Converter[K, V])
+            CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, V])
           }
-          loop(cp, rest, descriptions)
+          finish(cp, rest, descriptions)
         }
         go(cgp)
 
       case r@ReduceStepPipe(_) =>
-        loop(planReduceStep(r, mode), rest, descriptions)
+        planReduceStep(r, mode) match {
+          case Right(cp) => finish(cp, rest, descriptions)
+          case Left(tp) => loop(tp, rest, descriptions)
+        }
     }
 
     RichPipe(loop(p, FlatMappedFn.identity[U], Nil)).applyFlowConfigProperties(flowDef)
@@ -529,14 +555,15 @@ object CascadingBackend {
       WrappedJoiner(new HashJoiner(right.joinFunction, joiner)))
   }
 
-  private def planReduceStep[K, V1, V2](rsp: ReduceStepPipe[K, V1, V2], mode: Mode): TypedPipe[(K, V2)] = {
+  private def planReduceStep[K, V1, V2](rsp: ReduceStepPipe[K, V1, V2],
+    mode: Mode): Either[TypedPipe[(K, V2)], CascadingPipe[(K, V2)]] = {
+
     val rs = rsp.reduce
 
-
-    def groupOp(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] =
+    def groupOp(gb: GroupBuilder => GroupBuilder): CascadingPipe[(K, V2)] =
       groupOpWithValueSort(None)(gb)
 
-    def groupOpWithValueSort(valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): TypedPipe[(K, V2)] = {
+    def groupOpWithValueSort(valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): CascadingPipe[(K, V2)] = {
       def pipe(flowDef: FlowDef) = maybeBox[K, V1](rs.keyOrdering, flowDef) { (tupleSetter, fields) =>
         val (sortOpt, ts) = valueSort.map {
           case ordser: OrderedSerialization[V1] =>
@@ -564,25 +591,25 @@ object CascadingBackend {
 
       pipeCache.cacheGet(rsp, mode) { implicit fd =>
         val tupConv = tuple2Conv[K, V2](rs.keyOrdering)
-        CascadingPipe(pipe(fd), kvFields, fd, mode, tupConv)
+        CascadingPipe(pipe(fd), kvFields, fd, tupConv)
       }
     }
 
     rs match {
       case IdentityReduce(_, inp, None, descriptions) =>
         // Not doing anything
-        descriptions.foldLeft(inp)(_.withDescription(_))
-      case IdentityReduce(_, _, Some(reds), descriptions) =>
-        groupOp { _.reducers(reds).setDescriptions(descriptions) }
+        Left(descriptions.foldLeft(inp)(_.withDescription(_)))
       case UnsortedIdentityReduce(_, inp, None, descriptions) =>
         // Not doing anything
-        descriptions.foldLeft(inp)(_.withDescription(_))
+        Left(descriptions.foldLeft(inp)(_.withDescription(_)))
+      case IdentityReduce(_, _, Some(reds), descriptions) =>
+        Right(groupOp { _.reducers(reds).setDescriptions(descriptions) })
       case UnsortedIdentityReduce(_, _, Some(reds), descriptions) =>
         // This is weird, but it is sometimes used to force a partition
-        groupOp { _.reducers(reds).setDescriptions(descriptions) }
+        Right(groupOp { _.reducers(reds).setDescriptions(descriptions) })
       case ivsr@IdentityValueSortedReduce(_, _, _, _, _) =>
         // in this case we know that V1 =:= V2
-        groupOpWithValueSort(Some(ivsr.valueSort.asInstanceOf[Ordering[_ >: V1]])) { gb =>
+        Right(groupOpWithValueSort(Some(ivsr.valueSort.asInstanceOf[Ordering[_ >: V1]])) { gb =>
           // If its an ordered serialization we need to unbox
           val mappedGB =
             if (ivsr.valueSort.isInstanceOf[OrderedSerialization[_]])
@@ -595,10 +622,10 @@ object CascadingBackend {
           mappedGB
             .reducers(ivsr.reducers.getOrElse(-1))
             .setDescriptions(ivsr.descriptions)
-        }
+        })
       case vsr@ValueSortedReduce(_, _, _, _, _, _) =>
         val optVOrdering = Some(vsr.valueSort)
-        groupOpWithValueSort(optVOrdering) {
+        Right(groupOpWithValueSort(optVOrdering) {
           // If its an ordered serialization we need to unbox
           // the value before handing it to the users operation
           _.every(new cascading.pipe.Every(_, valueField,
@@ -608,14 +635,14 @@ object CascadingBackend {
               valueField), Fields.REPLACE))
             .reducers(vsr.reducers.getOrElse(-1))
             .setDescriptions(vsr.descriptions)
-        }
+        })
       case imr@IteratorMappedReduce(_, _, _, _, _) =>
-        groupOp {
+        Right(groupOp {
           _.every(new cascading.pipe.Every(_, valueField,
             new TypedBufferOp(keyConverter(imr.keyOrdering), TupleConverter.singleConverter[V1], imr.reduceFn, valueField), Fields.REPLACE))
             .reducers(imr.reducers.getOrElse(-1))
             .setDescriptions(imr.descriptions)
-        }
+        })
     }
   }
 }
