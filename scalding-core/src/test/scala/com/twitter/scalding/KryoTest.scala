@@ -99,7 +99,7 @@ class KryoTest extends WordSpec with Matchers {
       val kryoHadoop = new serialization.KryoHadoop(new HadoopConfig(new Configuration))
       val bootstrapKryo = new serialization.KryoHadoop(new ScalaMapConfig(Map.empty)).newKryo
 
-      val buffer = new Array[Byte](1024)
+      val buffer = new Array[Byte](1024 * 1024)
       val output = new Output(buffer)
       bootstrapKryo.writeClassAndObject(output, kryoHadoop)
 
