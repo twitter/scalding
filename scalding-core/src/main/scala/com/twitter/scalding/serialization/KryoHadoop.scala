@@ -22,10 +22,17 @@ import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
 import com.twitter.chill.{ IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiator, SingletonSerializer }
 
-class KryoHadoop(@transient config: Config) extends KryoInstantiator {
+class KryoHadoop(
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
-  val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
-  val cascadingSerializationTokens = config.get(ScaldingConfig.CascadingSerializationTokens)
+  useRefs: Boolean,
+  cascadingSerializationTokens: String
+) extends KryoInstantiator {
+
+  def this(config: Config) =
+    this(
+      config.getBoolean("scalding.kryo.setreferences", false),
+      config.get(ScaldingConfig.CascadingSerializationTokens)
+    )
 
   /**
    * TODO!!!
