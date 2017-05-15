@@ -1,0 +1,45 @@
+@namespace("com.twitter.scalding.avro")
+protocol MyAvroProtocol {
+
+  record MyAvroRecord {
+    long id = null;
+    string otherId;
+    string date = "";
+    int result = 1;
+    string a = "";
+    string b = "";
+    string c = "";
+    string d = "";
+    string e = "";
+    string f = "";
+    int g = 4;
+    string h = "FTI";
+    double price = 0.00;
+    double j = 0.00;
+    string k = "";
+    double l = 0.0;
+    int m = 0;
+    int n = -1;
+    int o = 0;
+    string p = "";
+    int q = 2;
+    int r = 0;
+    int s = 0;
+    int t = 0;
+    int u = 0;
+    int v = 0;
+    double w = 0.00;
+    double x = 0.00;
+    double y = 0.00;
+    double z = 0.00;
+    double aa = 0.00;
+    double bb = 0.00;
+    double cc = 0.00;
+    int dd = 0;
+    int ee = 0;
+    int ff = 0;
+    int gg = 0;
+    int hh = 0;
+    int ii = 0;
+  }
+}
