@@ -11,7 +11,7 @@ Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs.
 
 ## Word Count
 
-Hadoop is a distributed system for counting words. Here is how it's done in Scalding.
+Here's a distributed system for counting words, implemented in Scalding:
 
 ```scala
 package com.twitter.scalding.examples
