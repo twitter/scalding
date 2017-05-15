@@ -25,6 +25,7 @@ import com.twitter.chill.{ IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiat
 class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
   val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
+  val cascadingSerializationTokens = config.get(ScaldingConfig.CascadingSerializationTokens)
 
   /**
    * TODO!!!
@@ -100,7 +101,7 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
      */
     val tokenizedClasses =
       CascadingTokenUpdater
-        .parseTokens(config.get(ScaldingConfig.CascadingSerializationTokens))
+        .parseTokens(cascadingSerializationTokens)
         .toList
         .sorted // Go through this list in order the tokens were allocated
 
