@@ -28,6 +28,8 @@ case class UserName(toStr: String) extends AnyVal
 case class Password(toStr: String) extends AnyVal
 // The adapter to use
 case class Adapter(toStr: String) extends AnyVal
+// FetchSize for mysql
+case class FetchSize(toInt: Int) extends AnyVal
 // Hadoop path string. Can be absolute path or complete URI.
 case class HadoopUri(toStr: String) extends AnyVal
 // Sql query string
@@ -43,7 +45,8 @@ case class ConnectionConfig(
   userName: UserName,
   password: Password,
   adapter: Adapter,
-  encoding: StringEncoding)
+  encoding: StringEncoding,
+  fetchSize: FetchSize = FetchSize(Integer.MIN_VALUE))
 
 case class Database(toStr: String) extends AnyVal
 
