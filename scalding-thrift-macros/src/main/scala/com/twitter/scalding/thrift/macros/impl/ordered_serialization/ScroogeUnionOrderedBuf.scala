@@ -15,6 +15,7 @@
  */
 package com.twitter.scalding.thrift.macros.impl.ordered_serialization
 
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers.StableKnownDirectSubclasses
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scrooge.ThriftUnion
 
@@ -39,8 +40,8 @@ object ScroogeUnionOrderedBuf {
 
     val dispatcher = buildDispatcher
 
-    val subClasses: List[Type] = outerType.typeSymbol.asClass.knownDirectSubclasses.map(_.asType.toType).toList
-
+    val subClasses: List[Type] = StableKnownDirectSubclasses(c)(outerType).map(_.toType)
+    
     val subData: List[(Int, Type, Option[TreeOrderedBuf[c.type]])] = subClasses.map { t =>
       if (t.typeSymbol.name.toString == "UnknownUnionField") {
         (t, None)

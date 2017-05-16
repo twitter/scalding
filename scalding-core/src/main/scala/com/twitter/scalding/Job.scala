@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.Semigroup
 import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
@@ -353,7 +352,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   def timeout[T](timeout: AbsoluteDuration)(t: => T): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
       def call(): Option[T] = Some(t)
-    });
+    })
     try {
       f.get(timeout.toMillisecs, TimeUnit.MILLISECONDS)
     } catch {

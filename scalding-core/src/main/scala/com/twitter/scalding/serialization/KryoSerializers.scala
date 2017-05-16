@@ -40,7 +40,7 @@ class RichDateSerializer extends KSerializer[RichDate] {
   // RichDates are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, date: RichDate): Unit = {
-    out.writeLong(date.timestamp, true);
+    out.writeLong(date.timestamp, true)
   }
 
   def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate =
@@ -51,12 +51,12 @@ class DateRangeSerializer extends KSerializer[DateRange] {
   // DateRanges are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, range: DateRange): Unit = {
-    out.writeLong(range.start.timestamp, true);
-    out.writeLong(range.end.timestamp, true);
+    out.writeLong(range.start.timestamp, true)
+    out.writeLong(range.end.timestamp, true)
   }
 
   def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
-    DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
+    DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)))
   }
 }
 

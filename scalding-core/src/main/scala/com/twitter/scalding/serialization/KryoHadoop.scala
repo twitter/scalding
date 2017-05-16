@@ -25,6 +25,7 @@ import com.twitter.chill.{ IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiat
 class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
   val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
+  val cascadingSerializationTokens = config.get(ScaldingConfig.CascadingSerializationTokens)
 
   /**
    * TODO!!!
@@ -51,6 +52,14 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
     // Don't serialize Boxed instances using Kryo.
     newK.addDefaultSerializer(classOf[com.twitter.scalding.serialization.Boxed[_]], new ThrowingSerializer)
+
+    // Register every boxed class so they are given cascading tokens
+    for {
+      boxedClass <- Boxed.allClasses
+    } {
+      newK.register(boxedClass, new ThrowingSerializer)
+    }
+
     /**
      * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here
@@ -90,9 +99,14 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     /**
      * Register any cascading tokenized classes not already registered
      */
-    val tokenizedClasses = CascadingTokenUpdater.parseTokens(config.get(ScaldingConfig.CascadingSerializationTokens)).values
+    val tokenizedClasses =
+      CascadingTokenUpdater
+        .parseTokens(cascadingSerializationTokens)
+        .toList
+        .sorted // Go through this list in order the tokens were allocated
+
     for {
-      className <- tokenizedClasses
+      (id, className) <- tokenizedClasses
       clazz <- getClassOpt(className)
       if !newK.alreadyRegistered(clazz)
     } {
@@ -102,13 +116,12 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK
   }
 
-  private def getClassOpt(name: String): Option[Class[_]] = {
+  private def getClassOpt(name: String): Option[Class[_]] =
     try {
       Some(Class.forName(name))
     } catch {
       case _: ClassNotFoundException => None
     }
-  }
 
   /**
    * If you override KryoHadoop, prefer to add registrations here instead of overriding [[newKryo]].
