@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import org.scalatest.{ FunSuite, Matchers, WordSpec }
 
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.TypedText
 // Use the scalacheck generators
 import org.scalacheck.Gen
@@ -117,6 +118,15 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         .run
         .runHadoop
         .finish()
+    }
+  }
+}
+
+class TypedPipeMonoidTest extends WordSpec with Matchers {
+  "typedPipeMonoid.zero" should {
+    "be equal to typedPipeMonoid.empty" in {
+      val mon = implicitly[Monoid[TypedPipe[Int]]]
+      assert(mon.zero == mon.empty)
     }
   }
 }
