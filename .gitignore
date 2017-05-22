@@ -38,3 +38,4 @@ NOTICE
 
 # Auto-copied by sbt-microsites
 docs/src/main/tut/contributing.md
+.DS_Store
