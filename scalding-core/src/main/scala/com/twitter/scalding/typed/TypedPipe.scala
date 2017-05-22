@@ -102,7 +102,7 @@ object TypedPipe extends Serializable {
    * TypedPipe instances are monoids. They are isomorphic to multisets.
    */
   implicit def typedPipeMonoid[T]: Monoid[TypedPipe[T]] = new Monoid[TypedPipe[T]] {
-    def zero = empty
+    def zero = TypedPipe.empty
     def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
       left ++ right
   }
