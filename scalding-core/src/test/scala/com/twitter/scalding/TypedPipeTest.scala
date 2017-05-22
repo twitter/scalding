@@ -124,9 +124,9 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
 
 class TypedPipeMonoidTest extends WordSpec with Matchers {
   "typedPipeMonoid.zero" should {
-    "be equal to typedPipeMonoid.empty" in {
+    "be equal to TypePipe.empty" in {
       val mon = implicitly[Monoid[TypedPipe[Int]]]
-      assert(mon.zero == mon.empty)
+      assert(mon.zero == TypedPipe.empty)
     }
   }
 }
