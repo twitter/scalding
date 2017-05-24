@@ -32,7 +32,7 @@ Here's our simplified `Execution`:
 import com.twitter.scalding.{Config, Mode}
 
 case class Execution[T](private doSomething: (Config, Mode) => T) {
-  final def run(config: Config, mode: Mode): T = {
+  def run(config: Config, mode: Mode): T = {
     this.doSomething(config, mode)
   }
 }
@@ -71,7 +71,7 @@ Just like scala's `Seq`, `Option`, `Future`, etc., `Execution` can be *mapped ov
 
 ```scala
 case class Execution[T](private doSomething: (Config, Mode) => T) {
-  final def map[U](transform: T => U): Execution[U] = {
+  def map[U](transform: T => U): Execution[U] = {
     def newDoSomething(config: Config, mode: Mode): U = {
       val result = this.doSomething(config, mode))
       transform(result)
@@ -107,7 +107,7 @@ We take an arbitrary scala expression and wrapping it in `Execution` so frequent
 
 ```scala
 object Execution {
-  final def from[T](value: => T): Execution[T] = {
+  def from[T](value: => T): Execution[T] = {
     def newDoSomething(config: Config, mode: Mode) = value
     Execution(newDoSomething)
   }
