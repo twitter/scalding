@@ -60,7 +60,7 @@ There's also a companion object `Execution` that enables us get the `Config` or 
 val config: Config = ???
 val mode: Mode = ???
 
-Execution.getConfig.run(config, mode)
+Execution.getConfig.run(config, mode)  // Returns the config
 ```
 
 Not very useful yet.
@@ -93,11 +93,12 @@ val mode: Mode = ???
 val funProperty: String = Execution
   .getConfig
   .map { config => config.get("fun") }
-  .run(config, mode)
+  .run(config, mode)  // Returns the config value for "fun"
 
 val fivePlusThree = Execution
   .getMode
   .map { _ => 5 + 3 }
+  .run(config, mode)  // Returns 8
 ```
 
 ### From
@@ -132,7 +133,7 @@ val reversedServiceResult = callOutToService.map { serviceResult =>
   serviceResult.reverse
 }
 
-reversedServiceResult.run(config, mode)
+reversedServiceResult.run(config, mode)  // Returns the reversed serviceResult
 ```
 
 ### Running a Scalding job
@@ -144,27 +145,34 @@ val config: Config = ???
 val mode: Mode = ???
 
 val source: TypedSource[Int] = ???
-val transform: Int => String = ???
 val sink: TypedSink[String] = ???
 
 val scaldingJob: Execution[Unit] = TypedPipe
   .from(source)
-  .map(transform)
+  .map { i => i.toString }
   .writeExecution(sink)
 
-scaldingJob.run(config, mode)
+scaldingJob.run(config, mode)  // Returns ()
+```
+
+The `TypedPipe` method `writeExecution` parallels the normal `write` method on `TypedPipe`, but instead of planning the result inside of a Scalding `Job` class, `writeExecution` yields a plan to run that Scalding job as an `Execution`. The type parameter is `Unit` because the purpose of the `Execution` created from the `TypedPipe` is to have side-effects by writing to the `TypedSink` argument.
+
+```scala
+val config: Config = ???
+val mode: Mode = ???
+
+val source: TypedSource[Int] = ???
+val sink: TypedSink[String] = ???
 
 val scaldingJobResults: Execution[Iterable[String]] = TypedPipe
   .from(source)
-  .map(transform)
+  .map { i => i.toString }
   .toIterableExecution
 
 scaldingJobResults
   .map { results => results.foreach(println) }
-  .run(config, mode)
+  .run(config, mode)  // Returns ()
 ```
-
-The `TypedPipe` method `writeExecution` parallels the normal `write` method on `TypedPipe`, but instead of planning the result inside of a Scalding `Job` class, `writeExecution` yields a plan to run that Scalding job as an `Execution`. The type parameter is `Unit` because the purpose of the `Execution` created from the `TypedPipe` is to have side-effects by writing to the `TypedSink` argument.
 
 The `TypedPipe` method `toIterableExecution` creates an `Execution` plan to expose the output of the `TypedPipe` in the local environment. This is useful if we need to use the output of a Scalding job to decide what to do next. Note that there's no guarantee on the order of the data and for large datasets, the length of the `Iterable` could be significant.
 
@@ -223,7 +231,7 @@ val scaldingJobWithAnnouncements =
     }
   }
 
-scaldingJobWithAnnouncements.run(config, mode)
+scaldingJobWithAnnouncements.run(config, mode)  // Returns ()
 ```
 
 As always, remember that we are creating a plan to run a Scalding job (and logging service announcements). not actually running this code. Until we've called `Execution`'s `run` method, no work has been done (besides instantiating the loggingService).
