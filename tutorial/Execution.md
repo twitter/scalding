@@ -57,10 +57,8 @@ So, the function `doSomething` above takes in a `Config` and `Mode` and gives us
 There's also a companion object `Execution` that enables us get the `Config` or `Mode`. A use of `Execution` might look like:
 
 ```scala
-import com.twitter.scalding.Local
-
-val config: Config = Config.default
-val mode: Mode = Local(true)
+val config: Config = ???
+val mode: Mode = ???
 
 Execution.getConfig.run(config, mode)
 ```
@@ -89,6 +87,9 @@ case class Execution[T](private doSomething: (Config, Mode) => T) {
 This is pretty powerful. `Execution` can now be used to access anything in the `Config` or `Mode`, or even do arbitrary work:
 
 ```scala
+val config: Config = ???
+val mode: Mode = ???
+
 val funProperty: String = Execution
   .getConfig
   .map { config => config.get("fun") }
