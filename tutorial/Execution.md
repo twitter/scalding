@@ -52,7 +52,7 @@ object Execution {
 }
 ```
 
-So, the function `doSomething` above takes in a `Config` and `Mode` and gives us a `T`. It is encapsulated inside of `Execution`, so we cannod access it directly, but only call the `run` method to invoke it.
+So, the function `doSomething` above takes in a `Config` and `Mode` and gives us a `T`. It is encapsulated inside of `Execution`, so we cannot access it directly, but only call the `run` method to invoke it.
 
 There's also a companion object `Execution` that enables us get the `Config` or `Mode`. A use of `Execution` might look like:
 
@@ -73,7 +73,7 @@ Just like scala's `Seq`, `Option`, `Future`, etc., `Execution` can be *mapped ov
 case class Execution[T](private doSomething: (Config, Mode) => T) {
   def map[U](transform: T => U): Execution[U] = {
     def newDoSomething(config: Config, mode: Mode): U = {
-      val result = this.doSomething(config, mode))
+      val result = this.doSomething(config, mode)
       transform(result)
     }
 
@@ -103,7 +103,7 @@ val fivePlusThree = Execution
 
 ### From
 
-We take an arbitrary scala expression and wrapping it in `Execution` so frequently that we're going to add a helper method, `from`, for it:
+We take an arbitrary scala expression and wrap it in `Execution` so frequently that we're going to add a helper method, `from`, for it:
 
 ```scala
 object Execution {
@@ -178,9 +178,9 @@ The `TypedPipe` method `toIterableExecution` creates an `Execution` plan to expo
 
 ### Flatmap
 
-So far, we've seen how to examine the `Config`, `Mode`, lift an arbitrary value into an `Execution` object, and run a Scalding job. We've alluded to the idea that we can use the output of one `Execution` to plan another, but haven't talked about how to do that. One may be familiar with the method `flatMap` on various types in scala, just like `map`. `flatMap` behaves differently depending on the type.
+So far, we've seen how to examine the `Config`, `Mode`, wrap an arbitrary expression in an `Execution` object, and run a Scalding job. We've alluded to the idea that we can use the output of one `Execution` to plan another, but haven't talked about how to do that. One may be familiar with the method `flatMap` on various types in scala, just like `map`. `flatMap` behaves differently depending on the type.
 
-For example, an `Option` contains either one value (`Some`) or no (`None`) values. When we `flatMap` on an `Option`, if there's a value in the `Option` (`Some`), the function we pass to `flatMap` examines the value inside the `Option` to produce a new `Option`:
+For example, an `Option` contains either one value (`Some`) or no values (`None`). When we `flatMap` on an `Option`, if there's a value in the `Option` (`Some`), the function we pass to `flatMap` examines the value inside the `Option` to produce a new `Option`:
 
 ```scala
 def isEven(i: Int) = i % 2 == 0
@@ -234,9 +234,9 @@ val scaldingJobWithAnnouncements =
 scaldingJobWithAnnouncements.run(config, mode)  // Returns ()
 ```
 
-As always, remember that we are creating a plan to run a Scalding job (and logging service announcements). not actually running this code. Until we've called `Execution`'s `run` method, no work has been done (besides instantiating the loggingService).
+As always, remember that we are creating a plan to run a Scalding job (and logging service announcements), not actually running this code. Until we've called `Execution`'s `run` method, no work has been done (besides instantiating the `loggingService`).
 
-While the code we run in the `TypedPipe` methods `map`, `filter`, etc. may happen in a different run environment according on the `Mode` (e.g. remote Hadoop cluster), everything else is happening locally such as the calls to the `loggingService`.
+While the code we run in the `TypedPipe` methods `map`, `filter`, etc. may happen in a different run environment according on the `Mode` (e.g. remote Hadoop cluster), everything else in the `Execution` is happening locally, such as the calls to the `loggingService`.
 
 Also note that we have to call `flatMap` twice here. If we had written
 
