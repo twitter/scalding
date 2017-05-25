@@ -1,6 +1,6 @@
 # A Random Walk Down Executions or: You Could Have Invented Executions or: Learn You An Execution For Greater Good
 
-The following is a guide to understanding Scalding's [com.twitter.scalding.Execution](https://github.com/twitter/scalding/blob/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala)` type.
+The following is a guide to understanding Scalding's [com.twitter.scalding.Execution](https://github.com/twitter/scalding/blob/develop/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala) type.
 
 ## What is a Scalding Execution?
 
@@ -427,7 +427,7 @@ class EvensExecutionTest extends WordSpec {
       assert(sink.readResults == expected)
     }
 
-    "filter out evens" in {
+    "filter out odds" in {
       val numbers = Seq(1, 2)
       val expected = Seq(2)
 
