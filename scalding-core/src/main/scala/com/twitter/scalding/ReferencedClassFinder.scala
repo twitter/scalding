@@ -3,6 +3,7 @@ package com.twitter.scalding
 import com.twitter.scalding.typed.CoGroupable
 
 import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.{ Type, TypeRef, Symbol, RuntimeMirror, NullaryMethodType }
 
 object ReferencedClassFinder {
   private val baseContainers = List(
@@ -40,7 +41,7 @@ object ReferencedClassFinder {
       field <- outerClass.getDeclaredFields
       if baseContainers.exists(_.isAssignableFrom(field.getType))
       scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
-      clazz <- getClassesForType(scalaSignature)
+      clazz <- getClassesForType(mirror, scalaSignature)
       /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
        * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
        * of the ones we care about (eg tuples) get tokenized in cascading.
@@ -51,26 +52,26 @@ object ReferencedClassFinder {
     }).toSet
   }
 
-  private def getClassesForType(typeSignature: universe.Type): Seq[Class[_]] = typeSignature match {
-    case universe.TypeRef(_, _, args) =>
+  private def getClassesForType(mirror: RuntimeMirror, typeSignature: Type): Seq[Class[_]] = typeSignature match {
+    case TypeRef(_, _, args) =>
       args.flatMap { generic =>
         //If the wrapped type is a Tuple, recurse into its types
         if (generic.typeSymbol.fullName.startsWith("scala.Tuple")) {
-          getClassesForType(generic)
+          getClassesForType(mirror, generic)
         } else {
-          getClassOpt(generic.typeSymbol.fullName)
+          getClassOpt(mirror, generic.typeSymbol)
         }
       }
     //.member returns the accessor method for the variable unless the field is private[this], so inspect the return type
-    case universe.NullaryMethodType(resultType) => getClassesForType(resultType)
+    case NullaryMethodType(resultType) => getClassesForType(mirror, resultType)
     case _ => Nil
   }
 
-  private def getClassOpt(name: String): Option[Class[_]] = {
+  private def getClassOpt(mirror: RuntimeMirror, typeSymbol: Symbol): Option[Class[_]] = {
     try {
-      Some(Class.forName(name))
+      Some(mirror.runtimeClass(typeSymbol.asClass))
     } catch {
-      case _: ClassNotFoundException => None
+      case _: ClassNotFoundException | ScalaReflectionException(_) => None
     }
   }
 }
