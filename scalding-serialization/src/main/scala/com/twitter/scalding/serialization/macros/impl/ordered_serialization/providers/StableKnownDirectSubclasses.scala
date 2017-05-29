@@ -13,6 +13,6 @@ import scala.reflect.macros.whitebox.Context
  */
 object StableKnownDirectSubclasses {
 
-  def apply(c: Context)(tpe: c.Type): List[c.universe.TypeSymbol] = 
+  def apply(c: Context)(tpe: c.Type): List[c.universe.TypeSymbol] =
     tpe.typeSymbol.asClass.knownDirectSubclasses.map(_.asType).toList.sortBy(_.fullName)
 }

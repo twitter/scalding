@@ -193,8 +193,9 @@ class AsyncFlowDefRunner extends Writer { self =>
     messageQueue.put(Stop)
     // get an immutable copy
     val cleanUp = getState.filesToCleanup
-    cleanUp.foreach { case (mode, filesToRm) =>
-      Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.toList, mode))
+    cleanUp.foreach {
+      case (mode, filesToRm) =>
+        Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.toList, mode))
     }
   }
 
