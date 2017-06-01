@@ -3,7 +3,7 @@ package com.twitter.scalding
 import com.twitter.scalding.typed.CoGroupable
 import org.slf4j.LoggerFactory
 import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.{ NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef }
+import scala.reflect.runtime.universe.{NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef}
 
 object ReferencedClassFinder {
 
@@ -37,28 +37,40 @@ object ReferencedClassFinder {
    * referred to in a field
    */
   def findReferencedClasses(outerClass: Class[_]): Set[Class[_]] = {
+    val scalaPackage = Package.getPackage("scala")
+    val mirror = universe.runtimeMirror(outerClass.getClassLoader)
+    getClassType(outerClass, mirror) match {
+      case Some(scalaType) =>
+        (for {
+          field <- outerClass.getDeclaredFields
+          if baseContainers.exists(_.isAssignableFrom(field.getType))
+          scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
+          clazz <- getClassesForType(mirror, scalaSignature)
+          /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
+           * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
+           * of the ones we care about (eg tuples) get tokenized in cascading.
+           */
+          if !(clazz.isPrimitive || clazz.isArray || clazz.getPackage.equals(scalaPackage))
+        } yield {
+          clazz
+        }).toSet
+      case _ => Set()
+    }
+  }
+
+  private def getClassType(outerClass: Class[_], mirror: universe.Mirror): Option[universe.Type] = {
     try {
-      val scalaPackage = Package.getPackage("scala")
-      val mirror = universe.runtimeMirror(outerClass.getClassLoader)
-      val scalaType = mirror.classSymbol(outerClass).toType
-      (for {
-        field <- outerClass.getDeclaredFields
-        if baseContainers.exists(_.isAssignableFrom(field.getType))
-        scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
-        clazz <- getClassesForType(mirror, scalaSignature)
-        /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
-       * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
-       * of the ones we care about (eg tuples) get tokenized in cascading.
-       */
-        if !(clazz.isPrimitive || clazz.isArray || clazz.getPackage.equals(scalaPackage))
-      } yield {
-        clazz
-      }).toSet
+      Some(mirror.classSymbol(outerClass).toType)
     } catch {
       // In some cases we fail to find references classes, it shouldn't be fatal.
-      case t: Throwable =>
-        LOG.warn(s"Unable to find referenced classes for: $outerClass. Skipping", t)
-        Set()
+      case r: RuntimeException if r.getMessage.contains("error reading Scala signature") =>
+        LOG.warn(s"Unable to find referenced classes for: $outerClass. This is potentially due to missing dependencies", r)
+        None
+      case t: Throwable if t.getMessage.contains("illegal cyclic reference") =>
+        // Related to: https://issues.scala-lang.org/browse/SI-10129
+        LOG.warn(s"Unable to find referenced classes for: $outerClass. Related to Scala language issue: SI-10129", t)
+        None
+      case t: Throwable => throw t
     }
   }
 
