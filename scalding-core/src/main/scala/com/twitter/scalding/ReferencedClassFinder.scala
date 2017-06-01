@@ -55,9 +55,9 @@ object ReferencedClassFinder {
         clazz
       }).toSet
     } catch {
-      // In some cases we fail find references classes, it shouldn't be fatal.
-      case e: Exception =>
-        LOG.warn(s"Unable to find referenced classes for: $outerClass. Skipping", e)
+      // In some cases we fail to find references classes, it shouldn't be fatal.
+      case t: Throwable =>
+        LOG.warn(s"Unable to find referenced classes for: $outerClass. Skipping", t)
         Set()
     }
   }
