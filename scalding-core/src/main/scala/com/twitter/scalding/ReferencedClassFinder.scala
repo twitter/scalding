@@ -3,7 +3,7 @@ package com.twitter.scalding
 import com.twitter.scalding.typed.CoGroupable
 import org.slf4j.LoggerFactory
 import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.{NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef}
+import scala.reflect.runtime.universe.{ NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef }
 
 object ReferencedClassFinder {
 
@@ -69,6 +69,10 @@ object ReferencedClassFinder {
       case t: Throwable if t.getMessage.contains("illegal cyclic reference") =>
         // Related to: https://issues.scala-lang.org/browse/SI-10129
         LOG.warn(s"Unable to find referenced classes for: $outerClass. Related to Scala language issue: SI-10129", t)
+        None
+      case ae: AssertionError if ae.getMessage.contains("no symbol could be loaded from interface") =>
+        // Related to: https://issues.scala-lang.org/browse/SI-10129
+        LOG.warn(s"Unable to find referenced classes for: $outerClass. Related to Scala language issue: SI-10129", ae)
         None
       case t: Throwable => throw t
     }
