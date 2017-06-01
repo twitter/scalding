@@ -1,11 +1,14 @@
 package com.twitter.scalding
 
 import com.twitter.scalding.typed.CoGroupable
-
+import org.slf4j.LoggerFactory
 import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.{ Type, TypeRef, Symbol, RuntimeMirror, NullaryMethodType }
+import scala.reflect.runtime.universe.{ NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef }
 
 object ReferencedClassFinder {
+
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   private val baseContainers = List(
     classOf[Execution[_]],
     classOf[TypedPipe[_]],
@@ -34,22 +37,29 @@ object ReferencedClassFinder {
    * referred to in a field
    */
   def findReferencedClasses(outerClass: Class[_]): Set[Class[_]] = {
-    val scalaPackage = Package.getPackage("scala")
-    val mirror = universe.runtimeMirror(outerClass.getClassLoader)
-    val scalaType = mirror.classSymbol(outerClass).toType
-    (for {
-      field <- outerClass.getDeclaredFields
-      if baseContainers.exists(_.isAssignableFrom(field.getType))
-      scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
-      clazz <- getClassesForType(mirror, scalaSignature)
-      /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
+    try {
+      val scalaPackage = Package.getPackage("scala")
+      val mirror = universe.runtimeMirror(outerClass.getClassLoader)
+      val scalaType = mirror.classSymbol(outerClass).toType
+      (for {
+        field <- outerClass.getDeclaredFields
+        if baseContainers.exists(_.isAssignableFrom(field.getType))
+        scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
+        clazz <- getClassesForType(mirror, scalaSignature)
+        /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
        * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
        * of the ones we care about (eg tuples) get tokenized in cascading.
        */
-      if !(clazz.isPrimitive || clazz.isArray || clazz.getPackage.equals(scalaPackage))
-    } yield {
-      clazz
-    }).toSet
+        if !(clazz.isPrimitive || clazz.isArray || clazz.getPackage.equals(scalaPackage))
+      } yield {
+        clazz
+      }).toSet
+    } catch {
+      // In some cases we fail find references classes, it shouldn't be fatal.
+      case e: Exception =>
+        LOG.warn(s"Unable to find referenced classes for: $outerClass. Skipping", e)
+        Set()
+    }
   }
 
   private def getClassesForType(mirror: RuntimeMirror, typeSignature: Type): Seq[Class[_]] = typeSignature match {
