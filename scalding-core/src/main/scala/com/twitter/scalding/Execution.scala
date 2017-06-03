@@ -143,7 +143,7 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
    * Seriously: pro-style is for this to be called only once in a program.
    */
   final def run(conf: Config, mode: Mode)(implicit cec: ConcurrentExecutionContext): Future[T] = {
-    val writer: Execution.Writer = new AsyncFlowDefRunner
+    val writer: Execution.Writer = mode.newWriter()
     val ec = new EvalCache(writer)
     val confWithId = conf.setScaldingExecutionId(UUID.randomUUID.toString)
     // get on Trampoline
