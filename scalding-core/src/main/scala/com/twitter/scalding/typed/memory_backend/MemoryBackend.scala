@@ -244,9 +244,12 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
         case cp@CrossPipe(_, _) =>
           plan(m, cp.viaHashJoin)
 
-        case cv@CrossValue(_, _) =>
-          plan(m, cv.viaHashJoin)
-
+        case CrossValue(left, EmptyValue) => (m, Op.empty)
+        case CrossValue(left, LiteralValue(v)) =>
+          val (m1, op) = plan(m, left)
+          (m1, op.flatMap { a => Iterator.single((a, v)) })
+        case CrossValue(left, ComputedValue(right)) =>
+          plan(m, CrossPipe(left, right))
         case DebugPipe(p) =>
           // There is really little that can be done here but println
           plan(m, p.map { t => println(t); t })
@@ -393,7 +396,27 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       }
     }
 
-  def planHashJoinable[K, V](m: Memo, hk: HashJoinable[K, V]): (Memo, Op[(K, V)]) = ???
+  def planHashJoinable[K, V](m: Memo, hk: HashJoinable[K, V]): (Memo, Op[(K, V)]) = hk match {
+    case IdentityReduce(_, pipe, _, _) => plan(m, pipe)
+    case UnsortedIdentityReduce(_, pipe, _, _) => plan(m, pipe)
+    case imr@IteratorMappedReduce(_, _, _, _, _) =>
+      def go[K, U, V](imr: IteratorMappedReduce[K, U, V]) = {
+        val IteratorMappedReduce(_, pipe, fn, _, _) = imr
+        val (m1, op) = plan(m, pipe)
+        (m1, op.mapAll[(K, U), (K, V)] { kvs =>
+          val m = kvs.groupBy(_._1).iterator
+          val res = ArrayBuffer[(K, V)]()
+          m.foreach { case (k, kus) =>
+            val us = kus.iterator.map { case (k, u) => u }
+            fn(k, us).foreach { v =>
+              res += ((k, v))
+            }
+          }
+          res
+        })
+      }
+      go(imr)
+  }
 
   case class State(
     id: Long,

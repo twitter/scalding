@@ -32,14 +32,13 @@ class MemoryTest extends FunSuite {
     mapMatch(x)
   }
 
-  // fails now
-  // test("hashJoin works") {
-  //   val input = TypedPipe.from(0 until 100)
-  //   val left = input.map { k => (k, k % 2) }
-  //   val right = input.map { k => (k, k % 3) }
+  test("hashJoin works") {
+    val input = TypedPipe.from(0 until 100)
+    val left = input.map { k => (k, k % 2) }
+    val right = input.map { k => (k, k % 3) }
 
-  //   mapMatch(left.hashJoin(right).toIterableExecution)
-  // }
+    mapMatch(left.hashJoin(right).toIterableExecution)
+  }
 
   // fails now
   // test("join works") {
