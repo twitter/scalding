@@ -115,13 +115,12 @@ object MemoryPlanner {
     }
 
     case class Concat[O](left: Op[O], right: Op[O]) extends Op[O] {
-      def result(implicit cec: ConcurrentExecutionContext) =
-        for {
-          l <- left.result
-          r <- right.result
-        } yield {
-          ArrayBuffer.concat(l, r)
-        }
+      def result(implicit cec: ConcurrentExecutionContext) = {
+        // start both futures in parallel
+        val f1 = left.result
+        val f2 = right.result
+        f1.zip(f2).map { case (l, r) => ArrayBuffer.concat(l, r) }
+      }
     }
 
     case class Map[I, O](input: Op[I], fn: I => TraversableOnce[O]) extends Op[O] {
@@ -178,11 +177,12 @@ object MemoryPlanner {
       opB: Op[B],
       fn: (IndexedSeq[A], IndexedSeq[B]) => ArrayBuffer[C]) extends Op[C] {
 
-      def result(implicit cec: ConcurrentExecutionContext) =
-        for {
-          as <- opA.result
-          bs <- opB.result
-        } yield fn(as, bs)
+      def result(implicit cec: ConcurrentExecutionContext) = {
+        // start both futures in parallel
+        val f1 = opA.result
+        val f2 = opB.result
+        f1.zip(f2).map { case (a, b) => fn(a, b) }
+      }
     }
   }
 
@@ -375,7 +375,18 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           }
           go(hcg)
 
-        case cgp@CoGroupedPipe(_) => ???
+        case CoGroupedPipe(cg) =>
+          def go[K, V](cg: CoGrouped[K, V]) = {
+            val inputs = cg.inputs
+            val joinf = cg.joinFunction
+            /**
+             * we need to expand the Op type to deal
+             * with multi-way or we need to keep
+             * the decomposed series of joins
+             */
+            ???
+          }
+          go(cg)
 
         case ReduceStepPipe(IdentityReduce(_, pipe, _, descriptions)) =>
           plan(m, pipe)
