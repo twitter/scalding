@@ -60,41 +60,8 @@ sealed trait CoGroupable[K, +R] extends HasReducers with HasDescription with jav
    * fewer values per key on the right. If both sides are similar, no need to worry.
    * If one side is a one-to-one mapping, that should be the "smaller" side.
    */
-  def cogroup[R1, R2](smaller: CoGroupable[K, R1])(fn: (K, Iterator[R], Iterable[R1]) => Iterator[R2]): CoGrouped[K, R2] = {
-    val self = this
-    val leftSeqCount = self.inputs.size - 1
-    val jf = joinFunction // avoid capturing `this` in the closure below
-    val smallerJf = smaller.joinFunction
-
-    new CoGrouped[K, R2] {
-      val inputs = self.inputs ++ smaller.inputs
-      val reducers = (self.reducers.iterator ++ smaller.reducers.iterator).reduceOption(_ max _)
-      val descriptions: Seq[String] = self.descriptions ++ smaller.descriptions
-      def keyOrdering = smaller.keyOrdering
-
-      /**
-       * Avoid capturing anything below as it will need to be serialized and sent to
-       * all the reducers.
-       */
-      def joinFunction = { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
-        val (leftSeq, rightSeq) = joins.splitAt(leftSeqCount)
-        val joinedLeft = jf(k, leftMost, leftSeq)
-
-        // Only do this once, for all calls to iterator below
-        val smallerHead = rightSeq.head
-        val smallerTail = rightSeq.tail
-        // TODO: it might make sense to cache this in memory as an IndexedSeq and not
-        // recompute it on every value for the left if the smallerJf is non-trivial
-        // we could see how long it is, and possible switch to a cached version the
-        // second time through if it is small enough
-        val joinedRight = new Iterable[R1] {
-          def iterator = smallerJf(k, smallerHead.iterator, smallerTail)
-        }
-
-        fn(k, joinedLeft, joinedRight)
-      }
-    }
-  }
+  def cogroup[R1, R2](smaller: CoGroupable[K, R1])(fn: (K, Iterator[R], Iterable[R1]) => Iterator[R2]): CoGrouped[K, R2] =
+    CoGrouped.Pair(this, smaller, fn)
 
   def join[W](smaller: CoGroupable[K, W]) =
     cogroup[W, (R, W)](smaller)(Joiner.inner2)
@@ -122,69 +89,82 @@ object CoGrouped {
     }
     go(list)
   }
-}
 
-sealed trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped]
-  with CoGroupable[K, R]
-  with WithReducers[CoGrouped[K, R]]
-  with WithDescription[CoGrouped[K, R]]
-  with java.io.Serializable {
+  case class Pair[K, A, B, C](
+    larger: CoGroupable[K, A],
+    smaller: CoGroupable[K, B],
+    fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends CoGrouped[K, C] {
 
-  override def withReducers(reds: Int) = {
-    val self = this // the usual self => trick leads to serialization errors
-    val joinF = joinFunction // can't access this on self, since it is protected
-    new CoGrouped[K, R] {
-      def inputs = self.inputs
-      def reducers = Some(reds)
-      def keyOrdering = self.keyOrdering
-      def joinFunction = joinF
-      def descriptions: Seq[String] = self.descriptions
+    def inputs = larger.inputs ++ smaller.inputs
+    def reducers = (larger.reducers.iterator ++ smaller.reducers.iterator).reduceOption(_ max _)
+    def descriptions: Seq[String] = larger.descriptions ++ smaller.descriptions
+    def keyOrdering = smaller.keyOrdering
+
+    /**
+     * Avoid capturing anything below as it will need to be serialized and sent to
+     * all the reducers.
+     */
+    def joinFunction = {
+      val leftSeqCount = larger.inputs.size - 1
+      val jf = larger.joinFunction // avoid capturing `this` in the closure below
+      val smallerJf = smaller.joinFunction
+
+      { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
+        val (leftSeq, rightSeq) = joins.splitAt(leftSeqCount)
+        val joinedLeft = jf(k, leftMost, leftSeq)
+
+        // Only do this once, for all calls to iterator below
+        val smallerHead = rightSeq.head
+        val smallerTail = rightSeq.tail
+        // TODO: it might make sense to cache this in memory as an IndexedSeq and not
+        // recompute it on every value for the left if the smallerJf is non-trivial
+        // we could see how long it is, and possible switch to a cached version the
+        // second time through if it is small enough
+        val joinedRight = new Iterable[B] {
+          def iterator = smallerJf(k, smallerHead.iterator, smallerTail)
+        }
+
+        fn(k, joinedLeft, joinedRight)
+      }
     }
   }
 
-  override def withDescription(description: String) = {
-    val self = this // the usual self => trick leads to serialization errors
-    val joinF = joinFunction // can't access this on self, since it is protected
-    new CoGrouped[K, R] {
-      def inputs = self.inputs
-      def reducers = self.reducers
-      def keyOrdering = self.keyOrdering
-      def joinFunction = joinF
-      def descriptions: Seq[String] = self.descriptions :+ description
-    }
+  case class WithReducers[K, V](on: CoGrouped[K, V], reds: Int) extends CoGrouped[K, V] {
+    def inputs = on.inputs
+    def reducers = Some(reds)
+    def keyOrdering = on.keyOrdering
+    def joinFunction = on.joinFunction
+    def descriptions: Seq[String] = on.descriptions
   }
 
-  /**
-   * It seems complex to push a take up to the mappers before a general join.
-   * For some cases (inner join), we could take at most n from each TypedPipe,
-   * but it is not clear how to generalize that for general cogrouping functions.
-   * For now, just do a normal take.
-   */
-  override def bufferedTake(n: Int): CoGrouped[K, R] =
-    take(n)
+  case class WithDescription[K, V](
+    on: CoGrouped[K, V],
+    description: String) extends CoGrouped[K, V] {
 
-  // Filter the keys before doing the join
-  override def filterKeys(fn: K => Boolean): CoGrouped[K, R] = {
-    val self = this // the usual self => trick leads to serialization errors
-    val joinF = joinFunction // can't access this on self, since it is protected
-    new CoGrouped[K, R] {
-      val inputs = self.inputs.map(_.filterKeys(fn))
-      def reducers = self.reducers
-      def descriptions: Seq[String] = self.descriptions
-      def keyOrdering = self.keyOrdering
-      def joinFunction = joinF
-    }
+    def inputs = on.inputs
+    def reducers = on.reducers
+    def keyOrdering = on.keyOrdering
+    def joinFunction = on.joinFunction
+    def descriptions: Seq[String] = on.descriptions :+ description
   }
 
-  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] = {
-    val self = this // the usual self => trick leads to serialization errors
-    val joinF = joinFunction // can't access this on self, since it is protected
-    new CoGrouped[K, R1] {
-      def inputs = self.inputs
-      def reducers = self.reducers
-      def descriptions: Seq[String] = self.descriptions
-      def keyOrdering = self.keyOrdering
-      def joinFunction = { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
+  case class FilterKeys[K, V](on: CoGrouped[K, V], fn: K => Boolean) extends CoGrouped[K, V] {
+    val inputs = on.inputs.map(_.filterKeys(fn))
+    def reducers = on.reducers
+    def keyOrdering = on.keyOrdering
+    def joinFunction = on.joinFunction
+    def descriptions: Seq[String] = on.descriptions
+  }
+
+  case class MapGroup[K, V1, V2](on: CoGrouped[K, V1], fn: (K, Iterator[V1]) => Iterator[V2]) extends CoGrouped[K, V2] {
+    def inputs = on.inputs
+    def reducers = on.reducers
+    def descriptions: Seq[String] = on.descriptions
+    def keyOrdering = on.keyOrdering
+    def joinFunction = {
+      val joinF = on.joinFunction // don't capture on inside the closure
+
+      { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
         val joined = joinF(k, leftMost, joins)
         /*
          * After the join, if the key has no values, don't present it to the mapGroup
@@ -196,10 +176,40 @@ sealed trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped]
       }
     }
   }
+}
+
+sealed trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped]
+  with CoGroupable[K, R]
+  with WithReducers[CoGrouped[K, R]]
+  with WithDescription[CoGrouped[K, R]]
+  with java.io.Serializable {
+
+  override def withReducers(reds: Int): CoGrouped[K, R] =
+    CoGrouped.WithReducers(this, reds)
+
+  override def withDescription(description: String): CoGrouped[K, R] =
+    CoGrouped.WithDescription(this, description)
+
+  /**
+   * It seems complex to push a take up to the mappers before a general join.
+   * For some cases (inner join), we could take at most n from each TypedPipe,
+   * but it is not clear how to generalize that for general cogrouping functions.
+   * For now, just do a normal take.
+   */
+  override def bufferedTake(n: Int): CoGrouped[K, R] =
+    take(n)
+
+  // Filter the keys before doing the join
+  override def filterKeys(fn: K => Boolean): CoGrouped[K, R] =
+    CoGrouped.FilterKeys(this, fn)
+
+  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] =
+    CoGrouped.MapGroup(this, fn)
 
   override def toTypedPipe: TypedPipe[(K, R)] =
     TypedPipe.CoGroupedPipe(this)
 }
+
 /**
  * If we can HashJoin, then we can CoGroup, but not vice-versa
  * i.e., HashJoinable is a strict subset of CoGroupable (CoGrouped, for instance
