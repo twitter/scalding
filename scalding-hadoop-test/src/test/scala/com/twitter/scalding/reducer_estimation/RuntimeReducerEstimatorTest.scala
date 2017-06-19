@@ -1,13 +1,14 @@
 package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
-import com.twitter.scalding.reducer_estimation.RuntimeReducerEstimator.{ RuntimePerReducer, EstimationScheme, IgnoreInputSize }
+import RuntimeReducerEstimator.{ EstimationScheme, IgnoreInputSize, RuntimePerReducer }
+import com.twitter.scalding.estimation.{ Estimator, FlowStepHistory, FlowStrategyInfo, HistoryService }
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 import scala.util.{ Success, Try }
 
-object HistoryService1 extends HistoryServiceWithData {
+object HistoryService1 extends HistoryService {
   import HistoryServiceWithData._
 
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
@@ -30,8 +31,8 @@ class ErrorRuntimeEstimator extends RatioBasedEstimator {
   override val historyService = ErrorHistoryService
 }
 
-class DummyEstimator extends ReducerEstimator {
-  def estimateReducers(info: FlowStrategyInfo) = Some(42)
+class DummyEstimator extends Estimator[Int] {
+  override def estimate(info: FlowStrategyInfo): Option[Int] = Some(42)
 }
 
 class RuntimeReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {

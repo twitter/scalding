@@ -1,6 +1,7 @@
 package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
+import com.twitter.scalding.estimation.{ FlowStepHistory, FlowStrategyInfo, HistoryService, Task }
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
@@ -24,11 +25,12 @@ object EmptyHistoryService extends HistoryService {
 }
 
 object ErrorHistoryService extends HistoryService {
-  def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
+  override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
     Failure(new RuntimeException("Failed to fetch job history"))
 }
 
 object HistoryServiceWithData {
+  import ReducerHistoryEstimator._
 
   // we only care about these two input size fields for RatioBasedEstimator
   def makeHistory(inputHdfsBytesRead: Long, mapOutputBytes: Long): FlowStepHistory =
@@ -39,17 +41,19 @@ object HistoryServiceWithData {
     val tasks = taskRuntimes.map { time =>
       val startTime = random.nextLong
       Task(
-        taskType = "REDUCE",
-        status = "SUCCEEDED",
-        startTime = startTime,
-        finishTime = startTime + time)
+        details = Map(
+          Task.TaskType -> "REDUCE",
+          Status -> "SUCCEEDED",
+          StartTime -> startTime,
+          FinishTime -> (startTime + time)),
+        Map.empty)
     }
 
     FlowStepHistory(
       keys = null,
-      submitTime = 0,
-      launchTime = 0L,
-      finishTime = 0L,
+      submitTimeMillis = 0,
+      launchTimeMillis = 0L,
+      finishTimeMillis = 0L,
       totalMaps = 0L,
       totalReduces = 0L,
       finishedMaps = 0L,
@@ -72,9 +76,7 @@ object HistoryServiceWithData {
   def inputSize = HipJob.InSrcFileSize
 }
 
-abstract class HistoryServiceWithData extends HistoryService
-
-object ValidHistoryService extends HistoryServiceWithData {
+object ValidHistoryService extends HistoryService {
   import HistoryServiceWithData._
 
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
@@ -87,7 +89,7 @@ object ValidHistoryService extends HistoryServiceWithData {
         makeHistory(inputSize, inputSize / 2)))
 }
 
-object SmallDataExplosionHistoryService extends HistoryServiceWithData {
+object SmallDataExplosionHistoryService extends HistoryService {
   import HistoryServiceWithData._
 
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] = {
@@ -103,7 +105,7 @@ object SmallDataExplosionHistoryService extends HistoryServiceWithData {
   }
 }
 
-object InvalidHistoryService extends HistoryServiceWithData {
+object InvalidHistoryService extends HistoryService {
   import HistoryServiceWithData._
 
   def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =

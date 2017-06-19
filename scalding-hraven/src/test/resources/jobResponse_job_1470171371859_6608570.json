@@ -1,0 +1,65 @@
+[ {
+  "taskType" : "",
+  "counters" : {
+  }
+}, {
+  "taskType" : "MAP",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 768618496,
+      "GC_TIME_MILLIS" : 371,
+      "CPU_MILLISECONDS" : 45260,
+      "COMMITTED_HEAP_BYTES" : 814776320
+    }
+  }
+}, {
+  "taskType" : "MAP",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 768618496,
+      "GC_TIME_MILLIS" : 371,
+      "CPU_MILLISECONDS" : 45260,
+      "COMMITTED_HEAP_BYTES" : 814776320
+    }
+  }
+}, {
+  "taskType" : "MAP",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 758517760,
+      "GC_TIME_MILLIS" : 355,
+      "CPU_MILLISECONDS" : 43950,
+      "COMMITTED_HEAP_BYTES" : 814280704
+    }
+  }
+}, {
+  "taskType" : "REDUCE",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 433074176,
+      "GC_TIME_MILLIS" : 671,
+      "CPU_MILLISECONDS" : 74270,
+      "COMMITTED_HEAP_BYTES" : 506986496
+    }
+  }
+}, {
+  "taskType" : "REDUCE",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 421924864,
+      "GC_TIME_MILLIS" : 596,
+      "CPU_MILLISECONDS" : 64390,
+      "COMMITTED_HEAP_BYTES" : 506986496
+    }
+  }
+}, {
+  "taskType" : "REDUCE",
+  "counters" : {
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "PHYSICAL_MEMORY_BYTES" : 421924864,
+      "GC_TIME_MILLIS" : 596,
+      "CPU_MILLISECONDS" : 64390,
+      "COMMITTED_HEAP_BYTES" : 506986496
+    }
+  }
+} ]
