@@ -45,6 +45,14 @@ final class MemoryMode private (srcs: Map[TypedSource[_], Iterable[_]], sinks: M
   def newWriter(): Writer =
     new MemoryWriter(this)
 
+  /**
+   * note that ??? in scala is the same as not implemented
+   *
+   * These methods are not needed for use with the Execution API, and indeed
+   * don't make sense outside of cascading, but backwards compatibility
+   * currently requires them on Mode. Ideally we will find another solution
+   * to this in the future
+   */
   def openForRead(config: Config, tap: Tap[_, _, _]): TupleEntryIterator = ???
   def fileExists(filename: String): Boolean = ???
   def newFlowConnector(props: Config): FlowConnector = ???
@@ -77,11 +85,41 @@ object MemoryPlanner {
   sealed trait Op[+O] {
     def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[_ <: O]]
 
-    def flatMap[O1](fn: O => TraversableOnce[O1]): Op[O1] =
-      Op.Map(this, fn)
+    def concatMap[O1](fn: O => TraversableOnce[O1]): Op[O1] =
+      transform { in: IndexedSeq[O] =>
+        val res = ArrayBuffer[O1]()
+        val it = in.iterator
+        while(it.hasNext) {
+          val i = it.next
+          fn(i).foreach(res += _)
+        }
+        res
+      }
 
-    def mapAll[O1 >: O, O2](fn: IndexedSeq[O1] => ArrayBuffer[O2]): Op[O2] =
-      Op.MapAll[O1, O2](this, fn)
+    def map[O1](fn: O => O1): Op[O1] =
+      transform { in: IndexedSeq[O] =>
+        val res = new ArrayBuffer[O1](in.size)
+        val it = in.iterator
+        while(it.hasNext) {
+          res += fn(it.next)
+        }
+        res
+      }
+
+    def filter(fn: O => Boolean): Op[O] =
+      transform { in: IndexedSeq[O] =>
+        // we can't increase in size, just assume the worst
+        val res = new ArrayBuffer[O](in.size)
+        val it = in.iterator
+        while(it.hasNext) {
+          val o = it.next
+          if (fn(o)) res += o
+        }
+        res
+      }
+
+    def transform[O1 >: O, O2](fn: IndexedSeq[O1] => ArrayBuffer[O2]): Op[O2] =
+      Op.Transform[O1, O2](this, fn)
   }
   object Op {
     def source[I](i: Iterable[I]): Op[I] = Source(_ => Future.successful(i))
@@ -116,7 +154,6 @@ object MemoryPlanner {
 
     case class Concat[O](left: Op[O], right: Op[O]) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext) = {
-        // start both futures in parallel
         val f1 = left.result
         val f2 = right.result
         f1.zip(f2).map { case (l, r) => ArrayBuffer.concat(l, r) }
@@ -136,7 +173,15 @@ object MemoryPlanner {
         }
     }
 
-    case class MapAll[I, O](input: Op[I], fn: IndexedSeq[I] => ArrayBuffer[O]) extends Op[O] {
+    case class OnComplete[O](of: Op[O], fn: () => Unit) extends Op[O] {
+      def result(implicit cec: ConcurrentExecutionContext) = {
+        val res = of.result
+        res.onComplete(_ => fn())
+        res
+      }
+    }
+
+    case class Transform[I, O](input: Op[I], fn: IndexedSeq[I] => ArrayBuffer[O]) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext) =
         input.result.map(fn)
     }
@@ -149,9 +194,9 @@ object MemoryPlanner {
 
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[(K, V2)]] =
         input.result.map { kvs =>
-          val m = MMap[K, ArrayList[V1]]()
+          val valuesByKey = MMap[K, ArrayList[V1]]()
           def add(kv: (K, V1)): Unit = {
-            val vs = m.getOrElseUpdate(kv._1, new ArrayList[V1]())
+            val vs = valuesByKey.getOrElseUpdate(kv._1, new ArrayList[V1]())
             vs.add(kv._2)
           }
           kvs.foreach(add)
@@ -161,7 +206,7 @@ object MemoryPlanner {
            * the keys into as many groups as there are CPUs and process that way
            */
           val res = ArrayBuffer[(K, V2)]()
-          m.foreach { case (k, vs) =>
+          valuesByKey.foreach { case (k, vs) =>
             ord.foreach(Collections.sort[V1](vs, _))
             val v2iter = fn(k, vs.iterator.asScala)
             while(v2iter.hasNext) {
@@ -214,6 +259,14 @@ object MemoryPlanner {
  * to inputs via the MemoryMode
  */
 case class SourceT[T](ident: String) extends TypedSource[T] {
+  /**
+   * note that ??? in scala is the same as not implemented
+   *
+   * These methods are not needed for use with the Execution API, and indeed
+   * don't make sense outside of cascading, but backwards compatibility
+   * currently requires them on TypedSource. Ideally we will find another solution
+   * to this in the future
+   */
   def converter[U >: T] = ???
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = ???
 }
@@ -223,6 +276,14 @@ case class SourceT[T](ident: String) extends TypedSource[T] {
  * to outputs via the MemoryMode
  */
 case class SinkT[T](indent: String) extends TypedSink[T] {
+  /**
+   * note that ??? in scala is the same as not implemented
+   *
+   * These methods are not needed for use with the Execution API, and indeed
+   * don't make sense outside of cascading, but backwards compatibility
+   * currently requires them on TypedSink. Ideally we will find another solution
+   * to this in the future
+   */
   def setter[U <: T] = ???
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = ???
 }
@@ -247,7 +308,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
         case CrossValue(left, EmptyValue) => (m, Op.empty)
         case CrossValue(left, LiteralValue(v)) =>
           val (m1, op) = plan(m, left)
-          (m1, op.flatMap { a => Iterator.single((a, v)) })
+          (m1, op.concatMap { a => Iterator.single((a, v)) })
         case CrossValue(left, ComputedValue(right)) =>
           plan(m, CrossPipe(left, right))
         case DebugPipe(p) =>
@@ -263,7 +324,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           def go[K, V](node: FilterKeys[K, V]): (Memo, Op[(K, V)]) = {
             val FilterKeys(pipe, fn) = node
             val (m1, op) = plan(m, pipe)
-            (m1, op.flatMap { case (k, v) => if (fn(k)) { (k, v) :: Nil } else Nil })
+            (m1, op.concatMap { case (k, v) => if (fn(k)) { (k, v) :: Nil } else Nil })
           }
           go(fk)
 
@@ -271,23 +332,22 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           def go[T](f: Filter[T]): (Memo, Op[T]) = {
             val Filter(p, fn) = f
             val (m1, op) = plan(m, f)
-            (m1, op.flatMap { t => if (fn(t)) t :: Nil else Nil })
+            (m1, op.filter(fn))
           }
           go(f)
 
         case f@FlatMapValues(_, _) =>
           def go[K, V, U](node: FlatMapValues[K, V, U]) = {
-            // don't capture node, which is a TypedPipe, which we avoid serializing
             val fn = node.fn
             val (m1, op) = plan(m, node.input)
-            (m1, op.flatMap { case (k, v) => fn(v).map((k, _)) })
+            (m1, op.concatMap { case (k, v) => fn(v).map((k, _)) })
           }
 
           go(f)
 
         case FlatMapped(prev, fn) =>
           val (m1, op) = plan(m, prev)
-          (m1, op.flatMap(fn))
+          (m1, op.concatMap(fn))
 
         case ForceToDisk(pipe) =>
           val (m1, op) = plan(m, pipe)
@@ -302,17 +362,16 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
 
         case f@MapValues(_, _) =>
           def go[K, V, U](node: MapValues[K, V, U]) = {
-            // don't capture node, which is a TypedPipe, which we avoid serializing
             val mvfn = node.fn
             val (m1, op) = plan(m, node.input)
-            (m1, op.flatMap { case (k, v) => Iterator.single((k, mvfn(v))) })
+            (m1, op.map { case (k, v) => (k, mvfn(v)) })
           }
 
           go(f)
 
         case Mapped(input, fn) =>
           val (m1, op) = plan(m, input)
-          (m1, op.flatMap { t => fn(t) :: Nil })
+          (m1, op.map(fn))
 
         case MergedTypedPipe(left, right) =>
           val (m1, op1) = plan(m, left)
@@ -323,7 +382,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           (m, Op.Source({ cec =>
             mem.readSource(src) match {
               case Some(iter) => Future.successful(iter)
-              case None => Future.failed(new Exception(s"Source: $src not wired"))
+              case None => Future.failed(new Exception(s"Source: $src not wired. Please provide an input with MemoryMode.addSource"))
             }
           }))
 
@@ -332,7 +391,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
             val SumByLocalKeys(p, sg) = sblk
 
             val (m1, op) = plan(m, p)
-            (m1, op.mapAll[(K, V), (K, V)] { kvs =>
+            (m1, op.transform[(K, V), (K, V)] { kvs =>
               val map = collection.mutable.Map.empty[K, V]
               val iter = kvs.iterator
               while(iter.hasNext) {
@@ -357,7 +416,9 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
         case WithDescriptionTypedPipe(pipe, description, dedup) =>
           plan(m, pipe)
 
-        case WithOnComplete(pipe, fn) => ???
+        case WithOnComplete(pipe, fn) =>
+          val (m1, op) = plan(m, pipe)
+          (m1, Op.OnComplete(op, fn))
 
         case hcg@HashCoGroup(_, _, _) =>
           def go[K, V1, V2, R](hcg: HashCoGroup[K, V1, V2, R]) = {
@@ -383,6 +444,9 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
              * we need to expand the Op type to deal
              * with multi-way or we need to keep
              * the decomposed series of joins
+             *
+             * TODO
+             * implement cogroups on the memory platform
              */
             ???
           }
@@ -414,7 +478,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       def go[K, U, V](imr: IteratorMappedReduce[K, U, V]) = {
         val IteratorMappedReduce(_, pipe, fn, _, _) = imr
         val (m1, op) = plan(m, pipe)
-        (m1, op.mapAll[(K, U), (K, V)] { kvs =>
+        (m1, op.transform[(K, U), (K, V)] { kvs =>
           val m = kvs.groupBy(_._1).iterator
           val res = ArrayBuffer[(K, V)]()
           m.foreach { case (k, kus) =>
@@ -429,13 +493,13 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       go(imr)
   }
 
-  case class State(
+  private[this] case class State(
     id: Long,
     memo: MemoryPlanner.Memo,
     forced: Map[TypedPipe[_], Future[TypedPipe[_]]]
     )
 
-  val state = new AtomicBox[State](State(0, MemoryPlanner.Memo.empty, Map.empty))
+  private[this] val state = new AtomicBox[State](State(0, MemoryPlanner.Memo.empty, Map.empty))
 
   /**
    * do a batch of writes, possibly optimizing, and return a new unique
