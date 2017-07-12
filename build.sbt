@@ -25,7 +25,7 @@ val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
-val hravenVersion = "1.0.1"
+val hravenVersion = "0.9.17.t05"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
@@ -223,7 +223,6 @@ lazy val scalding = Project(
   scaldingJson,
   scaldingJdbc,
   scaldingHadoopTest,
-  scaldingEstimatorsTest,
   scaldingDb,
   maple,
   executionTutorial,
@@ -526,23 +525,6 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
     "org.scalatest" %% "scalatest" % scalaTestVersion
   )
 ).dependsOn(scaldingCore, scaldingSerialization)
-
-lazy val scaldingEstimatorsTest = module("estimators-test").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
-    "com.twitter" %% "chill-algebird" % chillVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion
-  )
-).dependsOn(scaldingHadoopTest % "test")
 
 // This one uses a different naming convention
 lazy val maple = Project(

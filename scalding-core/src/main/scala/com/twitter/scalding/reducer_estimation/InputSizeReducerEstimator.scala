@@ -1,7 +1,6 @@
 package com.twitter.scalding.reducer_estimation
 
 import cascading.tap.hadoop.Hfs
-import com.twitter.scalding.estimation.{ Common, Estimator, FlowStrategyInfo }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
@@ -64,9 +63,9 @@ object InputSizeReducerEstimator {
  *
  * Bytes per reducer can be configured with configuration parameter, defaults to 4 GB.
  */
-class InputSizeReducerEstimator extends Estimator[Int] {
+class InputSizeReducerEstimator extends ReducerEstimator {
   import InputSizeReducerEstimator._
 
-  override def estimate(info: FlowStrategyInfo): Option[Int] =
+  override def estimateReducers(info: FlowStrategyInfo): Option[Int] =
     estimateReducersWithoutRounding(info).map { _.ceil.toInt.max(1) }
 }
