@@ -60,14 +60,6 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.8
-      env: BUILD="base" TEST_TARGET="scalding-estimators-test"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.12.1
-      env: BUILD="base" TEST_TARGET="scalding-estimators-test"
-      script: "scripts/run_test.sh"
-
-    - scala: 2.11.8
       env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
