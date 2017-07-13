@@ -40,4 +40,4 @@ MIMA_EXIT_CODE=$?
 echo "all done"
 
 $BASE_DIR/scripts/packDeps.sh
-exit $TST_EXIT_CODE||$MIMA_EXIT_CODE
+exit $(( $TST_EXIT_CODE || $MIMA_EXIT_CODE ))
