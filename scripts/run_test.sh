@@ -28,8 +28,8 @@ kill -9 $PROGRESS_REPORTER_PID
 
 export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=128m -XX:+TieredCompilation -XX:MaxPermSize=256m -Xms256m -Xmx768m -Xss2m"
 echo "calling ... "
-echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd test)"
-time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test)"
+echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd test mimaReportBinaryIssues)"
+time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test mimaReportBinaryIssues)"
 TST_EXIT_CODE=$?
 echo "all done"
 
