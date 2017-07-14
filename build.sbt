@@ -273,11 +273,13 @@ lazy val noPublishSettings = Seq(
 val ignoredModules = Set[String]("benchmarks")
 
 def youngestForwardCompatible(subProj: String) =
-  Some(subProj)
-    .filterNot(ignoredModules.contains(_))
-    .map {
-    s => "com.twitter" %% (s"scalding-$s") % "0.17.0"
-  }
+  None
+// Enable mima binary check back after releasing 0.18.0
+//  Some(subProj)
+//    .filterNot(ignoredModules.contains(_))
+//    .map {
+//    s => "com.twitter" %% (s"scalding-$s") % "0.17.0"
+//  }
 
 def module(name: String) = {
   val id = "scalding-%s".format(name)
