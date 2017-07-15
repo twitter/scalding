@@ -1,5 +1,62 @@
 # Scalding #
 
+### Version 0.17.2 ###
+This version is basically the same as 0.17.1 but backward compatible with 0.17.0.
+* Revert memory estimator changes on 0.17.x branch: #1704
+* Turn on mima checks on 0.17.x branch: #1706
+
+### Version 0.17.1 ###
+This version breaks backward compatibility with 0.17.0, don't use it, use 0.17.2 instead.
+* Request for Scalding release 0.17.0: #1641
+* make ordered serialization stable across compilations: #1664
+* Remove unnecessary semicolon: #1668
+* Add tailrec annotation: #1671
+* Be more paranoid about Kryo registration order: #1673
+* Update sbt version to 0.13.15: #1677
+* Register all Boxed classes in Kryo: #1678
+* Fix serialization of KryoHadoop: #1685
+* Merge pull request #1686 from ttim/cherry_pick_0.17.x_changes
+* Fix stack overflow in typedPipeMonoid.zero: #1688
+* A couple of fixes into the 0.17.x branch: #1695
+* Memory estimator changes to 0.17.x branch: #1700
+
+### Version 0.17.0 ###
+This is the first Scalding release that publishes artifacts for Scala 2.12!
+* 2.12 releated updates: #1663, #1646
+* Use reflection over Jobs to find serialized classes: #1654, #1662
+* Simplify match statement and use collection.breakOut: #1661
+* Add explicit types to implicit methods and values: #1660
+* Reducer estimation size fixes: #1652, #1650, #1645, #1644
+* Use Combined*SequenceFile for VKVS, WritableSequenceFileScheme, SequenceFileScheme: #1647
+* Improve Vertica support in scalding-db: #1655
+* Add andThen to Mappable: #1656
+* Expand libjars globs in ScaldingShell to match the behavior of Tool: #1651
+* Use Batched in Sketch production: #1648
+* Pick up Algebird 0.13.0: #1640
+* Added API for Execution/Config to work with DistributedCache: #1635
+* Bump chill version to 0.8.3: #1634
+* Fixes a bug in how we use this stack: #1632
+* Upgrade build to sbt 0.13.13: #1629
+* Generate Scalding microsite via sbt-microsites: #1623
+* FileSource support for empty directories: #1622, #1618, #1613, #1611, #1591
+* Clean up temporary files created by forceToDiskExecution: #1621
+* Moving the repl in wonderland to a dedicated md file: #1614
+* Update Scala and sbt version: #1610
+* REFACTOR: Fixed some compilation warnings: #1604
+* REFACTOR: Rename parameter to reflect expectation: #1601
+* Add partitioned sources for Parquet thrift / scrooge: #1590
+* Add a test for sortBy: #1594
+* Create COMMITTERS.md: #1589
+* Use ExecutionContext in Execution.from/fromTry: #1587
+* Support custom parquet field name strategies: #1580
+* Deprecate reflection-based JobTest apply method: #1578
+* Use Caching for FlowDefExecution: #1581
+* [parquet tuple macros] listType was deprecated in favor of listOfElements: #1579
+* Use Batched to speed up CMS summing on mappers: #1575
+* Remove a TypedPipeFactory wrapper which seems unneeded: #1576
+* Make Writeable sources Mappable to get toIterator: #1573
+* case class implicit children: #1569
+
 ### Version 0.16.0 ###
 
 * Add tests around hashcode collisions : #1299
