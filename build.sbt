@@ -331,7 +331,7 @@ lazy val scaldingCore = module("core").settings(
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
+).dependsOn(scaldingArgs, scaldingDate, scaldingGraph, scaldingSerialization, maple)
 
 lazy val scaldingCommons = module("commons").settings(
   libraryDependencies ++= Seq(
