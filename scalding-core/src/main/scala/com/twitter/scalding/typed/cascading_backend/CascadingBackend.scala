@@ -11,6 +11,7 @@ import com.twitter.scalding.{
   HadoopMode, LineNumber, IterableSource, MapsideReduce, Mode,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
+import com.twitter.scalding.graph._
 import com.twitter.scalding.typed._
 import com.twitter.scalding.serialization.{
   Boxed,
@@ -134,7 +135,25 @@ object CascadingBackend {
   }
   private[this] val pipeCache = new PipeCache
 
+  private def dependants(of: List[TypedPipe[Any]]): DependantGraph[TypedPipe[Any]] =
+    new DependantGraph[TypedPipe[Any]] {
+      val nodes = of.flatMap { t => t :: depthFirstOf(t)(TypedPipe.dependencies) }.distinct
+      def dependenciesOf(t: TypedPipe[Any]) = TypedPipe.dependencies(t)
+    }
+
   final def toPipe[U](p: TypedPipe[U], fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+    val depGraph = dependants(List(p))
+    toPipeDeps(p, fieldNames, depGraph)
+  }
+
+  final def toPipeDeps[U](p: TypedPipe[U], fieldNames: Fields, depGraph: DependantGraph[TypedPipe[Any]])(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+
+    // Does a particular pipe have more than 1 consumer
+    def fansOut(t: TypedPipe[Any]): Boolean =
+      depGraph.fanOut(t) match {
+        case Some(f) => f > 1
+        case None => false
+      }
 
     import pipeCache.cacheGet
 
@@ -142,7 +161,7 @@ object CascadingBackend {
 
     def singlePipe[T](t: TypedPipe[T], force: Boolean = false): CascadingPipe[T] =
       cacheGet(t, mode) { localFD =>
-        val pipe = toPipe(t, f0)(localFD, mode, singleSetter)
+        val pipe = toPipeDeps(t, f0, depGraph)(localFD, mode, singleSetter)
         val p = if (force) RichPipe(pipe).forceToDisk else pipe
         CascadingPipe[T](p, f0, localFD, singleConverter)
       }
@@ -172,6 +191,42 @@ object CascadingBackend {
     }
 
     def loop[T](t: TypedPipe[T], rest: FlatMappedFn[T, U], descriptions: List[(String, Boolean)]): Pipe = t match {
+      case ForceToDisk(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
+      case ForceToDisk(i@IterablePipe(iter)) => loop(i, rest, descriptions)
+      case ForceToDisk(pipe) => finish(singlePipe(pipe, force = true), rest, descriptions)
+
+      case Fork(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
+      case Fork(i@IterablePipe(iter)) => loop(i, rest, descriptions)
+      case Fork(pipe) => finish(singlePipe(pipe), rest, descriptions)
+
+      case IterablePipe(iterable) =>
+        val toSrc = IterableSource(iterable, f0)(singleSetter[T], singleConverter[T])
+        loop(SourcePipe(toSrc), rest, descriptions)
+
+      case src@SourcePipe(_) =>
+        def go[A](sp: SourcePipe[A]): CascadingPipe[A] =
+          cacheGet[A](sp, mode) { implicit localFD =>
+            val source = sp.source
+            val pipe = source.read(localFD, mode)
+            CascadingPipe[A](pipe, source.sourceFields, localFD, source.converter[A])
+          }
+        finish(go(src), rest, descriptions)
+
+      case pipe if pipe != p && fansOut(pipe) =>
+        /**
+         * Pipes that have more than one consumer, which are not sources or explicit
+         * forks/forceToDisk should be handled like an implicit fork. This prevents
+         * us from repeating work multiple times downstream
+         *
+         * If this is not the outer-most pipe (t != p), it means we found it on a loop recursion.
+         * If we found it on a recursion and it fans out, we want to explicitly materialize
+         * it and cache it for the other branch.
+         *
+         * There is still an issue if a we have multiple writes since this function
+         * currently only sees a single write.
+         */
+        finish(singlePipe(pipe), rest, descriptions)
+
       case cp@CrossPipe(_, _) => loop(cp.viaHashJoin, rest, descriptions)
 
       case cv@CrossValue(_, _) => loop(cv.viaHashJoin, rest, descriptions)
@@ -218,18 +273,6 @@ object CascadingBackend {
 
       case FlatMapped(prev, fn) =>
         loop(prev, rest.runAfter(FlatMapping.FlatM(fn)), descriptions)
-
-      case ForceToDisk(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
-      case ForceToDisk(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-      case ForceToDisk(pipe) => finish(singlePipe(pipe, force = true), rest, descriptions)
-
-      case Fork(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
-      case Fork(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-      case Fork(pipe) => finish(singlePipe(pipe), rest, descriptions)
-
-      case IterablePipe(iterable) =>
-        val toSrc = IterableSource(iterable, f0)(singleSetter[T], singleConverter[T])
-        loop(SourcePipe(toSrc), rest, descriptions)
 
       case f@MapValues(_, _) =>
         def go[K, V, U](node: MapValues[K, V, U]): Pipe = {
@@ -284,19 +327,11 @@ object CascadingBackend {
             val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
             applyDescriptions(merged, ds ::: descriptions)
         }
-      case src@SourcePipe(_) =>
-        def go[A](sp: SourcePipe[A]): CascadingPipe[A] =
-          cacheGet[A](sp, mode) { implicit localFD =>
-            val source = sp.source
-            val pipe = source.read(localFD, mode)
-            CascadingPipe[A](pipe, source.sourceFields, localFD, source.converter[A])
-          }
-        finish(go(src), rest, descriptions)
 
       case slk@SumByLocalKeys(_, _) =>
         def sum[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] =
           cacheGet(sblk, mode) { implicit localFD =>
-            val pairPipe = toPipe(sblk.input, kvFields)(localFD, mode, tup2Setter)
+            val pairPipe = toPipeDeps(sblk.input, kvFields, depGraph)(localFD, mode, tup2Setter)
             val msr = new MapsideReduce(sblk.semigroup, new Fields("key"), valueField, None)(singleConverter[V], singleSetter[V])
             val kvpipe = RichPipe(pairPipe).eachTo(kvFields -> kvFields) { _ => msr }
             CascadingPipe(kvpipe, kvFields, localFD, tuple2Converter)
@@ -308,7 +343,7 @@ object CascadingBackend {
           val cp = cacheGet(tp, mode) { implicit fd =>
             val sfields = tp.sink.sinkFields
             // TODO: with diamonds in the graph, this might not be correct
-            val pp = toPipe[T0](tp.input, sfields)(fd, mode, tp.sink.setter)
+            val pp = toPipeDeps[T0](tp.input, sfields, depGraph)(fd, mode, tp.sink.setter)
             val pipe = RichPipe.assignName(pp)
             flowDef.addTrap(pipe, tp.sink.createTap(Write)(mode))
             CascadingPipe[T1](pipe, sfields, fd, tp.conv)
@@ -334,7 +369,8 @@ object CascadingBackend {
               hcg.joiner,
               hcg.right.keyOrdering,
               fd,
-              mode)
+              mode,
+              depGraph)
             CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, R])
           }
           finish(cp, rest, descriptions)
@@ -346,7 +382,7 @@ object CascadingBackend {
           // TODO we can push up filterKeys on both the left and right
           // and mapValues/flatMapValues on the result
           val cp = cacheGet(cgp, mode) { implicit fd =>
-            val kvPipe = planCoGroup(cgp.cogrouped, fd, mode)
+            val kvPipe = planCoGroup(cgp.cogrouped, fd, mode, depGraph)
             CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, V])
           }
           finish(cp, rest, descriptions)
@@ -354,7 +390,7 @@ object CascadingBackend {
         go(cgp)
 
       case r@ReduceStepPipe(_) =>
-        planReduceStep(r, mode) match {
+        planReduceStep(r, mode, depGraph) match {
           case Right(cp) => finish(cp, rest, descriptions)
           case Left(tp) => loop(tp, rest, descriptions)
         }
@@ -363,7 +399,7 @@ object CascadingBackend {
     RichPipe(loop(p, FlatMappedFn.identity[U], Nil)).applyFlowConfigProperties(flowDef)
   }
 
-  private def planCoGroup[K, R](cg: CoGrouped[K, R], flowDef: FlowDef, mode: Mode): Pipe = {
+  private def planCoGroup[K, R](cg: CoGrouped[K, R], flowDef: FlowDef, mode: Mode, depGraph: DependantGraph[TypedPipe[Any]]): Pipe = {
     import cg._
 
     // Cascading handles the first item in join differently, we have to see if it is repeated
@@ -394,7 +430,7 @@ object CascadingBackend {
          * not repeated. That case is below
          */
         val NUM_OF_SELF_JOINS = firstCount - 1
-        new CoGroup(assignName(toPipe[(K, Any)](inputs.head, kvFields)(flowDef, mode,
+        new CoGroup(assignName(toPipeDeps[(K, Any)](inputs.head, kvFields, depGraph)(flowDef, mode,
           tupset)),
           ordKeyField,
           NUM_OF_SELF_JOINS,
@@ -409,7 +445,7 @@ object CascadingBackend {
          * This is handled by a different CoGroup constructor than the above case.
          */
         def renamePipe(idx: Int, p: TypedPipe[(K, Any)]): Pipe =
-          toPipe[(K, Any)](p, List(keyId(idx), "value%d".format(idx)))(flowDef, mode,
+          toPipeDeps[(K, Any)](p, List(keyId(idx), "value%d".format(idx)), depGraph)(flowDef, mode,
             tupset)
 
         // This is tested for the properties we need (non-reordering)
@@ -477,7 +513,8 @@ object CascadingBackend {
     joiner: (K, V1, Iterable[V2]) => Iterator[R],
     keyOrdering: Ordering[K],
     fd: FlowDef,
-    mode: Mode): Pipe = {
+    mode: Mode,
+    depGraph: DependantGraph[TypedPipe[Any]]): Pipe = {
 
     val getHashJoinAutoForceRight: Boolean =
       mode match {
@@ -539,7 +576,7 @@ object CascadingBackend {
      * that are not doing any real work (e.g. Converter, CleanupIdentityFunction)
      */
     val getForceToDiskPipeIfNecessary: Pipe = {
-      val mappedPipe = toPipe(right.mapped, new Fields("key1", "value1"))(fd, mode, tup2Setter)
+      val mappedPipe = toPipeDeps(right.mapped, new Fields("key1", "value1"), depGraph)(fd, mode, tup2Setter)
 
       // if the user has turned off auto force right, we fall back to the old behavior and
       //just return the mapped pipe
@@ -548,7 +585,7 @@ object CascadingBackend {
     }
 
     new HashJoin(
-      RichPipe.assignName(toPipe(left, kvFields)(fd, mode, tup2Setter)),
+      RichPipe.assignName(toPipeDeps(left, kvFields, depGraph)(fd, mode, tup2Setter)),
       Field.singleOrdered("key")(keyOrdering),
       getForceToDiskPipeIfNecessary,
       Field.singleOrdered("key1")(keyOrdering),
@@ -556,7 +593,7 @@ object CascadingBackend {
   }
 
   private def planReduceStep[K, V1, V2](rsp: ReduceStepPipe[K, V1, V2],
-    mode: Mode): Either[TypedPipe[(K, V2)], CascadingPipe[(K, V2)]] = {
+    mode: Mode, depGraph: DependantGraph[TypedPipe[Any]]): Either[TypedPipe[(K, V2)], CascadingPipe[(K, V2)]] = {
 
     val rs = rsp.reduce
 
@@ -581,7 +618,7 @@ object CascadingBackend {
             (Some(vord), tupleSetter)
         }.getOrElse((None, tupleSetter))
 
-        val p = toPipe(rs.mapped, kvFields)(flowDef, mode, TupleSetter.asSubSetter(ts))
+        val p = toPipeDeps(rs.mapped, kvFields, depGraph)(flowDef, mode, TupleSetter.asSubSetter(ts))
 
         RichPipe(p).groupBy(fields) { inGb =>
           val withSort = sortOpt.fold(inGb)(inGb.sortBy)

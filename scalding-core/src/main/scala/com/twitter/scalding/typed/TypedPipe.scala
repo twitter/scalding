@@ -137,6 +137,52 @@ object TypedPipe extends Serializable {
     }
   }
 
+  /**
+   * Which TypedPipes does the given TypedPipe directly depend on
+   * this must form a DAG by construction. This is useful for
+   * backend implementations.
+   */
+  def dependencies(of: TypedPipe[Any]): List[TypedPipe[Any]] =
+    of match {
+      case CrossPipe(a, b) => List(a, b)
+      case CrossValue(p, EmptyValue) => List(p)
+      case CrossValue(p, LiteralValue(_)) => List(p)
+      case CrossValue(p, ComputedValue(vpipe)) => List(p, vpipe)
+      case DebugPipe(p) => List(p)
+      case FilterKeys(p, _) => List(p)
+      case Filter(p, _) => List(p)
+      case Fork(p) => List(p)
+      case FlatMapValues(p, _) => List(p)
+      case FlatMapped(p, _) => List(p)
+      case ForceToDisk(p) => List(p)
+      case IterablePipe(_) => Nil
+      case MapValues(p, _) => List(p)
+      case Mapped(p, _) => List(p)
+      case MergedTypedPipe(p1, p2) => List(p1, p2)
+      case SourcePipe(_) => Nil
+      case SumByLocalKeys(p, _) => List(p)
+      case TrappedPipe(p, _, _) => List(p)
+      case WithDescriptionTypedPipe(p, _, _) => List(p)
+      case WithOnComplete(p, _) => List(p)
+      case EmptyTypedPipe => Nil
+      case HashCoGroup(p, j, _) =>
+        val jpipes = j match {
+          case IdentityReduce(_, p, _, _) => List(p)
+          case UnsortedIdentityReduce(_, p, _, _) => List(p)
+          case IteratorMappedReduce(_, p, _, _, _) => List(p)
+        }
+        p :: jpipes
+      case CoGroupedPipe(cg) => cg.inputs
+      case ReduceStepPipe(rsp) =>
+        rsp match {
+          case IdentityReduce(_, p, _, _) => List(p)
+          case UnsortedIdentityReduce(_, p, _, _) => List(p)
+          case IdentityValueSortedReduce(_, p, _, _, _) => List(p)
+          case ValueSortedReduce(_, p, _, _, _, _) => List(p)
+          case IteratorMappedReduce(_, p, _, _, _) => List(p)
+        }
+    }
+
    case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values

@@ -17,6 +17,7 @@ import com.twitter.scalding.{
   Mode,
   TypedPipe
 }
+import com.twitter.scalding.graph._
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
@@ -222,8 +223,23 @@ class AsyncFlowDefRunner extends Writer { self =>
 
     val done = Promise[Unit]()
 
+    val writtenPipes = writes.map {
+      case Force(pipe) => pipe
+      case ToIterable(pipe) => pipe
+      case SimpleWrite(pipe, _) => pipe
+    }
+
+    val depGraph = new DependantGraph[TypedPipe[Any]] {
+      val nodes = writtenPipes.flatMap { t => t :: depthFirstOf(t)(TypedPipe.dependencies) }.distinct
+      def dependenciesOf(t: TypedPipe[Any]) = TypedPipe.dependencies(t)
+    }
+
     def prepareFD(c: Config, m: Mode): FlowDef = {
       val fd = new FlowDef
+
+      def write[A](t: TypedPipe[A], dest: typed.TypedSink[A]): Unit = {
+        dest.writeFrom(CascadingBackend.toPipeDeps[A](t, dest.sinkFields, depGraph)(fd, m, dest.setter))(fd, m)
+      }
 
       def force[A](t: TypedPipe[A]): Unit = {
         val pipePromise = Promise[TypedPipe[A]]()
@@ -241,7 +257,7 @@ class AsyncFlowDefRunner extends Writer { self =>
 
         sinkOpt.foreach {
           case (sink, fp) =>
-            t.write(sink)(fd, m)
+            write(t, sink)
             val pipeFut = done.future.map(_ => fp())
             pipePromise.completeWith(pipeFut)
         }
@@ -264,8 +280,7 @@ class AsyncFlowDefRunner extends Writer { self =>
           }
           step(pipe)
 
-        case SimpleWrite(pipe, sink) =>
-          pipe.write(sink)(fd, m)
+        case SimpleWrite(pipe, sink) => write(pipe, sink)
       }
 
       fd
