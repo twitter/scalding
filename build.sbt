@@ -293,8 +293,6 @@ lazy val scaldingArgs = module("args")
 
 lazy val scaldingDate = module("date")
 
-lazy val scaldingGraph = module("graph")
-
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
 
