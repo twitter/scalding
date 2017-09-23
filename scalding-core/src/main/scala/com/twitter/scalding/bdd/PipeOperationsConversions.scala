@@ -37,7 +37,7 @@ trait PipeOperationsConversions {
   }
 
   class ListPipesOperation(op: List[Pipe] => Pipe) extends PipeOperation {
-    def apply(pipes: List[RichPipe]): Pipe = op(pipes.map(_.pipe).toList)
+    def apply(pipes: List[RichPipe]): Pipe = op(pipes.map(_.pipe))
   }
 
   implicit val fromSingleRichPipeFunctionToOperation: (RichPipe => RichPipe) => OnePipeOperation = (op: RichPipe => RichPipe) => new OnePipeOperation(op(_).pipe)

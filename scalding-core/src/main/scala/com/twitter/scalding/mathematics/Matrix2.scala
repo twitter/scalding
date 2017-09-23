@@ -342,13 +342,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
 
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     expressions match {
-      case Some(m) => m.get(this) match {
-        case Some(pipe) => pipe
-        case None => {
-          val result = computePipe()
-          m.put(this, result)
-          result
-        }
+      case Some(m) => m.get(this).getOrElse {
+        val result = computePipe()
+        m.put(this, result)
+        result
       }
       case None => optimizedSelf.toTypedPipe
     }
