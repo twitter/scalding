@@ -22,12 +22,12 @@ object TypedPipeGen {
         tpGen.map { p: TypedPipe[Int] =>
           { x: TypedPipe[Int] => x.cross(ValuePipe(2)).values }
         },
-        Gen.const( { t: TypedPipe[Int] => t.debug }),
+        Gen.const({ t: TypedPipe[Int] => t.debug }),
         Arbitrary.arbitrary[Int => Boolean].map { fn =>
           { t: TypedPipe[Int] => t.filter(fn) }
         },
-        Gen.const( { t: TypedPipe[Int] => t.forceToDisk }),
-        Gen.const( { t: TypedPipe[Int] => t.fork }),
+        Gen.const({ t: TypedPipe[Int] => t.forceToDisk }),
+        Gen.const({ t: TypedPipe[Int] => t.fork }),
         tpGen.map { p: TypedPipe[Int] =>
           { x: TypedPipe[Int] => x ++ p }
         },
@@ -36,8 +36,7 @@ object TypedPipeGen {
         },
         Gen.identifier.map { id =>
           { t: TypedPipe[Int] => t.withDescription(id) }
-        }
-      )
+        })
 
     val one = for {
       n <- next1
@@ -46,20 +45,19 @@ object TypedPipeGen {
 
     val next2: Gen[TypedPipe[(Int, Int)] => TypedPipe[Int]] =
       Gen.oneOf(
-        Gen.const( { p: TypedPipe[(Int, Int)] => p.values }),
-        Gen.const( { p: TypedPipe[(Int, Int)] => p.keys })
-      )
+        Gen.const({ p: TypedPipe[(Int, Int)] => p.values }),
+        Gen.const({ p: TypedPipe[(Int, Int)] => p.keys }))
 
     val two = for {
       n <- next2
       p <- keyed
     } yield n(p)
 
-    Gen.frequency((3, one), (1, two))
+    Gen.frequency((4, one), (1, two))
   }
 
-  lazy val keyed: Gen[TypedPipe[(Int, Int)]] =
-    Gen.oneOf(
+  lazy val keyed: Gen[TypedPipe[(Int, Int)]] = {
+    val one = Gen.oneOf(
       for {
         single <- tpGen
         fn <- Arbitrary.arbitrary[Int => (Int, Int)]
@@ -67,7 +65,9 @@ object TypedPipeGen {
       for {
         single <- tpGen
         fn <- Arbitrary.arbitrary[Int => List[(Int, Int)]]
-      } yield single.flatMap(fn),
+      } yield single.flatMap(fn))
+
+    val two = Gen.oneOf(
       for {
         fn <- Arbitrary.arbitrary[Int => Boolean]
         pair <- keyed
@@ -106,8 +106,12 @@ object TypedPipeGen {
       for {
         p1 <- Gen.lzy(keyed)
         p2 <- Gen.lzy(keyed)
-      } yield p1.join(p2).mapValues { case (a, b) => a * b }.toTypedPipe
-    )
+      } yield p1.join(p2).mapValues { case (a, b) => a * b }.toTypedPipe)
+
+    // bias to consuming Int, since the we can stack overflow with the (Int, Int)
+    // cases
+    Gen.frequency((2, one), (1, two))
+  }
 
   val tpGen: Gen[TypedPipe[Int]] =
     Gen.lzy(Gen.frequency((1, srcGen), (1, mapped)))
