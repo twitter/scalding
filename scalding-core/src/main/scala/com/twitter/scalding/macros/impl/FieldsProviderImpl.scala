@@ -93,7 +93,12 @@ object FieldsProviderImpl {
         case tpe if tpe =:= typeOf[Float] => true
         case tpe if tpe =:= typeOf[Double] => true
         case tpe if tpe =:= typeOf[String] => true
-        case tpe => optionInner(c)(tpe).exists(isNumbered)
+        case tpe => optionInner(c)(tpe) match {
+          case Some(t) =>
+            // we need this match style to do tailrec
+            isNumbered(t) // linter:disable
+          case None => false
+        }
       }
 
     object FieldBuilder {

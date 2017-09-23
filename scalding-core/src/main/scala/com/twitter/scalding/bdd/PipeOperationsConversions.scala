@@ -22,13 +22,13 @@ trait PipeOperationsConversions {
 
   class TwoPipesOperation(op: (RichPipe, Pipe) => RichPipe) extends PipeOperation {
     def apply(pipes: List[RichPipe]): Pipe = {
-      assertPipeSize(pipes, 2); op(pipes(0), pipes(1)) // linter:ignore
+      assertPipeSize(pipes, 2); op(pipes(0), pipes(1)) // linter:disable
     }
   }
 
   class ThreePipesOperation(op: (RichPipe, RichPipe, RichPipe) => Pipe) extends PipeOperation {
     def apply(pipes: List[RichPipe]): Pipe = {
-      assertPipeSize(pipes, 3); op(pipes(0), pipes(1), pipes(2)) // linter:ignore
+      assertPipeSize(pipes, 3); op(pipes(0), pipes(1), pipes(2)) // linter:disable
     }
   }
 

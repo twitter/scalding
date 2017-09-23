@@ -307,7 +307,7 @@ class AsyncFlowDefRunner extends Writer { self =>
       getForced(conf, m, initial).flatMap(getIterable(conf, m, _))
   }
 
-  private def forceToDisk[T](
+  private def forceToDisk[T]( // linter:disable:UnusedParameter
     uuid: UUID,
     conf: Config,
     mode: Mode,

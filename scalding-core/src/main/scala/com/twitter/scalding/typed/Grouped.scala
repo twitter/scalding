@@ -114,7 +114,7 @@ object CoGrouped {
         val joinedLeft = jf(k, leftMost, leftSeq)
 
         // Only do this once, for all calls to iterator below
-        val smallerHead = rightSeq.head
+        val smallerHead = rightSeq.head // linter:disable:UndesirableTypeInference
         val smallerTail = rightSeq.tail
         // TODO: it might make sense to cache this in memory as an IndexedSeq and not
         // recompute it on every value for the left if the smallerJf is non-trivial
