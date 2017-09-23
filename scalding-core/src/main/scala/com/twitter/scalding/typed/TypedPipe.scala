@@ -149,20 +149,20 @@ object TypedPipe extends Serializable {
           case ComputedValue(pipe) => CrossPipe(left, pipe)
         }
    }
-   case class DebugPipe[T](pipe: TypedPipe[T]) extends TypedPipe[T]
+   case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
    case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
    case class Filter[T](input: TypedPipe[T], fn: T => Boolean) extends TypedPipe[T]
    case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
    case class FlatMapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => TraversableOnce[U]) extends TypedPipe[(K, U)]
    case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
-   case class ForceToDisk[T](pipe: TypedPipe[T]) extends TypedPipe[T]
+   case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
    case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
    case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
    case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
    case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
    case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
    case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
-   case class TrappedPipe[T, U >: T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[U]) extends TypedPipe[U]
+   case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
    case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
    case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
    case object EmptyTypedPipe extends TypedPipe[Nothing]
@@ -172,6 +172,15 @@ object TypedPipe extends Serializable {
 
    case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
    case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
+
+
+   implicit class InvariantTypedPipe[T](val pipe: TypedPipe[T]) extends AnyVal {
+      /**
+       * If any errors happen below this line, but before a groupBy, write to a TypedSink
+       */
+      def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
+        TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withLine
+   }
 }
 
 /**
@@ -719,12 +728,6 @@ sealed trait TypedPipe[+T] extends Serializable {
       serialization: K => Array[Byte],
       ordering: Ordering[K]): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
-
-  /**
-   * If any errors happen below this line, but before a groupBy, write to a TypedSink
-   */
-  def addTrap[U >: T](trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[U]): TypedPipe[U] =
-    TypedPipe.TrappedPipe[T, U](this, trapSink, conv).withLine
 }
 
 /**
