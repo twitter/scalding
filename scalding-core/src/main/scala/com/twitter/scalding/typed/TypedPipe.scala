@@ -137,11 +137,12 @@ object TypedPipe extends Serializable {
     }
   }
 
-   case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
+   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
+   final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values
    }
-   case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
+   final case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
         right match {
           case EmptyValue => EmptyTypedPipe
@@ -149,30 +150,26 @@ object TypedPipe extends Serializable {
           case ComputedValue(pipe) => CrossPipe(left, pipe)
         }
    }
-   case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
-   case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
-   case class Filter[T](input: TypedPipe[T], fn: T => Boolean) extends TypedPipe[T]
-   case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
-   case class FlatMapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => TraversableOnce[U]) extends TypedPipe[(K, U)]
-   case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
-   case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
-   case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
-   case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
-   case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
-   case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
-   case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
-   case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
-   case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
-   case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
-   case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
+   final case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
+   final case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
+   final case class Filter[T](input: TypedPipe[T], fn: T => Boolean) extends TypedPipe[T]
+   final case class FlatMapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => TraversableOnce[U]) extends TypedPipe[(K, U)]
+   final case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
+   final case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
+   final case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
+   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
+   final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
+   final case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
+   final case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
+   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
+   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
+   final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
+   final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
+   final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
+   final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
+   final case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
+
    case object EmptyTypedPipe extends TypedPipe[Nothing]
-   case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)],
-    right: HashJoinable[K, W],
-    joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
-
-   case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
-   case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
-
 
    implicit class InvariantTypedPipe[T](val pipe: TypedPipe[T]) extends AnyVal {
       /**

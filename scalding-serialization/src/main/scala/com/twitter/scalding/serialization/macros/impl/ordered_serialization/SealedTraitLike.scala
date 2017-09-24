@@ -149,7 +149,7 @@ object SealedTraitLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial", "org.wartremover.warts.Return"))
   def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._

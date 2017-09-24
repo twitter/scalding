@@ -41,7 +41,7 @@ object CaseClassOrderedBuf {
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod.name.toTermName, b)
+          (fieldType, accessorMethod.name, b)
         }.toList
 
     new TreeOrderedBuf[c.type] {

@@ -29,12 +29,10 @@ object NumericTypeHandler {
       _ <- nextHelper.validateFinished
     } yield (sizeAnno)
 
-    extracted.flatMap { t =>
-      t match {
-        case WithSize(s) if s > 0 => Success(List(ColumnFormat(c)(accessorTree, numericType, Some(s))))
-        case WithSize(s) => Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
-        case WithoutSize => Success(List(ColumnFormat(c)(accessorTree, numericType, None)))
-      }
+    extracted.flatMap {
+      case WithSize(s) if s > 0 => Success(List(ColumnFormat(c)(accessorTree, numericType, Some(s))))
+      case WithSize(s) => Failure(new Exception(s"Int field $fieldName, has a size defined that is <= 0."))
+      case WithoutSize => Success(List(ColumnFormat(c)(accessorTree, numericType, None)))
     }
   }
 }

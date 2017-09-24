@@ -60,7 +60,7 @@ case object NoClue extends SizeHint {
   def transpose = NoClue
 }
 
-case class FiniteHint(rows: BigInt = -1L, cols: BigInt = -1L) extends SizeHint {
+final case class FiniteHint(rows: BigInt = -1L, cols: BigInt = -1L) extends SizeHint {
   def *(other: SizeHint) = {
     other match {
       case NoClue => NoClue
@@ -93,7 +93,7 @@ case class FiniteHint(rows: BigInt = -1L, cols: BigInt = -1L) extends SizeHint {
 }
 
 // sparsity is the fraction of the rows and columns that are expected to be present
-case class SparseHint(sparsity: Double, rows: BigInt, cols: BigInt) extends SizeHint {
+final case class SparseHint(sparsity: Double, rows: BigInt, cols: BigInt) extends SizeHint {
   def *(other: SizeHint): SizeHint = {
     other match {
       case NoClue => NoClue

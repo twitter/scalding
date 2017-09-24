@@ -47,9 +47,9 @@ val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencie
 val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   organization := "com.twitter",
 
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.11.11",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.1"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.3"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -57,7 +57,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   javacOptions in doc := Seq("-source", "1.6"),
 
-  wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
+  wartremoverErrors in (Compile, compile) ++= Seq(
+    Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
+    Wart.Return, Wart.EitherProjectionPartial),
 
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",
@@ -293,8 +295,6 @@ def module(name: String) = {
 lazy val scaldingArgs = module("args")
 
 lazy val scaldingDate = module("date")
-
-lazy val scaldingGraph = module("graph")
 
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")

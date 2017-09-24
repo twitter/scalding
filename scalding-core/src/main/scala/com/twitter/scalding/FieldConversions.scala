@@ -251,10 +251,10 @@ sealed trait Field[T] extends java.io.Serializable {
 }
 
 @DefaultSerializer(classOf[serialization.IntFieldSerializer])
-case class IntField[T](override val id: java.lang.Integer)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
+final case class IntField[T](override val id: java.lang.Integer)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 @DefaultSerializer(classOf[serialization.StringFieldSerializer])
-case class StringField[T](override val id: String)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
+final case class StringField[T](override val id: String)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 object Field {
   def apply[T](index: Int)(implicit ord: Ordering[T], mf: Manifest[T]) = IntField[T](index)(ord, Some(mf))

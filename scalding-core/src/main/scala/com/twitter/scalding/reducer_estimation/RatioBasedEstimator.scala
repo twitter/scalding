@@ -1,6 +1,6 @@
 package com.twitter.scalding.reducer_estimation
 
-import com.twitter.scalding.estimation.{Common, FlowStepHistory, FlowStrategyInfo}
+import com.twitter.scalding.estimation.{ Common, FlowStepHistory, FlowStrategyInfo }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
@@ -41,8 +41,7 @@ abstract class RatioBasedEstimator extends ReducerHistoryEstimator {
   override protected def estimate(
     info: FlowStrategyInfo,
     conf: JobConf,
-    history: Seq[FlowStepHistory]
-  ): Option[Int] = {
+    history: Seq[FlowStepHistory]): Option[Int] = {
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
     val inputBytes = Common.totalInputSize(info.step)
 

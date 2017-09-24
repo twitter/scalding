@@ -41,16 +41,16 @@ object ScroogeUnionOrderedBuf {
     val dispatcher = buildDispatcher
 
     val subClasses: List[Type] = StableKnownDirectSubclasses(c)(outerType).map(_.toType)
-    
+
     val subData: List[(Int, Type, Option[TreeOrderedBuf[c.type]])] = subClasses.map { t =>
       if (t.typeSymbol.name.toString == "UnknownUnionField") {
         (t, None)
       } else {
         (t, Some(dispatcher(t)))
       }
-    }.zipWithIndex.map{ case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }.toList
+    }.zipWithIndex.map { case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }
 
-    require(subData.size > 0, "Must have some sub types on a union?")
+    require(subData.nonEmpty, "Must have some sub types on a union?")
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c

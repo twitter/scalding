@@ -566,7 +566,7 @@ object CascadingBackend {
     def groupOpWithValueSort(valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): CascadingPipe[(K, V2)] = {
       def pipe(flowDef: FlowDef) = maybeBox[K, V1](rs.keyOrdering, flowDef) { (tupleSetter, fields) =>
         val (sortOpt, ts) = valueSort.map {
-          case ordser: OrderedSerialization[V1] =>
+          case ordser: OrderedSerialization[V1 @unchecked] =>
             // We get in here when we do a secondary sort
             // and that sort is an ordered serialization
             // We now need a boxed serializer for this type

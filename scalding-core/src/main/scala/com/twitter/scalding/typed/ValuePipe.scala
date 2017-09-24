@@ -98,7 +98,7 @@ case object EmptyValue extends ValuePipe[Nothing] {
     this
   }
 }
-case class LiteralValue[T](value: T) extends ValuePipe[T] {
+final case class LiteralValue[T](value: T) extends ValuePipe[T] {
   override def map[U](fn: T => U) = LiteralValue(fn(value))
   override def filter(fn: T => Boolean) = if (fn(value)) this else EmptyValue
   override def toTypedPipe = TypedPipe.from(Iterable(value))
@@ -109,7 +109,7 @@ case class LiteralValue[T](value: T) extends ValuePipe[T] {
     v
   }
 }
-case class ComputedValue[T](override val toTypedPipe: TypedPipe[T]) extends ValuePipe[T] {
+final case class ComputedValue[T](override val toTypedPipe: TypedPipe[T]) extends ValuePipe[T] {
   override def map[U](fn: T => U) = ComputedValue(toTypedPipe.map(fn))
   override def filter(fn: T => Boolean) = ComputedValue(toTypedPipe.filter(fn))
 

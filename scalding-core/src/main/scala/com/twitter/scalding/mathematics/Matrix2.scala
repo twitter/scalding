@@ -242,7 +242,7 @@ class DefaultMatrixJoiner(sizeRatioThreshold: Long) extends MatrixJoiner2 {
 /**
  * Infinite column vector - only for intermediate computations
  */
-case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2[R, Unit, V] {
+final case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2[R, Unit, V] {
   override val sizeHint: SizeHint = FiniteHint(Long.MaxValue, 1)
   override def colOrd = Ordering[Unit]
   def transpose = OneR()
@@ -253,7 +253,7 @@ case class OneC[R, V](implicit override val rowOrd: Ordering[R]) extends Matrix2
 /**
  * Infinite row vector - only for intermediate computations
  */
-case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2[Unit, C, V] {
+final case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2[Unit, C, V] {
   override val sizeHint: SizeHint = FiniteHint(1, Long.MaxValue)
   override def rowOrd = Ordering[Unit]
   def transpose = OneC()
@@ -269,7 +269,7 @@ case class OneR[C, V](implicit override val colOrd: Ordering[C]) extends Matrix2
  * @param ring
  * @param expressions a HashMap of common subtrees; None if possibly not optimal (did not go through optimize), Some(...) with a HashMap that was created in optimize
  */
-case class Product[R, C, C2, V](left: Matrix2[R, C, V],
+final case class Product[R, C, C2, V](left: Matrix2[R, C, V],
   right: Matrix2[C, C2, V],
   ring: Ring[V],
   expressions: Option[Map[Matrix2[R, C2, V], TypedPipe[(R, C2, V)]]] = None)(implicit val joiner: MatrixJoiner2) extends Matrix2[R, C2, V] {
@@ -342,13 +342,10 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
 
   override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
     expressions match {
-      case Some(m) => m.get(this) match {
-        case Some(pipe) => pipe
-        case None => {
-          val result = computePipe()
-          m.put(this, result)
-          result
-        }
+      case Some(m) => m.get(this).getOrElse {
+        val result = computePipe()
+        m.put(this, result)
+        result
       }
       case None => optimizedSelf.toTypedPipe
     }
@@ -393,7 +390,7 @@ case class Product[R, C, C2, V](left: Matrix2[R, C, V],
   }
 }
 
-case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
+final case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Monoid[V]) extends Matrix2[R, C, V] {
   def collectAddends(sum: Sum[R, C, V]): List[TypedPipe[(R, C, V)]] = {
     def getLiteral(mat: Matrix2[R, C, V]): TypedPipe[(R, C, V)] = {
       mat match {
@@ -452,7 +449,7 @@ case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], mon: Mo
     }.reduce(_ ++ _).sum)
 }
 
-case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
+final case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
   right: Matrix2[R, C, V],
   ring: Ring[V]) extends Matrix2[R, C, V] {
 
@@ -485,7 +482,7 @@ case class HadamardProduct[R, C, V](left: Matrix2[R, C, V],
   implicit def withOrderedSerialization: Ordering[(R, C)] = OrderedSerialization2.maybeOrderedSerialization2(rowOrd, colOrd)
 }
 
-case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)],
+final case class MatrixLiteral[R, C, V](override val toTypedPipe: TypedPipe[(R, C, V)],
   override val sizeHint: SizeHint)(implicit override val rowOrd: Ordering[R], override val colOrd: Ordering[C])
   extends Matrix2[R, C, V] {
 
@@ -566,7 +563,7 @@ trait Scalar2[V] extends Serializable {
   // TODO: FunctionMatrix[R,C,V](fn: (R,C) => V) and a Literal scalar is just: FuctionMatrix[Unit, Unit, V]({ (_, _) => v })
 }
 
-case class ValuePipeScalar[V](override val value: ValuePipe[V]) extends Scalar2[V]
+final case class ValuePipeScalar[V](override val value: ValuePipe[V]) extends Scalar2[V]
 
 object Scalar2 {
   // implicits cannot share names

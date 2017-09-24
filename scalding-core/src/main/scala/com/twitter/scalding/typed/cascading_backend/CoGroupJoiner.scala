@@ -37,7 +37,7 @@ abstract class CoGroupedJoiner[K](inputSize: Int,
     def unbox(it: Iterator[CTuple]): Iterator[Any] =
       it.map(_.getObject(1): Any)
 
-    val leftMost = unbox(iters.head)
+    val leftMost = unbox(iters.head) // linter:disable:UndesirableTypeInference
 
     def toIterable(didx: Int) =
       new Iterable[Any] {

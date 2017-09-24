@@ -137,31 +137,31 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
   override def hashCode: Int = toMillisecs.hashCode
 }
 
-case class Millisecs(cnt: Int) extends Duration(Calendar.MILLISECOND, cnt, DateOps.UTC)
+final case class Millisecs(cnt: Int) extends Duration(Calendar.MILLISECOND, cnt, DateOps.UTC)
   with AbsoluteDuration {
   override def toSeconds = cnt / 1000.0
   override def toMillisecs = cnt.toLong
 }
 
-case class Seconds(cnt: Int) extends Duration(Calendar.SECOND, cnt, DateOps.UTC)
+final case class Seconds(cnt: Int) extends Duration(Calendar.SECOND, cnt, DateOps.UTC)
   with AbsoluteDuration {
   override def toSeconds = cnt.toDouble
   override def toMillisecs = (cnt.toLong) * 1000L
 }
 
-case class Minutes(cnt: Int) extends Duration(Calendar.MINUTE, cnt, DateOps.UTC)
+final case class Minutes(cnt: Int) extends Duration(Calendar.MINUTE, cnt, DateOps.UTC)
   with AbsoluteDuration {
   override def toSeconds = cnt * 60.0
   override def toMillisecs = cnt.toLong * 60L * 1000L
 }
 
-case class Hours(cnt: Int) extends Duration(Calendar.HOUR, cnt, DateOps.UTC)
+final case class Hours(cnt: Int) extends Duration(Calendar.HOUR, cnt, DateOps.UTC)
   with AbsoluteDuration {
   override def toSeconds = cnt * 60.0 * 60.0
   override def toMillisecs = cnt.toLong * 60L * 60L * 1000L
 }
 
-case class AbsoluteDurationList(parts: List[AbsoluteDuration])
+final case class AbsoluteDurationList(parts: List[AbsoluteDuration])
   extends AbstractDurationList[AbsoluteDuration](parts) with AbsoluteDuration {
   override def toSeconds = parts.map{ _.toSeconds }.sum
   override def toMillisecs: Long = parts.map{ _.toMillisecs }.sum

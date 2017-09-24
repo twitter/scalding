@@ -59,11 +59,11 @@ sealed private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
 
-private[scalding] case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
+private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
   override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
 }
 
-private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
   private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
   override def increment(amount: Long): Unit = cntr.increment(amount)
 }

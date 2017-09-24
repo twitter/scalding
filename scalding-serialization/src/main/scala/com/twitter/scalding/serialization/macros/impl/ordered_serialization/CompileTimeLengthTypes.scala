@@ -33,7 +33,7 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait FastLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait FastLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
 
   object MaybeLengthCalculation {
     def apply(c: Context)(tree: c.Tree): MaybeLengthCalculation[c.type] =
@@ -43,7 +43,7 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait MaybeLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait MaybeLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
 
   object ConstantLengthCalculation {
     def apply(c: Context)(intArg: Int): ConstantLengthCalculation[c.type] =
@@ -57,7 +57,7 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait ConstantLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C] {
+  sealed trait ConstantLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C] {
     def toInt: Int
   }
 
@@ -73,5 +73,5 @@ object CompileTimeLengthTypes {
     }
   }
 
-  trait NoLengthCalculationAvailable[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait NoLengthCalculationAvailable[C <: Context] extends CompileTimeLengthTypes[C]
 }
