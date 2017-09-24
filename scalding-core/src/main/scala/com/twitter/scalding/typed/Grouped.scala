@@ -90,7 +90,7 @@ object CoGrouped {
     go(list)
   }
 
-  case class Pair[K, A, B, C](
+  final case class Pair[K, A, B, C](
     larger: CoGroupable[K, A],
     smaller: CoGroupable[K, B],
     fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends CoGrouped[K, C] {
@@ -129,7 +129,7 @@ object CoGrouped {
     }
   }
 
-  case class WithReducers[K, V](on: CoGrouped[K, V], reds: Int) extends CoGrouped[K, V] {
+  final case class WithReducers[K, V](on: CoGrouped[K, V], reds: Int) extends CoGrouped[K, V] {
     def inputs = on.inputs
     def reducers = Some(reds)
     def keyOrdering = on.keyOrdering
@@ -137,7 +137,7 @@ object CoGrouped {
     def descriptions: Seq[String] = on.descriptions
   }
 
-  case class WithDescription[K, V](
+  final case class WithDescription[K, V](
     on: CoGrouped[K, V],
     description: String) extends CoGrouped[K, V] {
 
@@ -148,7 +148,7 @@ object CoGrouped {
     def descriptions: Seq[String] = on.descriptions :+ description
   }
 
-  case class FilterKeys[K, V](on: CoGrouped[K, V], fn: K => Boolean) extends CoGrouped[K, V] {
+  final case class FilterKeys[K, V](on: CoGrouped[K, V], fn: K => Boolean) extends CoGrouped[K, V] {
     val inputs = on.inputs.map(_.filterKeys(fn))
     def reducers = on.reducers
     def keyOrdering = on.keyOrdering
@@ -156,7 +156,7 @@ object CoGrouped {
     def descriptions: Seq[String] = on.descriptions
   }
 
-  case class MapGroup[K, V1, V2](on: CoGrouped[K, V1], fn: (K, Iterator[V1]) => Iterator[V2]) extends CoGrouped[K, V2] {
+  final case class MapGroup[K, V1, V2](on: CoGrouped[K, V1], fn: (K, Iterator[V1]) => Iterator[V2]) extends CoGrouped[K, V2] {
     def inputs = on.inputs
     def reducers = on.reducers
     def descriptions: Seq[String] = on.descriptions
@@ -306,7 +306,7 @@ sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
   def toTypedPipe: TypedPipe[(K, V2)] = TypedPipe.ReduceStepPipe(this)
 }
 
-case class IdentityReduce[K, V1](
+final case class IdentityReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int],
@@ -364,7 +364,7 @@ case class IdentityReduce[K, V1](
   override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
-case class UnsortedIdentityReduce[K, V1](
+final case class UnsortedIdentityReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int],
@@ -431,7 +431,7 @@ case class UnsortedIdentityReduce[K, V1](
   override def joinFunction = CoGroupable.castingJoinFunction[V1]
 }
 
-case class IdentityValueSortedReduce[K, V1](
+final case class IdentityValueSortedReduce[K, V1](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
@@ -491,7 +491,7 @@ case class IdentityValueSortedReduce[K, V1](
     else mapValueStream(_.take(n))
 }
 
-case class ValueSortedReduce[K, V1, V2](
+final case class ValueSortedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
@@ -532,7 +532,7 @@ case class ValueSortedReduce[K, V1, V2](
   }
 }
 
-case class IteratorMappedReduce[K, V1, V2](
+final case class IteratorMappedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   reduceFn: (K, Iterator[V1]) => Iterator[V2],

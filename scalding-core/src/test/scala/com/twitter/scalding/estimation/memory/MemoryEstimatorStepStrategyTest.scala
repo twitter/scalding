@@ -1,7 +1,7 @@
 package com.twitter.scalding.estimation.memory
 
 import org.apache.hadoop.mapred.JobConf
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class MemoryEstimatorStepStrategyTest extends WordSpec with Matchers {
   "A Memory estimator step strategy" should {
@@ -28,8 +28,9 @@ class MemoryEstimatorStepStrategyTest extends WordSpec with Matchers {
   def confWith(values: Map[String, String]): JobConf = {
     val conf = new JobConf(false)
 
-    values.foreach { case (k, v) =>
-      conf.set(k, v)
+    values.foreach {
+      case (k, v) =>
+        conf.set(k, v)
     }
 
     conf

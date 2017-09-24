@@ -35,10 +35,10 @@ object FlatMapping {
   def filterKeys[K, V](fn: K => Boolean): FlatMapping[(K, V), (K, V)] =
     filter { kv => fn(kv._1) }
 
-  case class Identity[A, B](ev: A =:= B) extends FlatMapping[A, B]
-  case class Filter[A, B](fn: A => Boolean, ev: A =:= B) extends FlatMapping[A, B]
-  case class Map[A, B](fn: A => B) extends FlatMapping[A, B]
-  case class FlatM[A, B](fn: A => TraversableOnce[B]) extends FlatMapping[A, B]
+  final case class Identity[A, B](ev: A =:= B) extends FlatMapping[A, B]
+  final case class Filter[A, B](fn: A => Boolean, ev: A =:= B) extends FlatMapping[A, B]
+  final case class Map[A, B](fn: A => B) extends FlatMapping[A, B]
+  final case class FlatM[A, B](fn: A => TraversableOnce[B]) extends FlatMapping[A, B]
 }
 
 /**
@@ -101,6 +101,6 @@ object FlatMappedFn {
   }
 
   def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](implicitly[T =:= T]))
-  case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]
-  case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C]) extends FlatMappedFn[A, C]
+  final case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]
+  final case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C]) extends FlatMappedFn[A, C]
 }

@@ -37,6 +37,7 @@ object CommonCompareBinary {
    * check if they are byte-for-byte identical, which is a cheap way to avoid doing
    * potentially complex logic in binary comparators
    */
+  @SuppressWarnings(Array("org.wartremover.warts.Return"))
   final def earlyEqual(inputStreamA: InputStream,
     lenA: Int,
     inputStreamB: InputStream,
@@ -59,8 +60,8 @@ object CommonCompareBinary {
             // yeah, return sucks, but trying to optimize here
             return false
           }
+          else if (a < 0) return JavaStreamEnrichments.eof
           // a == b, but may be eof
-          if (a < 0) return JavaStreamEnrichments.eof
         }
         // we consumed all the bytes, and they were all equal
         true
