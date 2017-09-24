@@ -74,10 +74,10 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
 
         { (t: A1) => if (f(t)) next(t) else Iterator.empty }
       case Series(Map(f), rest) =>
-        val next = loop(rest)
+        val next = loop(rest) // linter:disable:UndesirableTypeInference
         f.andThen(next)
       case Series(FlatM(f), rest) =>
-        val next = loop(rest)
+        val next = loop(rest) // linter:disable:UndesirableTypeInference
         f.andThen(_.flatMap(next))
     }
 

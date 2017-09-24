@@ -307,7 +307,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
 
         case CrossValue(left, EmptyValue) => (m, Op.empty)
         case CrossValue(left, LiteralValue(v)) =>
-          val (m1, op) = plan(m, left)
+          val (m1, op) = plan(m, left) // linter:disable:UndesirableTypeInference
           (m1, op.concatMap { a => Iterator.single((a, v)) })
         case CrossValue(left, ComputedValue(right)) =>
           plan(m, CrossPipe(left, right))
@@ -346,7 +346,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           go(f)
 
         case FlatMapped(prev, fn) =>
-          val (m1, op) = plan(m, prev)
+          val (m1, op) = plan(m, prev) // linter:disable:UndesirableTypeInference
           (m1, op.concatMap(fn))
 
         case ForceToDisk(pipe) =>
@@ -370,7 +370,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           go(f)
 
         case Mapped(input, fn) =>
-          val (m1, op) = plan(m, input)
+          val (m1, op) = plan(m, input) // linter:disable:UndesirableTypeInference
           (m1, op.map(fn))
 
         case MergedTypedPipe(left, right) =>
@@ -545,7 +545,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
                 (st, a :: acts)
             }
           case ((oldState, acts), ToWrite.SimpleWrite(pipe, sink)) =>
-            val (nextM, op) = plan(oldState.memo, pipe)
+            val (nextM, op) = plan(oldState.memo, pipe) // linter:disable:UndesirableTypeInference
             val action = () => {
               val arrayBufferF = op.result
               arrayBufferF.foreach { mem.writeSink(sink, _) }

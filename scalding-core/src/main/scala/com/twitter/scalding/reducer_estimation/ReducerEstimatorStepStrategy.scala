@@ -25,20 +25,19 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
   final override def apply(
     flow: Flow[JobConf],
     preds: JList[FlowStep[JobConf]],
-    step: FlowStep[JobConf]
-  ): Unit = {
+    step: FlowStep[JobConf]): Unit = {
     val conf = step.getConfig
     // for steps with reduce phase, mapred.reduce.tasks is set in the jobconf at this point
     // so we check that to determine if this is a map-only step.
     conf.getNumReduceTasks match {
-      case 0 => LOG.info(s"${ flow.getName } is a map-only step. Skipping reducer estimation.")
+      case 0 => LOG.info(s"${flow.getName} is a map-only step. Skipping reducer estimation.")
       case _ =>
         if (skipReducerEstimation(step)) {
           LOG.info(
             s"""
-               |Flow step ${ step.getName } was configured with reducers
-               |set explicitly (${ Config.WithReducersSetExplicitly }=true) and the estimator
-               |explicit override turned off (${ Config.ReducerEstimatorOverride }=false). Skipping
+               |Flow step ${step.getName} was configured with reducers
+               |set explicitly (${Config.WithReducersSetExplicitly}=true) and the estimator
+               |explicit override turned off (${Config.ReducerEstimatorOverride}=false). Skipping
                |reducer estimation.
              """.stripMargin)
         } else {

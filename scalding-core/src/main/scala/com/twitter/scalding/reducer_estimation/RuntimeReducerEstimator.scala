@@ -105,16 +105,15 @@ trait BasicRuntimeReducerEstimator extends ReducerHistoryEstimator {
   override protected def estimate(
     info: FlowStrategyInfo,
     conf: JobConf,
-    history: Seq[FlowStepHistory]
-  ): Option[Int] = {
+    history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
     LOG.info(
       s"""|
           |History items have the following numbers of tasks:
-          | ${ history.map(_.tasks.length) },
+          | ${history.map(_.tasks.length)},
           |and the following numbers of tasks have valid task histories:
-          | ${ reduceTimes.map(_.length) }""".stripMargin)
+          | ${reduceTimes.map(_.length)}""".stripMargin)
 
     // total time taken in the step = time per reducer * number of reducers
     val jobTimes: Seq[Option[Double]] = reduceTimes
@@ -148,16 +147,15 @@ trait InputScaledRuntimeReducerEstimator extends ReducerHistoryEstimator {
   override protected def estimate(
     info: FlowStrategyInfo,
     conf: JobConf,
-    history: Seq[FlowStepHistory]
-  ): Option[Int] = {
+    history: Seq[FlowStepHistory]): Option[Int] = {
     val reduceTimes: Seq[Seq[Double]] = getReduceTimes(history)
 
     LOG.info(
       s"""|
           |History items have the following numbers of tasks:
-          | ${ history.map(_.tasks.length) },
+          | ${history.map(_.tasks.length)},
           |and the following numbers of tasks have valid task histories:
-          | ${ reduceTimes.map(_.length) }""".stripMargin)
+          | ${reduceTimes.map(_.length)}""".stripMargin)
 
     // total time taken in the step = time per reducer * number of reducers
     val jobTimes: Seq[Option[Double]] = reduceTimes
@@ -188,7 +186,7 @@ trait InputScaledRuntimeReducerEstimator extends ReducerHistoryEstimator {
 
       LOG.info(
         s"""
-           | - HDFS bytes read: ${ history.map(_.hdfsBytesRead) }
+           | - HDFS bytes read: ${history.map(_.hdfsBytesRead)}
            | - Time-to-byte-ratios: $timeToByteRatios
            | - Typical type-to-byte-ratio: $typicalTimeToByteRatio
            | - Desired runtime: $desiredRuntime

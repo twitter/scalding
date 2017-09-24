@@ -48,11 +48,11 @@ object SealedTraitOrderedBuf {
 
     val dispatcher = buildDispatcher
 
-    val subClasses: List[Type] = knownDirectSubclasses.map(_.asType.toType).toList
+    val subClasses: List[Type] = knownDirectSubclasses.map(_.asType.toType)
 
     val subData: List[(Int, Type, TreeOrderedBuf[c.type])] = subClasses.map { t =>
       (t, dispatcher(t))
-    }.zipWithIndex.map{ case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }.toList
+    }.zipWithIndex.map { case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }
 
     require(subData.nonEmpty, "Unable to parse any subtypes for the sealed trait, error. This must be an error.")
 

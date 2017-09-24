@@ -550,7 +550,7 @@ object Config {
    * Either union these two, or return the keys that overlap
    */
   def disjointUnion[K >: String, V >: String](m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
-    val asMap = conf.toMap.toMap[K, V] // linter:ignore we are upcasting K, V
+    val asMap = conf.toMap.toMap[K, V] // linter:disable:TypeToType // we are upcasting K, V
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
     else Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
@@ -559,7 +559,7 @@ object Config {
    * This overwrites any keys in m that exist in config.
    */
   def overwrite[K >: String, V >: String](m: Map[K, V], conf: Config): Map[K, V] =
-    m ++ (conf.toMap.toMap[K, V]) // linter:ignore we are upcasting K, V
+    m ++ (conf.toMap.toMap[K, V]) // linter:disable:TypeToType // we are upcasting K, V
 
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is

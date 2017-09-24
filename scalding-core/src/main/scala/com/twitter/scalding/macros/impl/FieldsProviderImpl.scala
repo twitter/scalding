@@ -93,11 +93,12 @@ object FieldsProviderImpl {
         case tpe if tpe =:= typeOf[Float] => true
         case tpe if tpe =:= typeOf[Double] => true
         case tpe if tpe =:= typeOf[String] => true
-        case tpe =>
-          optionInner(c)(tpe) match {
-            case Some(t) => isNumbered(t)
-            case None => false
-          }
+        case tpe => optionInner(c)(tpe) match {
+          case Some(t) =>
+            // we need this match style to do tailrec
+            isNumbered(t) // linter:disable
+          case None => false
+        }
       }
 
     object FieldBuilder {
@@ -163,7 +164,7 @@ object FieldsProviderImpl {
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
-          val fieldName = accessorMethod.name.toTermName.toString
+          val fieldName = accessorMethod.name.toString
           val fieldType = accessorMethod.returnType.asSeenFrom(outerTpe, outerTpe.typeSymbol.asClass)
           (fieldType, fieldName)
         }.toVector
