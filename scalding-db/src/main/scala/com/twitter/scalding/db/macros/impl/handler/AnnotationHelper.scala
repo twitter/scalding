@@ -9,7 +9,7 @@ import com.twitter.scalding.db.ColumnDefinition
 import com.twitter.scalding.db.macros.impl.FieldName
 
 private[handler] sealed trait SizeAnno
-private[handler] case class WithSize(v: Int) extends SizeAnno
+private[handler] final case class WithSize(v: Int) extends SizeAnno
 private[handler] case object WithoutSize extends SizeAnno
 
 private[handler] sealed trait DateAnno

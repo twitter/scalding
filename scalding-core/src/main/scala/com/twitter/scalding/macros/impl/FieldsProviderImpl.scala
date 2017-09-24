@@ -93,10 +93,10 @@ object FieldsProviderImpl {
         case tpe if tpe =:= typeOf[Float] => true
         case tpe if tpe =:= typeOf[Double] => true
         case tpe if tpe =:= typeOf[String] => true
-        case tpe => optionInner(c)(tpe) match {
+        case tpe => optionInner(c)(tpe) match { // linter:disable:UseOptionExistsNotPatMatch
           case Some(t) =>
             // we need this match style to do tailrec
-            isNumbered(t) // linter:disable
+            isNumbered(t)
           case None => false
         }
       }
@@ -120,16 +120,16 @@ object FieldsProviderImpl {
       def columnTypes: Vector[Tree]
       def names: Vector[String]
     }
-    case class Primitive(name: String, tpe: Type) extends FieldBuilder {
+    final case class Primitive(name: String, tpe: Type) extends FieldBuilder {
       def columnTypes = Vector(q"""_root_.scala.Predef.classOf[$tpe]""")
       def names = Vector(name)
     }
-    case class OptionBuilder(of: FieldBuilder) extends FieldBuilder {
+    final case class OptionBuilder(of: FieldBuilder) extends FieldBuilder {
       // Options just use Object as the type, due to the way cascading works on number types
       def columnTypes = of.columnTypes.map(_ => q"""_root_.scala.Predef.classOf[_root_.java.lang.Object]""")
       def names = of.names
     }
-    case class CaseClassBuilder(prefix: String, members: Vector[FieldBuilder]) extends FieldBuilder {
+    final case class CaseClassBuilder(prefix: String, members: Vector[FieldBuilder]) extends FieldBuilder {
       def columnTypes = members.flatMap(_.columnTypes)
       def names = for {
         member <- members

@@ -35,7 +35,7 @@ object AsyncFlowDefRunner {
    * We send messages from other threads into the submit thread here
    */
   private sealed trait FlowDefAction
-  private case class RunFlowDef(conf: Config,
+  private final case class RunFlowDef(conf: Config,
     mode: Mode,
     fd: FlowDef,
     result: Promise[(Long, JobStats)]) extends FlowDefAction

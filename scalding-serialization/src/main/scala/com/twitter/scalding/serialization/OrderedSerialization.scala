@@ -183,7 +183,7 @@ object OrderedSerialization {
     Law2("totality", { (a: T, b: T) => (ordb.lteq(a, b) || ordb.lteq(b, a)) })
 
   def allLaws[T: OrderedSerialization]: Iterable[Law[T]] =
-    Serialization.allLaws ++ List(compareBinaryMatchesCompare[T],
+    Serialization.allLaws ++ List[Law[T]](compareBinaryMatchesCompare[T],
       orderingTransitive[T],
       orderingAntisymmetry[T],
       orderingTotality[T])

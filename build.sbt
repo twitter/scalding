@@ -56,7 +56,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   javacOptions in doc := Seq("-source", "1.6"),
 
-  wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
+  wartremoverErrors in (Compile, compile) ++= Seq(
+    Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
+    Wart.Return, Wart.EitherProjectionPartial),
 
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",
