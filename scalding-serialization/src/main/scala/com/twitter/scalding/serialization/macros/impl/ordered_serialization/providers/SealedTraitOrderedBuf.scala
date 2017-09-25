@@ -18,7 +18,7 @@ package com.twitter.scalding.serialization.macros.impl.ordered_serialization.pro
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 object SealedTraitOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -34,7 +34,7 @@ object SealedTraitOrderedBuf {
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
     outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(s"$id"))
+    def freshT(id: String) = TermName(c.freshName(s"$id"))
 
     val knownDirectSubclasses = outerType.typeSymbol.asClass.knownDirectSubclasses
 

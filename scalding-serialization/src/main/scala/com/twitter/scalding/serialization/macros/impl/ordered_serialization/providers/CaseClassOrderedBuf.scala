@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
@@ -27,6 +27,7 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
+@SuppressWarnings(Array("org.wartremover.warts.MergeMaps"))
 object CaseClassOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeSymbol.asClass.isModuleClass =>
@@ -36,11 +37,11 @@ object CaseClassOrderedBuf {
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
     outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType.declarations
+      outerType.decls
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
           val fieldType =

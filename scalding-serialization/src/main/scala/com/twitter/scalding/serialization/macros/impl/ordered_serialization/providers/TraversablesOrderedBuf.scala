@@ -15,7 +15,7 @@
  */
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
   CompileTimeLengthTypes,
   ProductLike,
@@ -93,7 +93,7 @@ object TraversablesOrderedBuf {
     maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
 
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String) = TermName(c.freshName(s"fresh_$id"))
 
     val dispatcher = buildDispatcher
 

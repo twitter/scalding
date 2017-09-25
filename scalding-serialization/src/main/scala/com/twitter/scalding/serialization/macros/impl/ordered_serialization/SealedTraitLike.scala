@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -38,7 +38,7 @@ object SealedTraitLike {
   def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
     val valueA = freshT("valueA")
     val valueB = freshT("valueB")
     val idxCmp = freshT("idxCmp")
@@ -85,7 +85,7 @@ object SealedTraitLike {
   def hash(c: Context)(element: c.TermName)(
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     subData
       .foldLeft(Option.empty[Tree]) {
@@ -123,7 +123,7 @@ object SealedTraitLike {
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val innerArg = freshT("innerArg")
     subData
@@ -161,7 +161,7 @@ object SealedTraitLike {
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val prevSizeData = subData
       .foldLeft(Option.empty[Tree]) {
@@ -225,7 +225,7 @@ object SealedTraitLike {
   def get(c: Context)(inputStream: c.TermName)(
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val valueA = freshT("valueA")
 
@@ -267,7 +267,7 @@ object SealedTraitLike {
     subData: List[(Int, c.Type, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
 
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val arg = freshT("arg")
     val idxCmp = freshT("idxCmp")

@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -38,11 +38,11 @@ object ImplicitOrderedBuf {
 
   def apply(c: Context)(outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val variableID = (outerType.typeSymbol.fullName.hashCode.toLong + Int.MaxValue.toLong).toString
     val variableNameStr = s"orderedSer_$variableID"
-    val variableName = newTermName(variableNameStr)
+    val variableName = TermName(variableNameStr)
 
     val implicitInstanciator = q"""
       implicitly[_root_.com.twitter.scalding.serialization.OrderedSerialization[${outerType}]]"""

@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
@@ -36,7 +36,7 @@ object OptionOrderedBuf {
   def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
     outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher
 
     val innerType = outerType.asInstanceOf[TypeRefApi].args.head

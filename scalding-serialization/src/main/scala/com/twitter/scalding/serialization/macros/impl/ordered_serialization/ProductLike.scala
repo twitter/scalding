@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 
@@ -24,7 +24,7 @@ object ProductLike {
   def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(
     elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     elementData
       .foldLeft(Option.empty[Tree]) {
@@ -50,7 +50,7 @@ object ProductLike {
   def hash(c: Context)(element: c.TermName)(
     elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val currentHash = freshT("last")
 
@@ -76,7 +76,7 @@ object ProductLike {
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(
     elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
     val innerElement = freshT("innerElement")
 
     elementData.foldLeft(q"") {
@@ -163,7 +163,7 @@ object ProductLike {
     elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
 
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val innerElementA = freshT("innerElementA")
     val innerElementB = freshT("innerElementB")
