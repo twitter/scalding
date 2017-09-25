@@ -205,14 +205,14 @@ object ProductOrderedBuf {
 
     val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType.declarations
+      outerType.decls
         .collect { case m: MethodSymbol => m }
-        .filter(m => m.name.toTermName.toString.startsWith("_"))
+        .filter(m => m.name.toString.startsWith("_"))
         .map { accessorMethod =>
           val fieldType =
             accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod.name.toTermName, b)
+          (fieldType, accessorMethod.name, b)
         }
         .toList
 
