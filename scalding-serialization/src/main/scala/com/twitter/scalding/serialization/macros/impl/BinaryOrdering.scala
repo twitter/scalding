@@ -8,4 +8,4 @@ trait BinaryOrdering {
   implicit def ordSer[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
 }
 
-object BinaryOrdering extends BinaryOrdering {}
+object BinaryOrdering extends BinaryOrdering
