@@ -3,7 +3,7 @@ package com.twitter.scalding.typed
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
 
 object OptimizationRules {
-  type LitPipe[T] = Literal[TypedPipe, T]
+  type LiteralPipe[T] = Literal[TypedPipe, T]
 
   import Literal.{ Unary, Binary }
   import TypedPipe._
@@ -12,31 +12,31 @@ object OptimizationRules {
    * Since our TypedPipe is covariant, but the Literal is not
    * this is actually safe in this context, but not in general
    */
-  def widen[T](l: LitPipe[_ <: T]): LitPipe[T] = {
+  def widen[T](l: LiteralPipe[_ <: T]): LiteralPipe[T] = {
     // to prove this is safe, see that if you have
-    // LitPipe[_ <: T] we can call .evaluate to get
+    // LiteralPipe[_ <: T] we can call .evaluate to get
     // TypedPipe[_ <: T] which due to covariance is
     // TypedPipe[T], and then using toLiteral we can get
-    // LitPipe[T]
+    // LiteralPipe[T]
     //
     // that would be wasteful to apply since the final
     // result is identity.
-    l.asInstanceOf[LitPipe[T]]
+    l.asInstanceOf[LiteralPipe[T]]
   }
 
   /**
    * Convert a TypedPipe[T] to a Literal[TypedPipe, T] for
    * use with Dagon
    */
-  def toLiteral: FunctionK[TypedPipe, LitPipe] =
-    Memoize.functionK[TypedPipe, LitPipe](
-      new Memoize.RecursiveK[TypedPipe, LitPipe] {
+  def toLiteral: FunctionK[TypedPipe, LiteralPipe] =
+    Memoize.functionK[TypedPipe, LiteralPipe](
+      new Memoize.RecursiveK[TypedPipe, LiteralPipe] {
 
         def toFunction[A] = {
           case (c: CrossPipe[a, b], f) =>
             Binary(f(c.left), f(c.right), CrossPipe(_: TypedPipe[a], _: TypedPipe[b]))
           case (cv@CrossValue(_, _), f) =>
-            def go[A, B](cv: CrossValue[A, B]): LitPipe[(A, B)] =
+            def go[A, B](cv: CrossValue[A, B]): LiteralPipe[(A, B)] =
               cv match {
                 case CrossValue(a, ComputedValue(v)) =>
                   Binary(f(a), f(v), { (a: TypedPipe[A], b: TypedPipe[B]) =>
@@ -89,14 +89,14 @@ object OptimizationRules {
         }
       })
 
-    private def handleReduceStep[K, V1, V2](rs: ReduceStep[K, V1, V2], recurse: FunctionK[TypedPipe, LitPipe]): LitPipe[(K, V2)] =
+    private def handleReduceStep[K, V1, V2](rs: ReduceStep[K, V1, V2], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V2)] =
       rs match {
         case step@IdentityReduce(_, _, _, _) =>
           Unary(widen[(K, V2)](recurse(step.mapped)), { (tp: TypedPipe[(K, V2)]) => ReduceStepPipe(step.copy(mapped = tp)) })
         case step@UnsortedIdentityReduce(_, _, _, _) =>
           Unary(widen[(K, V2)](recurse(step.mapped)), { (tp: TypedPipe[(K, V2)]) => ReduceStepPipe(step.copy(mapped = tp)) })
         case step@IdentityValueSortedReduce(_, _, _, _, _) =>
-          def go[A, B](ivsr: IdentityValueSortedReduce[A, B]): LitPipe[(A, B)] =
+          def go[A, B](ivsr: IdentityValueSortedReduce[A, B]): LiteralPipe[(A, B)] =
             Unary(widen[(A, B)](recurse(ivsr.mapped)), { (tp: TypedPipe[(A, B)]) =>
               ReduceStepPipe[A, B, B](IdentityValueSortedReduce[A, B](
                 ivsr.keyOrdering,
@@ -107,7 +107,7 @@ object OptimizationRules {
             })
           widen[(K, V2)](go(step))
         case step@ValueSortedReduce(_, _, _, _, _, _) =>
-          def go[A, B, C](vsr: ValueSortedReduce[A, B, C]): LitPipe[(A, C)] =
+          def go[A, B, C](vsr: ValueSortedReduce[A, B, C]): LiteralPipe[(A, C)] =
             Unary(recurse(vsr.mapped), { (tp: TypedPipe[(A, B)]) =>
               ReduceStepPipe[A, B, C](ValueSortedReduce[A, B, C](
                 vsr.keyOrdering,
@@ -119,13 +119,13 @@ object OptimizationRules {
             })
           go(step)
         case step@IteratorMappedReduce(_, _, _, _, _) =>
-          def go[A, B, C](imr: IteratorMappedReduce[A, B, C]): LitPipe[(A, C)] =
+          def go[A, B, C](imr: IteratorMappedReduce[A, B, C]): LiteralPipe[(A, C)] =
             Unary(recurse(imr.mapped), { (tp: TypedPipe[(A, B)]) => ReduceStepPipe[A, B, C](imr.copy(mapped = tp)) })
 
           go(step)
       }
 
-    private def handleCoGrouped[K, V](cg: CoGroupable[K, V], recurse: FunctionK[TypedPipe, LitPipe]): LitPipe[(K, V)] = {
+    private def handleCoGrouped[K, V](cg: CoGroupable[K, V], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V)] = {
       import CoGrouped._
 
       def pipeToCG[V1](t: TypedPipe[(K, V1)]): CoGroupable[K, V1] =
@@ -145,7 +145,7 @@ object OptimizationRules {
 
       cg match {
         case p@Pair(_, _, _) =>
-          def go[A, B, C](pair: Pair[K, A, B, C]): LitPipe[(K, C)] = {
+          def go[A, B, C](pair: Pair[K, A, B, C]): LiteralPipe[(K, C)] = {
             val llit = handleCoGrouped(pair.larger, recurse)
             val rlit = handleCoGrouped(pair.smaller, recurse)
             val fn = pair.fn
@@ -155,7 +155,7 @@ object OptimizationRules {
           }
           widen(go(p))
         case wr@WithReducers(_, _) =>
-          def go[V1 <: V](wr: WithReducers[K, V1]): LitPipe[(K, V)] = {
+          def go[V1 <: V](wr: WithReducers[K, V1]): LiteralPipe[(K, V)] = {
             val reds = wr.reds
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(wr.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
@@ -174,7 +174,7 @@ object OptimizationRules {
           }
           widen(go(wr))
         case wd@WithDescription(_, _) =>
-          def go[V1 <: V](wd: WithDescription[K, V1]): LitPipe[(K, V)] = {
+          def go[V1 <: V](wd: WithDescription[K, V1]): LiteralPipe[(K, V)] = {
             val desc = wd.description
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(wd.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
@@ -192,7 +192,7 @@ object OptimizationRules {
           }
           widen(go(wd))
         case fk@FilterKeys(_, _) =>
-          def go[V1 <: V](fk: FilterKeys[K, V1]): LitPipe[(K, V)] = {
+          def go[V1 <: V](fk: FilterKeys[K, V1]): LiteralPipe[(K, V)] = {
             val fn = fk.fn
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(fk.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
@@ -210,7 +210,7 @@ object OptimizationRules {
           }
           widen(go(fk))
         case mg@MapGroup(_, _) =>
-          def go[V1, V2 <: V](mg: MapGroup[K, V1, V2]): LitPipe[(K, V)] = {
+          def go[V1, V2 <: V](mg: MapGroup[K, V1, V2]): LiteralPipe[(K, V)] = {
             val fn = mg.fn
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(mg.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
@@ -310,14 +310,14 @@ object OptimizationRules {
           ReduceStepPipe(step.mapGroup(fn))
       }
 
-    private def handleHashCoGroup[K, V, V2, R](hj: HashCoGroup[K, V, V2, R], recurse: FunctionK[TypedPipe, LitPipe]): LitPipe[(K, R)] = {
-      val rightLit: LitPipe[(K, V2)] = hj.right match {
+    private def handleHashCoGroup[K, V, V2, R](hj: HashCoGroup[K, V, V2, R], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, R)] = {
+      val rightLit: LiteralPipe[(K, V2)] = hj.right match {
         case step@IdentityReduce(_, _, _, _) =>
           Unary(widen[(K, V2)](recurse(step.mapped)), { (tp: TypedPipe[(K, V2)]) => ReduceStepPipe(step.copy(mapped = tp)) })
         case step@UnsortedIdentityReduce(_, _, _, _) =>
           Unary(widen[(K, V2)](recurse(step.mapped)), { (tp: TypedPipe[(K, V2)]) => ReduceStepPipe(step.copy(mapped = tp)) })
         case step@IteratorMappedReduce(_, _, _, _, _) =>
-          def go[A, B, C](imr: IteratorMappedReduce[A, B, C]): LitPipe[(A, C)] =
+          def go[A, B, C](imr: IteratorMappedReduce[A, B, C]): LiteralPipe[(A, C)] =
             Unary(recurse(imr.mapped), { (tp: TypedPipe[(A, B)]) => ReduceStepPipe[A, B, C](imr.copy(mapped = tp)) })
 
           widen(go(step))
