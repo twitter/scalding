@@ -27,7 +27,7 @@ import cascading.tuple.TupleEntry
  * map
  * flatMap
  */
-sealed abstract class FlatMapping[-A, +B] extends java.io.Serializable
+sealed trait FlatMapping[-A, +B] extends java.io.Serializable
 object FlatMapping {
   def filter[A](fn: A => Boolean): FlatMapping[A, A] =
     Filter[A, A](fn, implicitly)
@@ -44,7 +44,7 @@ object FlatMapping {
 /**
  * This is a composition of one or more FlatMappings
  */
-sealed abstract class FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
+sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
   import FlatMappedFn._
 
   final def runAfter[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
@@ -58,7 +58,7 @@ sealed abstract class FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) wit
   /**
    * We interpret this composition once to minimize pattern matching when we execute
    */
-  protected def toFn: A => TraversableOnce[B] = {
+  private[this] val toFn: A => TraversableOnce[B] = {
     import FlatMapping._
 
     def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
@@ -78,20 +78,14 @@ sealed abstract class FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) wit
         f.andThen(next)
       case Series(FlatM(f), rest) =>
         val next = loop(rest) // linter:disable:UndesirableTypeInference
-        val first = f match {
-          case s@Single(_) => s.toFn
-          case s@Series(_, _) => s.toFn
-          case otherwise => otherwise
-        }
-        first.andThen(_.flatMap(next))
+
+        { a: A1 => f(a).flatMap(next) }
     }
 
     loop(this)
   }
 
-  // If we make toFn a val directly we can hit the val init order bug
-  private[this] val fnCache: A => TraversableOnce[B] = toFn
-  def apply(a: A): TraversableOnce[B] = fnCache(a)
+  def apply(a: A): TraversableOnce[B] = toFn(a)
 }
 
 object FlatMappedFn {
