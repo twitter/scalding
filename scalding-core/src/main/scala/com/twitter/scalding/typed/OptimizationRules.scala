@@ -464,7 +464,7 @@ object OptimizationRules {
             ReduceStepPipe(step.filterKeys(fn))
         })
       case FilterKeys(CoGroupedPipe(cg), fn) =>
-        Some(CoGroupedPipe(cg.filterKeys(fn)))
+        Some(CoGroupedPipe(CoGrouped.FilterKeys(cg, fn)))
       case FilterKeys(HashCoGroup(left, right, joiner), fn) =>
         val newRight = right match {
           case step@IdentityReduce(_, _, _, _) => step.filterKeys(fn)
@@ -473,6 +473,51 @@ object OptimizationRules {
         }
         Some(HashCoGroup(FilterKeys(left, fn), newRight, joiner))
       case _ => None
+    }
+  }
+
+  object EmptyIsOftenNoOp extends PartialRule[TypedPipe] {
+
+    def emptyCogroup[K, V](cg: CoGrouped[K, V]): Boolean = {
+      import CoGrouped._
+
+      def empty(t: TypedPipe[Any]): Boolean = t match {
+        case EmptyTypedPipe => true
+        case _ => false
+      }
+      cg match {
+        case Pair(left, right, _) if left.inputs.forall(empty) && right.inputs.forall(empty) => true
+        case Pair(left, _, fn) if left.inputs.forall(empty) && (fn eq Joiner.inner2)  => true
+        case Pair(_, right, fn) if right.inputs.forall(empty) && (fn eq Joiner.inner2)  => true
+        case _ => false
+      }
+    }
+
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case CrossPipe(EmptyTypedPipe, _) => EmptyTypedPipe
+      case CrossPipe(_, EmptyTypedPipe) => EmptyTypedPipe
+      case CrossValue(EmptyTypedPipe, _) => EmptyTypedPipe
+      case DebugPipe(EmptyTypedPipe) => EmptyTypedPipe
+      case FilterKeys(EmptyTypedPipe, _) => EmptyTypedPipe
+      case Filter(EmptyTypedPipe, _) => EmptyTypedPipe
+      case FlatMapValues(EmptyTypedPipe, _) => EmptyTypedPipe
+      case FlatMapped(EmptyTypedPipe, _) => EmptyTypedPipe
+      case ForceToDisk(EmptyTypedPipe) => EmptyTypedPipe
+      case Fork(EmptyTypedPipe) => EmptyTypedPipe
+      case HashCoGroup(EmptyTypedPipe, _, _) => EmptyTypedPipe
+      case MapValues(EmptyTypedPipe, _) => EmptyTypedPipe
+      case Mapped(EmptyTypedPipe, _) => EmptyTypedPipe
+      case MergedTypedPipe(EmptyTypedPipe, a) => a
+      case MergedTypedPipe(a, EmptyTypedPipe) => a
+      case ReduceStepPipe(rs: ReduceStep[_, _, _]) if rs.mapped == EmptyTypedPipe => EmptyTypedPipe
+      case SumByLocalKeys(EmptyTypedPipe, _) => EmptyTypedPipe
+      case CoGroupedPipe(cgp) if emptyCogroup(cgp) => EmptyTypedPipe
+    }
+  }
+
+  object EmptyIterableIsEmpty extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
     }
   }
 

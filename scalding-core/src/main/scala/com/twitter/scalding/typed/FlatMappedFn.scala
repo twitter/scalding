@@ -27,7 +27,7 @@ import cascading.tuple.TupleEntry
  * map
  * flatMap
  */
-sealed trait FlatMapping[-A, +B] extends java.io.Serializable
+sealed abstract class FlatMapping[-A, +B] extends java.io.Serializable
 object FlatMapping {
   def filter[A](fn: A => Boolean): FlatMapping[A, A] =
     Filter[A, A](fn, implicitly)
@@ -44,7 +44,7 @@ object FlatMapping {
 /**
  * This is a composition of one or more FlatMappings
  */
-sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
+sealed abstract class FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
   import FlatMappedFn._
 
   final def runAfter[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
@@ -58,7 +58,7 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
   /**
    * We interpret this composition once to minimize pattern matching when we execute
    */
-  protected val toFn: A => TraversableOnce[B] = {
+  protected def toFn: A => TraversableOnce[B] = {
     import FlatMapping._
 
     def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
@@ -89,7 +89,9 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
     loop(this)
   }
 
-  def apply(a: A): TraversableOnce[B] = toFn(a)
+  // If we make toFn a val directly we can hit the val init order bug
+  private[this] val fnCache: A => TraversableOnce[B] = toFn
+  def apply(a: A): TraversableOnce[B] = fnCache(a)
 }
 
 object FlatMappedFn {

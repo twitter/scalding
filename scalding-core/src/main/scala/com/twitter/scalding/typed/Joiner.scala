@@ -26,9 +26,13 @@ object Joiner extends java.io.Serializable {
   def hashInner2[K, V, U] = { (key: K, v: V, itu: Iterable[U]) => itu.iterator.map { (v, _) } }
   def hashLeft2[K, V, U] = { (key: K, v: V, itu: Iterable[U]) => asOuter(itu.iterator).map { (v, _) } }
 
-  def inner2[K, V, U] = { (key: K, itv: Iterator[V], itu: Iterable[U]) =>
+  // We only allocate one of these so we can use equality to test
+  private[this] val inner2Any = { (key: Any, itv: Iterator[Any], itu: Iterable[Any]) =>
     itv.flatMap { v => itu.map { u => (v, u) } }
   }
+  def inner2[K, V, U]: (K, Iterator[V], Iterable[U]) => Iterator[(V, U)] =
+    inner2Any.asInstanceOf[(K, Iterator[V], Iterable[U]) => Iterator[(V, U)]]
+
   def asOuter[U](it: Iterator[U]): Iterator[Option[U]] = {
     if (it.isEmpty) {
       Iterator(None)
