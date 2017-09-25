@@ -19,7 +19,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
@@ -29,20 +33,22 @@ object CaseClassOrderedBuf {
       CaseClassOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+    outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
     val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType
-        .declarations
+      outerType.declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
-          val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
+          val fieldType =
+            accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod.name, b)
-        }.toList
+        }
+        .toList
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -50,7 +56,8 @@ object CaseClassOrderedBuf {
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
         ProductLike.compareBinary(c)(inputStreamA, inputStreamB)(elementData)
 
-      override def hash(element: ctx.TermName): ctx.Tree = ProductLike.hash(c)(element)(elementData)
+      override def hash(element: ctx.TermName): ctx.Tree =
+        ProductLike.hash(c)(element)(elementData)
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         ProductLike.put(c)(inputStream, element)(elementData)
@@ -67,6 +74,7 @@ object CaseClassOrderedBuf {
         """
             (builderTree, curR)
         }
+
         q"""
        ..${getValProcessor.map(_._1)}
        ${outerType.typeSymbol.companionSymbol}(..${getValProcessor.map(_._2)})
@@ -83,4 +91,3 @@ object CaseClassOrderedBuf {
     }
   }
 }
-

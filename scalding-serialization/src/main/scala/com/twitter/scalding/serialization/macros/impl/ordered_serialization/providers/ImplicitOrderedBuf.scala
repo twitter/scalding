@@ -25,7 +25,7 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 /*
   A fall back ordered bufferable to look for the user to have an implicit in scope to satisfy the missing
   type. This is for the case where its an opaque class to our macros where we can't figure out the fields
-*/
+ */
 object ImplicitOrderedBuf {
 
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -80,4 +80,3 @@ object ImplicitOrderedBuf {
     }
   }
 }
-

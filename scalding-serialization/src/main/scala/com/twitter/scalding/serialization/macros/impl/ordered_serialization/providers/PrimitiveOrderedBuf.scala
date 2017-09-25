@@ -19,7 +19,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -60,7 +64,8 @@ object PrimitiveOrderedBuf {
       PrimitiveOrderedBuf(c)(tpe, "Double", 8, true)
   }
 
-  def apply(c: Context)(outerType: c.Type,
+  def apply(c: Context)(
+    outerType: c.Type,
     javaTypeStr: String,
     lenInBytes: Int,
     boxed: Boolean): TreeOrderedBuf[c.type] = {
@@ -69,8 +74,8 @@ object PrimitiveOrderedBuf {
 
     def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
 
-    val shortName: String = Map("Integer" -> "Int", "Character" -> "Char")
-      .getOrElse(javaTypeStr, javaTypeStr)
+    val shortName: String =
+      Map("Integer" -> "Int", "Character" -> "Char").getOrElse(javaTypeStr, javaTypeStr)
 
     val bbGetter = newTermName("read" + shortName)
     val bbPutter = newTermName("write" + shortName)
@@ -113,4 +118,3 @@ object PrimitiveOrderedBuf {
     }
   }
 }
-

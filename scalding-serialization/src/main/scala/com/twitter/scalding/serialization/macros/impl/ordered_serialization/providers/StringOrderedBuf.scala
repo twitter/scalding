@@ -19,7 +19,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -51,7 +55,8 @@ object StringOrderedBuf {
       """
       }
 
-      override def hash(element: ctx.TermName): ctx.Tree = q"_root_.com.twitter.scalding.serialization.Hasher.string.hash($element)"
+      override def hash(element: ctx.TermName): ctx.Tree =
+        q"_root_.com.twitter.scalding.serialization.Hasher.string.hash($element)"
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) = {
         val bytes = freshT("bytes")
@@ -113,7 +118,8 @@ object StringOrderedBuf {
         q"""$elementA.compareTo($elementB)"""
 
       override val lazyOuterVariables: Map[String, ctx.Tree] = Map.empty
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = MaybeLengthCalculation(c)(q"""
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
+        MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
                 _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(1)
               } else {
@@ -123,4 +129,3 @@ object StringOrderedBuf {
     }
   }
 }
-
