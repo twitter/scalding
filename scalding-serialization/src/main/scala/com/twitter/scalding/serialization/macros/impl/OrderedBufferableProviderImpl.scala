@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl
 
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.Context
 import scala.util.Random
 
 import com.twitter.scalding.serialization.OrderedSerialization
