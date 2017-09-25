@@ -58,7 +58,7 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
   /**
    * We interpret this composition once to minimize pattern matching when we execute
    */
-  private[this] val toFn: A => TraversableOnce[B] = {
+  protected val toFn: A => TraversableOnce[B] = {
     import FlatMapping._
 
     def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
@@ -78,7 +78,12 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
         f.andThen(next)
       case Series(FlatM(f), rest) =>
         val next = loop(rest) // linter:disable:UndesirableTypeInference
-        f.andThen(_.flatMap(next))
+        val first = f match {
+          case s@Single(_) => s.toFn
+          case s@Series(_, _) => s.toFn
+          case otherwise => otherwise
+        }
+        first.andThen(_.flatMap(next))
     }
 
     loop(this)
@@ -99,6 +104,12 @@ object FlatMappedFn {
     case Single(filter@Filter(_, _)) => Some((filter.fn, filter.ev))
     case _ => None
   }
+
+  def apply[A, B](fn: A => TraversableOnce[B]): FlatMappedFn[A, B] =
+    fn match {
+      case fmf: FlatMappedFn[A, B] => fmf
+      case rawfn => Single(FlatMapping.FlatM(rawfn))
+    }
 
   def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](implicitly[T =:= T]))
   final case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]

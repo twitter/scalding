@@ -334,11 +334,173 @@ object OptimizationRules {
       Binary(recurse(hj.left), rightLit,
         { (ltp: TypedPipe[(K, V)], rtp: TypedPipe[(K, V2)]) =>
           rtp match {
-            case ReduceStepPipe(hg: HashJoinable[K, V2]) =>
+            case ReduceStepPipe(hg: HashJoinable[K @unchecked, V2 @unchecked]) =>
               HashCoGroup(ltp, hg, joiner)
             case otherwise =>
               HashCoGroup(ltp, IdentityReduce(ordK, otherwise, None, Nil), joiner)
           }
         })
     }
+
+
+  /////////////////////////////
+  //
+  // Here are some actual rules for simplifying TypedPipes
+  //
+  /////////////////////////////
+
+  object ComposeFlatMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(FlatMapped(in, fn0), fn1) =>
+        FlatMapped(in, FlatMappedFn(fn1).runAfter(FlatMapping.FlatM(fn0)))
+      case FlatMapValues(FlatMapValues(in, fn0), fn1) =>
+        FlatMapValues(in, FlatMappedFn(fn1).runAfter(FlatMapping.FlatM(fn0)))
+    }
+  }
+
+  object ComposeMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(Mapped(in, fn0), fn1) =>
+        Mapped(in, ComposedMapFn(fn0, fn1))
+      case MapValues(MapValues(in, fn0), fn1) =>
+        MapValues(in, ComposedMapFn(fn0, fn1))
+    }
+  }
+
+  object ComposeFilter extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      // scala can't type check this, so we hold its hand:
+      // case Filter(Filter(in, fn0), fn1) =>
+      //   Some(Filter(in, ComposedFilterFn(fn0, fn1)))
+      case f@Filter(_, _) =>
+        def go[A](f: Filter[A]): Option[TypedPipe[A]] =
+          f.input match {
+            case f1: Filter[a] =>
+              Some(Filter[a](f1.input, ComposedFilterFn(f.fn, f.fn)))
+            case _ => None
+          }
+        go(f)
+      case FilterKeys(FilterKeys(in, fn0), fn1) =>
+        Some(FilterKeys(in, ComposedFilterFn(fn0, fn1)))
+      case _ => None
+    }
+  }
+
+  object ComposeWithOnComplete extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case WithOnComplete(WithOnComplete(pipe, fn0), fn1) =>
+        WithOnComplete(pipe, ComposedOnComplete(fn0, fn1))
+    }
+  }
+
+  object RemoveDuplicateForceFork extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case ForceToDisk(ForceToDisk(t)) => ForceToDisk(t)
+      case ForceToDisk(Fork(t)) => ForceToDisk(t)
+      case Fork(Fork(t)) => Fork(t)
+      case Fork(ForceToDisk(t)) => ForceToDisk(t)
+    }
+  }
+
+  /**
+   * We ignore .group if there are is no setting of reducers
+   *
+   * This is arguably not a great idea, but scalding has always
+   * done it to minimize accidental map-reduce steps
+   */
+  object IgnoreNoOpGroup extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case ReduceStepPipe(IdentityReduce(_, input, None, _)) =>
+        input
+    }
+  }
+
+  /**
+   * In map-reduce settings, Merge is almost free in two contexts:
+   * 1. the final write
+   * 2. at the point we are doing a shuffle anyway.
+   *
+   * By defering merge as long as possible, we hope to find more such
+   * cases
+   */
+  object DeferMerge extends PartialRule[TypedPipe] {
+    def handleFilter[A]: PartialFunction[Filter[A], TypedPipe[A]] = {
+      case Filter(MergedTypedPipe(a, b), fn) => MergedTypedPipe(Filter(a, fn), Filter(b, fn))
+    }
+
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(Mapped(a, fn), Mapped(b, fn))
+      case FlatMapped(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FlatMapped(a, fn), FlatMapped(b, fn))
+      case MapValues(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(MapValues(a, fn), MapValues(b, fn))
+      case FlatMapValues(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FlatMapValues(a, fn), FlatMapValues(b, fn))
+      case f@Filter(_, _) if handleFilter.isDefinedAt(f) => handleFilter(f)
+      case FilterKeys(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FilterKeys(a, fn), FilterKeys(b, fn))
+    }
+  }
+
+  /**
+   * This is an optimization we didn't do in scalding 0.17 and earlier
+   * because .toTypedPipe on the group totally hid the structure from
+   * us
+   */
+  object FilterKeysEarly extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case FilterKeys(ReduceStepPipe(rsp), fn) =>
+        Some(rsp match {
+          case step@IdentityReduce(_, _, _, _) =>
+            ReduceStepPipe(step.filterKeys(fn))
+          case step@UnsortedIdentityReduce(_, _, _, _) =>
+            ReduceStepPipe(step.filterKeys(fn))
+          case step@IdentityValueSortedReduce(_, _, _, _, _) =>
+            ReduceStepPipe(step.filterKeys(fn))
+          case step@ValueSortedReduce(_, _, _, _, _, _) =>
+            ReduceStepPipe(step.filterKeys(fn))
+          case step@IteratorMappedReduce(_, _, _, _, _) =>
+            ReduceStepPipe(step.filterKeys(fn))
+        })
+      case FilterKeys(CoGroupedPipe(cg), fn) =>
+        Some(CoGroupedPipe(cg.filterKeys(fn)))
+      case FilterKeys(HashCoGroup(left, right, joiner), fn) =>
+        val newRight = right match {
+          case step@IdentityReduce(_, _, _, _) => step.filterKeys(fn)
+          case step@UnsortedIdentityReduce(_, _, _, _) => step.filterKeys(fn)
+          case step@IteratorMappedReduce(_, _, _, _, _) => step.filterKeys(fn)
+        }
+        Some(HashCoGroup(FilterKeys(left, fn), newRight, joiner))
+      case _ => None
+    }
+  }
+
+  /**
+   * To keep equality for case matching and caching, we need to create internal case classes
+   */
+  private[this] case class ComposedMapFn[A, B, C](fn0: A => B, fn1: B => C) extends Function1[A, C] {
+    def apply(a: A) = fn1(fn0(a))
+  }
+  private[this] case class ComposedFilterFn[-A](fn0: A => Boolean, fn1: A => Boolean) extends Function1[A, Boolean] {
+    def apply(a: A) = fn0(a) && fn1(a)
+  }
+  private[this] case class ComposedOnComplete(fn0: () => Unit, fn1: () => Unit) extends Function0[Unit] {
+    def apply(): Unit = {
+      @annotation.tailrec
+      def loop(fn: () => Unit, stack: List[() => Unit]): Unit =
+        fn match {
+          case ComposedOnComplete(left, right) => loop(left, right :: stack)
+          case notComposed =>
+            notComposed()
+            stack match {
+              case h :: tail => loop(h, tail)
+              case Nil => ()
+            }
+        }
+
+      loop(fn0, List(fn1))
+    }
+  }
+
 }
