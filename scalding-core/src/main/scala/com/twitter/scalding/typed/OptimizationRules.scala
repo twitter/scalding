@@ -162,9 +162,6 @@ object OptimizationRules {
                 case ReduceStepPipe(rs) =>
                   withReducers(rs, reds)
                 case CoGroupedPipe(cg) =>
-                  // we are relying on the fact that we use Ordering[K]
-                  // as a contravariant type, despite it not being defined
-                  // that way.
                   CoGroupedPipe(WithReducers(cg, reds))
                 case kvPipe =>
                   ReduceStepPipe(IdentityReduce(cg.keyOrdering, kvPipe, None, Nil)
@@ -172,7 +169,7 @@ object OptimizationRules {
               }
             })
           }
-          widen(go(wr))
+          go(wr)
         case wd@WithDescription(_, _) =>
           def go[V1 <: V](wd: WithDescription[K, V1]): LiteralPipe[(K, V)] = {
             val desc = wd.description
@@ -181,16 +178,13 @@ object OptimizationRules {
                 case ReduceStepPipe(rs) =>
                   withDescription(rs, desc)
                 case CoGroupedPipe(cg) =>
-                  // we are relying on the fact that we use Ordering[K]
-                  // as a contravariant type, despite it not being defined
-                  // that way.
                   CoGroupedPipe(WithDescription(cg, desc))
                 case kvPipe =>
                   kvPipe.withDescription(desc)
               }
             })
           }
-          widen(go(wd))
+          go(wd)
         case fk@FilterKeys(_, _) =>
           def go[V1 <: V](fk: FilterKeys[K, V1]): LiteralPipe[(K, V)] = {
             val fn = fk.fn
@@ -199,16 +193,13 @@ object OptimizationRules {
                 case ReduceStepPipe(rs) =>
                   filterKeys(rs, fn)
                 case CoGroupedPipe(cg) =>
-                  // we are relying on the fact that we use Ordering[K]
-                  // as a contravariant type, despite it not being defined
-                  // that way.
                   CoGroupedPipe(FilterKeys(cg, fn))
                 case kvPipe =>
                   kvPipe.filterKeys(fn)
               }
             })
           }
-          widen(go(fk))
+          go(fk)
         case mg@MapGroup(_, _) =>
           def go[V1, V2 <: V](mg: MapGroup[K, V1, V2]): LiteralPipe[(K, V)] = {
             val fn = mg.fn
@@ -217,9 +208,6 @@ object OptimizationRules {
                 case ReduceStepPipe(rs) =>
                   mapGroup(rs, fn)
                 case CoGroupedPipe(cg) =>
-                  // we are relying on the fact that we use Ordering[K]
-                  // as a contravariant type, despite it not being defined
-                  // that way.
                   CoGroupedPipe(MapGroup(cg, fn))
                 case kvPipe =>
                   ReduceStepPipe(
@@ -228,7 +216,7 @@ object OptimizationRules {
               }
             })
           }
-          widen(go(mg))
+          go(mg)
         case step@IdentityReduce(_, _, _, _) =>
           widen(handleReduceStep(step, recurse))
         case step@UnsortedIdentityReduce(_, _, _, _) =>
@@ -334,7 +322,7 @@ object OptimizationRules {
       Binary(recurse(hj.left), rightLit,
         { (ltp: TypedPipe[(K, V)], rtp: TypedPipe[(K, V2)]) =>
           rtp match {
-            case ReduceStepPipe(hg: HashJoinable[K, V2]) =>
+            case ReduceStepPipe(hg: HashJoinable[K @unchecked, V2 @unchecked]) =>
               HashCoGroup(ltp, hg, joiner)
             case otherwise =>
               HashCoGroup(ltp, IdentityReduce(ordK, otherwise, None, Nil), joiner)
