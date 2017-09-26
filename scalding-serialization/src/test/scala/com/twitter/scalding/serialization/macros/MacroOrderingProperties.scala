@@ -36,6 +36,8 @@ import com.twitter.scalding.some.other.space.space._
 import scala.collection.immutable.Queue
 import scala.language.experimental.macros
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
+import com.twitter.scalding.serialization.DefaultOrderedSerialization._
+import com.twitter.scalding.serialization._
 
 object LawTester {
   def apply[T: Arbitrary](laws: Iterable[Law[T]]): Prop =
@@ -510,7 +512,7 @@ class MacroOrderingProperties
   }
 
   test("Test out ByteBuffer") {
-    BinaryOrdering.ordSer[ByteBuffer]
+    implicitly[OrderedSerialization[ByteBuffer]]
     check[ByteBuffer]
     checkCollisions[ByteBuffer]
   }

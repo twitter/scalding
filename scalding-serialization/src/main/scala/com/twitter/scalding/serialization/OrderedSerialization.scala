@@ -34,7 +34,7 @@ trait OrderedSerialization[T] extends Ordering[T] with Serialization[T] {
   def compareBinary(a: InputStream, b: InputStream): OrderedSerialization.Result
 }
 
-object OrderedSerialization {
+object OrderedSerialization extends LowPriorityOrderedSerialization {
   /**
    * Represents the result of a comparison that might fail due
    * to an error deserializing
@@ -214,3 +214,8 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
   final override def staticSize = serialization.staticSize
   final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }
+
+private[serialization] trait LowPriorityOrderedSerialization {
+  implicit final def importedOrderedSerialization[A](implicit exported: Exported[OrderedSerialization[A]]): OrderedSerialization[A] = exported.instance
+}
+

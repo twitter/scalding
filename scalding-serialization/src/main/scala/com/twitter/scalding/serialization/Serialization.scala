@@ -38,7 +38,7 @@ import scala.util.hashing.Hashing
  * implementation. This must satisfy:
  *   (!equiv(a, b)) || (hash(a) == hash(b))
  */
-trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable {
+trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable with LowPrioritySerialization {
   def read(in: InputStream): Try[T]
   def write(out: OutputStream, t: T): Try[Unit]
   /**
@@ -170,4 +170,8 @@ object Serialization {
       reflexivity,
       sizeLaw,
       transitivity)
+}
+
+private[serialization] trait LowPrioritySerialization {
+  implicit final def importedSerialization[A](implicit exported: Exported[Serialization[A]]): Serialization[A] = exported.instance
 }
