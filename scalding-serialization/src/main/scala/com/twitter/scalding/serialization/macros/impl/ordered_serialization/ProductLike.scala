@@ -16,21 +16,23 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
 
 object ProductLike {
-  def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
+  def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(
+    elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
-    elementData.foldLeft(Option.empty[Tree]) {
-      case (existingTreeOpt, (tpe, accessorSymbol, tBuf)) =>
-        existingTreeOpt match {
-          case Some(t) =>
-            val lastCmp = freshT("lastCmp")
-            Some(q"""
+    elementData
+      .foldLeft(Option.empty[Tree]) {
+        case (existingTreeOpt, (tpe, accessorSymbol, tBuf)) =>
+          existingTreeOpt match {
+            case Some(t) =>
+              val lastCmp = freshT("lastCmp")
+              Some(q"""
               val $lastCmp = $t
               if($lastCmp != 0) {
                 $lastCmp
@@ -38,15 +40,17 @@ object ProductLike {
                 ${tBuf.compareBinary(inputStreamA, inputStreamB)}
               }
               """)
-          case None =>
-            Some(tBuf.compareBinary(inputStreamA, inputStreamB))
-        }
-    }.getOrElse(q"0")
+            case None =>
+              Some(tBuf.compareBinary(inputStreamA, inputStreamB))
+          }
+      }
+      .getOrElse(q"0")
   }
 
-  def hash(c: Context)(element: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
+  def hash(c: Context)(element: c.TermName)(
+    elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val currentHash = freshT("last")
 
@@ -55,7 +59,10 @@ object ProductLike {
         val target = freshT("target")
         q"""
           val $target = $element.$accessorSymbol
-            $currentHash = _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${tBuf.hash(target)})
+            $currentHash = _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${
+          tBuf
+            .hash(target)
+        })
           """
     }
 
@@ -66,9 +73,10 @@ object ProductLike {
     """
   }
 
-  def put(c: Context)(inputStream: c.TermName, element: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
+  def put(c: Context)(inputStream: c.TermName, element: c.TermName)(
+    elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
     val innerElement = freshT("innerElement")
 
     elementData.foldLeft(q"") {
@@ -81,18 +89,32 @@ object ProductLike {
     }
   }
 
-  def length(c: Context)(element: c.Tree)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
+  def length(c: Context)(element: c.Tree)(
+    elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): CompileTimeLengthTypes[c.type] = {
     import c.universe._
     import CompileTimeLengthTypes._
     val (constSize, dynamicFunctions, maybeLength, noLength) =
       elementData.foldLeft((0, Vector[c.Tree](), Vector[c.Tree](), 0)) {
-        case ((constantLength, dynamicLength, maybeLength, noLength), (tpe, accessorSymbol, tBuf)) =>
-
+        case ((constantLength, dynamicLength, maybeLength, noLength),
+          (tpe, accessorSymbol, tBuf)) =>
           tBuf.length(q"$element.$accessorSymbol") match {
-            case const: ConstantLengthCalculation[_] => (constantLength + const.asInstanceOf[ConstantLengthCalculation[c.type]].toInt, dynamicLength, maybeLength, noLength)
-            case f: FastLengthCalculation[_] => (constantLength, dynamicLength :+ f.asInstanceOf[FastLengthCalculation[c.type]].t, maybeLength, noLength)
-            case m: MaybeLengthCalculation[_] => (constantLength, dynamicLength, maybeLength :+ m.asInstanceOf[MaybeLengthCalculation[c.type]].t, noLength)
-            case _: NoLengthCalculationAvailable[_] => (constantLength, dynamicLength, maybeLength, noLength + 1)
+            case const: ConstantLengthCalculation[_] =>
+              (constantLength + const.asInstanceOf[ConstantLengthCalculation[c.type]].toInt,
+                dynamicLength,
+                maybeLength,
+                noLength)
+            case f: FastLengthCalculation[_] =>
+              (constantLength,
+                dynamicLength :+ f.asInstanceOf[FastLengthCalculation[c.type]].t,
+                maybeLength,
+                noLength)
+            case m: MaybeLengthCalculation[_] =>
+              (constantLength,
+                dynamicLength,
+                maybeLength :+ m.asInstanceOf[MaybeLengthCalculation[c.type]].t,
+                noLength)
+            case _: NoLengthCalculationAvailable[_] =>
+              (constantLength, dynamicLength, maybeLength, noLength + 1)
           }
       }
 
@@ -111,13 +133,18 @@ object ProductLike {
           FastLengthCalculation(c)(combinedDynamic)
         } else {
 
-          val const = q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen"
-          val dyn = q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"
-          val noLen = q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation"
+          val const =
+            q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen"
+          val dyn =
+            q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"
+          val noLen =
+            q"_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation"
           // Contains an MaybeLength
-          val combinedMaybe: Tree = maybeLength.reduce { (hOpt, nxtOpt) => q"""$hOpt + $nxtOpt""" }
+          val combinedMaybe: Tree = maybeLength.reduce { (hOpt, nxtOpt) =>
+            q"""$hOpt + $nxtOpt"""
+          }
           if (dynamicFunctions.nonEmpty || constSize != 0) {
-            MaybeLengthCalculation(c) (q"""
+            MaybeLengthCalculation(c)(q"""
             $combinedMaybe match {
               case $const(l) => $dyn(l + $combinedDynamic)
               case $dyn(l) => $dyn(l + $combinedDynamic)
@@ -132,26 +159,28 @@ object ProductLike {
     }
   }
 
-  def compare(c: Context)(elementA: c.TermName, elementB: c.TermName)(elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
+  def compare(c: Context)(elementA: c.TermName, elementB: c.TermName)(
+    elementData: List[(c.universe.Type, c.universe.TermName, TreeOrderedBuf[c.type])]): c.Tree = {
     import c.universe._
 
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val innerElementA = freshT("innerElementA")
     val innerElementB = freshT("innerElementB")
 
-    elementData.map {
-      case (tpe, accessorSymbol, tBuf) =>
-        val curCmp = freshT("curCmp")
-        val cmpTree = q"""
+    elementData
+      .map {
+        case (tpe, accessorSymbol, tBuf) =>
+          val curCmp = freshT("curCmp")
+          val cmpTree = q"""
             val $curCmp: Int = {
               val $innerElementA = $elementA.$accessorSymbol
               val $innerElementB = $elementB.$accessorSymbol
               ${tBuf.compare(innerElementA, innerElementB)}
             }
           """
-        (cmpTree, curCmp)
-    }
+          (cmpTree, curCmp)
+      }
       .reverse // go through last to first
       .foldLeft(None: Option[Tree]) {
         case (Some(rest), (tree, valname)) =>

@@ -16,10 +16,14 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
@@ -60,26 +64,27 @@ object PrimitiveOrderedBuf {
       PrimitiveOrderedBuf(c)(tpe, "Double", 8, true)
   }
 
-  def apply(c: Context)(outerType: c.Type,
+  def apply(c: Context)(
+    outerType: c.Type,
     javaTypeStr: String,
     lenInBytes: Int,
     boxed: Boolean): TreeOrderedBuf[c.type] = {
     import c.universe._
-    val javaType = newTermName(javaTypeStr)
+    val javaType = TermName(javaTypeStr)
 
-    def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String) = TermName(c.freshName(s"fresh_$id"))
 
-    val shortName: String = Map("Integer" -> "Int", "Character" -> "Char")
-      .getOrElse(javaTypeStr, javaTypeStr)
+    val shortName: String =
+      Map("Integer" -> "Int", "Character" -> "Char").getOrElse(javaTypeStr, javaTypeStr)
 
-    val bbGetter = newTermName("read" + shortName)
-    val bbPutter = newTermName("write" + shortName)
+    val bbGetter = TermName("read" + shortName)
+    val bbPutter = TermName("write" + shortName)
 
     def genBinaryCompare(inputStreamA: TermName, inputStreamB: TermName): Tree =
       q"""_root_.java.lang.$javaType.compare($inputStreamA.$bbGetter, $inputStreamB.$bbGetter)"""
 
     def accessor(e: c.TermName): c.Tree = {
-      val primitiveAccessor = newTermName(shortName.toLowerCase + "Value")
+      val primitiveAccessor = TermName(shortName.toLowerCase + "Value")
       if (boxed) q"$e.$primitiveAccessor"
       else q"$e"
     }
@@ -91,7 +96,7 @@ object PrimitiveOrderedBuf {
         genBinaryCompare(inputStreamA, inputStreamB)
       override def hash(element: ctx.TermName): ctx.Tree = {
         // This calls out the correctly named item in Hasher
-        val typeLowerCase = newTermName(javaTypeStr.toLowerCase)
+        val typeLowerCase = TermName(javaTypeStr.toLowerCase)
         q"_root_.com.twitter.scalding.serialization.Hasher.$typeLowerCase.hash(${accessor(element)})"
       }
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
@@ -113,4 +118,3 @@ object PrimitiveOrderedBuf {
     }
   }
 }
-

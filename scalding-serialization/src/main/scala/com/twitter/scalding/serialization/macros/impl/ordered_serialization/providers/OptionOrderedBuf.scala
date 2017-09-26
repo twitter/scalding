@@ -16,21 +16,27 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object OptionOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] => OptionOrderedBuf(c)(buildDispatcher, tpe)
+    case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] =>
+      OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+    outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher
 
     val innerType = outerType.asInstanceOf[TypeRefApi].args.head
@@ -114,13 +120,15 @@ object OptionOrderedBuf {
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override def compareBinary(inputStreamA: TermName, inputStreamB: TermName) = genBinaryCompare(inputStreamA, inputStreamB)
+      override def compareBinary(inputStreamA: TermName, inputStreamB: TermName) =
+        genBinaryCompare(inputStreamA, inputStreamB)
       override def hash(element: TermName): ctx.Tree = genHashFn(element)
       override def put(inputStream: TermName, element: TermName) = genPutFn(inputStream, element)
       override def get(inputStreamA: TermName): ctx.Tree = genGetFn(inputStreamA)
-      override def compare(elementA: TermName, elementB: TermName): ctx.Tree = genCompareFn(elementA, elementB)
+      override def compare(elementA: TermName, elementB: TermName): ctx.Tree =
+        genCompareFn(elementA, elementB)
       override val lazyOuterVariables: Map[String, ctx.Tree] = innerBuf.lazyOuterVariables
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
         innerBuf.length(q"$element.get") match {
           case const: ConstantLengthCalculation[_] => FastLengthCalculation(c)(q"""
             if($element.isDefined) { 1 + ${const.toInt} }
@@ -134,15 +142,14 @@ object OptionOrderedBuf {
             """)
           case m: MaybeLengthCalculation[_] =>
             val t = m.asInstanceOf[MaybeLengthCalculation[c.type]].t
-            val dynlen = q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"""
+            val dynlen =
+              q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"""
             MaybeLengthCalculation(c)(q"""
             if ($element.isDefined) { $t + $dynlen(1) }
             else { $dynlen(1) }
           """)
           case _ => NoLengthCalculationAvailable(c)
         }
-      }
     }
   }
 }
-
