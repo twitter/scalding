@@ -41,6 +41,7 @@ import scala.util.hashing.Hashing
 trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable with LowPrioritySerialization {
   def read(in: InputStream): Try[T]
   def write(out: OutputStream, t: T): Try[Unit]
+
   /**
    * If all items have a static size, this returns Some, else None
    * NOTE: lawful implementations that return Some here much return
@@ -53,6 +54,11 @@ trait Serialization[T] extends Equiv[T] with Hashing[T] with Serializable with L
    * otherwise the caller should just serialize into an ByteArrayOutputStream
    */
   def dynamicSize(t: T): Option[Int]
+
+  // Override this to provide more efficient
+  def skip(in: InputStream): Try[Unit] = {
+    read(in).map{ _ => () }
+  }
 }
 
 /**
