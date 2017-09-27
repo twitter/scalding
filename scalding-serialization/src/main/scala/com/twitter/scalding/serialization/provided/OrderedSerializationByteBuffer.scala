@@ -1,10 +1,11 @@
-package com.twitter.scalding.serialization
+package com.twitter.scalding.serialization.provided
 
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 import java.nio.ByteBuffer
 import java.io.InputStream
+import com.twitter.scalding.serialization.ComplexHelper
 
-object OrderedSerializationByteBuffer extends ComplexHelper[ByteBuffer] with DefaultOrderedSerialization[ByteBuffer] {
+object OrderedSerializationByteBuffer extends ComplexHelper[ByteBuffer] {
   def hash(x: ByteBuffer): Int =
     x.hashCode
 

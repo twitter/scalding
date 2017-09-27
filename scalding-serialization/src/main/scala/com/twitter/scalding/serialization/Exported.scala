@@ -15,4 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding.serialization
 
+// We wrap types in Exported to provide low priority implicits
+// the real type has a low priority implicit to extract from Exported
+// into the original type.
+// See more @ https://github.com/milessabin/export-hook
 case class Exported[T](instance: T) extends AnyVal

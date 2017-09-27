@@ -37,7 +37,7 @@ object HasUnsafeCompareBinary {
         def hash(x: T): Int = o.hash(x)
 
         // Members declared in com.twitter.scalding.serialization.OrderedSerialization
-        def compareBinary(a: java.io.InputStream, b: java.io.InputStream): com.twitter.scalding.serialization.OrderedSerialization.Result =
+        def compareBinary(a: java.io.InputStream, b: java.io.InputStream): OrderedSerialization.Result =
           o.compareBinary(a, b)
 
         // Members declared in scala.math.Ordering

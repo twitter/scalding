@@ -17,7 +17,7 @@ package com.twitter.scalding.serialization
 
 import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
-import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream }
 import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 
@@ -41,14 +41,14 @@ abstract class ComplexHelper[T] extends HasUnsafeCompareBinary[T] {
    */
   private[this] def noLengthWrite(element: T, outerOutputStream: OutputStream): Unit = {
     // Start with pretty big buffers because reallocation will be expensive
-    val baos = new java.io.ByteArrayOutputStream(512)
+    val baos = new ByteArrayOutputStream(512)
     unsafeWrite(baos, element)
     val len = baos.size
     outerOutputStream.writePosVarInt(len)
     baos.writeTo(outerOutputStream)
   }
 
-  final override def write(into: java.io.OutputStream, e: T): Try[Unit] =
+  final override def write(into: OutputStream, e: T): Try[Unit] =
     try {
       if (staticSize.isDefined) {
         unsafeWrite(into, e)
@@ -63,10 +63,10 @@ abstract class ComplexHelper[T] extends HasUnsafeCompareBinary[T] {
             noLengthWrite(e, into)
         }
       }
-      com.twitter.scalding.serialization.Serialization.successUnit
+      Serialization.successUnit
     } catch {
-      case scala.util.control.NonFatal(e) =>
-        scala.util.Failure(e)
+      case NonFatal(e) =>
+        Failure(e)
     }
 
   final def read(in: InputStream): Try[T] =
@@ -74,22 +74,22 @@ abstract class ComplexHelper[T] extends HasUnsafeCompareBinary[T] {
       if (staticSize.isEmpty)
         in.readPosVarInt
 
-      _root_.scala.util.Success(unsafeRead(in))
+      Success(unsafeRead(in))
     } catch {
-      case _root_.scala.util.control.NonFatal(e) =>
-        _root_.scala.util.Failure(e)
+      case NonFatal(e) =>
+        Failure(e)
     }
 
   final def compareBinary(inputStreamA: InputStream,
     inputStreamB: InputStream): OrderedSerialization.Result =
-    try com.twitter.scalding.serialization.OrderedSerialization.resultFrom {
+    try OrderedSerialization.resultFrom {
       val lenA = staticSize.getOrElse(inputStreamA.readPosVarInt)
       val lenB = staticSize.getOrElse(inputStreamB.readPosVarInt)
 
-      val posStreamA = com.twitter.scalding.serialization.PositionInputStream(inputStreamA)
+      val posStreamA = PositionInputStream(inputStreamA)
       val initialPositionA = posStreamA.position
 
-      val posStreamB = com.twitter.scalding.serialization.PositionInputStream(inputStreamB)
+      val posStreamB = PositionInputStream(inputStreamB)
       val initialPositionB = posStreamB.position
 
       val innerR = unsafeCompareBinary(posStreamA, posStreamB)
@@ -98,8 +98,8 @@ abstract class ComplexHelper[T] extends HasUnsafeCompareBinary[T] {
       posStreamB.seekToPosition(initialPositionB + lenB)
       innerR
     } catch {
-      case scala.util.control.NonFatal(e) =>
-        com.twitter.scalding.serialization.OrderedSerialization.CompareFailure(e)
+      case NonFatal(e) =>
+        OrderedSerialization.CompareFailure(e)
     }
 
 }
