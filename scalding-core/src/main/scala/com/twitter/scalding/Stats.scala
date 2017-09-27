@@ -65,12 +65,14 @@ private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], s
 }
 
 private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
-  private[this] val counter: Option[Counter] = (for {
+  // we use a nullable type here for efficiency
+  private[this] val counter: Counter = (for {
     r <- Option(fp.getReporter)
     c <- Option(r.getCounter(statKey.group, statKey.counter))
-  } yield c)
+  } yield c).orNull
 
-  override def increment(amount: Long): Unit = counter.foreach(_.increment(amount))
+  override def increment(amount: Long): Unit =
+    if (counter != null) counter.increment(amount) else ()
 }
 
 object Stat {
