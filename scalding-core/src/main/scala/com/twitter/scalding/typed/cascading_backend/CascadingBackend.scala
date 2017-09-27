@@ -304,14 +304,14 @@ object CascadingBackend {
         finish(sum(slk), rest, descriptions)
 
       case tp@TrappedPipe(_, _, _) =>
-        def go[T0, T1 >: T0](tp: TrappedPipe[T0, T1], r: FlatMappedFn[T1, U]): Pipe = {
+        def go[A](tp: TrappedPipe[A], r: FlatMappedFn[A, U]): Pipe = {
           val cp = cacheGet(tp, mode) { implicit fd =>
             val sfields = tp.sink.sinkFields
             // TODO: with diamonds in the graph, this might not be correct
-            val pp = toPipe[T0](tp.input, sfields)(fd, mode, tp.sink.setter)
+            val pp = toPipe[A](tp.input, sfields)(fd, mode, tp.sink.setter)
             val pipe = RichPipe.assignName(pp)
             flowDef.addTrap(pipe, tp.sink.createTap(Write)(mode))
-            CascadingPipe[T1](pipe, sfields, fd, tp.conv)
+            CascadingPipe[A](pipe, sfields, fd, tp.conv)
           }
           finish(cp, r, descriptions)
         }
