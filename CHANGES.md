@@ -1,5 +1,10 @@
 # Scalding #
 
+## Version 0.17.3 ###
+Cherry picks of develop PRs to fix an issue with null counter reporters
+* https://github.com/twitter/scalding/pull/1729
+* https://github.com/twitter/scalding/pull/1726
+
 ### Version 0.17.2 ###
 This version is basically the same as 0.17.1 but backward compatible with 0.17.0.
 * Revert memory estimator changes on 0.17.x branch: #1704
