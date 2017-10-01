@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 sealed trait CompileTimeLengthTypes[C <: Context] {
   val ctx: C
@@ -62,7 +62,7 @@ object CompileTimeLengthTypes {
   }
 
   object NoLengthCalculationAvailable {
-    def apply(c: Context): NoLengthCalculationAvailable[c.type] = {
+    def apply(c: Context): NoLengthCalculationAvailable[c.type] =
       new NoLengthCalculationAvailable[c.type] {
         override val ctx: c.type = c
         override def t = {
@@ -70,7 +70,6 @@ object CompileTimeLengthTypes {
           q"""_root_.scala.sys.error("no length available")"""
         }
       }
-    }
   }
 
   sealed trait NoLengthCalculationAvailable[C <: Context] extends CompileTimeLengthTypes[C]

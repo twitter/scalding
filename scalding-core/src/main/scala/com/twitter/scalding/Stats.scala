@@ -4,6 +4,7 @@ import cascading.flow.{ Flow, FlowListener, FlowDef, FlowProcess }
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
+import org.apache.hadoop.mapreduce.Counter
 import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -64,8 +65,14 @@ private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], s
 }
 
 private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
-  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
-  override def increment(amount: Long): Unit = cntr.increment(amount)
+  // we use a nullable type here for efficiency
+  private[this] val counter: Counter = (for {
+    r <- Option(fp.getReporter)
+    c <- Option(r.getCounter(statKey.group, statKey.counter))
+  } yield c).orNull
+
+  override def increment(amount: Long): Unit =
+    if (counter != null) counter.increment(amount) else ()
 }
 
 object Stat {

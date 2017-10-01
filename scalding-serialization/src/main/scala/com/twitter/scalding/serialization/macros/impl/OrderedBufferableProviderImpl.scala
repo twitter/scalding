@@ -24,11 +24,13 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers._
 
 object OrderedSerializationProviderImpl {
-  def normalizedDispatcher(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def normalizedDispatcher(c: Context)(
+    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if !(tpe.normalize == tpe) => buildDispatcher(tpe.normalize)
   }
 
-  def scaldingBasicDispatchers(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def scaldingBasicDispatchers(c: Context)(
+    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
@@ -42,7 +44,8 @@ object OrderedSerializationProviderImpl {
     val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
     val sealedTraitDispatcher = SealedTraitOrderedBuf.dispatch(c)(buildDispatcher)
 
-    OrderedSerializationProviderImpl.normalizedDispatcher(c)(buildDispatcher)
+    OrderedSerializationProviderImpl
+      .normalizedDispatcher(c)(buildDispatcher)
       .orElse(primitiveDispatcher)
       .orElse(unitDispatcher)
       .orElse(optionDispatcher)
@@ -63,7 +66,8 @@ object OrderedSerializationProviderImpl {
   private def outerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
     scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse {
-      case tpe: Type => c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
+      case tpe: Type =>
+        c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
     }
   }
 
@@ -71,7 +75,14 @@ object OrderedSerializationProviderImpl {
   // So in essence it never fails to do a lookup
   private def innerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse(fallbackImplicitDispatcher(c))
+    val innerF = scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c))
+
+    val f: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      case tpe if innerF.isDefinedAt(tpe) =>
+        scala.util.Try(innerF(tpe)).getOrElse(fallbackImplicitDispatcher(c)(tpe))
+      case tpe => fallbackImplicitDispatcher(c)(tpe)
+    }
+    f
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
