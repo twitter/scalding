@@ -330,6 +330,31 @@ object OptimizationRules {
         })
     }
 
+
+  /**
+   * Unroll a set of merges up to the first non-merge node, dropping
+   * an EmptyTypedPipe from the list
+   */
+  def unrollMerge[A](t: TypedPipe[A]): List[TypedPipe[A]] = {
+    @annotation.tailrec
+    def loop(first: TypedPipe[A], todo: List[TypedPipe[A]], acc: List[TypedPipe[A]]): List[TypedPipe[A]] =
+      first match {
+        case MergedTypedPipe(l, r) => loop(l, r :: todo, acc)
+        case EmptyTypedPipe =>
+          todo match {
+            case Nil => acc.reverse
+            case h :: tail => loop(h, tail, acc)
+          }
+        case notMerge =>
+          todo match {
+            case Nil => (first :: acc).reverse
+            case h :: tail => loop(h, tail, first :: acc)
+          }
+      }
+
+    loop(t, Nil, Nil)
+  }
+
   /////////////////////////////
   //
   // Here are some actual rules for simplifying TypedPipes

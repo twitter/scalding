@@ -64,7 +64,7 @@ object FlatMapping {
     Filter[A, A](fn, implicitly)
 
   def filterKeys[K, V](fn: K => Boolean): FlatMapping[(K, V), (K, V)] =
-    filter { kv => fn(kv._1) }
+    filter[(K, V)](FlatMappedFn.FilterKeysToFilter(fn))
 
   final case class Identity[A, B](ev: EqTypes[A, B]) extends FlatMapping[A, B]
   final case class Filter[A, B](fn: A => Boolean, ev: EqTypes[A, B]) extends FlatMapping[A, B]
@@ -192,6 +192,27 @@ object FlatMappedFn {
     }
 
   def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](EqTypes.reflexive[T]))
+
+  case class FilterKeysToFilter[K](fn: K => Boolean) extends Function1[(K, Any), Boolean] {
+    def apply(kv: (K, Any)) = fn(kv._1)
+  }
+
+  case class FlatMapValuesToFlatMap[K, A, B](fn: A => TraversableOnce[B]) extends Function1[(K, A), TraversableOnce[(K, B)]] {
+    def apply(ka: (K, A)) = {
+      val k = ka._1
+      fn(ka._2).map((k, _))
+    }
+  }
+
+  case class MapValuesToMap[K, A, B](fn: A => B) extends Function1[(K, A), (K, B)] {
+    def apply(ka: (K, A)) = (ka._1, fn(ka._2))
+  }
+
+  def fromFilter[A](fn: A => Boolean): FlatMappedFn[A, A] =
+    Single(FlatMapping.Filter[A, A](fn, EqTypes.reflexive))
+
+  def fromMap[A, B](fn: A => B): FlatMappedFn[A, B] =
+    Single(FlatMapping.Map(fn))
 
   final case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]
   final case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C]) extends FlatMappedFn[A, C]
