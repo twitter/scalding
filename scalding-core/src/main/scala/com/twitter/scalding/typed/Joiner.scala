@@ -35,11 +35,8 @@ object Joiner extends java.io.Serializable {
     InnerJoin()
 
   def asOuter[U](it: Iterator[U]): Iterator[Option[U]] =
-    if (it.isEmpty) {
-      Iterator.single(None)
-    } else {
-      it.map { Some(_) }
-    }
+    if (it.isEmpty) Iterator.single(None)
+    else it.map(Some(_))
 
   def outer2[K, V, U]: JoinFn[K, V, U, (Option[V], Option[U])] =
     OuterJoin()
@@ -91,7 +88,8 @@ object Joiner extends java.io.Serializable {
   }
   final case class OuterJoin[K, V1, V2]() extends JoinFunction[K, V1, V2, (Option[V1], Option[V2])] {
     def apply(k: K, left: Iterator[V1], right: Iterable[V2]): Iterator[(Option[V1], Option[V2])] =
-      asOuter(left).flatMap { v1 => asOuter(right.iterator).map((v1, _)) }
+      if (left.isEmpty && right.isEmpty) Iterator.empty
+      else asOuter(left).flatMap { v1 => asOuter(right.iterator).map((v1, _)) }
   }
   final case class FilteredJoin[K, V1, V2, R](jf: JoinFunction[K, V1, V2, R], fn: ((K, R)) => Boolean) extends JoinFunction[K, V1, V2, R] {
     def apply(k: K, left: Iterator[V1], right: Iterable[V2]) =
