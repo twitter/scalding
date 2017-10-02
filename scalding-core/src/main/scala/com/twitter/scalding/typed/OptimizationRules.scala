@@ -526,6 +526,8 @@ object OptimizationRules {
       cg match {
         case Pair(left, _, jf) if left.inputs.forall(empty) && (Joiner.isLeftJoinLike(jf) == Some(true)) => true
         case Pair(_, right, jf) if right.inputs.forall(empty) && (Joiner.isRightJoinLike(jf) == Some(true)) => true
+        case Pair(left, right, _) if left.inputs.forall(empty) && right.inputs.forall(empty) => true
+        case Pair(_, _, _) => false
         case WithDescription(cg, _) => emptyCogroup(cg)
         case WithReducers(cg, _) => emptyCogroup(cg)
         case MapGroup(cg, _) => emptyCogroup(cg)
