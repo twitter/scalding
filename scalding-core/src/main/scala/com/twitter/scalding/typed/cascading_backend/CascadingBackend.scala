@@ -112,7 +112,18 @@ object CascadingBackend {
      * merge the flowDef into this new flowdef an make sure the tuples
      * have the structure defined by setter
      */
-    def toPipe[T](f: Fields, fd: FlowDef, setter: TupleSetter[T]): Pipe = ???
+    def toPipe(f: Fields, fd: FlowDef, setter: TupleSetter[T]): Pipe = {
+      // TODO, this may be identity if the setter is the inverse of the
+      // converter. If we can identify this we will save allocations
+      val resFd = new RichFlowDef(fd)
+      resFd.mergeFrom(localFlowDef)
+      RichPipe(pipe).mapTo[T, T](fields -> f)(identity)(converter, setter)
+    }
+  }
+
+  private object CascadingPipe {
+    def single[T](pipe: Pipe, fd: FlowDef): CascadingPipe[T] =
+      CascadingPipe(pipe, f0, fd, singleConverter)
   }
 
   /**
@@ -122,27 +133,19 @@ object CascadingBackend {
    * at once, and not need a static cache here, but currently we still
    * plan one TypedPipe at a time.
    */
-  private class PipeCache {
-    private[this] val pipeCache = new WeakHashMap[TypedPipe[Any], Map[Mode, CascadingPipe[Any]]]()
+  private class CompilerCache {
 
-    def cacheGet[T](t: TypedPipe[T], m: Mode)(p: FlowDef => CascadingPipe[T]): CascadingPipe[T] = {
-      def add(mmc: Map[Mode, CascadingPipe[Any]]): CascadingPipe[T] = {
-        val emptyFD = new FlowDef
-        val res = p(emptyFD)
-        pipeCache.put(t, mmc + (m -> res.asInstanceOf[CascadingPipe[Any]]))
-        res
-      }
+    private[this] val cache = new WeakHashMap[FlowDef, FunctionK[TypedPipe, CurryResult]]()
 
-      pipeCache.synchronized {
-        pipeCache.get(t) match {
-          case null => add(Map.empty)
-          case somemap if somemap.contains(m) => somemap(m).asInstanceOf[CascadingPipe[T]]
-          case missing => add(missing)
+    def get(fd: FlowDef): FunctionK[TypedPipe, CurryResult] =
+      cache.synchronized {
+        cache.get(fd) match {
+          case null => cache.put(fd, compile)
+          case nonNull => nonNull
         }
       }
-    }
   }
-  private[this] val pipeCache = new PipeCache
+  private[this] val cache = new CompilerCache
 
   private type CurryResult[T] = Mode => CascadingPipe[_ <: T]
 
@@ -185,10 +188,8 @@ object CascadingBackend {
             def go[A, B <: T](fm: FlatMapped[A, B]): CurryResult[T] =
               rec(fm.input).andThen {
                 case CascadingPipe(pipe, initF, fd, conv) =>
-                  CascadingPipe[B](RichPipe(pipe).flatMapTo[A, T](initF -> f0)(fm.fn)(TupleConverter.asSuperConverter(conv), singleSetter),
-                    f0,
-                    fd,
-                    singleConverter)
+                  val fmpipe = RichPipe(pipe).flatMapTo[A, T](initF -> f0)(fm.fn)(TupleConverter.asSuperConverter(conv), singleSetter)
+                  CascadingPipe.single[B](fmpipe, fd)
               }
 
             go(fm)
@@ -204,7 +205,7 @@ object CascadingBackend {
             { mode =>
               val fd = new FlowDef
               val pipe = IterableSource[T](iter, f0)(singleSetter, singleConverter).read(fd, mode)
-              CascadingPipe[T](pipe, f0, fd, singleConverter)
+              CascadingPipe.single[T](pipe, fd)
             }
           case (f@MapValues(_, _), rec) =>
             def go[K, A, B](fn: MapValues[K, A, B]): CurryResult[_ <: (K, B)] =
@@ -217,16 +218,21 @@ object CascadingBackend {
           case (m@MergedTypedPipe(_, _), rec) =>
             OptimizationRules.unrollMerge(m) match {
               case Nil => rec(EmptyTypedPipe)
-              case h :: tail =>
-                val recH = rec(h)
-                val recTail = tail.map(rec(_))
+              case nonEmpty =>
                 // TODO: a better optimization is to not materialize this
                 // node at all if there is no fan out since groupBy and cogroupby
                 // can accept multiple inputs
 
-                // we need to make sure all the converters are the same, or
-                // remap them to the singleConverter
-                ???
+                val pipesCR = nonEmpty.map { tp => rec(tp) }
+
+                { mode: Mode =>
+                  val flowDef = new FlowDef
+                  // if all of the converters are the same, we could skip some work
+                  // here, but need to be able to see that correctly
+                  val pipes = pipesCR.map { cr => cr(mode).toPipe(f0, flowDef, singleSetter) }
+                  val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
+                  CascadingPipe.single[T](merged, flowDef)
+                }
             }
           case (SourcePipe(typedSrc), rec) =>
             {  mode =>
@@ -238,23 +244,25 @@ object CascadingBackend {
             def go[K, V](sblk: SumByLocalKeys[K, V]): CurryResult[_ <: (K, V)] =
               rec(sblk.input).andThen { cp =>
                 val localFD = new FlowDef
-                val cpKV: Pipe = cp.toPipe[(K, V)](kvFields, localFD, tup2Setter)
+                val cpKV: Pipe = cp.toPipe(kvFields, localFD, tup2Setter)
                 val msr = new MapsideReduce(sblk.semigroup, new Fields("key"), valueField, None)(singleConverter[V], singleSetter[V])
                 val kvpipe = RichPipe(cpKV).eachTo(kvFields -> kvFields) { _ => msr }
                 CascadingPipe[(K, V)](kvpipe, kvFields, localFD, tuple2Converter)
               }
             go(sblk)
-          case (TrappedPipe(input, sink, conv), rec) =>
-            val inputRes = rec(input)
+          case (trapped: TrappedPipe[u], rec) =>
+            val inputRes = rec(trapped.input)
 
             { mode =>
+              import trapped._
+
               val cp = inputRes(mode)
               // TODO: with diamonds in the graph, this might not be correct
               val fd = new FlowDef
-              val pp: Pipe = cp.toPipe(sink.sinkFields, fd, sink.setter)
+              val pp: Pipe = cp.toPipe(sink.sinkFields, fd, TupleSetter.asSubSetter(sink.setter))
               val pipe = RichPipe.assignName(pp)
               fd.addTrap(pipe, sink.createTap(Write)(mode))
-              CascadingPipe(pipe, sink.sinkFields, fd, conv)
+              CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
             }
           case (WithDescriptionTypedPipe(input, descr, dedup), rec) =>
             rec(input).andThen { cp =>
@@ -277,29 +285,13 @@ object CascadingBackend {
                 rec)
 
             go(hcg)
-          case (r@ReduceStepPipe(_), rec) =>
-            planReduceStep(r, rec)
+          case (ReduceStepPipe(rs), rec) =>
+            planReduceStep(rs, rec)
 
-          case (cgp@CoGroupedPipe(_), rec) => ???
+          case (CoGroupedPipe(cg), rec) =>
+            planCoGroup(cg, rec)
         }
       })
-      /*
-
-      case cgp@CoGroupedPipe(_) =>
-        def go[K, V](cgp: CoGroupedPipe[K, V]): Pipe = {
-          // TODO we can push up filterKeys on both the left and right
-          // and mapValues/flatMapValues on the result
-          val cp = cacheGet(cgp, mode) { implicit fd =>
-            val kvPipe = planCoGroup(cgp.cogrouped, fd, mode)
-            CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, V])
-          }
-          finish(cp, rest, descriptions)
-        }
-        go(cgp)
-    }
-        }
-      })
-*/
 
   private def applyDescriptions(p: Pipe, descriptions: List[(String, Boolean)]): Pipe = {
     val ordered = descriptions.collect { case (d, false) => d }.reverse
@@ -321,240 +313,32 @@ object CascadingBackend {
 
     // Now that we have an optimized pipe, convert it to a CascadingPipe[U]:
 
-    val compiler = compile
+    val compiler = cache.get(flowDef)
 
     val cp: CascadingPipe[_ <: U] = compile(optP)(mode)
 
-    cp.toPipe(fieldNames, flowDef, setter)
+    cp.toPipe(fieldNames, flowDef, TupleSetter.asSubSetter(setter))
   }
 
-//     import pipeCache.cacheGet
+  private def planCoGroup[K, R](cg: CoGrouped[K, R], rec: FunctionK[TypedPipe, CurryResult]): CurryResult[(K, R)] = {
 
-//     def singlePipe[T](t: TypedPipe[T], force: Boolean = false): CascadingPipe[T] =
-//       cacheGet(t, mode) { localFD =>
-//         val pipe = toPipe(t, f0)(localFD, mode, singleSetter)
-//         val p = if (force) RichPipe(pipe).forceToDisk else pipe
-//         CascadingPipe[T](p, f0, localFD, singleConverter)
-//       }
+    // This has the side effect of planning all inputs now
+    // before we need to call them below
+    val inputsCR = cg.inputs.map(rec(_))
 
-//     /*
-//      * This creates a mapping operation on a Pipe. It does so
-//      * by merging the local FlowDef of the CascadingPipe into
-//      * the one passed to this method, then running the FlatMappedFn
-//      * and finally applying the descriptions.
-//      */
-//     def finish[T](cp: CascadingPipe[T],
-//       rest: FlatMappedFn[T, U],
-//       descriptions: List[(String, Boolean)]): Pipe = {
+    { mode =>
 
-//       Dsl.flowDefToRichFlowDef(flowDef).mergeFrom(cp.localFlowDef)
-//       val withRest = RichPipe(cp.pipe)
-//         .flatMapTo[T, U](cp.fields -> fieldNames)(rest)(cp.converter, setter)
-
-//       applyDescriptions(withRest, descriptions)
-//     }
-
-//     def loop[T](t: TypedPipe[T], rest: FlatMappedFn[T, U], descriptions: List[(String, Boolean)]): Pipe = t match {
-//       case cp@CrossPipe(_, _) => loop(cp.viaHashJoin, rest, descriptions)
-
-//       case cv@CrossValue(_, _) => loop(cv.viaHashJoin, rest, descriptions)
-
-//       case DebugPipe(p) =>
-//         // There is really little that can be done here but println
-//         loop(p.map { t => println(t); t }, rest, descriptions)
-
-//       case EmptyTypedPipe =>
-//         // just use an empty iterable pipe.
-//         // Note, rest is irrelevant
-//         val empty = IterableSource(Iterable.empty, fieldNames)(setter, singleConverter[U]).read(flowDef, mode)
-//         applyDescriptions(empty, descriptions)
-
-//       case fk@FilterKeys(_, _) =>
-//         def go[K, V](node: FilterKeys[K, V]): Pipe = node match {
-//           case FilterKeys(IterablePipe(iter), fn) =>
-//             loop[(K, V)](IterablePipe(iter.filter { case (k, v) => fn(k) }), rest, descriptions)
-//           case _ =>
-//             loop[(K, V)](node.input, rest.runAfter(FlatMapping.filterKeys(node.fn)), descriptions)
-//         }
-//         go(fk)
-
-//       case f@Filter(_, _) =>
-//         // hand holding for type inference
-//         def go[T1 <: T](f: Filter[T1]) = f match {
-//           case Filter(IterablePipe(iter), fn) => loop(IterablePipe(iter.filter(fn)), rest, descriptions)
-//           case _ =>
-//             loop[T1](f.input, rest.runAfter(FlatMapping.filter(f.fn)), descriptions)
-//         }
-//         go(f)
-
-//       case f@FlatMapValues(_, _) =>
-//         def go[K, V, U](node: FlatMapValues[K, V, U]): Pipe = {
-//           // don't capture node, which is a TypedPipe, which we avoid serializing
-//           val fn = node.fn
-//           loop(node.input, rest.runAfter(
-//             FlatMapping.FlatM[(K, V), (K, U)] { case (k, v) =>
-//               fn(v).map((k, _))
-//             }), descriptions)
-//         }
-
-//         go(f)
-
-//       case FlatMapped(prev, fn) =>
-//         loop(prev, rest.runAfter(FlatMapping.FlatM(fn)), descriptions)
-
-//       case ForceToDisk(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
-//       case ForceToDisk(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-//       case ForceToDisk(pipe) => finish(singlePipe(pipe, force = true), rest, descriptions)
-
-//       case Fork(EmptyTypedPipe) => loop(EmptyTypedPipe, rest, descriptions)
-//       case Fork(i@IterablePipe(iter)) => loop(i, rest, descriptions)
-//       case Fork(pipe) => finish(singlePipe(pipe), rest, descriptions)
-
-//       case IterablePipe(iterable) =>
-//         val toSrc = IterableSource(iterable, f0)(singleSetter[T], singleConverter[T])
-//         loop(SourcePipe(toSrc), rest, descriptions)
-
-//       case f@MapValues(_, _) =>
-//         def go[K, V, U](node: MapValues[K, V, U]): Pipe = {
-//           // don't capture node, which is a TypedPipe, which we avoid serializing
-//           val mvfn = node.fn
-//           loop(node.input, rest.runAfter(
-//             FlatMapping.Map[(K, V), (K, U)] { case (k, v) => (k, mvfn(v)) }), descriptions)
-//         }
-
-//         go(f)
-
-//       case Mapped(input, fn) => loop(input, rest.runAfter(FlatMapping.Map(fn)), descriptions)
-
-//       case MergedTypedPipe(left, right) =>
-//         @annotation.tailrec
-//         def allMerged[A](m: TypedPipe[A],
-//           stack: List[TypedPipe[A]],
-//           acc: List[TypedPipe[A]],
-//           ds: List[(String, Boolean)]): (List[TypedPipe[A]], List[(String, Boolean)]) = m match {
-//             case MergedTypedPipe(left, right) =>
-//               allMerged(left, right :: stack, acc, ds)
-//             case EmptyTypedPipe => stack match {
-//               case Nil => (acc, ds)
-//               case h :: t => allMerged(h, t, acc, ds)
-//             }
-//             case WithDescriptionTypedPipe(p, desc, dedup) =>
-//               allMerged(p, stack, acc, (desc, dedup) :: ds)
-//             case notMerged =>
-//               allMerged(EmptyTypedPipe, stack, notMerged :: acc, ds)
-//           }
-//         val (unmerged, ds) = allMerged(left, right :: Nil, Nil, Nil)
-//         // check for repeated pipes
-//         val uniquePipes: List[TypedPipe[T]] = unmerged
-//           .groupBy(identity)
-//           .mapValues(_.size)
-//           .map {
-//             case (pipe, 1) => pipe
-//             case (pipe, cnt) => pipe.flatMap(List.fill(cnt)(_).iterator)
-//           }
-//           .toList
-
-//         uniquePipes match {
-//           case Nil => loop(EmptyTypedPipe, rest, ds ::: descriptions)
-//           case h :: Nil => loop(h, rest, ds ::: descriptions)
-//           case otherwise =>
-//             // push all the remaining flatmaps up:
-//             val pipes = otherwise.map(loop(_, rest, Nil))
-//             // make the cascading pipe
-//             // TODO: a better optimization is to not materialize this
-//             // node at all if there is no fan out since groupBy and cogroupby
-//             // can accept multiple inputs
-//             val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
-//             applyDescriptions(merged, ds ::: descriptions)
-//         }
-//       case src@SourcePipe(_) =>
-//         def go[A](sp: SourcePipe[A]): CascadingPipe[A] =
-//           cacheGet[A](sp, mode) { implicit localFD =>
-//             val source = sp.source
-//             val pipe = source.read(localFD, mode)
-//             CascadingPipe[A](pipe, source.sourceFields, localFD, source.converter[A])
-//           }
-//         finish(go(src), rest, descriptions)
-
-//       case slk@SumByLocalKeys(_, _) =>
-//         def sum[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] =
-//           cacheGet(sblk, mode) { implicit localFD =>
-//             val pairPipe = toPipe(sblk.input, kvFields)(localFD, mode, tup2Setter)
-//             val msr = new MapsideReduce(sblk.semigroup, new Fields("key"), valueField, None)(singleConverter[V], singleSetter[V])
-//             val kvpipe = RichPipe(pairPipe).eachTo(kvFields -> kvFields) { _ => msr }
-//             CascadingPipe[(K, V)](kvpipe, kvFields, localFD, tuple2Converter)
-//           }
-//         finish(sum(slk), rest, descriptions)
-
-//       case tp@TrappedPipe(_, _, _) =>
-//         def go[A](tp: TrappedPipe[A], r: FlatMappedFn[A, U]): Pipe = {
-//           val cp = cacheGet(tp, mode) { implicit fd =>
-//             val sfields = tp.sink.sinkFields
-//             // TODO: with diamonds in the graph, this might not be correct
-//             val pp = toPipe[A](tp.input, sfields)(fd, mode, tp.sink.setter)
-//             val pipe = RichPipe.assignName(pp)
-//             flowDef.addTrap(pipe, tp.sink.createTap(Write)(mode))
-//             CascadingPipe[A](pipe, sfields, fd, tp.conv)
-//           }
-//           finish(cp, r, descriptions)
-//         }
-//         go(tp, rest)
-
-//       case WithDescriptionTypedPipe(pipe, description, dedup) =>
-//         loop(pipe, rest, (description, dedup) :: descriptions)
-
-//       case WithOnComplete(pipe, fn) =>
-//         val planned = loop(pipe, rest, descriptions)
-//         new Each(planned, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
-
-//       case hcg@HashCoGroup(_, _, _) =>
-//         def go[K, V1, V2, R](hcg: HashCoGroup[K, V1, V2, R]): Pipe = {
-//           // TODO we can push up filterKeys on both the left and right
-//           // and mapValues/flatMapValues on the result
-//           val cp = cacheGet(hcg, mode) { implicit fd =>
-//             val kvPipe = planHashJoin(hcg.left,
-//               hcg.right,
-//               hcg.joiner,
-//               hcg.right.keyOrdering,
-//               fd,
-//               mode)
-//             CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, R])
-//           }
-//           finish(cp, rest, descriptions)
-//         }
-//         go(hcg)
-
-//       case cgp@CoGroupedPipe(_) =>
-//         def go[K, V](cgp: CoGroupedPipe[K, V]): Pipe = {
-//           // TODO we can push up filterKeys on both the left and right
-//           // and mapValues/flatMapValues on the result
-//           val cp = cacheGet(cgp, mode) { implicit fd =>
-//             val kvPipe = planCoGroup(cgp.cogrouped, fd, mode)
-//             CascadingPipe(kvPipe, kvFields, fd, tuple2Converter[K, V])
-//           }
-//           finish(cp, rest, descriptions)
-//         }
-//         go(cgp)
-
-//       case r@ReduceStepPipe(_) =>
-//         planReduceStep(r, mode) match {
-//           case Right(cp) => finish(cp, rest, descriptions)
-//           case Left(tp) => loop(tp, rest, descriptions)
-//         }
-//     }
-
-//     RichPipe(loop(p, FlatMappedFn.identity[U], Nil)).applyFlowConfigProperties(flowDef)
-//   }
-
-  private def planCoGroup[K, R](cg: CoGrouped[K, R], flowDef: FlowDef, mode: Mode): Pipe = {
-    import cg._
-
+    import cg.{inputs, joinFunction}
     // Cascading handles the first item in join differently, we have to see if it is repeated
     val firstCount = inputs.count(_ == inputs.head)
 
     import Dsl._
     import RichPipe.assignName
 
+    val flowDef = new FlowDef
+
+    def toPipe[A, B](t: TypedPipe[(A, B)], f: Fields, setter: TupleSetter[(A, B)]): Pipe =
+      rec(t)(mode).toPipe(f, flowDef, TupleSetter.asSubSetter(setter))
     /*
      * we only want key and value.
      * Cascading requires you have the same number coming in as out.
@@ -565,7 +349,7 @@ object CascadingBackend {
       List("key", "value") ++ (0 until (2 * (inCount - 1))).map("null%d".format(_))
 
     // Make this stable so the compiler does not make a closure
-    val ord = keyOrdering
+    val ord = cg.keyOrdering
 
     val newPipe = maybeBox[K, Any](ord, flowDef) { (tupset, ordKeyField) =>
       if (firstCount == inputs.size) {
@@ -577,8 +361,7 @@ object CascadingBackend {
          * not repeated. That case is below
          */
         val NUM_OF_SELF_JOINS = firstCount - 1
-        new CoGroup(assignName(toPipe[(K, Any)](inputs.head, kvFields)(flowDef, mode,
-          tupset)),
+        new CoGroup(assignName(toPipe[K, Any](inputs.head, kvFields, tupset)),
           ordKeyField,
           NUM_OF_SELF_JOINS,
           outFields(firstCount),
@@ -592,8 +375,7 @@ object CascadingBackend {
          * This is handled by a different CoGroup constructor than the above case.
          */
         def renamePipe(idx: Int, p: TypedPipe[(K, Any)]): Pipe =
-          toPipe[(K, Any)](p, List(keyId(idx), "value%d".format(idx)))(flowDef, mode,
-            tupset)
+          toPipe[K, Any](p, List(keyId(idx), "value%d".format(idx)), tupset)
 
         // This is tested for the properties we need (non-reordering)
         val distincts = CoGrouped.distinctBy(inputs)(identity)
@@ -648,11 +430,17 @@ object CascadingBackend {
        * are null. We then project out at the end of the method.
        */
     val pipeWithRedAndDescriptions = {
-      RichPipe.setReducers(newPipe, reducers.getOrElse(-1))
-      RichPipe.setPipeDescriptions(newPipe, descriptions)
+      RichPipe.setReducers(newPipe, cg.reducers.getOrElse(-1))
+      RichPipe.setPipeDescriptions(newPipe, cg.descriptions)
       newPipe.project(kvFields)
     }
-    pipeWithRedAndDescriptions
+
+    CascadingPipe[(K, R)](
+      pipeWithRedAndDescriptions,
+      kvFields,
+      flowDef,
+      tuple2Converter)
+    }
   }
 
   private def planHashJoin[K, V1, V2, R](left: TypedPipe[(K, V1)],
@@ -755,10 +543,9 @@ object CascadingBackend {
   }
 
   private def planReduceStep[K, V1, V2](
-    rsp: ReduceStepPipe[K, V1, V2],
+    rs: ReduceStep[K, V1, V2],
     rec: FunctionK[TypedPipe, CurryResult]): CurryResult[(K, V2)] = {
 
-    val rs = rsp.reduce
     val mappedCR = rec(rs.mapped)
 
     { mode =>
