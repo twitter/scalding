@@ -443,6 +443,15 @@ object CascadingBackend {
     }
   }
 
+  /**
+   * TODO: most of the complexity of this method should be rewritten
+   * as an optimization rule that works on the scalding typed AST.
+   * the code in here gets pretty complex and depending on the details
+   * of cascading and also how we compile to cascading.
+   *
+   * But the optimization is somewhat general: we often want a checkpoint
+   * before a hashjoin is replicated
+   */
   private def planHashJoin[K, V1, V2, R](left: TypedPipe[(K, V1)],
     right: HashJoinable[K, V2],
     joiner: (K, V1, Iterable[V2]) => Iterator[R],
