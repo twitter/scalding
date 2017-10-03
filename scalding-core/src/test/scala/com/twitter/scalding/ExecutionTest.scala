@@ -357,7 +357,7 @@ class ExecutionTest extends WordSpec with Matchers {
       val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
 
       assert(files.size == 1)
-      assert(files(0).contains(tempFile))
+      assert(files.head.contains(tempFile))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
@@ -385,7 +385,7 @@ class ExecutionTest extends WordSpec with Matchers {
       val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
 
       assert(files.size == 2)
-      assert(files(0).contains(tempFileOne) || files(0).contains(tempFileTwo))
+      assert(files.head.contains(tempFileOne) || files.head.contains(tempFileTwo))
       assert(files(1).contains(tempFileOne) || files(1).contains(tempFileTwo))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests

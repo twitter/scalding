@@ -329,4 +329,283 @@ object OptimizationRules {
           }
         })
     }
+
+  /////////////////////////////
+  //
+  // Here are some actual rules for simplifying TypedPipes
+  //
+  /////////////////////////////
+
+  /**
+   * a.flatMap(f).flatMap(g) == a.flatMap { x => f(x).flatMap(g) }
+   */
+  object ComposeFlatMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(FlatMapped(in, fn0), fn1) =>
+        FlatMapped(in, FlatMappedFn(fn1).runAfter(FlatMapping.FlatM(fn0)))
+      case FlatMapValues(FlatMapValues(in, fn0), fn1) =>
+        FlatMapValues(in, FlatMappedFn(fn1).runAfter(FlatMapping.FlatM(fn0)))
+    }
+  }
+
+  /**
+   * a.map(f).map(g) == a.map { x => f(x).map(g) }
+   */
+  object ComposeMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(Mapped(in, fn0), fn1) =>
+        Mapped(in, ComposedMapFn(fn0, fn1))
+      case MapValues(MapValues(in, fn0), fn1) =>
+        MapValues(in, ComposedMapFn(fn0, fn1))
+    }
+  }
+
+  /**
+   * a.filter(f).filter(g) == a.filter { x => f(x) && g(x) }
+   */
+  object ComposeFilter extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      // scala can't type check this, so we hold its hand:
+      // case Filter(Filter(in, fn0), fn1) =>
+      //   Some(Filter(in, ComposedFilterFn(fn0, fn1)))
+      case f@Filter(_, _) =>
+        def go[A](f: Filter[A]): Option[TypedPipe[A]] =
+          f.input match {
+            case f1: Filter[a] =>
+              Some(Filter[a](f1.input, ComposedFilterFn(f.fn, f.fn)))
+            case _ => None
+          }
+        go(f)
+      case FilterKeys(FilterKeys(in, fn0), fn1) =>
+        Some(FilterKeys(in, ComposedFilterFn(fn0, fn1)))
+      case _ => None
+    }
+  }
+
+  /**
+   * a.onComplete(f).onComplete(g) == a.onComplete { () => f(); g() }
+   */
+  object ComposeWithOnComplete extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case WithOnComplete(WithOnComplete(pipe, fn0), fn1) =>
+        WithOnComplete(pipe, ComposedOnComplete(fn0, fn1))
+    }
+  }
+
+  /**
+   * After a forceToDisk there is no need to immediately fork.
+   * Calling forceToDisk twice in a row is the same as once.
+   * Calling fork twice in a row is the same as once.
+   */
+  object RemoveDuplicateForceFork extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case ForceToDisk(ForceToDisk(t)) => ForceToDisk(t)
+      case ForceToDisk(Fork(t)) => ForceToDisk(t)
+      case Fork(Fork(t)) => Fork(t)
+      case Fork(ForceToDisk(t)) => ForceToDisk(t)
+    }
+  }
+
+  /**
+   * We ignore .group if there are is no setting of reducers
+   *
+   * This is arguably not a great idea, but scalding has always
+   * done it to minimize accidental map-reduce steps
+   */
+  object IgnoreNoOpGroup extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case ReduceStepPipe(IdentityReduce(_, input, None, _)) =>
+        input
+    }
+  }
+
+  /**
+   * In map-reduce settings, Merge is almost free in two contexts:
+   * 1. the final write
+   * 2. at the point we are doing a shuffle anyway.
+   *
+   * By defering merge as long as possible, we hope to find more such
+   * cases
+   */
+  object DeferMerge extends PartialRule[TypedPipe] {
+    private def handleFilter[A]: PartialFunction[Filter[A], TypedPipe[A]] = {
+      case Filter(MergedTypedPipe(a, b), fn) => MergedTypedPipe(Filter(a, fn), Filter(b, fn))
+    }
+
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(Mapped(a, fn), Mapped(b, fn))
+      case FlatMapped(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FlatMapped(a, fn), FlatMapped(b, fn))
+      case MapValues(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(MapValues(a, fn), MapValues(b, fn))
+      case FlatMapValues(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FlatMapValues(a, fn), FlatMapValues(b, fn))
+      case f@Filter(_, _) if handleFilter.isDefinedAt(f) => handleFilter(f)
+      case FilterKeys(MergedTypedPipe(a, b), fn) =>
+        MergedTypedPipe(FilterKeys(a, fn), FilterKeys(b, fn))
+    }
+  }
+
+  /**
+   * Push filterKeys up as early as possible. This can happen before
+   * a shuffle, which can be a major win. This allows you to write
+   * generic methods that return all the data, but if downstream someone
+   * only wants certain keys they don't pay to compute everything.
+   *
+   * This is an optimization we didn't do in scalding 0.17 and earlier
+   * because .toTypedPipe on the group totally hid the structure from
+   * us
+   */
+  object FilterKeysEarly extends Rule[TypedPipe] {
+    private def filterReduceStep[K, V1, V2](rs: ReduceStep[K, V1, V2], fn: K => Boolean): ReduceStep[K, _, _ <: V2] =
+      rs match {
+        case step@IdentityReduce(_, _, _, _) => step.filterKeys(fn)
+        case step@UnsortedIdentityReduce(_, _, _, _) => step.filterKeys(fn)
+        case step@IdentityValueSortedReduce(_, _, _, _, _) => step.filterKeys(fn)
+        case step@ValueSortedReduce(_, _, _, _, _, _) => step.filterKeys(fn)
+        case step@IteratorMappedReduce(_, _, _, _, _) => step.filterKeys(fn)
+      }
+
+    private def filterCoGroupable[K, V](rs: CoGroupable[K, V], fn: K => Boolean): CoGroupable[K, V] =
+      rs match {
+        case step@IdentityReduce(_, _, _, _) => step.filterKeys(fn)
+        case step@UnsortedIdentityReduce(_, _, _, _) => step.filterKeys(fn)
+        case step@IteratorMappedReduce(_, _, _, _, _) => step.filterKeys(fn)
+        case cg: CoGrouped[K, V] => filterCoGroup(cg, fn)
+      }
+
+    private def filterCoGroup[K, V](cg: CoGrouped[K, V], fn: K => Boolean): CoGrouped[K, V] =
+      cg match {
+        case CoGrouped.Pair(a, b, jf) =>
+          CoGrouped.Pair(filterCoGroupable(a, fn), filterCoGroupable(b, fn), jf)
+        case CoGrouped.FilterKeys(cg, g) =>
+          filterCoGroup(cg, ComposedFilterFn(g, fn))
+        case CoGrouped.MapGroup(cg, g) =>
+          CoGrouped.MapGroup(filterCoGroup(cg, fn), g)
+        case CoGrouped.WithDescription(cg, d) =>
+          CoGrouped.WithDescription(filterCoGroup(cg, fn), d)
+        case CoGrouped.WithReducers(cg, r) =>
+          CoGrouped.WithReducers(filterCoGroup(cg, fn), r)
+      }
+
+    def apply[T](on: Dag[TypedPipe]) = {
+      case FilterKeys(ReduceStepPipe(rsp), fn) =>
+        Some(ReduceStepPipe(filterReduceStep(rsp, fn)))
+      case FilterKeys(CoGroupedPipe(cg), fn) =>
+        Some(CoGroupedPipe(filterCoGroup(cg, fn)))
+      case FilterKeys(HashCoGroup(left, right, joiner), fn) =>
+        val newRight = right match {
+          case step@IdentityReduce(_, _, _, _) => step.filterKeys(fn)
+          case step@UnsortedIdentityReduce(_, _, _, _) => step.filterKeys(fn)
+          case step@IteratorMappedReduce(_, _, _, _, _) => step.filterKeys(fn)
+        }
+        Some(HashCoGroup(FilterKeys(left, fn), newRight, joiner))
+      case FilterKeys(MapValues(pipe, mapFn), filterFn) =>
+        Some(MapValues(FilterKeys(pipe, filterFn), mapFn))
+      case FilterKeys(FlatMapValues(pipe, fmFn), filterFn) =>
+        Some(FlatMapValues(FilterKeys(pipe, filterFn), fmFn))
+      case _ => None
+    }
+  }
+
+  /**
+   * EmptyTypedPipe is kind of zero of most of these operations
+   * We go ahead and simplify as much as possible if we see
+   * an EmptyTypedPipe
+   */
+  object EmptyIsOftenNoOp extends PartialRule[TypedPipe] {
+
+    private def emptyCogroup[K, V](cg: CoGrouped[K, V]): Boolean = {
+      import CoGrouped._
+
+      def empty(t: TypedPipe[Any]): Boolean = t match {
+        case EmptyTypedPipe => true
+        case _ => false
+      }
+      cg match {
+        case Pair(left, _, jf) if left.inputs.forall(empty) && (Joiner.isLeftJoinLike(jf) == Some(true)) => true
+        case Pair(_, right, jf) if right.inputs.forall(empty) && (Joiner.isRightJoinLike(jf) == Some(true)) => true
+        case Pair(left, right, _) if left.inputs.forall(empty) && right.inputs.forall(empty) => true
+        case Pair(_, _, _) => false
+        case WithDescription(cg, _) => emptyCogroup(cg)
+        case WithReducers(cg, _) => emptyCogroup(cg)
+        case MapGroup(cg, _) => emptyCogroup(cg)
+        case FilterKeys(cg, _) => emptyCogroup(cg)
+      }
+    }
+
+    private def emptyHashJoinable[K, V](hj: HashJoinable[K, V]): Boolean =
+      hj match {
+        case step@IdentityReduce(_, _, _, _) => step.mapped == EmptyTypedPipe
+        case step@UnsortedIdentityReduce(_, _, _, _) => step.mapped == EmptyTypedPipe
+        case step@IteratorMappedReduce(_, _, _, _, _) => step.mapped == EmptyTypedPipe
+      }
+
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case CrossPipe(EmptyTypedPipe, _) => EmptyTypedPipe
+      case CrossPipe(_, EmptyTypedPipe) => EmptyTypedPipe
+      case CrossValue(EmptyTypedPipe, _) => EmptyTypedPipe
+      case CrossValue(_, ComputedValue(EmptyTypedPipe)) => EmptyTypedPipe
+      case CrossValue(_, EmptyValue) => EmptyTypedPipe
+      case DebugPipe(EmptyTypedPipe) => EmptyTypedPipe
+      case FilterKeys(EmptyTypedPipe, _) => EmptyTypedPipe
+      case Filter(EmptyTypedPipe, _) => EmptyTypedPipe
+      case FlatMapValues(EmptyTypedPipe, _) => EmptyTypedPipe
+      case FlatMapped(EmptyTypedPipe, _) => EmptyTypedPipe
+      case ForceToDisk(EmptyTypedPipe) => EmptyTypedPipe
+      case Fork(EmptyTypedPipe) => EmptyTypedPipe
+      case HashCoGroup(EmptyTypedPipe, _, _) => EmptyTypedPipe
+      case HashCoGroup(_, right, hjf) if emptyHashJoinable(right) && Joiner.isInnerHashJoinLike(hjf) == Some(true) => EmptyTypedPipe
+      case MapValues(EmptyTypedPipe, _) => EmptyTypedPipe
+      case Mapped(EmptyTypedPipe, _) => EmptyTypedPipe
+      case MergedTypedPipe(EmptyTypedPipe, a) => a
+      case MergedTypedPipe(a, EmptyTypedPipe) => a
+      case ReduceStepPipe(rs: ReduceStep[_, _, _]) if rs.mapped == EmptyTypedPipe => EmptyTypedPipe
+      case SumByLocalKeys(EmptyTypedPipe, _) => EmptyTypedPipe
+      case TrappedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe
+      case CoGroupedPipe(cgp) if emptyCogroup(cgp) => EmptyTypedPipe
+    }
+  }
+
+  /**
+   * If an Iterable is empty, it is the same as EmptyTypedPipe
+   */
+  object EmptyIterableIsEmpty extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
+    }
+  }
+
+  /**
+   * To keep equality for case matching and caching, we need to create internal case classes
+   */
+  private[this] case class ComposedMapFn[A, B, C](fn0: A => B, fn1: B => C) extends Function1[A, C] {
+    def apply(a: A) = fn1(fn0(a))
+  }
+  private[this] case class ComposedFilterFn[-A](fn0: A => Boolean, fn1: A => Boolean) extends Function1[A, Boolean] {
+    def apply(a: A) = fn0(a) && fn1(a)
+  }
+
+  /**
+   * This is only called at the end of a task, so might as well make it stack safe since a little
+   * extra runtime cost won't matter
+   */
+  private[this] case class ComposedOnComplete(fn0: () => Unit, fn1: () => Unit) extends Function0[Unit] {
+    def apply(): Unit = {
+      @annotation.tailrec
+      def loop(fn: () => Unit, stack: List[() => Unit]): Unit =
+        fn match {
+          case ComposedOnComplete(left, right) => loop(left, right :: stack)
+          case notComposed =>
+            notComposed()
+            stack match {
+              case h :: tail => loop(h, tail)
+              case Nil => ()
+            }
+        }
+
+      loop(fn0, List(fn1))
+    }
+  }
 }
