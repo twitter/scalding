@@ -361,6 +361,30 @@ object OptimizationRules {
   /////////////////////////////
 
   /**
+   * It is easier for planning if all fanouts are made explicit.
+   * This rule adds a Fork node every time there is a fanout
+   *
+   * This rule applied first makes it easier
+   *
+   * This rule may be exposing a bug in Dagon. It seems to stack
+   * overflow frequently and maybe infinite loop.
+   *
+   * It could be that we actually have duplicate nodes in dagon
+   * many ids for the same node, but the replacement only gets one
+   * of them and relies on the next round getting the rest. If
+   * this is true, this rule may be unstable
+   */
+  object AddExplicitForks extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case Fork(_) | ForceToDisk(_) => None // these are already forking
+      case SourcePipe(_) => None // don't need to worry about sources
+      case IterablePipe(_) => None // don't need to worry about sources
+      case nonFork if on.fanOut(nonFork) > 1 => Some(Fork(nonFork))
+      case _ => None
+    }
+  }
+
+  /**
    * a.flatMap(f).flatMap(g) == a.flatMap { x => f(x).flatMap(g) }
    */
   object ComposeFlatMap extends PartialRule[TypedPipe] {
@@ -413,6 +437,80 @@ object OptimizationRules {
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case WithOnComplete(WithOnComplete(pipe, fn0), fn1) =>
         WithOnComplete(pipe, ComposedOnComplete(fn0, fn1))
+    }
+  }
+  /**
+   * a.map(f).flatMap(g) == a.flatMap { x => g(f(x)) }
+   * a.flatMap(f).map(g) == a.flatMap { x => f(x).map(g) }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the maps first
+   */
+  object ComposeMapFlatMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(Mapped(in, f), g) =>
+        FlatMapped(in, FlatMappedFn(g).runAfter(FlatMapping.Map(f)))
+      case FlatMapValues(MapValues(in, f), g) =>
+        FlatMapValues(in, FlatMappedFn(g).runAfter(FlatMapping.Map(f)))
+      case Mapped(FlatMapped(in, f), g) =>
+        FlatMapped(in, FlatMappedFn(f).combine(FlatMappedFn.fromMap(g)))
+      case MapValues(FlatMapValues(in, f), g) =>
+        FlatMapValues(in, FlatMappedFn(f).combine(FlatMappedFn.fromMap(g)))
+    }
+  }
+
+
+  /**
+   * a.filter(f).flatMap(g) == a.flatMap { x => if (f(x)) g(x) else Iterator.empty }
+   * a.flatMap(f).filter(g) == a.flatMap { x => f(x).filter(g) }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the filters first
+   */
+  object ComposeFilterFlatMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(Filter(in, f), g) =>
+        Some(FlatMapped(in, FlatMappedFn(g).runAfter(FlatMapping.filter(f))))
+      case filter: Filter[b] =>
+        filter.input match {
+          case fm: FlatMapped[a, b] =>
+            Some(FlatMapped[a, b](fm.input, FlatMappedFn(fm.fn).combine(FlatMappedFn.fromFilter(filter.fn))))
+          case _ => None
+        }
+      case _ =>
+        None
+    }
+  }
+  /**
+   * a.filter(f).map(g) == a.flatMap { x => if (f(x)) Iterator.single(g(x)) else Iterator.empty }
+   * a.map(f).filter(g) == a.flatMap { x => val y = f(x); if (g(y)) Iterator.single(y) else Iterator.empty }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the filters first
+   */
+  object ComposeFilterMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case Mapped(Filter(in, f), g) =>
+        Some(FlatMapped(in, FlatMappedFn.fromFilter(f).combine(FlatMappedFn.fromMap(g))))
+      case filter: Filter[b] =>
+        filter.input match {
+          case fm: Mapped[a, b] =>
+            Some(FlatMapped[a, b](fm.input, FlatMappedFn.fromMap(fm.fn).combine(FlatMappedFn.fromFilter(filter.fn))))
+          case _ => None
+        }
+      case _ =>
+        None
+    }
+  }
+
+  /**
+   * In scalding 0.17 and earlier, descriptions were automatically pushdown below
+   * merges and flatMaps/map/etc..
+   */
+  object DescribeLater extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup)
     }
   }
 
