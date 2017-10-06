@@ -268,7 +268,6 @@ object CascadingBackend {
               t match {
                 case WithDescriptionTypedPipe(i, desc, ded) =>
                   loop(i, (desc, ded) :: acc)
-                case Fork(unwrap) => loop(unwrap, acc)
                 case notDescr => (notDescr, acc)
               }
 
@@ -286,9 +285,7 @@ object CascadingBackend {
               planHashJoin(hcg.left,
                 hcg.right,
                 hcg.joiner,
-                hcg.right.keyOrdering,
-                rec,
-                mode) // TODO we are using the mode to pass config here. We could be more explicit
+                rec)
 
             go(hcg)
           case (ReduceStepPipe(rs), rec) =>
@@ -309,38 +306,44 @@ object CascadingBackend {
   final def toPipe[U](p: TypedPipe[U], fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
 
     /**
+     * Here are configurable optimization rules
+     */
+    val getHashJoinAutoForceRight =
+      mode match {
+        case h: HadoopMode =>
+          val config = Config.fromHadoop(h.jobConf)
+          config.getHashJoinAutoForceRight
+        case _ => false
+      }
+    val forceHash = if (getHashJoinAutoForceRight) OptimizationRules.ForceToDiskBeforeHashJoin else Rule.empty[TypedPipe]
+    /**
      * These are rules we should apply to any TypedPipe before handing
      * to cascading. These should be a bit conservative in that they
      * should be highly likely to improve the graph.
      */
-
-    def phase[T](t: TypedPipe[T], r: Rule[TypedPipe]): TypedPipe[T] =
-      Dag.applyRule(t, OptimizationRules.toLiteral, r)
-
-    //println(s"init: $p")
-    // phase 0, add explicit forks
-    //val p0 = phase(p, OptimizationRules.AddExplicitForks)
-    val p0 = p //phase(p, OptimizationRules.AddExplicitForks)
-    //println(s"p0: $p0")
-    // phase 1, compose flatMap/map, move descriptions down etc...
-    val p1 = phase(p0,
+    val phases = List(
+      // phase 0, add explicit forks
+      OptimizationRules.AddExplicitForks,
+      // phase 1, compose flatMap/map, move descriptions down etc...
       Rule.orElse(List(
-        OptimizationRules.RemoveDuplicateForceFork,
         OptimizationRules.ComposeMap,
         OptimizationRules.ComposeFilter,
         OptimizationRules.ComposeWithOnComplete,
-        OptimizationRules.DescribeLater)))
-    //println(s"p1: $p1")
-    // phase 2, combine different kinds of map operations into flatMaps
-    val p2 = phase(p1,
+        OptimizationRules.DescribeLater)),
+      // phase 2, combine different kinds of map operations into flatMaps
       Rule.orElse(List(
         OptimizationRules.ComposeMapFlatMap,
         OptimizationRules.ComposeFilterFlatMap,
         OptimizationRules.ComposeFilterMap,
         OptimizationRules.ComposeFlatMap,
-        OptimizationRules.EmptyIsOftenNoOp)))
+        OptimizationRules.EmptyIsOftenNoOp,
+        OptimizationRules.EmptyIterableIsEmpty)),
+      // phase 3, add any explicit forces to the optimized graph
+      Rule.orElse(List(
+        forceHash,
+        OptimizationRules.RemoveDuplicateForceFork))
+      )
 
-    //println(s"p2: $p2")
     /**
      * TODO:
      * we need to have parity for the normal optimizations
@@ -348,11 +351,13 @@ object CascadingBackend {
      *
      */
 
+    val (d, id) = Dag(p, OptimizationRules.toLiteral)
+    val d1 = d.applySeq(phases)
+    val p1 = d1.evaluate(id)
     // Now that we have an optimized pipe, convert it to a CascadingPipe[U]:
 
     val compiler = cache.get(flowDef, mode)
-
-    val cp: CascadingPipe[U] = compiler(p2)
+    val cp: CascadingPipe[U] = compiler(p1)
 
     RichPipe(cp.toPipe(fieldNames, flowDef, TupleSetter.asSubSetter(setter)))
       // TODO: this indirection may not be needed anymore, we could directly track config changes
@@ -493,90 +498,17 @@ object CascadingBackend {
   private def planHashJoin[K, V1, V2, R](left: TypedPipe[(K, V1)],
     right: HashJoinable[K, V2],
     joiner: (K, V1, Iterable[V2]) => Iterator[R],
-    keyOrdering: Ordering[K],
-    rec: FunctionK[TypedPipe, CascadingPipe],
-    mode: Mode): CascadingPipe[(K, R)] = {
-
-    /**
-     * Checks the transform to deduce if it is safe to skip the force to disk.
-     * If the FlatMappedFn is an identity operation then we can skip
-     * For map and flatMap we can't definitively infer if it is OK to skip the forceToDisk.
-     * Thus we just go ahead and forceToDisk in those two cases - users can opt out if needed.
-     */
-     def canSkipEachOperation(eachOperation: Operation[_]): Boolean =
-      eachOperation match {
-        case f: FlatMapFunction[_, _] =>
-          f.getFunction match {
-            case fmp: FlatMappedFn[_, _] if (FlatMappedFn.asId(fmp).isDefined) =>
-              // This is an operation that is doing nothing
-              true
-            case _ =>
-              false
-          }
-        case _: CleanupIdentityFunction => true
-        case _ => false
-      }
-
-    /**
-     * Computes if it is safe to skip a force to disk (only if the user hasn't turned this off using
-     * Config.HashJoinAutoForceRight).
-     * If we know the pipe is persisted,we can safely skip. If the Pipe is an Each operator, we check
-     * if the function it holds can be skipped and we recurse to check its parent pipe.
-     * Recursion handles situations where we have a couple of Each ops in a row.
-     * For example: pipe.forceToDisk.onComplete results in: Each -> Each -> Checkpoint
-     */
-    def isSafeToSkipForceToDisk(pipe: Pipe): Boolean = {
-      import cascading.pipe._
-
-      pipe match {
-        case eachPipe: Each =>
-          if (canSkipEachOperation(eachPipe.getOperation)) {
-            //need to recurse down to see if parent pipe is ok
-            RichPipe.getSinglePreviousPipe(eachPipe).exists(prevPipe => isSafeToSkipForceToDisk(prevPipe))
-          } else false
-        case _: Checkpoint => true
-        case _: GroupBy => true
-        case _: CoGroup => true
-        case _: Every => true
-        case p if RichPipe.isSourcePipe(p) => true
-        case _ => false
-      }
-    }
-
-    val leftCP = rec(left)
-    val rightCP = rec(right.mapped)
-
-    val getHashJoinAutoForceRight: Boolean =
-      mode match {
-        case h: HadoopMode =>
-          val config = Config.fromHadoop(h.jobConf)
-          config.getHashJoinAutoForceRight
-        case _ => false //default to false
-      }
-
+    rec: FunctionK[TypedPipe, CascadingPipe]): CascadingPipe[(K, R)] = {
 
     val fd = new FlowDef
+    val leftPipe = rec(left).toPipe(kvFields, fd, tup2Setter)
+    val mappedPipe = rec(right.mapped).toPipe(new Fields("key1", "value1"), fd, tup2Setter)
 
-    /**
-     * Returns a Pipe for the mapped (rhs) pipe with checkpointing (forceToDisk) applied if needed.
-     * Currently we skip checkpointing if we're confident that the underlying rhs Pipe is persisted
-     * (e.g. a source / Checkpoint / GroupBy / CoGroup / Every) and we have 0 or more Each operator Fns
-     * that are not doing any real work (e.g. Converter, CleanupIdentityFunction)
-     */
-    val getForceToDiskPipeIfNecessary: Pipe = {
-      val mappedPipe = rightCP.toPipe(new Fields("key1", "value1"), fd, tup2Setter)
-      // if the user has turned off auto force right, we fall back to the old behavior and
-      //just return the mapped pipe
-      if (!getHashJoinAutoForceRight || isSafeToSkipForceToDisk(mappedPipe)) mappedPipe
-      else RichPipe(mappedPipe).forceToDisk
-    }
-
-    val leftPipe = leftCP.toPipe(kvFields, fd, tup2Setter)
-
+    val keyOrdering = right.keyOrdering
     val hashPipe = new HashJoin(
       RichPipe.assignName(leftPipe),
       Field.singleOrdered("key")(keyOrdering),
-      getForceToDiskPipeIfNecessary,
+      mappedPipe,
       Field.singleOrdered("key1")(keyOrdering),
       WrappedJoiner(new HashJoiner(right.joinFunction, joiner)))
 

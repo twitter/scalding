@@ -145,9 +145,13 @@ object TypedPipe extends Serializable {
    final case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
         right match {
-          case EmptyValue => EmptyTypedPipe
-          case LiteralValue(v) => left.map { (_, v) }
-          case ComputedValue(pipe) => CrossPipe(left, pipe)
+          case EmptyValue =>
+            EmptyTypedPipe
+          case LiteralValue(v) =>
+            // TODO: literals like this defeat caching in the planner
+            left.map { (_, v) }
+          case ComputedValue(pipe) =>
+            CrossPipe(left, pipe)
         }
    }
    final case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
@@ -191,8 +195,10 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   protected def withLine: TypedPipe[T] =
     LineNumber.tryNonScaldingCaller.map(_.toString) match {
-      case None => this
-      case Some(desc) => TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
+      case None =>
+        this
+      case Some(desc) =>
+        TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
     }
 
   /**
@@ -254,6 +260,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    */
   @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
   def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] =
+    // TODO: literals like this defeat caching in the planner
     map((_, ())).group
 
   /**
@@ -312,20 +319,24 @@ sealed trait TypedPipe[+T] extends Serializable {
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
 
     // Semigroup to handle duplicates for a given key might have different values.
+    // TODO: literals like this defeat caching in the planner
     implicit val sg: Semigroup[T] = new Semigroup[T] {
       def plus(a: T, b: T) = b
     }
 
+    // TODO: literals like this defeat caching in the planner
     val op = map { tup => (fn(tup), tup) }.sumByKey
     val reduced = numReducers match {
       case Some(red) => op.withReducers(red)
       case None => op
     }
+    // TODO: literals like this defeat caching in the planner
     reduced.map(_._2)
   }
 
   /** Merge two TypedPipes of different types by using Either */
   def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
+    // TODO: literals like this defeat caching in the planner
     map(Left(_)) ++ (that.map(Right(_)))
 
   /**
@@ -333,6 +344,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * that the value/key can fit in memory. Beware.
    */
   def eitherValues[K, V, R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K, V)): TypedPipe[(K, Either[V, R])] =
+    // TODO: literals like this defeat caching in the planner
     mapValues { (v: V) => Left(v) } ++ (that.mapValues { (r: R) => Right(r) })
 
   /**
@@ -392,6 +404,7 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   /** flatten an Iterable */
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
+    // TODO: literals like this defeat caching in the planner
     flatMap(_.asInstanceOf[TraversableOnce[U]]) // don't use ev which may not be serializable
 
   /**
@@ -399,6 +412,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
    */
   def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U])): TypedPipe[(K, U)] =
+    // TODO: literals like this defeat caching in the planner
     flatMapValues[K, TraversableOnce[U], U] { us => us }
 
   /**
@@ -423,10 +437,13 @@ sealed trait TypedPipe[+T] extends Serializable {
     Grouped(raiseTo[(K, V)].withLine)
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
+  def groupAll: Grouped[Unit, T] =
+    // TODO: literals like this defeat caching in the planner
+    groupBy(x => ())(ordSer[Unit]).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
+    // TODO: literals like this defeat caching in the planner
     map { t => (g(t), t) }.group
 
   /** Group using an explicit Ordering on the key. */
@@ -444,6 +461,7 @@ sealed trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
+    // TODO: literals like this defeat caching in the planner
     groupBy { _ => rng.nextInt(partitions) }(TypedPipe.identityOrdering)
       .withReducers(partitions)
   }
@@ -474,6 +492,7 @@ sealed trait TypedPipe[+T] extends Serializable {
 
     // Make sure to fix the seed, otherwise restarts cause subtle errors
     lazy val rand = new Random(seed)
+    // TODO: literals like this defeat caching in the planner
     filter(_ => rand.nextDouble < fraction)
   }
 
@@ -508,9 +527,11 @@ sealed trait TypedPipe[+T] extends Serializable {
   def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = {
     // every 1000 items, compact.
     lazy implicit val batchedSG: Semigroup[Batched[U]] = Batched.compactingSemigroup[U](1000)
+    // TODO: literals like this defeat caching in the planner
     ComputedValue(map { t => ((), Batched[U](t)) }
       .sumByLocalKeys
       // remove the Batched before going to the reducers
+      // TODO: literals like this defeat caching in the planner
       .map { case (_, batched) => batched.sum }
       .groupAll
       .forceToReducers
@@ -607,14 +628,17 @@ sealed trait TypedPipe[+T] extends Serializable {
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
   def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
     // avoid capturing ev in the closure:
+    // TODO: literals like this defeat caching in the planner
     raiseTo[(K, Any)].map(_._1)
 
   /** swap the keys with the values */
   def swap[K, V](implicit ev: <:<[T, (K, V)]): TypedPipe[(V, K)] =
+    // TODO: literals like this defeat caching in the planner
     raiseTo[(K, V)].map(_.swap)
 
   /** Just keep the values, or ._2 (if this type is a Tuple2) */
   def values[V](implicit ev: <:<[T, (Any, V)]): TypedPipe[V] =
+    // TODO: literals like this defeat caching in the planner
     raiseTo[(Any, V)].map(_._2)
 
   /**
@@ -644,6 +668,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V): TypedPipe[V] =
+    // TODO: literals like this defeat caching in the planner
     leftCross(value).map(t => f(t._1, t._2))
 
   /**
@@ -658,6 +683,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]): TypedPipe[V] =
+    // TODO: literals like this defeat caching in the planner
     leftCross(value).flatMap(t => f(t._1, t._2))
 
   /**
@@ -672,6 +698,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean): TypedPipe[T] =
+    // TODO: literals like this defeat caching in the planner
     leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
 
   /**
@@ -699,8 +726,10 @@ sealed trait TypedPipe[+T] extends Serializable {
    * For each element, do a map-side (hash) left join to look up a value
    */
   def hashLookup[K >: T, V](grouped: HashJoinable[K, V]): TypedPipe[(K, Option[V])] =
+    // TODO: literals like this defeat caching in the planner
     map((_, ()))
       .hashLeftJoin(grouped)
+      // TODO: literals like this defeat caching in the planner
       .map { case (t, (_, optV)) => (t, optV) }
 
   /**

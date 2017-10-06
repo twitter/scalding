@@ -511,6 +511,22 @@ object OptimizationRules {
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case Mapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
         WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup)
+      case MapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(MapValues(in, fn), desc, dedup)
+      case FlatMapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FlatMapped(in, fn), desc, dedup)
+      case FlatMapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FlatMapValues(in, fn), desc, dedup)
+      case f@Filter(WithDescriptionTypedPipe(_, _, _), _) =>
+        def go[A](f: Filter[A]): TypedPipe[A] =
+          f match {
+            case Filter(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+              WithDescriptionTypedPipe(Filter(in, fn), desc, dedup)
+            case unreachable => unreachable
+          }
+        go(f)
+      case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
     }
   }
 
@@ -525,6 +541,7 @@ object OptimizationRules {
       case ForceToDisk(Fork(t)) => ForceToDisk(t)
       case Fork(Fork(t)) => Fork(t)
       case Fork(ForceToDisk(t)) => ForceToDisk(t)
+      case Fork(t) if on.contains(ForceToDisk(t)) => ForceToDisk(t)
     }
   }
 
@@ -696,6 +713,40 @@ object OptimizationRules {
   object EmptyIterableIsEmpty extends PartialRule[TypedPipe] {
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
+    }
+  }
+  /**
+   * ForceToDisk before hashJoin, this makes sure any filters
+   * have been applied
+   */
+  object ForceToDiskBeforeHashJoin extends Rule[TypedPipe] {
+    // A set of operations naturally have barriers after them,
+    // there is no need to add an explicit force after a reduce
+    // step or after a source, since both will already have been
+    // checkpointed
+    final def maybeForce[T](t: TypedPipe[T]): TypedPipe[T] =
+      t match {
+        case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
+        case WithOnComplete(pipe, fn) =>
+          WithOnComplete(maybeForce(pipe), fn)
+        case WithDescriptionTypedPipe(pipe, desc, dedup) =>
+          WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
+        case pipe => ForceToDisk(pipe)
+      }
+
+    def apply[T](on: Dag[TypedPipe]) = {
+      case HashCoGroup(left, right: HashJoinable[a, b], joiner) =>
+        val newRight: HashJoinable[a, b] = right match {
+          case step@IdentityReduce(_, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+          case step@UnsortedIdentityReduce(_, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+          case step@IteratorMappedReduce(_, _, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+        }
+        if (newRight != right) Some(HashCoGroup(left, newRight, joiner))
+        else None
+      case _ => None
     }
   }
 
