@@ -364,15 +364,8 @@ object OptimizationRules {
    * It is easier for planning if all fanouts are made explicit.
    * This rule adds a Fork node every time there is a fanout
    *
-   * This rule applied first makes it easier
-   *
-   * This rule may be exposing a bug in Dagon. It seems to stack
-   * overflow frequently and maybe infinite loop.
-   *
-   * It could be that we actually have duplicate nodes in dagon
-   * many ids for the same node, but the replacement only gets one
-   * of them and relies on the next round getting the rest. If
-   * this is true, this rule may be unstable
+   * This rule applied first makes it easier to match in subsequent
+   * rules without constantly checking for fanout nodes.
    */
   object AddExplicitForks extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
