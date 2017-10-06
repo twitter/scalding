@@ -413,7 +413,10 @@ object OptimizationRules {
         def go[A](f: Filter[A]): Option[TypedPipe[A]] =
           f.input match {
             case f1: Filter[a] =>
-              Some(Filter[a](f1.input, ComposedFilterFn(f.fn, f.fn)))
+              // We have to be really careful here because f.fn and f1.fn
+              // have the same type. Type checking won't save you here
+              // we do have a test that exercises this, however
+              Some(Filter[a](f1.input, ComposedFilterFn(f1.fn, f.fn)))
             case _ => None
           }
         go(f)
