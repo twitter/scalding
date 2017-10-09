@@ -330,11 +330,52 @@ object OptimizationRules {
         })
     }
 
+  /**
+   * Unroll a set of merges up to the first non-merge node, dropping
+   * an EmptyTypedPipe from the list
+   */
+  def unrollMerge[A](t: TypedPipe[A]): List[TypedPipe[A]] = {
+    @annotation.tailrec
+    def loop(first: TypedPipe[A], todo: List[TypedPipe[A]], acc: List[TypedPipe[A]]): List[TypedPipe[A]] =
+      first match {
+        case MergedTypedPipe(l, r) => loop(l, r :: todo, acc)
+        case EmptyTypedPipe =>
+          todo match {
+            case Nil => acc.reverse
+            case h :: tail => loop(h, tail, acc)
+          }
+        case notMerge =>
+          todo match {
+            case Nil => (first :: acc).reverse
+            case h :: tail => loop(h, tail, first :: acc)
+          }
+      }
+
+    loop(t, Nil, Nil)
+  }
+
   /////////////////////////////
   //
   // Here are some actual rules for simplifying TypedPipes
   //
   /////////////////////////////
+
+  /**
+   * It is easier for planning if all fanouts are made explicit.
+   * This rule adds a Fork node every time there is a fanout
+   *
+   * This rule applied first makes it easier to match in subsequent
+   * rules without constantly checking for fanout nodes.
+   */
+  object AddExplicitForks extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case Fork(_) | ForceToDisk(_) => None // these are already forking
+      case SourcePipe(_) => None // don't need to worry about sources
+      case IterablePipe(_) => None // don't need to worry about sources
+      case nonFork if on.fanOut(nonFork) > 1 => Some(Fork(nonFork))
+      case _ => None
+    }
+  }
 
   /**
    * a.flatMap(f).flatMap(g) == a.flatMap { x => f(x).flatMap(g) }
@@ -372,7 +413,10 @@ object OptimizationRules {
         def go[A](f: Filter[A]): Option[TypedPipe[A]] =
           f.input match {
             case f1: Filter[a] =>
-              Some(Filter[a](f1.input, ComposedFilterFn(f.fn, f.fn)))
+              // We have to be really careful here because f.fn and f1.fn
+              // have the same type. Type checking won't save you here
+              // we do have a test that exercises this, however
+              Some(Filter[a](f1.input, ComposedFilterFn(f1.fn, f.fn)))
             case _ => None
           }
         go(f)
@@ -391,6 +435,96 @@ object OptimizationRules {
         WithOnComplete(pipe, ComposedOnComplete(fn0, fn1))
     }
   }
+  /**
+   * a.map(f).flatMap(g) == a.flatMap { x => g(f(x)) }
+   * a.flatMap(f).map(g) == a.flatMap { x => f(x).map(g) }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the maps first
+   */
+  object ComposeMapFlatMap extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(Mapped(in, f), g) =>
+        FlatMapped(in, FlatMappedFn(g).runAfter(FlatMapping.Map(f)))
+      case FlatMapValues(MapValues(in, f), g) =>
+        FlatMapValues(in, FlatMappedFn(g).runAfter(FlatMapping.Map(f)))
+      case Mapped(FlatMapped(in, f), g) =>
+        FlatMapped(in, FlatMappedFn(f).combine(FlatMappedFn.fromMap(g)))
+      case MapValues(FlatMapValues(in, f), g) =>
+        FlatMapValues(in, FlatMappedFn(f).combine(FlatMappedFn.fromMap(g)))
+    }
+  }
+
+
+  /**
+   * a.filter(f).flatMap(g) == a.flatMap { x => if (f(x)) g(x) else Iterator.empty }
+   * a.flatMap(f).filter(g) == a.flatMap { x => f(x).filter(g) }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the filters first
+   */
+  object ComposeFilterFlatMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case FlatMapped(Filter(in, f), g) =>
+        Some(FlatMapped(in, FlatMappedFn(g).runAfter(FlatMapping.filter(f))))
+      case filter: Filter[b] =>
+        filter.input match {
+          case fm: FlatMapped[a, b] =>
+            Some(FlatMapped[a, b](fm.input, FlatMappedFn(fm.fn).combine(FlatMappedFn.fromFilter(filter.fn))))
+          case _ => None
+        }
+      case _ =>
+        None
+    }
+  }
+  /**
+   * a.filter(f).map(g) == a.flatMap { x => if (f(x)) Iterator.single(g(x)) else Iterator.empty }
+   * a.map(f).filter(g) == a.flatMap { x => val y = f(x); if (g(y)) Iterator.single(y) else Iterator.empty }
+   *
+   * This is a rule you may want to apply after having
+   * composed all the filters first
+   */
+  object ComposeFilterMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case Mapped(Filter(in, f), g) =>
+        Some(FlatMapped(in, FlatMappedFn.fromFilter(f).combine(FlatMappedFn.fromMap(g))))
+      case filter: Filter[b] =>
+        filter.input match {
+          case fm: Mapped[a, b] =>
+            Some(FlatMapped[a, b](fm.input, FlatMappedFn.fromMap(fm.fn).combine(FlatMappedFn.fromFilter(filter.fn))))
+          case _ => None
+        }
+      case _ =>
+        None
+    }
+  }
+
+  /**
+   * In scalding 0.17 and earlier, descriptions were automatically pushdown below
+   * merges and flatMaps/map/etc..
+   */
+  object DescribeLater extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case Mapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup)
+      case MapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(MapValues(in, fn), desc, dedup)
+      case FlatMapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FlatMapped(in, fn), desc, dedup)
+      case FlatMapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FlatMapValues(in, fn), desc, dedup)
+      case f@Filter(WithDescriptionTypedPipe(_, _, _), _) =>
+        def go[A](f: Filter[A]): TypedPipe[A] =
+          f match {
+            case Filter(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+              WithDescriptionTypedPipe(Filter(in, fn), desc, dedup)
+            case unreachable => unreachable
+          }
+        go(f)
+      case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
+        WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
+    }
+  }
 
   /**
    * After a forceToDisk there is no need to immediately fork.
@@ -403,6 +537,7 @@ object OptimizationRules {
       case ForceToDisk(Fork(t)) => ForceToDisk(t)
       case Fork(Fork(t)) => Fork(t)
       case Fork(ForceToDisk(t)) => ForceToDisk(t)
+      case Fork(t) if on.contains(ForceToDisk(t)) => ForceToDisk(t)
     }
   }
 
@@ -574,6 +709,40 @@ object OptimizationRules {
   object EmptyIterableIsEmpty extends PartialRule[TypedPipe] {
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
+    }
+  }
+  /**
+   * ForceToDisk before hashJoin, this makes sure any filters
+   * have been applied
+   */
+  object ForceToDiskBeforeHashJoin extends Rule[TypedPipe] {
+    // A set of operations naturally have barriers after them,
+    // there is no need to add an explicit force after a reduce
+    // step or after a source, since both will already have been
+    // checkpointed
+    final def maybeForce[T](t: TypedPipe[T]): TypedPipe[T] =
+      t match {
+        case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
+        case WithOnComplete(pipe, fn) =>
+          WithOnComplete(maybeForce(pipe), fn)
+        case WithDescriptionTypedPipe(pipe, desc, dedup) =>
+          WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
+        case pipe => ForceToDisk(pipe)
+      }
+
+    def apply[T](on: Dag[TypedPipe]) = {
+      case HashCoGroup(left, right: HashJoinable[a, b], joiner) =>
+        val newRight: HashJoinable[a, b] = right match {
+          case step@IdentityReduce(_, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+          case step@UnsortedIdentityReduce(_, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+          case step@IteratorMappedReduce(_, _, _, _, _) =>
+            step.copy(mapped = maybeForce(step.mapped))
+        }
+        if (newRight != right) Some(HashCoGroup(left, newRight, joiner))
+        else None
+      case _ => None
     }
   }
 

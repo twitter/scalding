@@ -37,9 +37,15 @@ class NoStackLineNumberTest extends WordSpec {
         tp.toPipe('a, 'b)
       }
       val pipe = Await.result(pipeFut, SDuration.Inf)
-      // We pick up line number info via the NoStackAndThenClass
+      // We pick up line number info via TypedPipe.withLine
       // So this should have some non-scalding info in it.
-      assert(RichPipe.getPipeDescriptions(pipe).size > 0)
+      val allDesc = RichPipe(pipe)
+        .upstreamPipes
+        .map(RichPipe.getPipeDescriptions(_).toSet)
+        .foldLeft(Set.empty[String])(_ | _)
+
+      assert(allDesc.size > 0)
+      assert(allDesc.exists(_.contains("com.twitter.example.scalding.typed.InAnotherPackage")))
     }
   }
 }
