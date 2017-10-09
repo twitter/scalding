@@ -86,7 +86,7 @@ class AsyncFlowDefRunner extends Writer { self =>
   private[this] val mutex = new AnyRef
 
   type StateKey[T] = (Config, Mode, TypedPipe[T])
-  type WorkVal[T] = (Long, Future[TypedPipe[T]])
+  type WorkVal[T] = Future[TypedPipe[T]]
 
   private case class State(
     filesToCleanup: Map[Mode, Set[String]],
@@ -102,43 +102,32 @@ class AsyncFlowDefRunner extends Writer { self =>
       }
 
     /**
-     * Returns how many times this init
-     * has been forced
+     * Returns true if we actually add
      */
     def addForce[T](c: Config,
       m: Mode,
       init: TypedPipe[T],
       opt: TypedPipe[T],
-      p: Future[TypedPipe[T]]): (State, Long) =
+      p: Future[TypedPipe[T]]): (State, Boolean) =
 
       forcedPipes.get((c, m, opt)) match {
         case None =>
-          (copy(forcedPipes = forcedPipes + ((c, m, opt) -> (1L, p)),
-            initToOpt = initToOpt + (init -> opt)), 0L)
-        case Some((cnt, p)) =>
-          (copy(forcedPipes = forcedPipes + ((c, m, opt) -> (cnt + 1L, p)),
-            initToOpt = initToOpt + (init -> opt)), cnt)
+          (copy(forcedPipes = forcedPipes + ((c, m, opt) -> p),
+            initToOpt = initToOpt + (init -> opt)), true)
+        case Some(_) =>
+          (copy(initToOpt = initToOpt + (init -> opt)), false)
       }
 
-    def takeForce[T](c: Config,
+    def getForce[T](c: Config,
       m: Mode,
-      init: TypedPipe[T]): (State, Option[Future[TypedPipe[T]]]) =
+      init: TypedPipe[T]): Option[Future[TypedPipe[T]]] =
 
-      initToOpt.get(init) match {
-        case None => (this, None)
-        case Some(opt) =>
-          forcedPipes.get((c, m, opt)) match {
-            case None =>
-              sys.error(s"invariant violation: initToOpt mapping exists for $init, but no forcedPipe")
-            case Some((1L, p)) =>
-              // Clean out the state
-              (copy(forcedPipes = forcedPipes - (c, m, init),
-                initToOpt = initToOpt - init), Some(p))
-            case Some((x, _)) if x < 0 => sys.error(s"invariant violation: negative takes: $x, $init, $opt")
-            case Some((cnt, p)) =>
-              // we still have other equivalent pipes that will take a result
-              (copy(forcedPipes = forcedPipes + ((c, m, init) -> (cnt - 1L, p))), Some(p))
-          }
+      initToOpt.get(init).map { opt =>
+        forcedPipes.get((c, m, opt)) match {
+          case None =>
+            sys.error(s"invariant violation: initToOpt mapping exists for $init, but no forcedPipe")
+          case Some(p) => p
+        }
       }
   }
 
@@ -276,8 +265,8 @@ class AsyncFlowDefRunner extends Writer { self =>
         val fut = pipePromise.future
         // This updates mutable state
         val sinkOpt = updateState { s =>
-          val (nextState, cnt) = s.addForce(conf, mode, init, opt, fut)
-          if (cnt == 0L) {
+          val (nextState, added) = s.addForce(conf, mode, init, opt, fut)
+          if (added) {
             val uuid = UUID.randomUUID
             val (sink, forcedPipe, clean) = forceToDisk(uuid, c, m, opt)
             (nextState.addFilesToCleanup(m, clean), Some((sink, forcedPipe)))
@@ -340,19 +329,15 @@ class AsyncFlowDefRunner extends Writer { self =>
   def getForced[T](
     conf: Config,
     m: Mode,
-    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] = {
+    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] =
 
-    val optFuture = updateState { st =>
-      st.takeForce(conf, m, initial)
-    }
-    optFuture match {
+    getState.getForce(conf, m, initial) match {
       case Some(fut) => fut
       case None =>
         val msg =
           s"logic error: getForced($conf, $m, $initial) does not have a forced pipe."
         Future.failed(new Exception(msg))
     }
-  }
 
   def getIterable[T](
     conf: Config,
