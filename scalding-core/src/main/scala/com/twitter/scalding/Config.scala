@@ -101,14 +101,17 @@ trait Config extends Serializable {
    * is used to create the Class.forName
    */
   def getCascadingAppJar: Option[Try[Class[_]]] =
-    get(AppProps.APP_JAR_CLASS).map { str =>
-      // The Class[_] messes up using Try(Class.forName(str)) on scala 2.9.3
+    getClassForKey(AppProps.APP_JAR_CLASS)
+
+  def getClassForKey(k: String): Option[Try[Class[_]]] =
+    get(k).map { str =>
       try {
         Success(
           // Make sure we are using the class-loader for the current thread
           Class.forName(str, true, Thread.currentThread().getContextClassLoader))
       } catch { case err: Throwable => Failure(err) }
     }
+
 
   /*
    * Used in joins to determine how much of the "right hand side" of
@@ -238,6 +241,19 @@ trait Config extends Serializable {
 
   def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
+
+  def getOptimizationPhases: Option[Try[typed.OptimizationPhases]] =
+    getClassForKey(Config.OptimizationPhases).map { tryClass =>
+      tryClass.flatMap { clazz =>
+        Try(clazz.newInstance().asInstanceOf[typed.OptimizationPhases])
+      }
+    }
+
+  def setOptimizationPhases(clazz: Class[_ <: typed.OptimizationPhases]): Config =
+    setOptimizationPhasesFromName(clazz.getName)
+
+  def setOptimizationPhasesFromName(className: String): Config =
+    this + (Config.OptimizationPhases -> className)
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
   def setScaldingVersion: Config =
@@ -426,7 +442,8 @@ object Config {
   val FlowListeners: String = "scalding.observability.flowlisteners"
   val FlowStepListeners: String = "scalding.observability.flowsteplisteners"
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
-  val VerboseFileSourceLoggingKey = "scalding.filesource.verbose.logging"
+  val VerboseFileSourceLoggingKey: String = "scalding.filesource.verbose.logging"
+  val OptimizationPhases: String = "scalding.optimization.phases"
 
   /**
    * Parameter that actually controls the number of reduce tasks.

@@ -1,12 +1,14 @@
 package com.twitter.scalding.typed
 
+import cascading.flow.FlowDef
 import com.stripe.dagon.{ Dag, Rule }
-import com.twitter.scalding.source.TypedText
-import com.twitter.scalding.{ Config, Local }
+import com.twitter.scalding.source.{ TypedText, NullSink }
+import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs }
+import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.prop.PropertyChecks.forAll
+import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
-import PropertyChecks.forAll
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
@@ -131,7 +133,36 @@ object TypedPipeGen {
    * Iterable sources
    */
   val genWithIterableSources: Gen[TypedPipe[Int]] =
-    tpGen(Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))
+    Gen.frequency((10, tpGen(Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))),
+      (1, tpGen(Gen.const(TypedPipe.empty))))
+
+  import OptimizationRules._
+
+  val allRules = List(
+    AddExplicitForks,
+    ComposeFlatMap,
+    ComposeMap,
+    ComposeFilter,
+    ComposeWithOnComplete,
+    ComposeMapFlatMap,
+    ComposeFilterFlatMap,
+    ComposeFilterMap,
+    DescribeLater,
+    RemoveDuplicateForceFork,
+    IgnoreNoOpGroup,
+    DeferMerge,
+    FilterKeysEarly,
+    EmptyIsOftenNoOp,
+    EmptyIterableIsEmpty,
+    ForceToDiskBeforeHashJoin)
+
+  def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
+    for {
+      c <- Gen.choose(1, rs.size)
+      rs <- Gen.pick(c, rs)
+    } yield rs.reduce(_.orElse(_))
+
+  val genRule: Gen[Rule[TypedPipe]] = genRuleFrom(allRules)
 }
 
 class OptimizationRulesTest extends FunSuite {
@@ -149,31 +180,48 @@ class OptimizationRulesTest extends FunSuite {
   def optimizationLaw[T: Ordering](t: TypedPipe[T], rule: Rule[TypedPipe]) = {
     val optimized = Dag.applyRule(t, toLiteral, rule)
 
+    // We don't want any further optimization on this job
+    val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
     assert(TypedPipeDiff.diff(t, optimized)
       .toIterableExecution
-      .waitFor(Config.empty, Local(true)).get.isEmpty)
+      .waitFor(conf, Local(true)).get.isEmpty)
+  }
+
+  def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
+    val optimized = Dag.applyRule(init, toLiteral, rule)
+
+    // How many steps would this be in Hadoop on Cascading
+    def steps(p: TypedPipe[T]): Int = {
+      val mode = Hdfs.default
+      val fd = new FlowDef
+      val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
+      NullSink.writeFrom(pipe)(fd, mode)
+      val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
+      val flow = ec.buildFlow.get
+      flow.getFlowSteps.size
+    }
+
+    assert(steps(init) >= steps(optimized))
   }
 
   test("all optimization rules don't change results") {
-    import OptimizationRules._
+    import TypedPipeGen.{ genWithIterableSources, genRule }
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100000)
+    forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
+  }
 
-    val allRules = List(ComposeFlatMap,
-      ComposeMap,
-      ComposeFilter,
-      ComposeWithOnComplete,
-      RemoveDuplicateForceFork,
-      IgnoreNoOpGroup,
-      DeferMerge,
-      FilterKeysEarly,
-      EmptyIsOftenNoOp,
-      EmptyIterableIsEmpty)
+  test("all optimization rules do not increase steps") {
+    import TypedPipeGen.{ allRules, genWithIterableSources, genRuleFrom }
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 1000)
 
-    val genRule = for {
-      c <- Gen.choose(1, allRules.size)
-      rs <- Gen.pick(c, allRules)
-    } yield rs.reduce(_.orElse(_))
+    val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
+      Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
+        OptimizationRules.ForceToDiskBeforeHashJoin // adding a forceToDisk can increase the number of steps
+        )
 
-    forAll(TypedPipeGen.genWithIterableSources, genRule)(optimizationLaw[Int] _)
+    val gen = genRuleFrom(allRules.filterNot(possiblyIncreasesSteps))
+
+    forAll(genWithIterableSources, gen)(optimizationReducesSteps[Int] _)
   }
 
   test("OptimizationRules.toLiteral is invertible on some specific instances") {
