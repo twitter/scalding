@@ -22,15 +22,32 @@ import scala.util.{ Failure, Success, Try }
 import scala.util.control.NonFatal
 import com.twitter.scalding.serialization._
 
+object UnsafeOrderedSerialization {
+  def apply[T](ordSer: OrderedSerialization[T]): UnsafeOrderedSerialization[T] = ordSer match {
+    case us: UnsafeOrderedSerialization[T] => us
+    case o =>
+      new UnsafeOrderedSerialization[T] {
+        def unsafeWrite(out: OutputStream, t: T): Unit = ordSer.write(out, t).get
+        def unsafeRead(in: InputStream): T = ordSer.read(in).get
+        def unsafeSwitchingCompareBinaryNoConsume(inputStreamA: InputStream, inputStreamB: InputStream, shouldConsume: Boolean): Int =
+          ordSer.compareBinary(inputStreamA, inputStreamB).unsafeToInt
+        def hash(t: T) = ordSer.hash(t)
+        def compare(a: T, b: T) = ordSer.compare(a, b)
+        @inline def staticSize: Option[Int] = ordSer.staticSize
+        def dynamicSize(t: T): Option[Int] = ordSer.dynamicSize(t)
+      }
+  }
+}
+
 abstract class UnsafeOrderedSerialization[T] extends OrderedSerialization[T] {
   // This will write out the interior data as a blob with no prepended length
   // This means binary compare cannot skip on this data.
   // However the contract remains that one should be able to _read_ the data
   // back out again.
-  def unsafeWrite(out: java.io.OutputStream, t: T): Unit
+  def unsafeWrite(out: OutputStream, t: T): Unit
   // This is an internal read method that matches the unsafe write
   // importantly any outer length header added to enable skipping isn't included here
-  def unsafeRead(in: java.io.InputStream): T
+  def unsafeRead(in: InputStream): T
 
   // This is an inner binary compare that the user must supply
   def unsafeSwitchingCompareBinaryNoConsume(inputStreamA: InputStream, inputStreamB: InputStream, shouldConsume: Boolean): Int

@@ -723,12 +723,12 @@ class MacroOrderingProperties
   //   check[Either[Int, String]]
   //   checkCollisions[Either[Int, String]]
   // }
-  // test("Test Either[Int, Int]") {
-  //   val oser = BinaryOrdering.ordSer[Either[Int, Int]]
-  //   assert(oser.staticSize === Some(5), "can get the size statically")
-  //   check[Either[Int, Int]]
-  //   checkCollisions[Either[Int, Int]]
-  // }
+  test("Test Either[Int, Int]") {
+    val oser = implicitly[OrderedSerialization[Either[Int, Int]]]
+    assert(oser.staticSize === Some(5), "can get the size statically")
+    check[Either[Int, Int]]
+    checkCollisions[Either[Int, Int]]
+  }
   // test("Test Either[String, Int]") {
   //   BinaryOrdering.ordSer[Either[String, Int]]
   //   check[Either[String, Int]]
