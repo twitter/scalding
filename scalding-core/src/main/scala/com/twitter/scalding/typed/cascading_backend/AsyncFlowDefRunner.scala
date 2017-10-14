@@ -88,6 +88,13 @@ class AsyncFlowDefRunner extends Writer { self =>
   type StateKey[T] = (Config, Mode, TypedPipe[T])
   type WorkVal[T] = Future[TypedPipe[T]]
 
+  /**
+   * @param filesToCleanup temporary files created by forceToDiskExecution
+   * @param initToOpt this is the mapping between user's TypedPipes and their optimized versions
+   * which are actually run.
+   * @param forcedPipes these are all the side effecting forcing of TypedPipes into simple
+   * SourcePipes or IterablePipes. These are for both toIterableExecution and forceToDiskExecution
+   */
   private case class State(
     filesToCleanup: Map[Mode, Set[String]],
     initToOpt: HMap[TypedPipe, TypedPipe],
@@ -102,7 +109,8 @@ class AsyncFlowDefRunner extends Writer { self =>
       }
 
     /**
-     * Returns true if we actually add
+     * Returns true if we actually add this optimized pipe. We do this
+     * because we don't want to take the side effect twice.
      */
     def addForce[T](c: Config,
       m: Mode,
