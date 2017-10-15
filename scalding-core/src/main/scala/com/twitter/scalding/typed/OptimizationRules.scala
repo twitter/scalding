@@ -1,6 +1,8 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn }
+import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
   type LiteralPipe[T] = Literal[TypedPipe, T]
@@ -746,35 +748,4 @@ object OptimizationRules {
     }
   }
 
-  /**
-   * To keep equality for case matching and caching, we need to create internal case classes
-   */
-  private[this] case class ComposedMapFn[A, B, C](fn0: A => B, fn1: B => C) extends Function1[A, C] {
-    def apply(a: A) = fn1(fn0(a))
-  }
-  private[this] case class ComposedFilterFn[-A](fn0: A => Boolean, fn1: A => Boolean) extends Function1[A, Boolean] {
-    def apply(a: A) = fn0(a) && fn1(a)
-  }
-
-  /**
-   * This is only called at the end of a task, so might as well make it stack safe since a little
-   * extra runtime cost won't matter
-   */
-  private[this] case class ComposedOnComplete(fn0: () => Unit, fn1: () => Unit) extends Function0[Unit] {
-    def apply(): Unit = {
-      @annotation.tailrec
-      def loop(fn: () => Unit, stack: List[() => Unit]): Unit =
-        fn match {
-          case ComposedOnComplete(left, right) => loop(left, right :: stack)
-          case notComposed =>
-            notComposed()
-            stack match {
-              case h :: tail => loop(h, tail)
-              case Nil => ()
-            }
-        }
-
-      loop(fn0, List(fn1))
-    }
-  }
 }

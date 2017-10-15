@@ -20,6 +20,7 @@ import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
+import com.twitter.scalding.typed.functions.{ ConsList, ReverseList }
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import java.util.UUID
 import scala.collection.mutable
@@ -860,6 +861,9 @@ object Execution {
     ex: Execution[E]): Execution[(A, B, C, D, E)] =
     ax.zip(bx).zip(cx).zip(dx).zip(ex).map { case ((((a, b), c), d), e) => (a, b, c, d, e) }
 
+  // Avoid recreating the empty Execution each time
+  private val nil = from(Nil)
+
   /*
    * If you have many Executions, it is better to combine them with
    * zip than flatMap (which is sequential). sequence just calls
@@ -869,24 +873,14 @@ object Execution {
    * these executions are executed in parallel: run is called on all at the
    * same time, not one after the other.
    */
-  private final case class SequencingFn[T]() extends Function1[(T, List[T]), List[T]] {
-    def apply(results: (T, List[T])) = results match {
-      case (y, ys) => y :: ys
-    }
-  }
-  private final case class ReversingFn[T]() extends Function1[List[T], List[T]] {
-    def apply(results: List[T]) = results.reverse
-  }
-  // Avoid recreating the empty Execution each time
-  private val nil = from(Nil)
   def sequence[T](exs: Seq[Execution[T]]): Execution[Seq[T]] = {
     @annotation.tailrec
     def go(xs: List[Execution[T]], acc: Execution[List[T]]): Execution[List[T]] = xs match {
       case Nil => acc
-      case h :: tail => go(tail, h.zip(acc).map(SequencingFn()))
+      case h :: tail => go(tail, h.zip(acc).map(ConsList()))
     }
     // This pushes all of them onto a list, and then reverse to keep order
-    go(exs.toList, nil).map(ReversingFn())
+    go(exs.toList, nil).map(ReverseList())
   }
 
   /**

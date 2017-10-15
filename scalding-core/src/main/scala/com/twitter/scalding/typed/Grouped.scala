@@ -17,6 +17,8 @@ package com.twitter.scalding.typed
 
 import com.twitter.algebird.Semigroup
 import com.twitter.algebird.mutable.PriorityQueueMonoid
+import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard }
+import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
 
 object CoGroupable {
@@ -24,10 +26,7 @@ object CoGroupable {
    * This is the default empty join function needed for CoGroupable and HashJoinable
    */
   def castingJoinFunction[V]: (Any, Iterator[Any], Seq[Iterable[Any]]) => Iterator[V] =
-    { (k, iter, empties) =>
-      assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-      iter.asInstanceOf[Iterator[V]]
-    }
+    Joiner.CastingWideJoin[V]()
 }
 
 /**
@@ -263,9 +262,8 @@ object Grouped {
   def apply[K, V](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
     IdentityReduce(ordering, pipe, None, Nil)
 
-  def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] = {
-    (key: K, iter: Iterator[V1]) => if (iter.nonEmpty) fn(key, iter) else Iterator.empty
-  }
+  def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] =
+    EmptyGuard(fn)
 }
 
 /**
@@ -380,7 +378,7 @@ final case class UnsortedIdentityReduce[K, V1](
   override def bufferedTake(n: Int) =
     if (n < 1) {
       // This means don't take anything, which is legal, but strange
-      filterKeys(_ => false)
+      filterKeys(Constant(false))
     } else if (n == 1) {
       head
     } else {
@@ -454,10 +452,9 @@ final case class IdentityValueSortedReduce[K, V1](
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers, descriptions)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
     // Only pass non-Empty iterators to subsequent functions
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers, descriptions)
-  }
 
   /**
    * This does the partial heap sort followed by take in memory on the mappers
@@ -467,7 +464,7 @@ final case class IdentityValueSortedReduce[K, V1](
   override def bufferedTake(n: Int): SortedGrouped[K, V1] =
     if (n <= 0) {
       // This means don't take anything, which is legal, but strange
-      filterKeys(_ => false)
+      filterKeys(Constant(false))
     } else {
       implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
       // Do the heap-sort on the mappers:
@@ -520,13 +517,7 @@ final case class ValueSortedReduce[K, V1, V2](
     ValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reduceFn, reducers, descriptions)
 
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
-    // don't make a closure
-    val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) =>
-      val step1 = localRed(k, iter)
-      // Only pass non-Empty iterators to subsequent functions
-      Grouped.addEmptyGuard(fn)(k, step1)
-    }
+    val newReduce = ComposedMapGroup(reduceFn, fn)
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers, descriptions)
   }
@@ -557,12 +548,7 @@ final case class IteratorMappedReduce[K, V1, V2](
 
   override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // don't make a closure
-    val localRed = reduceFn
-    val newReduce = { (k: K, iter: Iterator[V1]) =>
-      val step1 = localRed(k, iter)
-      // Only pass non-Empty iterators to subsequent functions
-      Grouped.addEmptyGuard(fn)(k, step1)
-    }
+    val newReduce = ComposedMapGroup(reduceFn, fn)
     copy(reduceFn = newReduce)
   }
 

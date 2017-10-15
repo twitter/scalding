@@ -132,6 +132,9 @@ object TypedPipeGen {
    */
   val genWithIterableSources: Gen[TypedPipe[Int]] =
     tpGen(Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))
+
+  val genKeyedWithFake: Gen[TypedPipe[(Int, Int)]] =
+    keyed(srcGen)
 }
 
 class OptimizationRulesTest extends FunSuite {
@@ -148,7 +151,12 @@ class OptimizationRulesTest extends FunSuite {
 
   def optimizationLaw[T: Ordering](t: TypedPipe[T], rule: Rule[TypedPipe]) = {
     val optimized = Dag.applyRule(t, toLiteral, rule)
+    val optimized2 = Dag.applyRule(t, toLiteral, rule)
 
+    // Optimization pure is function (wrt to universal equality)
+    assert(optimized == optimized2)
+
+    // optimizatized pipes are identical to initial state
     assert(TypedPipeDiff.diff(t, optimized)
       .toIterableExecution
       .waitFor(Config.empty, Local(true)).get.isEmpty)
@@ -230,6 +238,50 @@ class OptimizationRulesTest extends FunSuite {
       val p2 = TypedPipe.from(TypedText.tsv[(Int, String)]("foo"))
 
       p1.join(p2).filterKeys(_ % 2 == 0)
+    }
+  }
+
+  test("all transforms preserve equality") {
+
+    forAll(TypedPipeGen.genWithFakeSources, TypedPipeGen.genKeyedWithFake) { (tp, keyed) =>
+      val fn0 = { i: Int => i * 2 }
+      val filterFn = { i: Int => i % 2 == 0 }
+      val fn1 = { i: Int => (0 to i) }
+
+      def eqCheck[T](t: => T) = {
+        assert(t == t)
+      }
+
+      eqCheck(tp.map(fn0))
+      eqCheck(tp.filter(filterFn))
+      eqCheck(tp.flatMap(fn1))
+
+      eqCheck(keyed.mapValues(fn0))
+      eqCheck(keyed.flatMapValues(fn1))
+      eqCheck(keyed.filterKeys(filterFn))
+
+      eqCheck(tp.groupAll)
+      eqCheck(tp.groupBy(fn0))
+      eqCheck(tp.asKeys)
+      eqCheck(tp.either(keyed))
+      eqCheck(keyed.eitherValues(keyed.mapValues(fn0)))
+      eqCheck(tp.map(fn1).flatten)
+      eqCheck(keyed.swap)
+      eqCheck(keyed.keys)
+      eqCheck(keyed.values)
+
+      val valueFn: (Int, Option[Int]) => String = { (a, b) => a.toString + b.toString }
+      val valueFn2: (Int, Option[Int]) => List[Int] = { (a, b) => a :: (b.toList) }
+      val valueFn3: (Int, Option[Int]) => Boolean = { (a, b) => true }
+
+      eqCheck(tp.mapWithValue(LiteralValue(1))(valueFn))
+      eqCheck(tp.flatMapWithValue(LiteralValue(1))(valueFn2))
+      eqCheck(tp.filterWithValue(LiteralValue(1))(valueFn3))
+
+      eqCheck(tp.hashLookup(keyed))
+      eqCheck(tp.groupRandomly(100))
+      val ordInt = implicitly[Ordering[Int]]
+      eqCheck(tp.distinctBy(fn0)(ordInt))
     }
   }
 }

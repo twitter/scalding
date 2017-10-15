@@ -13,67 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package com.twitter.scalding.typed
+package com.twitter.scalding.typed.functions
 
 import java.io.Serializable
 
-import com.twitter.scalding.TupleConverter
-import cascading.tuple.TupleEntry
-
-/**
- * This is a more powerful version of =:= that can allow
- * us to remove casts and also not have any runtime cost
- * for our function calls in some cases of trivial functions
- */
-sealed abstract class EqTypes[A, B] extends java.io.Serializable {
-  def apply(a: A): B
-  def subst[F[_]](f: F[A]): F[B]
-
-  final def reverse: EqTypes[B, A] = {
-    val aa = EqTypes.reflexive[A]
-    type F[T] = EqTypes[T, A]
-    subst[F](aa)
-  }
-
-  def toEv: A =:= B = {
-    val aa = implicitly[A =:= A]
-    type F[T] = A =:= T
-    subst[F](aa)
-  }
-}
-
-object EqTypes extends java.io.Serializable {
-  private[this] final case class ReflexiveEquality[A]() extends EqTypes[A, A] {
-    def apply(a: A): A = a
-    def subst[F[_]](f: F[A]): F[A] = f
-  }
-
-  implicit def reflexive[A]: EqTypes[A, A] = ReflexiveEquality()
-}
-
-/**
- * This is one of 4 core, non composed operations:
- * identity
- * filter
- * map
- * flatMap
- */
-sealed trait FlatMapping[-A, +B] extends java.io.Serializable
-object FlatMapping {
-  def filter[A](fn: A => Boolean): FlatMapping[A, A] =
-    Filter[A, A](fn, implicitly)
-
-  def filterKeys[K, V](fn: K => Boolean): FlatMapping[(K, V), (K, V)] =
-    filter[(K, V)](FlatMappedFn.FilterKeysToFilter(fn))
-
-  final case class Identity[A, B](ev: EqTypes[A, B]) extends FlatMapping[A, B]
-  final case class Filter[A, B](fn: A => Boolean, ev: EqTypes[A, B]) extends FlatMapping[A, B]
-  final case class Map[A, B](fn: A => B) extends FlatMapping[A, B]
-  final case class FlatM[A, B](fn: A => TraversableOnce[B]) extends FlatMapping[A, B]
-}
-
 /**
  * This is a composition of one or more FlatMappings
+ *
+ * For some reason, this fails in scala 2.12 if this is an abstract class
  */
 sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
   import FlatMappedFn._
@@ -117,14 +64,14 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
 
     def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
       case Single(Identity(ev)) =>
-        val const: A1 => TraversableOnce[A1] = FlatMappedFn.FromIdentity[A1]()
+        val const: A1 => TraversableOnce[A1] = FlatMapFunctions.FromIdentity[A1]()
         type F[T] = A1 => TraversableOnce[T]
         ev.subst[F](const)
       case Single(Filter(f, ev)) =>
-        val filter: A1 => TraversableOnce[A1] = FlatMappedFn.FromFilter(f)
+        val filter: A1 => TraversableOnce[A1] = FlatMapFunctions.FromFilter(f)
         type F[T] = A1 => TraversableOnce[T]
         ev.subst[F](filter)
-      case Single(Map(f)) => FlatMappedFn.FromMap(f)
+      case Single(Map(f)) => FlatMapFunctions.FromMap(f)
       case Single(FlatM(f)) => f
       case Series(Identity(ev), rest) =>
         type F[T] = T => TraversableOnce[B1]
@@ -133,13 +80,13 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
         type F[T] = T => TraversableOnce[B1]
         val next = ev.subst[F](loop(rest)) // linter:disable:UndesirableTypeInference
 
-        FlatMappedFn.FromFilterCompose(f, next)
+        FlatMapFunctions.FromFilterCompose(f, next)
       case Series(Map(f), rest) =>
         val next = loop(rest) // linter:disable:UndesirableTypeInference
-        FlatMappedFn.FromMapCompose(f, next)
+        FlatMapFunctions.FromMapCompose(f, next)
       case Series(FlatM(f), rest) =>
         val next = loop(rest) // linter:disable:UndesirableTypeInference
-        FlatMappedFn.FromFlatMapCompose(f, next)
+        FlatMapFunctions.FromFlatMapCompose(f, next)
     }
 
     loop(this)
@@ -150,38 +97,13 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
 
 object FlatMappedFn {
 
-  /**
-   * we prefer case class functions since they have equality
-   */
-  private case class FromIdentity[A]() extends Function1[A, Iterator[A]] {
-    def apply(a: A) = Iterator.single(a)
-  }
-  private case class FromFilter[A](fn: A => Boolean) extends Function1[A, Iterator[A]] {
-    def apply(a: A) = if (fn(a)) Iterator.single(a) else Iterator.empty
-  }
-  private case class FromMap[A, B](fn: A => B) extends Function1[A, Iterator[B]] {
-    def apply(a: A) = Iterator.single(fn(a))
-  }
-  private case class FromFilterCompose[A, B](fn: A => Boolean, next: A => TraversableOnce[B]) extends Function1[A, TraversableOnce[B]] {
-    def apply(a: A) = if (fn(a)) next(a) else Iterator.empty
-  }
-  private case class FromMapCompose[A, B, C](fn: A => B, next: B => TraversableOnce[C]) extends Function1[A, TraversableOnce[C]] {
-    def apply(a: A) = next(fn(a))
-  }
-  private case class FromFlatMapCompose[A, B, C](fn: A => TraversableOnce[B], next: B => TraversableOnce[C]) extends Function1[A, TraversableOnce[C]] {
-    def apply(a: A) = fn(a).flatMap(next)
-  }
-
-
-  import FlatMapping._
-
   def asId[A, B](f: FlatMappedFn[A, B]): Option[EqTypes[_ >: A, _ <: B]] = f match {
-    case Single(Identity(ev)) => Some(ev)
+    case Single(FlatMapping.Identity(ev)) => Some(ev)
     case _ => None
   }
 
   def asFilter[A, B](f: FlatMappedFn[A, B]): Option[(A => Boolean, EqTypes[(_ >: A), (_ <: B)])] = f match {
-    case Single(filter@Filter(_, _)) => Some((filter.fn, filter.ev))
+    case Single(filter@FlatMapping.Filter(_, _)) => Some((filter.fn, filter.ev))
     case _ => None
   }
 
@@ -192,21 +114,6 @@ object FlatMappedFn {
     }
 
   def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](EqTypes.reflexive[T]))
-
-  case class FilterKeysToFilter[K](fn: K => Boolean) extends Function1[(K, Any), Boolean] {
-    def apply(kv: (K, Any)) = fn(kv._1)
-  }
-
-  case class FlatMapValuesToFlatMap[K, A, B](fn: A => TraversableOnce[B]) extends Function1[(K, A), TraversableOnce[(K, B)]] {
-    def apply(ka: (K, A)) = {
-      val k = ka._1
-      fn(ka._2).map((k, _))
-    }
-  }
-
-  case class MapValuesToMap[K, A, B](fn: A => B) extends Function1[(K, A), (K, B)] {
-    def apply(ka: (K, A)) = (ka._1, fn(ka._2))
-  }
 
   def fromFilter[A](fn: A => Boolean): FlatMappedFn[A, A] =
     Single(FlatMapping.Filter[A, A](fn, EqTypes.reflexive))
