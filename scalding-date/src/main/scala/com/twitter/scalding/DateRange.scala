@@ -93,6 +93,12 @@ case class DateRange(val start: RichDate, val end: RichDate) {
    */
   def extend(delta: Duration) = DateRange(start, end + delta)
 
+  /**
+   * Extend the length by moving the start.
+   * Turns out, we can start the party early.
+   */
+  def prepend(delta: Duration) = DateRange(start - delta, end)
+
   def contains(point: RichDate) = (start <= point) && (point <= end)
   /**
    * Is the given Date range a (non-strict) subset of the given range
