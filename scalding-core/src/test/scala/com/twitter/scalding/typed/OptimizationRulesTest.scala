@@ -1,12 +1,17 @@
 package com.twitter.scalding.typed
 
+import cascading.flow.FlowDef
+import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
-import com.twitter.scalding.source.TypedText
-import com.twitter.scalding.{ Config, Local }
+import com.twitter.scalding.source.{ TypedText, NullSink }
+import org.apache.hadoop.conf.Configuration
+import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
+import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.prop.PropertyChecks.forAll
+import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
-import PropertyChecks.forAll
+import scala.util.{ Failure, Success, Try }
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
@@ -135,6 +140,53 @@ object TypedPipeGen {
 
   val genKeyedWithFake: Gen[TypedPipe[(Int, Int)]] =
     keyed(srcGen)
+
+  import OptimizationRules._
+
+  val allRules = List(
+    AddExplicitForks,
+    ComposeFlatMap,
+    ComposeMap,
+    ComposeFilter,
+    ComposeWithOnComplete,
+    ComposeMapFlatMap,
+    ComposeFilterFlatMap,
+    ComposeFilterMap,
+    DescribeLater,
+    RemoveDuplicateForceFork,
+    IgnoreNoOpGroup,
+    DeferMerge,
+    FilterKeysEarly,
+    EmptyIsOftenNoOp,
+    EmptyIterableIsEmpty,
+    ForceToDiskBeforeHashJoin)
+
+  def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
+    for {
+      c <- Gen.choose(1, rs.size)
+      rs <- Gen.pick(c, rs)
+    } yield rs.reduce(_.orElse(_))
+
+  val genRule: Gen[Rule[TypedPipe]] = genRuleFrom(allRules)
+}
+
+/**
+ * Used to test that we call phases
+ */
+class ThrowingOptimizer extends OptimizationPhases {
+  def phases = sys.error("booom")
+}
+
+/**
+ * Just convert everything to a constant
+ *  so we can check that the optimization was applied
+ */
+class ConstantOptimizer extends OptimizationPhases {
+  def phases = List(new Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = { t =>
+      Some(TypedPipe.empty)
+    }
+  })
 }
 
 class OptimizationRulesTest extends FunSuite {
@@ -156,32 +208,106 @@ class OptimizationRulesTest extends FunSuite {
     // Optimization pure is function (wrt to universal equality)
     assert(optimized == optimized2)
 
-    // optimizatized pipes are identical to initial state
+
+    // We don't want any further optimization on this job
+    val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
     assert(TypedPipeDiff.diff(t, optimized)
       .toIterableExecution
-      .waitFor(Config.empty, Local(true)).get.isEmpty)
+      .waitFor(conf, Local(true)).get.isEmpty)
+  }
+
+  def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
+    val optimized = Dag.applyRule(init, toLiteral, rule)
+
+    // How many steps would this be in Hadoop on Cascading
+    def steps(p: TypedPipe[T]): Int = {
+      val mode = Hdfs.default
+      val fd = new FlowDef
+      val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
+      NullSink.writeFrom(pipe)(fd, mode)
+      val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
+      val flow = ec.buildFlow.get
+      flow.getFlowSteps.size
+    }
+
+    assert(steps(init) >= steps(optimized))
   }
 
   test("all optimization rules don't change results") {
-    import OptimizationRules._
+    import TypedPipeGen.{ genWithIterableSources, genRule }
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100000)
+    forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
+  }
 
-    val allRules = List(ComposeFlatMap,
-      ComposeMap,
-      ComposeFilter,
-      ComposeWithOnComplete,
-      RemoveDuplicateForceFork,
-      IgnoreNoOpGroup,
-      DeferMerge,
-      FilterKeysEarly,
-      EmptyIsOftenNoOp,
-      EmptyIterableIsEmpty)
+  test("all optimization rules do not increase steps") {
+    import TypedPipeGen.{ allRules, genWithIterableSources, genRuleFrom }
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 1000)
 
-    val genRule = for {
-      c <- Gen.choose(1, allRules.size)
-      rs <- Gen.pick(c, allRules)
-    } yield rs.reduce(_.orElse(_))
+    val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
+      Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
+        OptimizationRules.ForceToDiskBeforeHashJoin // adding a forceToDisk can increase the number of steps
+        )
 
-    forAll(TypedPipeGen.genWithIterableSources, genRule)(optimizationLaw[Int] _)
+    val gen = genRuleFrom(allRules.filterNot(possiblyIncreasesSteps))
+
+    forAll(genWithIterableSources, gen)(optimizationReducesSteps[Int] _)
+  }
+
+  test("ThrowingOptimizer is triggered") {
+    forAll(TypedPipeGen.genWithFakeSources) { t =>
+      val conf = new Configuration()
+      conf.set(Config.OptimizationPhases, classOf[ThrowingOptimizer].getName)
+      implicit val mode = Hdfs(true, conf)
+      implicit val fd = new FlowDef
+      Try(CascadingBackend.toPipe(t, new Fields("value"))) match {
+        case Failure(ex) => assert(ex.getMessage == "booom")
+        case Success(res) => fail(s"expected failure, got $res")
+      }
+    }
+
+    forAll(TypedPipeGen.genWithFakeSources) { t =>
+      val ex = t.toIterableExecution
+
+      val config = Config.empty.setOptimizationPhases(classOf[ThrowingOptimizer])
+      ex.waitFor(config, Local(true)) match {
+        case Failure(ex) => assert(ex.getMessage == "booom")
+        case Success(res) => fail(s"expected failure, got $res")
+      }
+    }
+  }
+
+  test("ConstantOptimizer is triggered") {
+    forAll(TypedPipeGen.genWithFakeSources) { t =>
+      val conf = new Configuration()
+      conf.set(Config.OptimizationPhases, classOf[ConstantOptimizer].getName)
+      implicit val mode = Hdfs(true, conf)
+      implicit val fd = new FlowDef
+      Try(CascadingBackend.toPipe(t, new Fields("value"))) match {
+        case Failure(ex) => fail(s"$ex")
+        case Success(pipe) =>
+          FlowStateMap.get(fd) match {
+            case None => fail("expected a flow state")
+            case Some(FlowState(m, _)) =>
+              assert(m.size == 1)
+              m.head._2 match {
+                case it: IterableSource[_] =>
+                  assert(it.iter == Nil)
+                case _ =>
+                  fail(s"$m")
+              }
+          }
+      }
+    }
+
+    forAll(TypedPipeGen.genWithFakeSources) { t =>
+      val ex = t.toIterableExecution
+
+      val config = Config.empty.setOptimizationPhases(classOf[ConstantOptimizer])
+      ex.waitFor(config, Local(true)) match {
+        case Failure(ex) => fail(s"$ex")
+        case Success(res) => assert(res.isEmpty)
+      }
+    }
   }
 
   test("OptimizationRules.toLiteral is invertible on some specific instances") {

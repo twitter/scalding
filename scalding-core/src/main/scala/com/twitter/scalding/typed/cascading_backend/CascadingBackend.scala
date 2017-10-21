@@ -304,61 +304,61 @@ object CascadingBackend {
     RichPipe.setPipeDescriptions(p, ordered ::: unordered)
   }
 
-  final def toPipe[U](p: TypedPipe[U], fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
-
-    /**
-     * Here are configurable optimization rules
-     */
-    val getHashJoinAutoForceRight =
-      mode match {
-        case h: HadoopMode =>
-          val config = Config.fromHadoop(h.jobConf)
-          config.getHashJoinAutoForceRight
-        case _ => false
-      }
-    val forceHash = if (getHashJoinAutoForceRight) OptimizationRules.ForceToDiskBeforeHashJoin else Rule.empty[TypedPipe]
-    /**
-     * These are rules we should apply to any TypedPipe before handing
-     * to cascading. These should be a bit conservative in that they
-     * should be highly likely to improve the graph.
-     */
-    val phases = List(
-      // phase 0, add explicit forks
-      OptimizationRules.AddExplicitForks,
-      // phase 1, compose flatMap/map, move descriptions down etc...
-      Rule.orElse(List(
-        OptimizationRules.ComposeMap,
-        OptimizationRules.ComposeFilter,
-        OptimizationRules.ComposeWithOnComplete,
-        OptimizationRules.DescribeLater)),
-      // phase 2, combine different kinds of map operations into flatMaps
-      Rule.orElse(List(
-        OptimizationRules.ComposeMapFlatMap,
-        OptimizationRules.ComposeFilterFlatMap,
-        OptimizationRules.ComposeFilterMap,
-        OptimizationRules.ComposeFlatMap,
-        OptimizationRules.EmptyIsOftenNoOp,
-        OptimizationRules.EmptyIterableIsEmpty)),
-      // phase 3, add any explicit forces to the optimized graph
-      Rule.orElse(List(
-        forceHash,
-        OptimizationRules.RemoveDuplicateForceFork))
-      )
-
+  /**
+   * These are rules we should apply to any TypedPipe before handing
+   * to cascading. These should be a bit conservative in that they
+   * should be highly likely to improve the graph.
+   */
+  def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
     /**
      * TODO:
      * we need to have parity for the normal optimizations
      * scalding has been applying in 0.17
      *
      */
+    def std(forceHash: Rule[TypedPipe]) = OptimizationRules.standardMapReduceRules :+
+      // add any explicit forces to the optimized graph
+      Rule.orElse(List(
+        forceHash,
+        OptimizationRules.RemoveDuplicateForceFork)
+      )
 
+    config.getOptimizationPhases match {
+      case Some(tryPhases) => tryPhases.get.phases
+      case None =>
+        val force =
+          if (config.getHashJoinAutoForceRight) OptimizationRules.ForceToDiskBeforeHashJoin
+          else Rule.empty[TypedPipe]
+        std(force)
+    }
+  }
+
+  final def toPipe[U](p: TypedPipe[U], fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
+
+    val phases = defaultOptimizationRules(
+      mode match {
+        case h: HadoopMode => Config.fromHadoop(h.jobConf)
+        case _ => Config.empty
+      })
     val (d, id) = Dag(p, OptimizationRules.toLiteral)
     val d1 = d.applySeq(phases)
     val p1 = d1.evaluate(id)
-    // Now that we have an optimized pipe, convert it to a CascadingPipe[U]:
+
+    // Now that we have an optimized pipe, convert it to a Pipe
+    toPipeUnoptimized(p1, fieldNames)
+  }
+
+  /**
+   * This converts the TypedPipe to a cascading Pipe doing the most direct
+   * possible translation we can. This is useful for testing or for expert
+   * cases where you want more direct control of the TypedPipe than
+   * the default method gives you.
+   */
+  final def toPipeUnoptimized[U](p: TypedPipe[U],
+    fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
 
     val compiler = cache.get(flowDef, mode)
-    val cp: CascadingPipe[U] = compiler(p1)
+    val cp: CascadingPipe[U] = compiler(p)
 
     RichPipe(cp.toPipe(fieldNames, flowDef, TupleSetter.asSubSetter(setter)))
       // TODO: this indirection may not be needed anymore, we could directly track config changes

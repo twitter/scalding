@@ -368,6 +368,9 @@ object OptimizationRules {
    *
    * This rule applied first makes it easier to match in subsequent
    * rules without constantly checking for fanout nodes.
+   *
+   * This can increase the number of map-reduce steps compared
+   * to simply recomputing on both sides of a fork
    */
   object AddExplicitForks extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -702,6 +705,8 @@ object OptimizationRules {
       case SumByLocalKeys(EmptyTypedPipe, _) => EmptyTypedPipe
       case TrappedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp) => EmptyTypedPipe
+      case WithOnComplete(EmptyTypedPipe, _) => EmptyTypedPipe // there is nothing to do, so we never have workers complete
+      case WithDescriptionTypedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe // descriptions apply to tasks, but empty has no tasks
     }
   }
 
@@ -748,4 +753,54 @@ object OptimizationRules {
     }
   }
 
+  ///////
+  // These are composed rules that are related
+  //////
+
+  /**
+   * Like kinds can be composed .map(f).map(g),
+   * filter(f).filter(g) etc...
+   */
+  val composeSame: Rule[TypedPipe] =
+    Rule.orElse(
+      List(
+        ComposeMap,
+        ComposeFilter,
+        ComposeFlatMap,
+        ComposeWithOnComplete))
+  /**
+   * If you are going to do a flatMap, following it or preceding it with map/filter
+   * you might as well compose into the flatMap
+   */
+  val composeIntoFlatMap: Rule[TypedPipe] =
+    Rule.orElse(
+      List(
+        ComposeMapFlatMap,
+        ComposeFilterFlatMap,
+        ComposeFilterMap,
+        ComposeFlatMap))
+
+  val simplifyEmpty: Rule[TypedPipe] =
+    EmptyIsOftenNoOp.orElse(
+      EmptyIterableIsEmpty)
+
+  /**
+   * These are a list of rules to be applied in order (Dag.applySeq)
+   * that should generally always improve things on Map/Reduce-like
+   * platforms.
+   *
+   * These are rules we should apply to any TypedPipe before handing
+   * to cascading. These should be a bit conservative in that they
+   * should be highly likely to improve the graph.
+   */
+  val standardMapReduceRules: List[Rule[TypedPipe]] =
+    List(
+      // phase 0, add explicit forks
+      AddExplicitForks,
+      // phase 1, compose flatMap/map, move descriptions down etc...
+      composeSame.orElse(DescribeLater),
+      // phase 2, combine different kinds of map operations into flatMaps
+      composeIntoFlatMap.orElse(simplifyEmpty),
+      // phase 3, add any explicit forces to the optimized graph
+      RemoveDuplicateForceFork)
 }

@@ -569,10 +569,9 @@ sealed trait TypedPipe[+T] extends Serializable {
    * @return a pipe equivalent to the current pipe.
    */
   def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    // Make sure that we don't render the whole pipeline twice:
-    val res = fork
-    dest.writeFrom(res.toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter))
-    res
+    dest.writeFrom(toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter))
+    // We want to fork after this point
+    fork
   }
 
   /**
