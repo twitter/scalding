@@ -36,6 +36,8 @@ import com.twitter.scalding.some.other.space.space._
 import scala.collection.immutable.Queue
 import scala.language.experimental.macros
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
+import com.twitter.scalding.serialization.provided._
+import com.twitter.scalding.serialization._
 
 object LawTester {
   def apply[T: Arbitrary](laws: Iterable[Law[T]]): Prop =
@@ -399,466 +401,466 @@ class MacroOrderingProperties
   def noOrderedSerialization[T](implicit ev: OrderedSerialization[T] = null) =
     assert(ev === null, "Expected unable to produce OrderedSerialization")
 
-  test("Test out Unit") {
-    BinaryOrdering.ordSer[Unit]
-    check[Unit]
-    checkMany[Unit]
-  }
-  test("Test out Boolean") {
-    BinaryOrdering.ordSer[Boolean]
-    check[Boolean]
-  }
-  test("Test out jl.Boolean") {
-    implicit val a = arbMap { b: Boolean =>
-      java.lang.Boolean.valueOf(b)
-    }
-    check[java.lang.Boolean]
-  }
-  test("Test out Byte") { check[Byte] }
-  test("Test out jl.Byte") {
-    implicit val a = arbMap { b: Byte =>
-      java.lang.Byte.valueOf(b)
-    }
-    check[java.lang.Byte]
-    checkCollisions[java.lang.Byte]
-  }
-  test("Test out Short") { check[Short] }
-  test("Test out jl.Short") {
-    implicit val a = arbMap { b: Short =>
-      java.lang.Short.valueOf(b)
-    }
-    check[java.lang.Short]
-    checkCollisions[java.lang.Short]
-  }
-  test("Test out Char") { check[Char] }
-  test("Test out jl.Char") {
-    implicit val a = arbMap { b: Char =>
-      java.lang.Character.valueOf(b)
-    }
-    check[java.lang.Character]
-    checkCollisions[java.lang.Character]
-  }
-  test("Test out Int") {
-    BinaryOrdering.ordSer[Int]
-    check[Int]
-    checkMany[Int]
-    checkCollisions[Int]
-  }
+  // test("Test out Unit") {
+  //   BinaryOrdering.ordSer[Unit]
+  //   check[Unit]
+  //   checkMany[Unit]
+  // }
+  // test("Test out Boolean") {
+  //   BinaryOrdering.ordSer[Boolean]
+  //   check[Boolean]
+  // }
+  // test("Test out jl.Boolean") {
+  //   implicit val a = arbMap { b: Boolean =>
+  //     java.lang.Boolean.valueOf(b)
+  //   }
+  //   check[java.lang.Boolean]
+  // }
+  // test("Test out Byte") { check[Byte] }
+  // test("Test out jl.Byte") {
+  //   implicit val a = arbMap { b: Byte =>
+  //     java.lang.Byte.valueOf(b)
+  //   }
+  //   check[java.lang.Byte]
+  //   checkCollisions[java.lang.Byte]
+  // }
+  // test("Test out Short") { check[Short] }
+  // test("Test out jl.Short") {
+  //   implicit val a = arbMap { b: Short =>
+  //     java.lang.Short.valueOf(b)
+  //   }
+  //   check[java.lang.Short]
+  //   checkCollisions[java.lang.Short]
+  // }
+  // test("Test out Char") { check[Char] }
+  // test("Test out jl.Char") {
+  //   implicit val a = arbMap { b: Char =>
+  //     java.lang.Character.valueOf(b)
+  //   }
+  //   check[java.lang.Character]
+  //   checkCollisions[java.lang.Character]
+  // }
+  // test("Test out Int") {
+  //   BinaryOrdering.ordSer[Int]
+  //   check[Int]
+  //   checkMany[Int]
+  //   checkCollisions[Int]
+  // }
 
-  test("Test out AnyVal of String") {
-    import TestCC._
-    check[TestCaseClassE]
-    checkMany[TestCaseClassE]
-    checkCollisions[TestCaseClassE]
-  }
+  // test("Test out AnyVal of String") {
+  //   import TestCC._
+  //   check[TestCaseClassE]
+  //   checkMany[TestCaseClassE]
+  //   checkCollisions[TestCaseClassE]
+  // }
 
-  test("Test out Tuple of AnyVal's of String") {
-    import TestCC._
-    BinaryOrdering.ordSer[(TestCaseClassE, TestCaseClassE)]
-    check[(TestCaseClassE, TestCaseClassE)]
-    checkMany[(TestCaseClassE, TestCaseClassE)]
-    checkCollisions[(TestCaseClassE, TestCaseClassE)]
-  }
+  // test("Test out Tuple of AnyVal's of String") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[(TestCaseClassE, TestCaseClassE)]
+  //   check[(TestCaseClassE, TestCaseClassE)]
+  //   checkMany[(TestCaseClassE, TestCaseClassE)]
+  //   checkCollisions[(TestCaseClassE, TestCaseClassE)]
+  // }
 
-  test("Test out Tuple of TestSealedAbstractClass") {
-    import TestCC._
-    BinaryOrdering.ordSer[TestSealedAbstractClass]
-    check[TestSealedAbstractClass]
-    checkMany[TestSealedAbstractClass]
-    checkCollisions[TestSealedAbstractClass]
-  }
+  // test("Test out Tuple of TestSealedAbstractClass") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[TestSealedAbstractClass]
+  //   check[TestSealedAbstractClass]
+  //   checkMany[TestSealedAbstractClass]
+  //   checkCollisions[TestSealedAbstractClass]
+  // }
 
-  test("Test out jl.Integer") {
-    implicit val a = arbMap { b: Int =>
-      java.lang.Integer.valueOf(b)
-    }
-    check[java.lang.Integer]
-    checkCollisions[java.lang.Integer]
+  // test("Test out jl.Integer") {
+  //   implicit val a = arbMap { b: Int =>
+  //     java.lang.Integer.valueOf(b)
+  //   }
+  //   check[java.lang.Integer]
+  //   checkCollisions[java.lang.Integer]
 
-  }
-  test("Test out Float") { check[Float] }
-  test("Test out jl.Float") {
-    implicit val a = arbMap { b: Float =>
-      java.lang.Float.valueOf(b)
-    }
-    check[java.lang.Float]
-    checkCollisions[java.lang.Float]
-  }
-  test("Test out Long") { check[Long] }
-  test("Test out jl.Long") {
-    implicit val a = arbMap { b: Long =>
-      java.lang.Long.valueOf(b)
-    }
-    check[java.lang.Long]
-    checkCollisions[java.lang.Long]
-  }
-  test("Test out Double") { check[Double] }
-  test("Test out jl.Double") {
-    implicit val a = arbMap { b: Double =>
-      java.lang.Double.valueOf(b)
-    }
-    check[java.lang.Double]
-    checkCollisions[java.lang.Double]
-  }
+  // }
+  // test("Test out Float") { check[Float] }
+  // test("Test out jl.Float") {
+  //   implicit val a = arbMap { b: Float =>
+  //     java.lang.Float.valueOf(b)
+  //   }
+  //   check[java.lang.Float]
+  //   checkCollisions[java.lang.Float]
+  // }
+  // test("Test out Long") { check[Long] }
+  // test("Test out jl.Long") {
+  //   implicit val a = arbMap { b: Long =>
+  //     java.lang.Long.valueOf(b)
+  //   }
+  //   check[java.lang.Long]
+  //   checkCollisions[java.lang.Long]
+  // }
+  // test("Test out Double") { check[Double] }
+  // test("Test out jl.Double") {
+  //   implicit val a = arbMap { b: Double =>
+  //     java.lang.Double.valueOf(b)
+  //   }
+  //   check[java.lang.Double]
+  //   checkCollisions[java.lang.Double]
+  // }
 
-  test("Test out String") {
-    BinaryOrdering.ordSer[String]
+  // test("Test out String") {
+  //   BinaryOrdering.ordSer[String]
 
-    check[String]
-    checkMany[String]
-    checkCollisions[String]
-  }
+  //   check[String]
+  //   checkMany[String]
+  //   checkCollisions[String]
+  // }
 
   test("Test out ByteBuffer") {
-    BinaryOrdering.ordSer[ByteBuffer]
+    implicitly[OrderedSerialization[ByteBuffer]]
     check[ByteBuffer]
     checkCollisions[ByteBuffer]
   }
 
-  test("Test out List[Float]") {
-    BinaryOrdering.ordSer[List[Float]]
-    check[List[Float]]
-    checkCollisions[List[Float]]
-  }
-  test("Test out Queue[Int]") {
-    implicit val isa = collectionArb[Queue, Int]
-    BinaryOrdering.ordSer[Queue[Int]]
-    check[Queue[Int]]
-    checkCollisions[Queue[Int]]
-  }
-  test("Test out IndexedSeq[Int]") {
-    implicit val isa = collectionArb[IndexedSeq, Int]
-    BinaryOrdering.ordSer[IndexedSeq[Int]]
-    check[IndexedSeq[Int]]
-    checkCollisions[IndexedSeq[Int]]
-  }
-  test("Test out HashSet[Int]") {
-    import scala.collection.immutable.HashSet
-    implicit val isa = collectionArb[HashSet, Int]
-    BinaryOrdering.ordSer[HashSet[Int]]
-    check[HashSet[Int]]
-    checkCollisions[HashSet[Int]]
-  }
-  test("Test out ListSet[Int]") {
-    import scala.collection.immutable.ListSet
-    implicit val isa = collectionArb[ListSet, Int]
-    BinaryOrdering.ordSer[ListSet[Int]]
-    check[ListSet[Int]]
-    checkCollisions[ListSet[Int]]
-  }
+  // test("Test out List[Float]") {
+  //   BinaryOrdering.ordSer[List[Float]]
+  //   check[List[Float]]
+  //   checkCollisions[List[Float]]
+  // }
+  // test("Test out Queue[Int]") {
+  //   implicit val isa = collectionArb[Queue, Int]
+  //   BinaryOrdering.ordSer[Queue[Int]]
+  //   check[Queue[Int]]
+  //   checkCollisions[Queue[Int]]
+  // }
+  // test("Test out IndexedSeq[Int]") {
+  //   implicit val isa = collectionArb[IndexedSeq, Int]
+  //   BinaryOrdering.ordSer[IndexedSeq[Int]]
+  //   check[IndexedSeq[Int]]
+  //   checkCollisions[IndexedSeq[Int]]
+  // }
+  // test("Test out HashSet[Int]") {
+  //   import scala.collection.immutable.HashSet
+  //   implicit val isa = collectionArb[HashSet, Int]
+  //   BinaryOrdering.ordSer[HashSet[Int]]
+  //   check[HashSet[Int]]
+  //   checkCollisions[HashSet[Int]]
+  // }
+  // test("Test out ListSet[Int]") {
+  //   import scala.collection.immutable.ListSet
+  //   implicit val isa = collectionArb[ListSet, Int]
+  //   BinaryOrdering.ordSer[ListSet[Int]]
+  //   check[ListSet[Int]]
+  //   checkCollisions[ListSet[Int]]
+  // }
 
-  test("Test out List[String]") {
-    BinaryOrdering.ordSer[List[String]]
-    check[List[String]]
-    checkCollisions[List[String]]
-  }
+  // test("Test out List[String]") {
+  //   BinaryOrdering.ordSer[List[String]]
+  //   check[List[String]]
+  //   checkCollisions[List[String]]
+  // }
 
-  test("Test out List[List[String]]") {
-    val oBuf = BinaryOrdering.ordSer[List[List[String]]]
-    assert(oBuf.dynamicSize(List(List("sdf"))) === None)
-    check[List[List[String]]]
-    checkCollisions[List[List[String]]]
-  }
+  // test("Test out List[List[String]]") {
+  //   val oBuf = BinaryOrdering.ordSer[List[List[String]]]
+  //   assert(oBuf.dynamicSize(List(List("sdf"))) === None)
+  //   check[List[List[String]]]
+  //   checkCollisions[List[List[String]]]
+  // }
 
-  test("Test out List[Int]") {
-    BinaryOrdering.ordSer[List[Int]]
-    check[List[Int]]
-    checkCollisions[List[Int]]
-  }
+  // test("Test out List[Int]") {
+  //   BinaryOrdering.ordSer[List[Int]]
+  //   check[List[Int]]
+  //   checkCollisions[List[Int]]
+  // }
 
-  test("Test out SetAlias") {
-    BinaryOrdering.ordSer[SetAlias]
-    check[SetAlias]
-    checkCollisions[SetAlias]
-  }
+  // test("Test out SetAlias") {
+  //   BinaryOrdering.ordSer[SetAlias]
+  //   check[SetAlias]
+  //   checkCollisions[SetAlias]
+  // }
 
-  test("Container.InnerCaseClass") {
-    BinaryOrdering.ordSer[Container.InnerCaseClass]
-    check[Container.InnerCaseClass]
-    checkCollisions[Container.InnerCaseClass]
-  }
+  // test("Container.InnerCaseClass") {
+  //   BinaryOrdering.ordSer[Container.InnerCaseClass]
+  //   check[Container.InnerCaseClass]
+  //   checkCollisions[Container.InnerCaseClass]
+  // }
 
-  test("Test out Seq[Int]") {
-    BinaryOrdering.ordSer[Seq[Int]]
-    check[Seq[Int]]
-    checkCollisions[Seq[Int]]
-  }
-  test("Test out scala.collection.Seq[Int]") {
-    BinaryOrdering.ordSer[scala.collection.Seq[Int]]
-    check[scala.collection.Seq[Int]]
-    checkCollisions[scala.collection.Seq[Int]]
-  }
+  // test("Test out Seq[Int]") {
+  //   BinaryOrdering.ordSer[Seq[Int]]
+  //   check[Seq[Int]]
+  //   checkCollisions[Seq[Int]]
+  // }
+  // test("Test out scala.collection.Seq[Int]") {
+  //   BinaryOrdering.ordSer[scala.collection.Seq[Int]]
+  //   check[scala.collection.Seq[Int]]
+  //   checkCollisions[scala.collection.Seq[Int]]
+  // }
 
-  test("Test out Array[Byte]") {
-    BinaryOrdering.ordSer[Array[Byte]]
-    check[Array[Byte]]
-    checkCollisions[Array[Byte]]
-  }
+  // test("Test out Array[Byte]") {
+  //   BinaryOrdering.ordSer[Array[Byte]]
+  //   check[Array[Byte]]
+  //   checkCollisions[Array[Byte]]
+  // }
 
-  test("Test out Vector[Int]") {
-    BinaryOrdering.ordSer[Vector[Int]]
-    check[Vector[Int]]
-    checkCollisions[Vector[Int]]
-  }
+  // test("Test out Vector[Int]") {
+  //   BinaryOrdering.ordSer[Vector[Int]]
+  //   check[Vector[Int]]
+  //   checkCollisions[Vector[Int]]
+  // }
 
-  test("Test out Iterable[Int]") {
-    BinaryOrdering.ordSer[Iterable[Int]]
-    check[Iterable[Int]]
-    checkCollisions[Iterable[Int]]
-  }
+  // test("Test out Iterable[Int]") {
+  //   BinaryOrdering.ordSer[Iterable[Int]]
+  //   check[Iterable[Int]]
+  //   checkCollisions[Iterable[Int]]
+  // }
 
-  test("Test out Set[Int]") {
-    BinaryOrdering.ordSer[Set[Int]]
-    check[Set[Int]]
-    checkCollisions[Set[Int]]
-  }
+  // test("Test out Set[Int]") {
+  //   BinaryOrdering.ordSer[Set[Int]]
+  //   check[Set[Int]]
+  //   checkCollisions[Set[Int]]
+  // }
 
-  test("Test out Set[Double]") {
-    BinaryOrdering.ordSer[Set[Double]]
-    check[Set[Double]]
-    checkCollisions[Set[Double]]
-  }
+  // test("Test out Set[Double]") {
+  //   BinaryOrdering.ordSer[Set[Double]]
+  //   check[Set[Double]]
+  //   checkCollisions[Set[Double]]
+  // }
 
-  test("Test out Map[Long, Set[Int]]") {
-    BinaryOrdering.ordSer[Map[Long, Set[Int]]]
-    check[Map[Long, Set[Int]]]
-    val c = List(Map(9223372036854775807L -> Set[Int]()), Map(-1L -> Set[Int](-2043106012)))
-    checkManyExplicit(c.map { i =>
-      (i, i)
-    })
-    checkMany[Map[Long, Set[Int]]]
-    checkCollisions[Map[Long, Set[Int]]]
-  }
+  // test("Test out Map[Long, Set[Int]]") {
+  //   BinaryOrdering.ordSer[Map[Long, Set[Int]]]
+  //   check[Map[Long, Set[Int]]]
+  //   val c = List(Map(9223372036854775807L -> Set[Int]()), Map(-1L -> Set[Int](-2043106012)))
+  //   checkManyExplicit(c.map { i =>
+  //     (i, i)
+  //   })
+  //   checkMany[Map[Long, Set[Int]]]
+  //   checkCollisions[Map[Long, Set[Int]]]
+  // }
 
-  test("Test out Map[Long, Long]") {
-    BinaryOrdering.ordSer[Map[Long, Long]]
-    check[Map[Long, Long]]
-    checkCollisions[Map[Long, Long]]
-  }
-  test("Test out HashMap[Long, Long]") {
-    import scala.collection.immutable.HashMap
-    implicit val isa =
-      Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(HashMap(_: _*)))
-    BinaryOrdering.ordSer[HashMap[Long, Long]]
-    check[HashMap[Long, Long]]
-    checkCollisions[HashMap[Long, Long]]
-  }
-  test("Test out ListMap[Long, Long]") {
-    import scala.collection.immutable.ListMap
-    implicit val isa =
-      Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(ListMap(_: _*)))
-    BinaryOrdering.ordSer[ListMap[Long, Long]]
-    check[ListMap[Long, Long]]
-    checkCollisions[ListMap[Long, Long]]
-  }
+  // test("Test out Map[Long, Long]") {
+  //   BinaryOrdering.ordSer[Map[Long, Long]]
+  //   check[Map[Long, Long]]
+  //   checkCollisions[Map[Long, Long]]
+  // }
+  // test("Test out HashMap[Long, Long]") {
+  //   import scala.collection.immutable.HashMap
+  //   implicit val isa =
+  //     Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(HashMap(_: _*)))
+  //   BinaryOrdering.ordSer[HashMap[Long, Long]]
+  //   check[HashMap[Long, Long]]
+  //   checkCollisions[HashMap[Long, Long]]
+  // }
+  // test("Test out ListMap[Long, Long]") {
+  //   import scala.collection.immutable.ListMap
+  //   implicit val isa =
+  //     Arbitrary(implicitly[Arbitrary[List[(Long, Long)]]].arbitrary.map(ListMap(_: _*)))
+  //   BinaryOrdering.ordSer[ListMap[Long, Long]]
+  //   check[ListMap[Long, Long]]
+  //   checkCollisions[ListMap[Long, Long]]
+  // }
 
-  test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
-    val a = Map(3 -> 2, 2 -> 3)
-    val b = Map(2 -> 3, 3 -> 2)
-    checkWithInputs(a, b)
-    checkAreSame(a, b)
-  }
+  // test("Test out comparing Maps(3->2, 2->3) and Maps(2->3, 3->2) ") {
+  //   val a = Map(3 -> 2, 2 -> 3)
+  //   val b = Map(2 -> 3, 3 -> 2)
+  //   checkWithInputs(a, b)
+  //   checkAreSame(a, b)
+  // }
 
-  test("Test out comparing Set(\"asdf\", \"jkl\") and  Set(\"jkl\", \"asdf\")") {
-    val a = Set("asdf", "jkl")
-    val b = Set("jkl", "asdf")
-    checkWithInputs(a, b)
-    checkAreSame(a, b)
-  }
+  // test("Test out comparing Set(\"asdf\", \"jkl\") and  Set(\"jkl\", \"asdf\")") {
+  //   val a = Set("asdf", "jkl")
+  //   val b = Set("jkl", "asdf")
+  //   checkWithInputs(a, b)
+  //   checkAreSame(a, b)
+  // }
 
-  test("Test known hard String Case") {
-    val a = "6"
-    val b = "곆"
-    val ord = Ordering.String
-    assert(rawCompare(a, b) === ord.compare(a, b).signum, "Raw and in memory compares match.")
+  // test("Test known hard String Case") {
+  //   val a = "6"
+  //   val b = "곆"
+  //   val ord = Ordering.String
+  //   assert(rawCompare(a, b) === ord.compare(a, b).signum, "Raw and in memory compares match.")
 
-    val c = List(
-      "榴㉕⊟풠湜ᙬ覹ꜻ裧뚐⠂覝쫨塢䇺楠谭픚ᐌ轮뺷Ⱟ洦擄黏著탅ﮓꆋ숷梸傠ァ蹵窥轲闇涡飽ꌳ䝞慙擃",
-      "堒凳媨쉏떽㶥⾽샣井ㆠᇗ裉깴辫࠷᤭塈䎙寫㸉ᶴ䰄똇䡷䥞㷗䷱赫懓䷏剆祲ᝯ졑쐯헢鷴ӕ秔㽰ퟡ㏉鶖奚㙰银䮌ᕗ膾买씋썴행䣈丶偝쾕鐗쇊ኋ넥︇瞤䋗噯邧⹆♣ἷ铆玼⪷沕辤ᠥ⥰箼䔄◗",
-      "騰쓢堷뛭ᣣﰩ嚲ﲯ㤑ᐜ檊೦⠩奯ᓩ윇롇러ᕰెꡩ璞﫼᭵礀閮䈦椄뾪ɔ믻䖔᪆嬽ﾌ鶬曭꣍ᆏ灖㐸뗋ㆃ녵ퟸ겵晬礙㇩䫓ᘞ昑싨",
-      "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
-      "獌癚畇")
-    checkManyExplicit(c.map { i =>
-      (i, i)
-    })
+  //   val c = List(
+  //     "榴㉕⊟풠湜ᙬ覹ꜻ裧뚐⠂覝쫨塢䇺楠谭픚ᐌ轮뺷Ⱟ洦擄黏著탅ﮓꆋ숷梸傠ァ蹵窥轲闇涡飽ꌳ䝞慙擃",
+  //     "堒凳媨쉏떽㶥⾽샣井ㆠᇗ裉깴辫࠷᤭塈䎙寫㸉ᶴ䰄똇䡷䥞㷗䷱赫懓䷏剆祲ᝯ졑쐯헢鷴ӕ秔㽰ퟡ㏉鶖奚㙰银䮌ᕗ膾买씋썴행䣈丶偝쾕鐗쇊ኋ넥︇瞤䋗噯邧⹆♣ἷ铆玼⪷沕辤ᠥ⥰箼䔄◗",
+  //     "騰쓢堷뛭ᣣﰩ嚲ﲯ㤑ᐜ檊೦⠩奯ᓩ윇롇러ᕰెꡩ璞﫼᭵礀閮䈦椄뾪ɔ믻䖔᪆嬽ﾌ鶬曭꣍ᆏ灖㐸뗋ㆃ녵ퟸ겵晬礙㇩䫓ᘞ昑싨",
+  //     "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
+  //     "獌癚畇")
+  //   checkManyExplicit(c.map { i =>
+  //     (i, i)
+  //   })
 
-    val c2 = List("聸", "")
-    checkManyExplicit(c2.map { i =>
-      (i, i)
-    })
-  }
+  //   val c2 = List("聸", "")
+  //   checkManyExplicit(c2.map { i =>
+  //     (i, i)
+  //   })
+  // }
 
-  test("Test out Option[Int]") {
-    val oser = BinaryOrdering.ordSer[Option[Int]]
+  // test("Test out Option[Int]") {
+  //   val oser = BinaryOrdering.ordSer[Option[Int]]
 
-    assert(oser.staticSize === None, "can't get the size statically")
-    check[Option[Int]]
-    checkMany[Option[Int]]
-    checkCollisions[Option[Int]]
-  }
+  //   assert(oser.staticSize === None, "can't get the size statically")
+  //   check[Option[Int]]
+  //   checkMany[Option[Int]]
+  //   checkCollisions[Option[Int]]
+  // }
 
-  test("Test out Option[String]") {
-    BinaryOrdering.ordSer[Option[String]]
+  // test("Test out Option[String]") {
+  //   BinaryOrdering.ordSer[Option[String]]
 
-    check[Option[String]]
-    checkMany[Option[String]]
-    checkCollisions[Option[String]]
-  }
+  //   check[Option[String]]
+  //   checkMany[Option[String]]
+  //   checkCollisions[Option[String]]
+  // }
 
-  test("Test Either[Int, Option[Int]]") {
-    val oser = BinaryOrdering.ordSer[Either[Int, Option[Int]]]
-    assert(oser.staticSize === None, "can't get the size statically")
-    check[Either[Int, Option[Int]]]
-    checkCollisions[Either[Int, Option[Int]]]
-  }
-  test("Test Either[Int, String]") {
-    val oser = BinaryOrdering.ordSer[Either[Int, String]]
-    assert(oser.staticSize === None, "can't get the size statically")
-    assert(
-      Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(
-        Left(1)),
-      "serialization size matches dynamic size")
-    check[Either[Int, String]]
-    checkCollisions[Either[Int, String]]
-  }
+  // test("Test Either[Int, Option[Int]]") {
+  //   val oser = BinaryOrdering.ordSer[Either[Int, Option[Int]]]
+  //   assert(oser.staticSize === None, "can't get the size statically")
+  //   check[Either[Int, Option[Int]]]
+  //   checkCollisions[Either[Int, Option[Int]]]
+  // }
+  // test("Test Either[Int, String]") {
+  //   val oser = BinaryOrdering.ordSer[Either[Int, String]]
+  //   assert(oser.staticSize === None, "can't get the size statically")
+  //   assert(
+  //     Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(
+  //       Left(1)),
+  //     "serialization size matches dynamic size")
+  //   check[Either[Int, String]]
+  //   checkCollisions[Either[Int, String]]
+  // }
   test("Test Either[Int, Int]") {
-    val oser = BinaryOrdering.ordSer[Either[Int, Int]]
+    val oser = implicitly[OrderedSerialization[Either[Int, Int]]]
     assert(oser.staticSize === Some(5), "can get the size statically")
     check[Either[Int, Int]]
     checkCollisions[Either[Int, Int]]
   }
-  test("Test Either[String, Int]") {
-    BinaryOrdering.ordSer[Either[String, Int]]
-    check[Either[String, Int]]
-    checkCollisions[Either[String, Int]]
-  }
-  test("Test Either[String, String]") {
-    BinaryOrdering.ordSer[Either[String, String]]
-    check[Either[String, String]]
-    checkCollisions[Either[String, String]]
-  }
+  // test("Test Either[String, Int]") {
+  //   BinaryOrdering.ordSer[Either[String, Int]]
+  //   check[Either[String, Int]]
+  //   checkCollisions[Either[String, Int]]
+  // }
+  // test("Test Either[String, String]") {
+  //   BinaryOrdering.ordSer[Either[String, String]]
+  //   check[Either[String, String]]
+  //   checkCollisions[Either[String, String]]
+  // }
 
-  test("Test out Option[Option[Int]]") {
-    BinaryOrdering.ordSer[Option[Option[Int]]]
+  // test("Test out Option[Option[Int]]") {
+  //   BinaryOrdering.ordSer[Option[Option[Int]]]
 
-    check[Option[Option[Int]]]
-    checkCollisions[Option[Option[Int]]]
-  }
+  //   check[Option[Option[Int]]]
+  //   checkCollisions[Option[Option[Int]]]
+  // }
 
-  test("test product like TestCC") {
-    checkMany[(Int, Char, Long, Option[Int], Double, Option[String])]
-    checkCollisions[(Int, Char, Long, Option[Int], Double, Option[String])]
-  }
+  // test("test product like TestCC") {
+  //   checkMany[(Int, Char, Long, Option[Int], Double, Option[String])]
+  //   checkCollisions[(Int, Char, Long, Option[Int], Double, Option[String])]
+  // }
 
-  test("test specific tuple aa1") {
-    BinaryOrdering.ordSer[(String, Option[Int], String)]
+  // test("test specific tuple aa1") {
+  //   BinaryOrdering.ordSer[(String, Option[Int], String)]
 
-    checkMany[(String, Option[Int], String)]
-    checkCollisions[(String, Option[Int], String)]
-  }
+  //   checkMany[(String, Option[Int], String)]
+  //   checkCollisions[(String, Option[Int], String)]
+  // }
 
-  test("test specific tuple 2") {
-    check[(String, Option[Int], String)]
-    checkCollisions[(String, Option[Int], String)]
-  }
+  // test("test specific tuple 2") {
+  //   check[(String, Option[Int], String)]
+  //   checkCollisions[(String, Option[Int], String)]
+  // }
 
-  test("test specific tuple 3") {
-    val c = List(
-      ("", None, ""),
-      ("a", Some(1), "b"))
-    checkManyExplicit(c.map { i =>
-      (i, i)
-    })
-  }
+  // test("test specific tuple 3") {
+  //   val c = List(
+  //     ("", None, ""),
+  //     ("a", Some(1), "b"))
+  //   checkManyExplicit(c.map { i =>
+  //     (i, i)
+  //   })
+  // }
 
-  test("Test out TestCC") {
-    import TestCC._
-    BinaryOrdering.ordSer[TestCC]
-    check[TestCC]
-    checkMany[TestCC]
-    checkCollisions[TestCC]
-  }
+  // test("Test out TestCC") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[TestCC]
+  //   check[TestCC]
+  //   checkMany[TestCC]
+  //   checkCollisions[TestCC]
+  // }
 
-  test("Test out Sealed Trait") {
-    import TestCC._
-    BinaryOrdering.ordSer[SealedTraitTest]
-    check[SealedTraitTest]
-    checkMany[SealedTraitTest]
-    checkCollisions[SealedTraitTest]
-  }
+  // test("Test out Sealed Trait") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[SealedTraitTest]
+  //   check[SealedTraitTest]
+  //   checkMany[SealedTraitTest]
+  //   checkCollisions[SealedTraitTest]
+  // }
 
-  test("Test out Sealed TestCaseHardA") {
-    import TestCC._
-    BinaryOrdering.ordSer[TestCaseHardA]
-    check[TestCaseHardA]
-    checkMany[TestCaseHardA]
-    checkCollisions[TestCaseHardA]
-  }
+  // test("Test out Sealed TestCaseHardA") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[TestCaseHardA]
+  //   check[TestCaseHardA]
+  //   checkMany[TestCaseHardA]
+  //   checkCollisions[TestCaseHardA]
+  // }
 
-  test("Test out Sealed TestCaseHardB") {
-    import TestCC._
+  // test("Test out Sealed TestCaseHardB") {
+  //   import TestCC._
 
-    implicit val v: OrderedSerialization[ContainerP] =
-      OrderedSerialization.viaTransform(_.id, ContainerP.fromId)
+  //   implicit val v: OrderedSerialization[ContainerP] =
+  //     OrderedSerialization.viaTransform(_.id, ContainerP.fromId)
 
-    BinaryOrdering.ordSer[TestCaseHardB]
-    check[TestCaseHardB]
-    checkMany[TestCaseHardB]
-    checkCollisions[TestCaseHardB]
-  }
+  //   BinaryOrdering.ordSer[TestCaseHardB]
+  //   check[TestCaseHardB]
+  //   checkMany[TestCaseHardB]
+  //   checkCollisions[TestCaseHardB]
+  // }
 
-  test("Test out CaseObject") {
-    import TestCC._
-    BinaryOrdering.ordSer[TestObjectE.type]
-    check[TestObjectE.type]
-    checkMany[TestObjectE.type]
-  }
+  // test("Test out CaseObject") {
+  //   import TestCC._
+  //   BinaryOrdering.ordSer[TestObjectE.type]
+  //   check[TestObjectE.type]
+  //   checkMany[TestObjectE.type]
+  // }
 
-  test("Test out (Int, Int)") {
-    BinaryOrdering.ordSer[(Int, Int)]
-    check[(Int, Int)]
-    checkCollisions[(Int, Int)]
-  }
+  // test("Test out (Int, Int)") {
+  //   BinaryOrdering.ordSer[(Int, Int)]
+  //   check[(Int, Int)]
+  //   checkCollisions[(Int, Int)]
+  // }
 
-  test("Test out (String, Option[Int], String)") {
-    BinaryOrdering.ordSer[(String, Option[Int], String)]
-    check[(String, Option[Int], String)]
-    checkCollisions[(String, Option[Int], String)]
-  }
+  // test("Test out (String, Option[Int], String)") {
+  //   BinaryOrdering.ordSer[(String, Option[Int], String)]
+  //   check[(String, Option[Int], String)]
+  //   checkCollisions[(String, Option[Int], String)]
+  // }
 
-  test("Test out MyData") {
-    import MyData._
-    BinaryOrdering.ordSer[MyData]
-    check[MyData]
-    checkCollisions[MyData]
-  }
+  // test("Test out MyData") {
+  //   import MyData._
+  //   BinaryOrdering.ordSer[MyData]
+  //   check[MyData]
+  //   checkCollisions[MyData]
+  // }
 
-  test("Test out MacroOpaqueContainer") {
-    // This will test for things which our macros can't view themselves, so need to use an implicit to let the user provide instead.
-    // by itself should just work from its own implicits
-    implicitly[OrderedSerialization[MacroOpaqueContainer]]
+  // test("Test out MacroOpaqueContainer") {
+  //   // This will test for things which our macros can't view themselves, so need to use an implicit to let the user provide instead.
+  //   // by itself should just work from its own implicits
+  //   implicitly[OrderedSerialization[MacroOpaqueContainer]]
 
-    // Put inside a tuple2 to test that
-    BinaryOrdering.ordSer[(MacroOpaqueContainer, MacroOpaqueContainer)]
-    check[(MacroOpaqueContainer, MacroOpaqueContainer)]
-    checkCollisions[(MacroOpaqueContainer, MacroOpaqueContainer)]
-    check[Option[MacroOpaqueContainer]]
-    checkCollisions[Option[MacroOpaqueContainer]]
-    check[List[MacroOpaqueContainer]]
-    checkCollisions[List[MacroOpaqueContainer]]
-  }
+  //   // Put inside a tuple2 to test that
+  //   BinaryOrdering.ordSer[(MacroOpaqueContainer, MacroOpaqueContainer)]
+  //   check[(MacroOpaqueContainer, MacroOpaqueContainer)]
+  //   checkCollisions[(MacroOpaqueContainer, MacroOpaqueContainer)]
+  //   check[Option[MacroOpaqueContainer]]
+  //   checkCollisions[Option[MacroOpaqueContainer]]
+  //   check[List[MacroOpaqueContainer]]
+  //   checkCollisions[List[MacroOpaqueContainer]]
+  // }
 
-  test("Does not produce ordering for large sealed trait") {
-    noOrderedSerialization[BigTrait]
-  }
+  // test("Does not produce ordering for large sealed trait") {
+  //   noOrderedSerialization[BigTrait]
+  // }
 
-  def fn[A](
-    implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] =
-    BinaryOrdering.ordSer[TypedParameterCaseClass[A]]
+  // def fn[A](
+  //   implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] =
+  //   BinaryOrdering.ordSer[TypedParameterCaseClass[A]]
 
-  test("Test out MacroOpaqueContainer inside a case class as an abstract type") {
-    fn[MacroOpaqueContainer]
-    BinaryOrdering.ordSer[(MacroOpaqueContainer, MacroOpaqueContainer)]
-    ()
-  }
+  // test("Test out MacroOpaqueContainer inside a case class as an abstract type") {
+  //   fn[MacroOpaqueContainer]
+  //   BinaryOrdering.ordSer[(MacroOpaqueContainer, MacroOpaqueContainer)]
+  //   ()
+  // }
 }

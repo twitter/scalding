@@ -32,9 +32,17 @@ trait OrderedSerialization[T] extends Ordering[T] with Serialization[T] {
    * the InputStreams is mutated to be the end of the record.
    */
   def compareBinary(a: InputStream, b: InputStream): OrderedSerialization.Result
+
+  /**
+   * This compares two InputStreams. After this call, the position in
+   * the InputStreams may or may not be at the end of the record.
+   */
+  def compareBinaryNoConsume(a: InputStream, b: InputStream): OrderedSerialization.Result = {
+    compareBinary(a, b)
+  }
 }
 
-object OrderedSerialization {
+object OrderedSerialization extends LowPriorityOrderedSerialization {
   /**
    * Represents the result of a comparison that might fail due
    * to an error deserializing
@@ -214,3 +222,8 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
   final override def staticSize = serialization.staticSize
   final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }
+
+private[serialization] trait LowPriorityOrderedSerialization {
+  implicit final def importedOrderedSerialization[A](implicit exported: Exported[OrderedSerialization[A]]): OrderedSerialization[A] = exported.instance
+}
+

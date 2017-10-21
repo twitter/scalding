@@ -25,7 +25,7 @@ object SealedTraitOrderedBuf {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if (tpe.typeSymbol.isClass && (tpe.typeSymbol.asClass.isAbstractClass || tpe.typeSymbol.asClass.isTrait)) =>
+      case tpe if (tpe.typeSymbol.isClass && (tpe.typeSymbol.asClass.isAbstractClass || tpe.typeSymbol.asClass.isTrait)) && !(tpe.erasure =:= c.universe.typeOf[Either[Any, Any]]) =>
         SealedTraitOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf

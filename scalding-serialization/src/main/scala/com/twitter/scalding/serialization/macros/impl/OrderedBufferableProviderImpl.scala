@@ -34,14 +34,12 @@ object OrderedSerializationProviderImpl {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
-    val eitherDispatcher = EitherOrderedBuf.dispatch(c)(buildDispatcher)
     val caseClassDispatcher = CaseClassOrderedBuf.dispatch(c)(buildDispatcher)
     val caseObjectDispatcher = CaseObjectOrderedBuf.dispatch(c)
     val productDispatcher = ProductOrderedBuf.dispatch(c)(buildDispatcher)
     val stringDispatcher = StringOrderedBuf.dispatch(c)
     val traversablesDispatcher = TraversablesOrderedBuf.dispatch(c)(buildDispatcher)
     val unitDispatcher = UnitOrderedBuf.dispatch(c)
-    val byteBufferDispatcher = ByteBufferOrderedBuf.dispatch(c)
     val sealedTraitDispatcher = SealedTraitOrderedBuf.dispatch(c)(buildDispatcher)
 
     OrderedSerializationProviderImpl
@@ -49,9 +47,7 @@ object OrderedSerializationProviderImpl {
       .orElse(primitiveDispatcher)
       .orElse(unitDispatcher)
       .orElse(optionDispatcher)
-      .orElse(eitherDispatcher)
       .orElse(stringDispatcher)
-      .orElse(byteBufferDispatcher)
       .orElse(traversablesDispatcher)
       .orElse(caseClassDispatcher)
       .orElse(caseObjectDispatcher)
