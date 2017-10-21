@@ -14,6 +14,7 @@ import com.twitter.scalding.{
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
 import com.twitter.scalding.typed._
+import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, MapValuesToMap, FlatMapValuesToFlatMap, FlatMappedFn }
 import com.twitter.scalding.serialization.{
   Boxed,
   BoxedOrderedSerialization,
@@ -166,7 +167,7 @@ object CascadingBackend {
             rec(IterablePipe(List.empty[T]))
           case (fk@FilterKeys(_, _), rec) =>
             def go[K, V](node: FilterKeys[K, V]): CascadingPipe[(K, V)] = {
-              val rewrite = Filter[(K, V)](node.input, FlatMappedFn.FilterKeysToFilter(node.fn))
+              val rewrite = Filter[(K, V)](node.input, FilterKeysToFilter(node.fn))
               rec(rewrite)
             }
             go(fk)
@@ -180,7 +181,7 @@ object CascadingBackend {
             go(f)
           case (f@FlatMapValues(_, _), rec) =>
             def go[K, V, U](node: FlatMapValues[K, V, U]): CascadingPipe[T] =
-              rec(FlatMapped[(K, V), (K, U)](node.input, FlatMappedFn.FlatMapValuesToFlatMap(node.fn)))
+              rec(FlatMapped[(K, V), (K, U)](node.input, FlatMapValuesToFlatMap(node.fn)))
 
             go(f)
           case (fm@FlatMapped(_, _), rec) =>
@@ -205,7 +206,7 @@ object CascadingBackend {
             CascadingPipe.single[T](pipe, fd)
           case (f@MapValues(_, _), rec) =>
             def go[K, A, B](fn: MapValues[K, A, B]): CascadingPipe[_ <: (K, B)] =
-              rec(Mapped[(K, A), (K, B)](fn.input, FlatMappedFn.MapValuesToMap(fn.fn)))
+              rec(Mapped[(K, A), (K, B)](fn.input, MapValuesToMap(fn.fn)))
 
             go(f)
           case (Mapped(input, fn), rec) =>

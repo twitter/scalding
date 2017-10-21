@@ -14,7 +14,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import java.io.{ OutputStream, InputStream, Serializable }
-import java.util.{ Random, UUID }
+import java.util.UUID
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
@@ -22,7 +22,8 @@ import cascading.tuple.Fields
 import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.singleConverter
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.OrderedSerialization
+import com.twitter.scalding.typed.functions.{ AsLeft, AsRight, Constant, DropValue1, Identity, MakeKey, GetKey, GetValue, RandomFilter, RandomNextInt, Swap, TuplizeFunction, WithConstant, PartialFunctionToFilter, SubTypes }
+import com.twitter.scalding.serialization.{ OrderedSerialization, UnitOrderedSerialization }
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
@@ -148,8 +149,7 @@ object TypedPipe extends Serializable {
           case EmptyValue =>
             EmptyTypedPipe
           case LiteralValue(v) =>
-            // TODO: literals like this defeat caching in the planner
-            left.map { (_, v) }
+            left.map(WithConstant(v))
           case ComputedValue(pipe) =>
             CrossPipe(left, pipe)
         }
@@ -260,14 +260,13 @@ sealed trait TypedPipe[+T] extends Serializable {
    */
   @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
   def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] =
-    // TODO: literals like this defeat caching in the planner
-    map((_, ())).group
+    map(WithConstant(())).group
 
   /**
    * If T <:< U, then this is safe to treat as TypedPipe[U] due to covariance
    */
   protected def raiseTo[U](implicit ev: T <:< U): TypedPipe[U] =
-    this.asInstanceOf[TypedPipe[U]]
+    SubTypes.fromEv(ev).liftCo[TypedPipe](this)
 
   /**
    * Filter and map. See scala.collection.List.collect.
@@ -276,7 +275,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
-    filter(fn.isDefinedAt(_)).map(fn)
+    filter(PartialFunctionToFilter(fn)).map(fn)
 
   /**
    * Attach a ValuePipe to each element this TypedPipe
@@ -318,34 +317,24 @@ sealed trait TypedPipe[+T] extends Serializable {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
 
-    // Semigroup to handle duplicates for a given key might have different values.
-    // TODO: literals like this defeat caching in the planner
-    implicit val sg: Semigroup[T] = new Semigroup[T] {
-      def plus(a: T, b: T) = b
-    }
-
-    // TODO: literals like this defeat caching in the planner
-    val op = map { tup => (fn(tup), tup) }.sumByKey
+    val op = groupBy(fn).head
     val reduced = numReducers match {
       case Some(red) => op.withReducers(red)
       case None => op
     }
-    // TODO: literals like this defeat caching in the planner
-    reduced.map(_._2)
+    reduced.map(GetValue())
   }
 
   /** Merge two TypedPipes of different types by using Either */
   def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
-    // TODO: literals like this defeat caching in the planner
-    map(Left(_)) ++ (that.map(Right(_)))
+    map(AsLeft()) ++ (that.map(AsRight()))
 
   /**
    * Sometimes useful for implementing custom joins with groupBy + mapValueStream when you know
    * that the value/key can fit in memory. Beware.
    */
   def eitherValues[K, V, R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K, V)): TypedPipe[(K, Either[V, R])] =
-    // TODO: literals like this defeat caching in the planner
-    mapValues { (v: V) => Left(v) } ++ (that.mapValues { (r: R) => Right(r) })
+    mapValues(AsLeft[V, R]()) ++ (that.mapValues(AsRight[V, R]()))
 
   /**
    * If you are going to create two branches or forks,
@@ -404,16 +393,14 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   /** flatten an Iterable */
   def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
-    // TODO: literals like this defeat caching in the planner
-    flatMap(_.asInstanceOf[TraversableOnce[U]]) // don't use ev which may not be serializable
+    raiseTo[TraversableOnce[U]].flatMap(Identity[TraversableOnce[U]]())
 
   /**
    * flatten just the values
    * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
    */
   def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U])): TypedPipe[(K, U)] =
-    // TODO: literals like this defeat caching in the planner
-    flatMapValues[K, TraversableOnce[U], U] { us => us }
+    flatMapValues[K, TraversableOnce[U], U](Identity[TraversableOnce[U]]())
 
   /**
    * Force a materialization of this pipe prior to the next operation.
@@ -438,13 +425,11 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   /** Send all items to a single reducer */
   def groupAll: Grouped[Unit, T] =
-    // TODO: literals like this defeat caching in the planner
-    groupBy(x => ())(ordSer[Unit]).withReducers(1)
+    groupBy(Constant(()))(UnitOrderedSerialization).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
   def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
-    // TODO: literals like this defeat caching in the planner
-    map { t => (g(t), t) }.group
+  map(MakeKey(g)).group
 
   /** Group using an explicit Ordering on the key. */
   def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
@@ -458,13 +443,9 @@ sealed trait TypedPipe[+T] extends Serializable {
    *
    * You probably want shard if you are just forcing a shuffle.
    */
-  def groupRandomly(partitions: Int): Grouped[Int, T] = {
-    // Make it lazy so all mappers get their own:
-    lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    // TODO: literals like this defeat caching in the planner
-    groupBy { _ => rng.nextInt(partitions) }(TypedPipe.identityOrdering)
+  def groupRandomly(partitions: Int): Grouped[Int, T] =
+    groupBy(RandomNextInt(123, partitions))(TypedPipe.identityOrdering)
       .withReducers(partitions)
-  }
 
   /**
    * Partitions this into two pipes according to a predicate.
@@ -480,8 +461,10 @@ sealed trait TypedPipe[+T] extends Serializable {
   /**
    * Sample a fraction (between 0 and 1) uniformly independently at random each element of the pipe
    * does not require a reduce step.
+   * This method makes sure to fix the seed, otherwise restarts cause subtle errors.
    */
   def sample(fraction: Double): TypedPipe[T] = sample(fraction, defaultSeed)
+
   /**
    * Sample a fraction (between 0 and 1) uniformly independently at random each element of the pipe with
    * a given seed.
@@ -489,11 +472,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    */
   def sample(fraction: Double, seed: Long): TypedPipe[T] = {
     require(0.0 <= fraction && fraction <= 1.0, s"got $fraction which is an invalid fraction")
-
-    // Make sure to fix the seed, otherwise restarts cause subtle errors
-    lazy val rand = new Random(seed)
-    // TODO: literals like this defeat caching in the planner
-    filter(_ => rand.nextDouble < fraction)
+    filter(RandomFilter(seed, fraction))
   }
 
   /**
@@ -626,19 +605,15 @@ sealed trait TypedPipe[+T] extends Serializable {
 
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
   def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
-    // avoid capturing ev in the closure:
-    // TODO: literals like this defeat caching in the planner
-    raiseTo[(K, Any)].map(_._1)
+    raiseTo[(K, Any)].map(GetKey())
 
   /** swap the keys with the values */
   def swap[K, V](implicit ev: <:<[T, (K, V)]): TypedPipe[(V, K)] =
-    // TODO: literals like this defeat caching in the planner
-    raiseTo[(K, V)].map(_.swap)
+    raiseTo[(K, V)].map(Swap())
 
   /** Just keep the values, or ._2 (if this type is a Tuple2) */
   def values[V](implicit ev: <:<[T, (Any, V)]): TypedPipe[V] =
-    // TODO: literals like this defeat caching in the planner
-    raiseTo[(Any, V)].map(_._2)
+    raiseTo[(Any, V)].map(GetValue())
 
   /**
    * ValuePipe may be empty, so, this attaches it as an Option
@@ -646,8 +621,8 @@ sealed trait TypedPipe[+T] extends Serializable {
    */
   def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
     p match {
-      case EmptyValue => map { (_, None) }
-      case LiteralValue(v) => map { (_, Some(v)) }
+      case EmptyValue => map(WithConstant(None))
+      case LiteralValue(v) => map(WithConstant(Some(v)))
       case ComputedValue(pipe) => leftCross(pipe)
     }
 
@@ -667,8 +642,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V): TypedPipe[V] =
-    // TODO: literals like this defeat caching in the planner
-    leftCross(value).map(t => f(t._1, t._2))
+    leftCross(value).map(TuplizeFunction(f))
 
   /**
    * common pattern of attaching a value and then flatMap
@@ -682,8 +656,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]): TypedPipe[V] =
-    // TODO: literals like this defeat caching in the planner
-    leftCross(value).flatMap(t => f(t._1, t._2))
+    leftCross(value).flatMap(TuplizeFunction(f))
 
   /**
    * common pattern of attaching a value and then filter
@@ -697,8 +670,7 @@ sealed trait TypedPipe[+T] extends Serializable {
    * }
    */
   def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean): TypedPipe[T] =
-    // TODO: literals like this defeat caching in the planner
-    leftCross(value).filter(t => f(t._1, t._2)).map(_._1)
+    leftCross(value).filter(TuplizeFunction(f)).map(GetKey())
 
   /**
    * These operations look like joins, but they do not force any communication
@@ -725,11 +697,9 @@ sealed trait TypedPipe[+T] extends Serializable {
    * For each element, do a map-side (hash) left join to look up a value
    */
   def hashLookup[K >: T, V](grouped: HashJoinable[K, V]): TypedPipe[(K, Option[V])] =
-    // TODO: literals like this defeat caching in the planner
-    map((_, ()))
+    map(WithConstant(()))
       .hashLeftJoin(grouped)
-      // TODO: literals like this defeat caching in the planner
-      .map { case (t, (_, optV)) => (t, optV) }
+      .map(DropValue1())
 
   /**
    * Enables joining when this TypedPipe has some keys with many many values and

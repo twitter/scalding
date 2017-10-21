@@ -214,3 +214,17 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
   final override def staticSize = serialization.staticSize
   final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }
+
+object UnitOrderedSerialization extends OrderedSerialization[Unit] with EquivSerialization[Unit] {
+  private[this] val same = OrderedSerialization.Equal
+  private[this] val someZero = Some(0)
+
+  final override def read(i: InputStream) = Serialization.successUnit
+  final override def write(o: OutputStream, t: Unit) = Serialization.successUnit
+  final override def hash(t: Unit) = 0
+  final override def compare(a: Unit, b: Unit) = 0
+  final override def compareBinary(a: InputStream, b: InputStream) =
+    same
+  final override def staticSize = someZero
+  final override def dynamicSize(t: Unit) = someZero
+}
