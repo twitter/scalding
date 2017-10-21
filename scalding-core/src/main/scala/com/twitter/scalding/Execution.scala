@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.{ FlowDef, Flow }
+import com.stripe.dagon.{ Dag, Id, Rule, HMap }
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
@@ -556,6 +557,32 @@ object Execution {
     final case class Force[T](pipe: TypedPipe[T]) extends ToWrite
     final case class ToIterable[T](pipe: TypedPipe[T]) extends ToWrite
     final case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite
+
+    /**
+     * Optimize these writes into new writes and provide a mapping from
+     * the original TypedPipe to the new TypedPipe
+     */
+    def optimizeWriteBatch(writes: List[ToWrite], rules: Seq[Rule[TypedPipe]]): HMap[TypedPipe, TypedPipe] = {
+      val dag = Dag.empty(typed.OptimizationRules.toLiteral)
+      val (d1, ws) = writes.foldLeft((dag, List.empty[Id[_]])) {
+        case ((dag, ws), Force(p)) =>
+          val (d1, id) = dag.addRoot(p)
+          (d1, id :: ws)
+        case ((dag, ws), ToIterable(p)) =>
+          val (d1, id) = dag.addRoot(p)
+          (d1, id :: ws)
+        case ((dag, ws), SimpleWrite(p, sink)) =>
+          val (d1, id) = dag.addRoot(p)
+          (d1, id :: ws)
+      }
+      // now we optimize the graph
+      val d2 = d1.applySeq(rules)
+      // convert back to TypedPipe:
+      ws.foldLeft(HMap.empty[TypedPipe, TypedPipe]) {
+        case (cache, id) =>
+          cache + (d1.evaluate(id) -> d2.evaluate(id))
+      }
+    }
   }
 
   /**
