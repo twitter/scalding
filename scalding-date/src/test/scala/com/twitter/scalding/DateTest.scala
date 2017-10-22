@@ -212,6 +212,13 @@ class DateTest extends WordSpec {
     "reject an end that is before its start" in {
       intercept[IllegalArgumentException] { DateRange("2010-10-02", "2010-10-01") }
     }
+    "correctly add time in either or both directions" in {
+      assert(DateRange("2010-10-01", "2010-10-02").extend(Days(3)).each(Days(1)).size === 5)
+      assert(DateRange("2010-10-01", "2010-10-02").prepend(Days(3)).each(Days(1)).size === 5)
+      assert(DateRange("2010-10-01", "2010-10-02").embiggen(Days(3)).each(Days(1)).size === 8)
+      assert(DateRange("2010-10-01", "2010-10-10").extend(Days(1)).prepend(Days(1)) ==
+        DateRange("2010-10-01", "2010-10-10").embiggen(Days(1)))
+    }
   }
   "Time units" should {
     def isSame(d1: Duration, d2: Duration) = {
