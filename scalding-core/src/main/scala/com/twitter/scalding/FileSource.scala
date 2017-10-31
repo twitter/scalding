@@ -523,9 +523,13 @@ object TextLine {
     new TextLine(p, sm, textEncoding)
 }
 
-class TextLine(p: String, override val sinkMode: SinkMode, override val textEncoding: String) extends FixedPathSource(p) with TextLineScheme {
+class TextLine(p: String, override val sinkMode: SinkMode, override val textEncoding: String)(
+    implicit val tset: TupleSetter[String]
+  ) extends FixedPathSource(p) with TextLineScheme with TypedSink[String] {
   // For some Java interop
+
   def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
+  override def setter[U <: String] = TupleSetter.asSubSetter[String, U](tset)
 }
 
 /**
