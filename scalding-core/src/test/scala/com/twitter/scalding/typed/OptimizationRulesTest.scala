@@ -208,7 +208,6 @@ class OptimizationRulesTest extends FunSuite {
     // Optimization pure is function (wrt to universal equality)
     assert(optimized == optimized2)
 
-
     // We don't want any further optimization on this job
     val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
     assert(TypedPipeDiff.diff(t, optimized)

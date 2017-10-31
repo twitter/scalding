@@ -234,6 +234,7 @@ class TypedPipeJoinKryoTest extends WordSpec with Matchers {
       .finish()
   }
 }
+
 class TypedPipeDistinctJob(args: Args) extends Job(args) {
   Tsv("inputFile").read.toTypedPipe[(Int, Int)](0, 1)
     .distinct
@@ -252,6 +253,28 @@ class TypedPipeDistinctTest extends WordSpec with Matchers {
         }
       }
       .run
+      .finish()
+  }
+}
+
+class TypedPipeDistinctWordsJob(args: Args) extends Job(args) {
+  TextLine("inputFile")
+    .flatMap(_.split("\\s+"))
+    .distinct
+    .write(TextLine("outputFile"))
+}
+
+class TypedPipeDistinctWordsTest extends WordSpec with Matchers {
+  import Dsl._
+  "A TypedPipeDistinctWordsJob" should {
+    JobTest(new TypedPipeDistinctWordsJob(_))
+      .source(TextLine("inputFile"), List("a b b c", "c d e"))
+      .sink[String](TextLine("outputFile")){ outputBuffer =>
+        "correctly count unique item sizes" in {
+          outputBuffer.toSet should have size 5
+        }
+      }
+      .runHadoop
       .finish()
   }
 }
