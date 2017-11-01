@@ -274,6 +274,7 @@ class TypedPipeDistinctWordsTest extends WordSpec with Matchers {
           outputBuffer.toSet should have size 5
         }
       }
+      .run
       .runHadoop
       .finish()
   }
