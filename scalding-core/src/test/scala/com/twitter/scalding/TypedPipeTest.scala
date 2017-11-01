@@ -267,12 +267,14 @@ class TypedPipeDistinctWordsJob(args: Args) extends Job(args) {
 class TypedPipeDistinctWordsTest extends WordSpec with Matchers {
   import Dsl._
   "A TypedPipeDistinctWordsJob" should {
+    var idx = 0
     JobTest(new TypedPipeDistinctWordsJob(_))
-      .source(TextLine("inputFile"), List("a b b c", "c d e"))
+      .source(TextLine("inputFile"), List(1 -> "a b b c", 2 -> "c d e"))
       .sink[String](TextLine("outputFile")){ outputBuffer =>
-        "correctly count unique item sizes" in {
+        s"$idx: correctly count unique item sizes" in {
           outputBuffer.toSet should have size 5
         }
+        idx += 1
       }
       .run
       .runHadoop
