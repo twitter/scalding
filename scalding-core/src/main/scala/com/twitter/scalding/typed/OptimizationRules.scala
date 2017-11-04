@@ -373,11 +373,122 @@ object OptimizationRules {
    * to simply recomputing on both sides of a fork
    */
   object AddExplicitForks extends Rule[TypedPipe] {
+
+    def maybeFork[A](on: Dag[TypedPipe], t: TypedPipe[A]): Option[TypedPipe[A]] =
+      t match {
+        case ForceToDisk(_) => None
+        case Fork(t) if on.contains(ForceToDisk(t)) => Some(ForceToDisk(t))
+        case Fork(_) => None
+        case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_) => None
+        case other if !on.hasSingleDependent(other) =>
+          Some {
+            // if we are already forcing this, use it
+            if (on.contains(ForceToDisk(other))) ForceToDisk(other)
+            else Fork(other)
+          }
+        case _ => None
+      }
+
+    def needsFork[A](on: Dag[TypedPipe], t: TypedPipe[A]): Boolean =
+      maybeFork(on, t).isDefined
+
+    private def forkCoGroup[K, V](on: Dag[TypedPipe], cg: CoGrouped[K, V]): Option[CoGrouped[K, V]] = {
+      import CoGrouped._
+
+      cg match {
+        case Pair(left: HashJoinable[K, v], right, jf) if forkHashJoinable(on, left).isDefined =>
+          forkHashJoinable(on, left).map {
+            Pair(_, right, jf)
+          }
+        case Pair(left: CoGrouped[K, v], right, jf) if forkCoGroup(on, left).isDefined =>
+          forkCoGroup(on, left).map {
+            Pair(_, right, jf)
+          }
+        case Pair(left, right: HashJoinable[K, v], jf) if forkHashJoinable(on, right).isDefined =>
+          forkHashJoinable(on, right).map {
+            Pair(left, _, jf)
+          }
+        case Pair(left, right: CoGrouped[K, v], jf) if forkCoGroup(on, right).isDefined =>
+          forkCoGroup(on, right).map {
+            Pair(left, _, jf)
+          }
+        case Pair(_, _, _) => None // neither side needs a fork
+        case WithDescription(cg, d) => forkCoGroup(on, cg).map(WithDescription(_, d))
+        case WithReducers(cg, r) => forkCoGroup(on, cg).map(WithReducers(_, r))
+        case MapGroup(cg, fn) => forkCoGroup(on, cg).map(MapGroup(_, fn))
+        case FilterKeys(cg, fn) => forkCoGroup(on, cg).map(FilterKeys(_, fn))
+      }
+    }
+
+    /**
+     * The casts in here are safe, but scala loses track of the types in these kinds of
+     * pattern matches.
+     * We can fix it by changing the types on the identity reduces to use EqTypes[V1, V2]
+     * in case class and leaving the V2 parameter.
+     */
+    private def forkReduceStep[A, B, C](on: Dag[TypedPipe], rs: ReduceStep[A, B, C]): Option[ReduceStep[A, B, C]] = rs match {
+      case step@IdentityReduce(_, _, _, _) =>
+        maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }.asInstanceOf[Option[ReduceStep[A, B, C]]]
+      case step@UnsortedIdentityReduce(_, _, _, _) =>
+        maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }.asInstanceOf[Option[ReduceStep[A, B, C]]]
+      case step@IdentityValueSortedReduce(_, _, _, _, _) =>
+        maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }.asInstanceOf[Option[ReduceStep[A, B, C]]]
+      case step@ValueSortedReduce(_, _, _, _, _, _) =>
+        def go(vsr: ValueSortedReduce[A, B, C]): Option[ValueSortedReduce[A, B, C]] =
+          maybeFork(on, step.mapped).map { p =>
+            ValueSortedReduce[A, B, C](vsr.keyOrdering,
+              p, vsr.valueSort, vsr.reduceFn, vsr.reducers, vsr.descriptions)
+          }
+        go(step)
+      case step@IteratorMappedReduce(_, _, _, _, _) =>
+        def go(imr: IteratorMappedReduce[A, B, C]): Option[IteratorMappedReduce[A, B, C]] =
+          maybeFork(on, step.mapped).map { p => imr.copy(mapped = p) }
+        go(step)
+    }
+
+    private def forkHashJoinable[K, V](on: Dag[TypedPipe], hj: HashJoinable[K, V]): Option[HashJoinable[K, V]] =
+      hj match {
+        case step@IdentityReduce(_, _, _, _) =>
+          maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }
+        case step@UnsortedIdentityReduce(_, _, _, _) =>
+          maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }
+        case step@IteratorMappedReduce(_, _, _, _, _) =>
+          maybeFork(on, step.mapped).map { p => step.copy(mapped = p) }
+      }
+
     def apply[T](on: Dag[TypedPipe]) = {
-      case Fork(_) | ForceToDisk(_) => None // these are already forking
-      case SourcePipe(_) => None // don't need to worry about sources
-      case IterablePipe(_) => None // don't need to worry about sources
-      case nonFork if on.fanOut(nonFork) > 1 => Some(Fork(nonFork))
+      case CrossPipe(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossPipe(_, b))
+      case CrossPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(CrossPipe(a, _))
+      case CrossValue(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossValue(_, b))
+      case CrossValue(a, ComputedValue(b)) if needsFork(on, b) => maybeFork(on, b).map { fb => CrossValue(a, ComputedValue(fb)) }
+      case DebugPipe(p) => maybeFork(on, p).map(DebugPipe(_))
+      case FilterKeys(p, fn) => maybeFork(on, p).map(FilterKeys(_, fn))
+      case f@Filter(_, _) =>
+        def go[A](f: Filter[A]): Option[TypedPipe[A]] = {
+          val Filter(p, fn) = f
+          maybeFork(on, p).map(Filter(_, fn))
+        }
+        go(f)
+      case FlatMapValues(p, fn) => maybeFork(on, p).map(FlatMapValues(_, fn))
+      case FlatMapped(p, fn) => maybeFork(on, p).map(FlatMapped(_, fn))
+      case ForceToDisk(_) | Fork(_) => None // already has a barrier
+      case HashCoGroup(left, right, jf) if needsFork(on, left) => maybeFork(on, left).map(HashCoGroup(_, right, jf))
+      case HashCoGroup(left, right, jf) => forkHashJoinable(on, right).map(HashCoGroup(left, _, jf))
+      case MapValues(p, fn) => maybeFork(on, p).map(MapValues(_, fn))
+      case Mapped(p, fn) => maybeFork(on, p).map(Mapped(_, fn))
+      case MergedTypedPipe(a, b) if needsFork(on, a) => maybeFork(on, a).map(MergedTypedPipe(_, b))
+      case MergedTypedPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(MergedTypedPipe(a, _))
+      case ReduceStepPipe(rs) => forkReduceStep(on, rs).map(ReduceStepPipe(_))
+      case SumByLocalKeys(p, sg) => maybeFork(on, p).map(SumByLocalKeys(_, sg))
+      case t@TrappedPipe(_, _, _) =>
+        def go[A](t: TrappedPipe[A]): Option[TypedPipe[A]] = {
+          val TrappedPipe(p, sink, conv) = t
+          maybeFork(on, p).map(TrappedPipe(_, sink, conv))
+        }
+        go(t)
+      case CoGroupedPipe(cgp) => forkCoGroup(on, cgp).map(CoGroupedPipe(_))
+      case WithOnComplete(p, fn) => maybeFork(on, p).map(WithOnComplete(_, fn))
+      case WithDescriptionTypedPipe(p, d1, d2) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, d1, d2))
       case _ => None
     }
   }
