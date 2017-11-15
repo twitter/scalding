@@ -32,6 +32,7 @@ import com.twitter.scalding.commons.tap.VersionedTap.TapMode
 import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
 import com.twitter.scalding.typed.KeyedListLike
 import com.twitter.scalding.typed.TypedSink
+import com.twitter.scalding.quotation.Quoted
 import org.apache.hadoop.mapred.JobConf
 import scala.collection.JavaConverters._
 
@@ -224,7 +225,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends j
   // the pipe in using an implicit `Monoid[V]` and sinks all results
   // into the `sinkVersion` of data (or a new version) specified by
   // `src`.
-  def writeIncremental(src: VersionedKeyValSource[K, V], reducers: Int = 1)(implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)] = {
+  def writeIncremental(src: VersionedKeyValSource[K, V], reducers: Int = 1)(implicit flowDef: FlowDef, mode: Mode, q: Quoted): TypedPipe[(K, V)] = {
     val outPipe =
       if (!src.resourceExists(mode))
         pipe

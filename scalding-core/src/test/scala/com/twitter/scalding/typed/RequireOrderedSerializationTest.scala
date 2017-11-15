@@ -71,7 +71,7 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
       val ex = the[Exception] thrownBy {
         test(new NoOrderdSerJob(_, "true"))
       }
-      ex.getMessage should include("SerializationTest.scala:")
+      ex.getMessage should include("SerializationTest.scala")
     }
 
     "not throw when mode is false" in {

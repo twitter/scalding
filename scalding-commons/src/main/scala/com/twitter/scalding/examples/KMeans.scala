@@ -2,6 +2,7 @@ package com.twitter.scalding.examples
 
 import com.twitter.scalding._
 import com.twitter.scalding.typed.ComputedValue
+import com.twitter.scalding.quotation.Quoted
 
 object KMeans {
 
@@ -88,12 +89,12 @@ object KMeans {
     }
   }
 
-  def initializeClusters(k: Int, points: TypedPipe[Vector[Double]]): (ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector]) = {
+  def initializeClusters(k: Int, points: TypedPipe[Vector[Double]])(implicit q: Quoted): (ValuePipe[List[LabeledVector]], TypedPipe[LabeledVector]) = {
     val rng = new java.util.Random(123)
     // take a random k vectors:
     val clusters = points.map { v => (rng.nextDouble, v) }
       .groupAll
-      .sortedTake(k)(Ordering.by(_._1))
+      .sortedTake(k)(Ordering.by(_._1), q)
       .mapValues { randk =>
         randk.iterator
           .zipWithIndex

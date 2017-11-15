@@ -20,6 +20,7 @@ import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard }
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
+import com.twitter.scalding.quotation.Quoted
 
 object CoGroupable {
   /*
@@ -148,7 +149,10 @@ object CoGrouped {
   }
 
   final case class FilterKeys[K, V](on: CoGrouped[K, V], fn: K => Boolean) extends CoGrouped[K, V] {
-    val inputs = on.inputs.map(_.filterKeys(fn))
+    def inputs = {
+      implicit val q: Quoted = Quoted.internal
+      on.inputs.map(_.filterKeys(fn))
+    }
     def reducers = on.reducers
     def keyOrdering = on.keyOrdering
     def joinFunction = on.joinFunction
@@ -195,14 +199,14 @@ sealed trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped]
    * but it is not clear how to generalize that for general cogrouping functions.
    * For now, just do a normal take.
    */
-  override def bufferedTake(n: Int): CoGrouped[K, R] =
+  override def bufferedTake(n: Int)(implicit q: Quoted): CoGrouped[K, R] =
     take(n)
 
   // Filter the keys before doing the join
-  override def filterKeys(fn: K => Boolean): CoGrouped[K, R] =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted): CoGrouped[K, R] =
     CoGrouped.FilterKeys(this, fn)
 
-  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1]): CoGrouped[K, R1] =
+  override def mapGroup[R1](fn: (K, Iterator[R]) => Iterator[R1])(implicit q: Quoted): CoGrouped[K, R1] =
     CoGrouped.MapGroup(this, fn)
 
   override def toTypedPipe: TypedPipe[(K, R)] =
@@ -272,16 +276,16 @@ object Grouped {
  * of each key in memory on the reducer.
  */
 sealed trait Sortable[+T, +Sorted[+_]] {
-  def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
+  def withSortOrdering[U >: T](so: Ordering[U])(implicit q: Quoted): Sorted[T]
 
-  def sortBy[B: Ordering](fn: (T) => B): Sorted[T] =
+  def sortBy[B: Ordering](fn: (T) => B)(implicit q: Quoted): Sorted[T] =
     withSortOrdering(Ordering.by(fn))
 
   // Sorts the values for each key
-  def sorted[B >: T](implicit ord: Ordering[B]): Sorted[T] =
+  def sorted[B >: T](implicit ord: Ordering[B], q: Quoted): Sorted[T] =
     withSortOrdering(ord)
 
-  def sortWith(lt: (T, T) => Boolean): Sorted[T] =
+  def sortWith(lt: (T, T) => Boolean)(implicit q: Quoted): Sorted[T] =
     withSortOrdering(Ordering.fromLessThan(lt))
 }
 
@@ -324,10 +328,10 @@ final case class IdentityReduce[K, V1](
    * before sending to the mappers. This is a big help if there are relatively
    * few keys and n is relatively small.
    */
-  override def bufferedTake(n: Int) =
+  override def bufferedTake(n: Int)(implicit q: Quoted) =
     toUIR.bufferedTake(n)
 
-  override def withSortOrdering[U >: V1](so: Ordering[U]): IdentityValueSortedReduce[K, V1] =
+  override def withSortOrdering[U >: V1](so: Ordering[U])(implicit q: Quoted): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, so, reducers, descriptions)
 
   override def withReducers(red: Int): IdentityReduce[K, V1] =
@@ -336,23 +340,23 @@ final case class IdentityReduce[K, V1](
   override def withDescription(description: String): IdentityReduce[K, V1] =
     copy(descriptions = descriptions :+ description)
 
-  override def filterKeys(fn: K => Boolean) =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted) =
     toUIR.filterKeys(fn)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3])(implicit q: Quoted) = {
     // Only pass non-Empty iterators to subsequent functions
     IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers, descriptions)
   }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
+  override def mapValues[V2](fn: V1 => V2)(implicit q: Quoted) =
     toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V1](implicit sg: Semigroup[U], q: Quoted) = {
     // there is no sort, mapValueStream or force to reducers:
     val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
@@ -375,7 +379,7 @@ final case class UnsortedIdentityReduce[K, V1](
    * before sending to the reducers. This is a big help if there are relatively
    * few keys and n is relatively small.
    */
-  override def bufferedTake(n: Int) =
+  override def bufferedTake(n: Int)(implicit q: Quoted) =
     if (n < 1) {
       // This means don't take anything, which is legal, but strange
       filterKeys(Constant(false))
@@ -406,20 +410,20 @@ final case class UnsortedIdentityReduce[K, V1](
   override def withDescription(description: String): UnsortedIdentityReduce[K, V1] =
     copy(descriptions = descriptions :+ description)
 
-  override def filterKeys(fn: K => Boolean) =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted) =
     UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers, descriptions)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3])(implicit q: Quoted) = {
     // Only pass non-Empty iterators to subsequent functions
     IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers, descriptions)
   }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
+  override def mapValues[V2](fn: V1 => V2)(implicit q: Quoted) =
     UnsortedIdentityReduce(keyOrdering, mapped.mapValues(fn), reducers, descriptions)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V1](implicit sg: Semigroup[U], q: Quoted) = {
     // there is no sort, mapValueStream or force to reducers:
     val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
     UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
@@ -448,11 +452,11 @@ final case class IdentityValueSortedReduce[K, V1](
   override def withDescription(description: String): IdentityValueSortedReduce[K, V1] =
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers, descriptions = descriptions :+ description)
 
-  override def filterKeys(fn: K => Boolean) =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted) =
     // copy fails to get the types right, :/
     IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers, descriptions)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
+  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3])(implicit q: Quoted) =
     // Only pass non-Empty iterators to subsequent functions
     ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers, descriptions)
 
@@ -461,7 +465,7 @@ final case class IdentityValueSortedReduce[K, V1](
    * before sending to the reducers. This is a big help if there are relatively
    * few keys and n is relatively small.
    */
-  override def bufferedTake(n: Int): SortedGrouped[K, V1] =
+  override def bufferedTake(n: Int)(implicit q: Quoted): SortedGrouped[K, V1] =
     if (n <= 0) {
       // This means don't take anything, which is legal, but strange
       filterKeys(Constant(false))
@@ -483,7 +487,7 @@ final case class IdentityValueSortedReduce[K, V1](
    * To force a memory-based take, use bufferedTake
    * Otherwise, we send all the values to the reducers
    */
-  override def take(n: Int) =
+  override def take(n: Int)(implicit q: Quoted) =
     if (n <= 1) bufferedTake(n)
     else mapValueStream(_.take(n))
 }
@@ -501,7 +505,7 @@ final case class ValueSortedReduce[K, V1, V2](
    * After sorting, then reducing, there is no chance
    * to operate in the mappers. Just call take.
    */
-  override def bufferedTake(n: Int) = take(n)
+  override def bufferedTake(n: Int)(implicit q: Quoted) = take(n)
 
   override def withReducers(red: Int) =
     // copy infers loose types. :(
@@ -512,11 +516,11 @@ final case class ValueSortedReduce[K, V1, V2](
     ValueSortedReduce[K, V1, V2](
       keyOrdering, mapped, valueSort, reduceFn, reducers, descriptions :+ description)
 
-  override def filterKeys(fn: K => Boolean) =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted) =
     // copy fails to get the types right, :/
     ValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reduceFn, reducers, descriptions)
 
-  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3])(implicit q: Quoted) = {
     val newReduce = ComposedMapGroup(reduceFn, fn)
     ValueSortedReduce[K, V1, V3](
       keyOrdering, mapped, valueSort, newReduce, reducers, descriptions)
@@ -535,7 +539,7 @@ final case class IteratorMappedReduce[K, V1, V2](
    * After reducing, we are always
    * operating in memory. Just call take.
    */
-  override def bufferedTake(n: Int) = take(n)
+  override def bufferedTake(n: Int)(implicit q: Quoted) = take(n)
 
   override def withReducers(red: Int): IteratorMappedReduce[K, V1, V2] =
     copy(reducers = Some(red))
@@ -543,10 +547,10 @@ final case class IteratorMappedReduce[K, V1, V2](
   override def withDescription(description: String): IteratorMappedReduce[K, V1, V2] =
     copy(descriptions = descriptions :+ description)
 
-  override def filterKeys(fn: K => Boolean) =
+  override def filterKeys(fn: K => Boolean)(implicit q: Quoted) =
     copy(mapped = mapped.filterKeys(fn))
 
-  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3])(implicit q: Quoted) = {
     // don't make a closure
     val newReduce = ComposedMapGroup(reduceFn, fn)
     copy(reduceFn = newReduce)

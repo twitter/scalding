@@ -13,6 +13,7 @@ import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 import scala.collection.JavaConverters._
 
 import Execution.{ ToWrite, Writer }
+import com.twitter.scalding.quotation.Quoted
 
 class AtomicBox[T <: AnyRef](init: T) {
   private[this] val ref = new AtomicReference[T](init)
@@ -301,6 +302,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
 
   def plan[T](m: Memo, tp: TypedPipe[T]): (Memo, Op[T]) =
     m.plan(tp) {
+      implicit val q: Quoted = Quoted.internal
       tp match {
         case cp@CrossPipe(_, _) =>
           plan(m, cp.viaHashJoin)
@@ -378,7 +380,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           val (m2, op2) = plan(m1, right)
           (m2, Op.Concat(op1, op2))
 
-        case SourcePipe(src) =>
+        case SourcePipe(src, _) =>
           (m, Op.Source({ cec =>
             mem.readSource(src) match {
               case Some(iter) => Future.successful(iter)
@@ -413,7 +415,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           // on the map-phase until the next partition, so it can
           // be made to work, but skipping for now
 
-        case WithDescriptionTypedPipe(pipe, description, dedup) =>
+        case WithDescriptionTypedPipe(pipe, description, dedup, quoted) =>
           plan(m, pipe)
 
         case WithOnComplete(pipe, fn) =>
@@ -538,7 +540,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
             pipe match {
               case TypedPipe.EmptyTypedPipe => old
               case TypedPipe.IterablePipe(_) => old
-              case TypedPipe.SourcePipe(_) => old
+              case TypedPipe.SourcePipe(_, _) => old
               case other if oldState.forced.contains(other) => old
               case other =>
                 val (st, a) = force(other, oldState)
@@ -582,7 +584,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
   )(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]] = initial match {
     case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
     case TypedPipe.IterablePipe(iter) => Future.successful(iter)
-    case TypedPipe.SourcePipe(src) => mem.readSource(src) match {
+    case TypedPipe.SourcePipe(src, _) => mem.readSource(src) match {
       case Some(iter) => Future.successful(iter)
       case None => Future.failed(new Exception(s"Source: $src not connected"))
     }

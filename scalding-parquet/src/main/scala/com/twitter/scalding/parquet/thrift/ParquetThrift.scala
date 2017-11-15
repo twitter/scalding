@@ -30,9 +30,43 @@ import java.io.Serializable
 import org.apache.thrift.{ TBase, TFieldIdEnum }
 
 import scala.reflect.ClassTag
+import com.twitter.scalding.quotation.Projections
+import com.twitter.scalding.typed.ProjectionMeta
+import org.apache.hadoop.mapred.JobConf
+import org.apache.parquet.hadoop.thrift.ThriftReadSupport
+import com.twitter.scalding.quotation.TypeReference
+import com.twitter.scalding.quotation.Projection
+import com.twitter.scalding.quotation.Property
+import org.apache.hadoop.conf.Configuration
+import org.slf4j.LoggerFactory
 
 object ParquetThrift extends Serializable {
   type ThriftBase = TBase[_ <: TBase[_, _], _ <: TFieldIdEnum]
+
+  private val log = LoggerFactory.getLogger(this.getClass)
+  
+  def projectionMeta[T: ClassTag](superClass: Class[_]) = {
+    def setConf(c: Configuration, p: Projections) = {
+
+      def snakeCase(s: String) =
+        s.flatMap {
+          case c if c.isUpper => s"_${c.toLower}"
+          case c => s"$c"
+        }
+        
+      def toString(p: Projection): String =
+        p match {
+          case TypeReference(tpe) => ""
+          case Property(path: TypeReference, name, tpe) => snakeCase(name)
+          case Property(path, name, tpe) => s"${toString(path)}.${snakeCase(name)}"
+        }
+
+      val projectionString = p.set.map(toString).mkString(";")
+      log.info(s"Automatic projection pushdown: $projectionString")
+      ThriftReadSupport.setStrictFieldProjectionFilter(c, projectionString);
+    }
+    ProjectionMeta(implicitly[ClassTag[T]], superClass, setConf)
+  }
 }
 
 trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with HasColumnProjection {
@@ -59,6 +93,7 @@ trait ParquetThriftBase[T] extends LocalTapSource with HasFilterPredicate with H
 
 trait ParquetThriftBaseFileSource[T] extends FileSource with ParquetThriftBase[T] with SingleMappable[T] with TypedSink[T] {
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](TupleSetter.singleSetter[T])
+  override def projectionMeta = Some(ParquetThrift.projectionMeta[T](classOf[TBase[_, _]]))
 }
 
 trait ParquetThrift[T <: ParquetThrift.ThriftBase] extends ParquetThriftBaseFileSource[T] {

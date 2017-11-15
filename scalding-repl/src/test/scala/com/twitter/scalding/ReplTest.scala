@@ -59,7 +59,7 @@ class ReplTest extends WordSpec {
         // it's a TypedPipe from a MemorySink or SequenceFile)
         s match {
           case TypedPipe.IterablePipe(_) => succeed
-          case TypedPipe.SourcePipe(s) => assert(s.toString.contains("SequenceFile"))
+          case TypedPipe.SourcePipe(s, _) => assert(s.toString.contains("SequenceFile"))
           case _ => fail(s"expected an IterablePipe or source from a SequenceFile, found: $s")
         }
       }

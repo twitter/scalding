@@ -21,6 +21,20 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+import com.twitter.scalding.quotation.Projections
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.conf.Configuration
+
+/**
+ * Provides the source information so Scalding can apply automatic projection pushdown.
+ * @param ct the class tag of the type under projection (`T` of a `TypedSource[T]`)
+ * @param superClass the super class to be used to limit the projections to a specific type (e.g. `ThriftBase`)
+ * @param setProjections a callback function to be called by Scalding to set the projection configuration
+ */
+case class ProjectionMeta(
+  ct: reflect.ClassTag[_],
+  superClass: Class[_],
+  setProjections: (Configuration, Projections) => Unit)
 
 trait TypedSource[+T] extends java.io.Serializable {
   /**
@@ -32,9 +46,16 @@ trait TypedSource[+T] extends java.io.Serializable {
    * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
    */
   def converter[U >: T]: TupleConverter[U]
+
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe
+
   // These are the default column number YOU MAY NEED TO OVERRIDE!
   def sourceFields: Fields = Dsl.intFields(0 until converter.arity)
+
+  /**
+   * Override this method to support automatic projections for this source
+   */
+  def projectionMeta: Option[ProjectionMeta] = None
 
   /**
    * Transform this TypedSource into another by mapping after.
