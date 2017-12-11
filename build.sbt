@@ -216,6 +216,7 @@ lazy val scalding = Project(
  .aggregate(
   scaldingArgs,
   scaldingDate,
+  scaldingQuotation,
   scaldingCore,
   scaldingCommons,
   scaldingAvro,
@@ -242,6 +243,7 @@ lazy val scaldingAssembly = Project(
  .aggregate(
   scaldingArgs,
   scaldingDate,
+  scaldingQuotation,
   scaldingCore,
   scaldingCommons,
   scaldingAvro,
@@ -312,6 +314,13 @@ lazy val scaldingBenchmarks = module("benchmarks")
     parallelExecution in Test := false
   ).dependsOn(scaldingCore)
 
+lazy val scaldingQuotation = module("quotation").settings(
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
+  )
+)
+
 lazy val scaldingCore = module("core").settings(
   libraryDependencies ++= Seq(
     "cascading" % "cascading-core" % cascadingVersion,
@@ -333,7 +342,7 @@ lazy val scaldingCore = module("core").settings(
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
+).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
 
 lazy val scaldingCommons = module("commons").settings(
   libraryDependencies ++= Seq(
