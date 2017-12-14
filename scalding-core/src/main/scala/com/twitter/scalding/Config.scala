@@ -38,7 +38,7 @@ import scala.util.{ Failure, Success, Try }
 /**
  * This is a wrapper class on top of Map[String, String]
  */
-trait Config extends Serializable {
+abstract class Config extends Serializable {
 
   import Config._ // get the constants
   def toMap: Map[String, String]
