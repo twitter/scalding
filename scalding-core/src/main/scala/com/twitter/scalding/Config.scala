@@ -34,6 +34,7 @@ import java.net.URI
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
+import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
 /**
  * This is a wrapper class on top of Map[String, String]
@@ -138,17 +139,30 @@ trait Config extends Serializable {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  @deprecated("Use setRequireOrderedSerializationMode", "12/14/17")
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+
+  @deprecated("Use getRequireOrderedSerializationMode", "12/14/17")
+  def getRequireOrderedSerialization: Boolean =
+    getRequireOrderedSerializationMode == Some(RequireOrderedSerializationMode.Fail)
+
   /**
    * Set this configuration option to require all grouping/cogrouping
    * to use OrderedSerialization
    */
-  def setRequireOrderedSerialization(b: Boolean): Config =
-    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+  def setRequireOrderedSerializationMode(r: Option[RequireOrderedSerializationMode]): Config =
+    r.map {
+      v => this + (ScaldingRequireOrderedSerialization -> (v.toString))
+    }.getOrElse(this)
 
-  def getRequireOrderedSerialization: Boolean =
+  def getRequireOrderedSerializationMode: Option[RequireOrderedSerializationMode] =
     get(ScaldingRequireOrderedSerialization)
-      .map(_.toBoolean)
-      .getOrElse(false)
+      .map(_.toLowerCase()).collect {
+        case "true" => RequireOrderedSerializationMode.Fail // backwards compatibility
+        case "fail" => RequireOrderedSerializationMode.Fail
+        case "log" => RequireOrderedSerializationMode.Log
+      }
 
   def getCascadingSerializationTokens: Map[Int, String] =
     get(Config.CascadingSerializationTokens)

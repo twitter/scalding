@@ -18,12 +18,13 @@ package com.twitter.scalding
 import com.twitter.scalding.serialization.CascadingBinaryComparator
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.StringOrderedSerialization
+import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
 import org.scalatest.{ Matchers, WordSpec }
 
-class NoOrderdSerJob(args: Args) extends Job(args) {
+class NoOrderdSerJob(args: Args, requireOrderedSerializationMode: String) extends Job(args) {
 
-  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
+  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
 
   TypedPipe.from(TypedTsv[(String, String)]("input"))
     .group
@@ -31,11 +32,11 @@ class NoOrderdSerJob(args: Args) extends Job(args) {
     .write(TypedTsv[(String, String)]("output"))
 }
 
-class OrderdSerJob(args: Args) extends Job(args) {
+class OrderdSerJob(args: Args, requireOrderedSerializationMode: String) extends Job(args) {
 
   implicit def stringOS: OrderedSerialization[String] = new StringOrderedSerialization
 
-  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
+  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
 
   TypedPipe.from(TypedTsv[(String, String)]("input"))
     .group
@@ -45,29 +46,64 @@ class OrderdSerJob(args: Args) extends Job(args) {
 }
 
 class RequireOrderedSerializationTest extends WordSpec with Matchers {
+
   "A NoOrderedSerJob" should {
-    // throw if we try to run in:
-    "throw when run" in {
+
+    def test(job: Args => Job) =
+      JobTest(job)
+        .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
+        .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
+        .run
+        .finish()
+
+    "throw when mode is Fail" in {
       val ex = the[Exception] thrownBy {
-        JobTest(new NoOrderdSerJob(_))
-          .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
-          .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
-          .run
-          .finish()
+        test(new NoOrderdSerJob(_, RequireOrderedSerializationMode.Fail.toString))
       }
       ex.getMessage should include("SerializationTest.scala:")
     }
+
+    "not throw when mode is Log" in {
+      test(new NoOrderdSerJob(_, RequireOrderedSerializationMode.Log.toString))
+    }
+
+    "throw when mode is true" in {
+      val ex = the[Exception] thrownBy {
+        test(new NoOrderdSerJob(_, "true"))
+      }
+      ex.getMessage should include("SerializationTest.scala:")
+    }
+
+    "not throw when mode is false" in {
+      test(new NoOrderdSerJob(_, "false"))
+    }
   }
+
   "A OrderedSerJob" should {
-    // throw if we try to run in:
-    "run" in {
-      JobTest(new OrderdSerJob(_))
+
+    def test(job: Args => Job) =
+      JobTest(job)
         .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("a", "b"), ("b", "b")))
         .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf =>
           outBuf.toSet shouldBe Set(("a", "b"), ("b", "b"))
         }
         .run
         .finish()
+
+    "run when mode is Fail" in {
+      test(new OrderdSerJob(_, RequireOrderedSerializationMode.Fail.toString))
+    }
+
+    "run when mode is Log" in {
+      test(new OrderdSerJob(_, RequireOrderedSerializationMode.Log.toString))
+    }
+
+    "run when mode is true" in {
+      test(new OrderdSerJob(_, "true"))
+    }
+
+    "run when mode is false" in {
+      test(new OrderdSerJob(_, "false"))
     }
   }
 }
