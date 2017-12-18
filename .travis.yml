@@ -28,11 +28,11 @@ matrix:
   include:
 #BASE TESTS
     - scala: 2.11.11
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-quotation"
       script: "scripts/run_test.sh"
 
     - scala: 2.12.3
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-quotation"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.11
