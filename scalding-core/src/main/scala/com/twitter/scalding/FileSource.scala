@@ -229,7 +229,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
    * TODO: consider writing a more in-depth version of this method in [[TimePathedSource]] that looks for
    * TODO: missing days / hours etc.
    */
-  protected def pathIsGood(globPattern: String, conf: Configuration) = FileSource.globHasNonHiddenPaths(globPattern, conf)
+  protected def pathIsGood(globPattern: String, conf: Configuration) = {
+    if (conf.getBoolean("scalding.require_success_file", false)) {
+      FileSource.allGlobFilesWithSuccess(globPattern, conf, true)
+    } else {
+      FileSource.globHasNonHiddenPaths(globPattern, conf)
+    }
+  }
 
   def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
