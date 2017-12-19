@@ -71,6 +71,14 @@ private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess,
     c <- Option(r.getCounter(statKey.group, statKey.counter))
   } yield c).orNull
 
+  def skipNull: Boolean =
+    fp.getProperty(Config.SkipNullCounters) match {
+      case null => false // by default don't skip
+      case isset => isset.toString.toBoolean
+    }
+
+  require((counter != null) || skipNull, s"counter for $statKey is null and ${Config.SkipNullCounters} is not set to true")
+
   override def increment(amount: Long): Unit =
     if (counter != null) counter.increment(amount) else ()
 }

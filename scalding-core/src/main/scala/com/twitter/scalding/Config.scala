@@ -432,6 +432,19 @@ abstract class Config extends Serializable {
   def setVerboseFileSourceLogging(b: Boolean): Config =
     this + (VerboseFileSourceLoggingKey -> b.toString)
 
+  def getSkipNullCounters: Boolean =
+    get(SkipNullCounters)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
+  /**
+   * If this is true, on hadoop, when we get a null Counter
+   * for a given name, we just ignore the counter instead
+   * of NPE
+   */
+  def setSkipNullCounters(boolean: Boolean): Config =
+    this + (SkipNullCounters -> boolean.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -451,6 +464,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
   val FlowListeners: String = "scalding.observability.flowlisteners"
