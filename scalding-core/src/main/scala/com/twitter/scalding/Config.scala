@@ -421,6 +421,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
   val FlowListeners: String = "scalding.observability.flowlisteners"

@@ -275,7 +275,7 @@ def youngestForwardCompatible(subProj: String) =
   Some(subProj)
     .filterNot(ignoredModules.contains(_))
     .map {
-    s => "com.twitter" %% (s"scalding-$s") % "0.17.2"
+    s => "com.twitter" %% (s"scalding-$s") % "0.17.3"
   }
 
 def module(name: String) = {
