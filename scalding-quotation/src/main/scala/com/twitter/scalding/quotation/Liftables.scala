@@ -2,6 +2,14 @@ package com.twitter.scalding.quotation
 
 import scala.reflect.macros.blackbox.Context
 
+/**
+ * These Liftables allows us to lift values into quasiquote trees.
+ * For example:
+ *
+ * def test(v: Source) => q"$v"
+ *
+ * uses `sourceLiftable`
+ */
 trait Liftables {
   val c: Context
   import c.universe.{ TypeName => _, _ }
