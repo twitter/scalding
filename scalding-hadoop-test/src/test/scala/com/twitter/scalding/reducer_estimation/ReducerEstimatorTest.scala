@@ -88,8 +88,7 @@ class SimpleMemoryJob(args: Args, customConfig: Config) extends Job(args) {
 
   val inSrc = IterableSource(List(
     "Direct trade American Apparel squid umami tote bag. Lo-fi XOXO gluten-free meh literally, typewriter readymade wolf salvia whatever drinking vinegar organic. Four loko literally bicycle rights drinking vinegar Cosby sweater hella stumptown. Dreamcatcher iPhone 90's organic chambray cardigan, wolf fixie gluten-free Brooklyn four loko. Mumblecore ennui twee, 8-bit food truck sustainable tote bag Williamsburg mixtape biodiesel. Semiotics Helvetica put a bird on it, roof party fashion axe organic post-ironic readymade Wes Anderson Pinterest keffiyeh. Craft beer meggings sartorial, butcher Marfa kitsch art party mustache Brooklyn vinyl.",
-    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."
-  ))
+    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."))
 
   override def config = super.config ++ customConfig.toMap.toMap
 
@@ -241,8 +240,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         (Config.ReducerEstimatorOverride -> "true")
 
       HadoopPlatformJobTest(new SimpleFileNotFoundJob(_, customConfig), cluster)
-        .runExpectFailure { case error: FlowException =>
-          error.getCause.getClass should be(classOf[FileNotFoundException])
+        .runExpectFailure {
+          case error: FlowException =>
+            error.getCause.getClass should be(classOf[FileNotFoundException])
         }
     }
   }

@@ -132,7 +132,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     checkSnapshotDependencies,
     inquireVersions,
     runClean,
-    runTest,
+    //runTest, the tests take forever
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
