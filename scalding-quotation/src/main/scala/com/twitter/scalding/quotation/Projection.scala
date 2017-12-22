@@ -8,6 +8,80 @@ case class TypeName(asString: String) extends AnyVal
 sealed trait Projection {
   def andThen(accessor: Accessor, typeName: TypeName): Projection =
     Property(this, accessor, typeName)
+
+  def rootProjection: TypeReference = {
+    @tailrec def loop(p: Projection): TypeReference =
+      p match {
+        case p @ TypeReference(_) => p
+        case Property(p, _, _)    => loop(p)
+      }
+    loop(this)
+  }
+
+  /**
+   * Given a base projection, returns the projection based on it if applicable.
+   *
+   * For instance, given a quoted function
+   * 	 `val contact = Quoted.function { (c: Contact) => c.contact }`
+   * and a call
+   *   `(p: Person) => contact(p.name)`
+   * produces the projection
+   *   `Person.name.contact`
+   */
+  def basedOn(base: Projection): Option[Projection] =
+    this match {
+      case TypeReference(tpe) =>
+        base match {
+          case TypeReference(`tpe`)  => Some(base)
+          case Property(_, _, `tpe`) => Some(base)
+          case other                 => None
+        }
+      case Property(path, name, tpe) =>
+        path.basedOn(base).map(Property(_, name, tpe))
+    }
+
+  /**
+   * Limits projections to only values of `superClass`. Example:
+   *
+   * case class Person(name: String, contact: Contact) extends ThriftObject
+   * case class Contact(phone: Phone) extends ThriftObject
+   * case class Phone(number: String)
+   *
+   * For the super class `ThriftObject`, it produces the transformations:
+   *
+   * Person.contact.phone        => Some(Person.contact.phone)
+   * Person.contact.phone.number => Some(Person.contact.phone)
+   * Person.name.isEmpty         => Some(Person.name)
+   * Phone.number								 => None
+   */
+  def bySuperClass(superClass: Class[_]): Option[Projection] = {
+
+    def isSubclass(c: TypeName) =
+      try
+        superClass.isAssignableFrom(Class.forName(c.asString))
+      catch {
+        case _: ClassNotFoundException =>
+          false
+      }
+
+    def loop(p: Projection): Either[Projection, Option[Projection]] =
+      p match {
+        case TypeReference(typeName) =>
+          Either.cond(!isSubclass(typeName), None, p)
+        case p @ Property(path, name, typeName) =>
+          loop(path) match {
+            case Left(_) =>
+              Either.cond(!isSubclass(typeName), Some(p), p)
+            case Right(path) =>
+              Right(path)
+          }
+      }
+
+    loop(this) match {
+      case Left(path) => Some(path)
+      case Right(opt) => opt
+    }
+  }
 }
 
 /**
@@ -30,81 +104,21 @@ final case class Property(path: Projection, accessor: Accessor, typeName: TypeNa
 final class Projections private (val set: Set[Projection]) extends Serializable {
 
   /**
-   * Returns the projections that are based on `tpe` and limits projections
+   * Returns the projections that are based on `typeName` and limits projections
    * to only properties that extend from `superClass`.
    */
-  def of(typeName: TypeName, superClass: Class[_]): Projections = {
-
-    def byType(p: Projection) = {
-      @tailrec def loop(p: Projection): Boolean =
-        p match {
-          case TypeReference(`typeName`) => true
-          case TypeReference(_) => false
-          case Property(p, _, _) => loop(p)
-        }
-      loop(p)
+  def of(typeName: TypeName, superClass: Class[_]): Projections =
+    Projections {
+      set.filter(_.rootProjection.typeName == typeName)
+        .flatMap(_.bySuperClass(superClass))
     }
 
-    def bySuperClass(p: Projection): Option[Projection] = {
-
-      def isSubclass(c: TypeName) =
-        try
-          superClass.isAssignableFrom(Class.forName(c.asString))
-        catch {
-          case _: ClassNotFoundException =>
-            false
-        }
-
-      def loop(p: Projection): Either[Projection, Option[Projection]] =
-        p match {
-          case TypeReference(tpe) =>
-            Either.cond(!isSubclass(tpe), None, p)
-          case p @ Property(path, name, tpe) =>
-            loop(path) match {
-              case Left(_) =>
-                Either.cond(!isSubclass(tpe), Some(p), p)
-              case Right(path) =>
-                Right(path)
-            }
-        }
-
-      loop(p) match {
-        case Left(path) => Some(path)
-        case Right(opt) => opt
-      }
-    }
-
-    Projections(set.filter(byType).flatMap(bySuperClass))
-  }
-
-  /**
-   * Given a set of base projections, returns the projections based on them.
-   *
-   * For instance, given a quoted function
-   * 	 `val contact = Quoted.function { (c: Contact) => c.contact }`
-   * and a call
-   *   `(p: Person) => contact(p.name)`
-   * returns the projection
-   *   `Person.name.contact`
-   */
-  def basedOn(base: Set[Projection]): Projections = {
-    def loop(base: Projection, p: Projection): Option[Projection] =
-      p match {
-        case TypeReference(tpe) =>
-          base match {
-            case TypeReference(`tpe`) => Some(base)
-            case Property(_, _, `tpe`) => Some(base)
-            case other => None
-          }
-        case Property(path, name, tpe) =>
-          loop(base, path).map(Property(_, name, tpe))
-      }
+  def basedOn(base: Set[Projection]): Projections =
     Projections {
       set.flatMap { p =>
-        base.flatMap(loop(_, p))
+        base.flatMap(p.basedOn)
       }
     }
-  }
 
   def ++(p: Projections) =
     Projections(set ++ p.set)
@@ -115,7 +129,7 @@ final class Projections private (val set: Set[Projection]) extends Serializable 
   override def equals(other: Any) =
     other match {
       case other: Projections => set == other.set
-      case other => false
+      case other              => false
     }
 
   override def hashCode =
@@ -135,7 +149,7 @@ object Projections {
       p match {
         case Property(path, acessor, property) =>
           set.contains(path) || isNested(path)
-        case _ => 
+        case _ =>
           false
       }
     new Projections(set.filter(!isNested(_)))
