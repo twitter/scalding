@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.algebird.{ Monoid, Group, Ring, Field }
+import com.twitter.algebird.field._ // backwards compatiblity support
 import com.twitter.scalding._
 
 import cascading.pipe.assembly._
@@ -172,8 +173,8 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
 
 object Matrix {
   // If this function is implicit, you can use the PipeExtensions methods on pipe
-  implicit def pipeExtensions[P <% Pipe](p: P) = new MatrixPipeExtensions(p)
-  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode) =
+  implicit def pipeExtensions[P <% Pipe](p: P): MatrixPipeExtensions = new MatrixPipeExtensions(p)
+  implicit def mappableExtensions[T](mt: Mappable[T])(implicit fd: FlowDef, mode: Mode): MatrixMappableExtensions[T] =
     new MatrixMappableExtensions(mt)(fd, mode)
 
   def filterOutZeros[ValT](fSym: Symbol, group: Monoid[ValT])(fpipe: Pipe): Pipe = {
@@ -188,7 +189,7 @@ object Matrix {
     vct.map { tup => (tup._1, tup._2 - avg) }
   }
 
-  implicit def literalToScalar[ValT](v: ValT) = new LiteralScalar(v)
+  implicit def literalToScalar[ValT](v: ValT): LiteralScalar[ValT] = new LiteralScalar(v)
 
   // Converts to Matrix for addition
   implicit def diagonalToMatrix[RowT, ValT](diag: DiagonalMatrix[RowT, ValT]): Matrix[RowT, RowT, ValT] = {
@@ -461,7 +462,7 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
 
   def /(that: LiteralScalar[ValT])(implicit field: Field[ValT]) = {
     field.assertNotZero(that.value)
-    mapValues(elem => field.div(elem, that.value))(field)
+    mapValues(elem => field.div(elem, that.value))
   }
 
   def /(that: Scalar[ValT])(implicit field: Field[ValT]) = {
@@ -469,7 +470,7 @@ class Matrix[RowT, ColT, ValT](val rowSym: Symbol, val colSym: Symbol, val valSy
       .mapValues({ leftRight: (ValT, ValT) =>
         val (left, right) = leftRight
         field.div(left, right)
-      })(field)
+      })
   }
 
   // Between Matrix value reduction - Generalizes matrix addition with an arbitrary value aggregation function

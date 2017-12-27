@@ -28,7 +28,7 @@ import java.util.TimeZone
  */
 object RichDate {
   // Implicits to Java types:
-  implicit def toDate(rd: RichDate) = rd.value
+  implicit def toDate(rd: RichDate): Date = rd.value
   implicit def toCalendar(rd: RichDate)(implicit tz: TimeZone): Calendar = {
     val cal = Calendar.getInstance(tz)
     cal.setTime(rd.value)

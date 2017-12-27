@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import org.scalatest.{ FunSuite, Matchers, WordSpec }
 
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.TypedText
 // Use the scalacheck generators
 import org.scalacheck.Gen
@@ -117,6 +118,15 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         .run
         .runHadoop
         .finish()
+    }
+  }
+}
+
+class TypedPipeMonoidTest extends WordSpec with Matchers {
+  "typedPipeMonoid.zero" should {
+    "be equal to TypePipe.empty" in {
+      val mon = implicitly[Monoid[TypedPipe[Int]]]
+      assert(mon.zero == TypedPipe.empty)
     }
   }
 }
@@ -1517,7 +1527,7 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)
@@ -1536,7 +1546,7 @@ class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)

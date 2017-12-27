@@ -24,12 +24,14 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
 
-private[scalding] class ConfPropertiesHfsTap(config: Config,
+private[scalding] class ConfPropertiesHfsTap(
+  sourceConfig: Config,
+  sinkConfig: Config,
   scheme: Scheme[Configuration, RecordReader[_, _], OutputCollector[_, _], _, _],
   stringPath: String,
   sinkMode: SinkMode) extends Hfs(scheme, stringPath, sinkMode) {
   override def sourceConfInit(process: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
-    config.toMap.foreach {
+    sourceConfig.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
     }
@@ -37,7 +39,7 @@ private[scalding] class ConfPropertiesHfsTap(config: Config,
   }
 
   override def sinkConfInit(process: FlowProcess[_ <: Configuration], conf: Configuration): Unit = {
-    config.toMap.foreach {
+    sinkConfig.toMap.foreach {
       case (k, v) =>
         conf.set(k, v)
     }
@@ -53,11 +55,22 @@ private[scalding] class ConfPropertiesHfsTap(config: Config,
  * Changes here however will not show up in the hadoop UI
  */
 trait HfsConfPropertySetter extends HfsTapProvider {
+  @deprecated("Tap config is deprecated, use sourceConfig or sinkConfig directly. In cascading configs applied to sinks can leak to sources in the step writing to the sink.")
   def tapConfig: Config = Config.empty
+
+  def sourceConfig: Config = Config.empty
+  def sinkConfig: Config = Config.empty
 
   override def createHfsTap(
     scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
-    sinkMode: SinkMode): Hfs =
-    new ConfPropertiesHfsTap(tapConfig, Hadoop2SchemeInstance(scheme), path, sinkMode)
+    sinkMode: SinkMode): Hfs = {
+    // Deprecation handling
+    val (srcCfg, sinkCfg) = if (sourceConfig == Config.empty && sinkConfig == Config.empty) {
+      (tapConfig, tapConfig)
+    } else {
+      (sourceConfig, sinkConfig)
+    }
+    new ConfPropertiesHfsTap(srcCfg, sinkCfg, Hadoop2SchemeInstance(scheme), path, sinkMode)
+  }
 }

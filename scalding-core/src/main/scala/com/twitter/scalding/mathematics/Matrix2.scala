@@ -629,7 +629,7 @@ object Matrix2 {
     /* The only case where `product` will be `None` is if the result is an
      * intermediate matrix (like `OneC`).  This is not yet forbidden in the types.
      */
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def generatePlan(i: Int, j: Int): Matrix2[Any, Any, V] = {
       if (i == j) p(i)
       else {

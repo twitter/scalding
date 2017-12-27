@@ -140,6 +140,8 @@ SHORT_SCALA_VERSION = if SCALA_VERSION.start_with?("2.10")
 "2.10"
 elsif SCALA_VERSION.start_with?("2.11")
  "2.11"
+elsif SCALA_VERSION.start_with?("2.12")
+ "2.12"
  else
   SCALA_VERSION
 end

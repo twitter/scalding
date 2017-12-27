@@ -41,7 +41,7 @@ abstract class PartitionSource(val openWritesThreshold: Option[Int] = None) exte
    * @param readOrWrite Describes if this source is being read from or written to.
    * @param mode The mode of the job. (implicit)
    *
-   * @returns A cascading PartitionTap.
+   * @return A cascading PartitionTap.
    */
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
     readOrWrite match {

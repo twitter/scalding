@@ -26,8 +26,8 @@ class SourceSpec extends WordSpec with Matchers {
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
-      implicit val tz = DateOps.UTC
-      implicit val parser = DateParser.default
+      implicit val tz: java.util.TimeZone = DateOps.UTC
+      implicit val parser: DateParser = DateParser.default
 
       val d1 = RichDate("2012-02-01")
       val d2 = RichDate("2012-02-02")
@@ -103,4 +103,55 @@ class AddRemoveOneJob(args: Args) extends Job(args) {
     .map('three -> 'three) { s: String => "2" }
 
     .write(RemoveOneTsv("output"))
+}
+
+class MapTypedPipe(args: Args) extends Job(args) {
+  TypedPipe.from(TypedText.tsv[(Int, String)]("input"))
+    .map(MapFunctionAndThenTest.mapFunction)
+    .write(TypedText.tsv[(Int, String, Int)]("output"))
+}
+
+class IdentityTypedPipe(args: Args) extends Job(args) {
+  TypedPipe.from(
+    TypedText.tsv[(Int, String)]("input")
+      .andThen(MapFunctionAndThenTest.mapFunction))
+    .write(TypedText.tsv[(Int, String, Int)]("output"))
+}
+
+object MapFunctionAndThenTest {
+  def mapFunction(input: (Int, String)): (Int, String, Int) =
+    (input._1, input._2, input._1)
+
+  val input: List[(Int, String)] = List((0, "a"), (1, "b"), (2, "c"))
+  val output: List[(Int, String, Int)] = List((0, "a", 0), (1, "b", 1), (2, "c", 2))
+}
+class TypedPipeAndThenTest extends WordSpec with Matchers {
+  import Dsl._
+  import MapFunctionAndThenTest._
+  "Mappable.andThen is like TypedPipe.map" should {
+    JobTest(new MapTypedPipe(_))
+      .source(TypedText.tsv[(Int, String)]("input"), input)
+      .typedSink(TypedText.tsv[(Int, String, Int)]("output")){ outputBuffer =>
+        val outMap = outputBuffer.toList
+        "TypedPipe return proper results" in {
+          outMap should have size 3
+          outMap shouldBe output
+        }
+      }
+      .run
+      .finish()
+
+    JobTest(new IdentityTypedPipe(_))
+      .source(TypedText.tsv[(Int, String)]("input"), input)
+      .typedSink(TypedText.tsv[(Int, String, Int)]("output")){ outputBuffer =>
+        val outMap = outputBuffer.toList
+        "Mappable.andThen return proper results" in {
+          outMap should have size 3
+          outMap shouldBe output
+        }
+      }
+      .run
+      .finish()
+
+  }
 }

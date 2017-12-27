@@ -5,9 +5,9 @@ import org.scalatest.{ Matchers, WordSpec }
 class ExecutionUtilTest extends WordSpec with Matchers {
   import ExecutionUtil._
 
-  implicit val tz = DateOps.UTC
-  implicit val dp = DateParser.default
-  implicit val dateRange = DateRange.parse("2015-01-01", "2015-01-10")
+  implicit val tz: java.util.TimeZone = DateOps.UTC
+  implicit val dp: DateParser = DateParser.default
+  implicit val dateRange: DateRange = DateRange.parse("2015-01-01", "2015-01-10")
 
   def run[T](e: Execution[T]) = e.waitFor(Config.default, Local(true))
 

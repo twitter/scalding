@@ -115,19 +115,19 @@ object RichPipe extends java.io.Serializable {
   }
 
   /**
-   * Return true if a pipe is a source Pipe (has no parents / previous) and isn't a
-   * Splice.
+   * If there is exactly one previous Pipe, get it, otherwise None
    */
-  def isSourcePipe(pipe: Pipe): Boolean = {
+  def getSinglePreviousPipe(p: Pipe): Option[Pipe] =
+    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
+    else None
+
+  /**
+   * Is the given Pipe a source (it has no previous and is not a splice
+   */
+  def isSourcePipe(pipe: Pipe): Boolean =
     pipe.getParent == null &&
       (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
       (!pipe.isInstanceOf[Splice])
-  }
-
-  def getPreviousPipe(p: Pipe): Option[Pipe] = {
-    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
-    else None
-  }
 
   /*
    * If hashJoinPipe represents a hashjoin, this method checks if
@@ -172,7 +172,7 @@ object RichPipe extends java.io.Serializable {
         m.getPrevious // gets all merged pipes
           .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
       case e: Each =>
-        getPreviousPipe(e)
+        getSinglePreviousPipe(e)
           .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
       case other =>
         false

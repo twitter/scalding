@@ -28,50 +28,50 @@ object AvroSchemaType {
 
   // primitive types
 
-  implicit def BooleanSchema = new AvroSchemaType[Boolean] {
+  implicit def BooleanSchema: AvroSchemaType[Boolean] = new AvroSchemaType[Boolean] {
     def schema = Schema.create(Schema.Type.BOOLEAN)
   }
 
-  implicit def ByteBufferSchema = new AvroSchemaType[ByteBuffer] {
+  implicit def ByteBufferSchema: AvroSchemaType[ByteBuffer] = new AvroSchemaType[ByteBuffer] {
     def schema = Schema.create(Schema.Type.BYTES)
   }
 
-  implicit def DoubleSchema = new AvroSchemaType[Double] {
+  implicit def DoubleSchema: AvroSchemaType[Double] = new AvroSchemaType[Double] {
     def schema = Schema.create(Schema.Type.DOUBLE)
   }
 
-  implicit def FloatSchema = new AvroSchemaType[Float] {
+  implicit def FloatSchema: AvroSchemaType[Float] = new AvroSchemaType[Float] {
     def schema = Schema.create(Schema.Type.FLOAT)
   }
 
-  implicit def IntSchema = new AvroSchemaType[Int] {
+  implicit def IntSchema: AvroSchemaType[Int] = new AvroSchemaType[Int] {
     def schema = Schema.create(Schema.Type.INT)
   }
 
-  implicit def LongSchema = new AvroSchemaType[Long] {
+  implicit def LongSchema: AvroSchemaType[Long] = new AvroSchemaType[Long] {
     def schema = Schema.create(Schema.Type.LONG)
   }
 
-  implicit def StringSchema = new AvroSchemaType[String] {
+  implicit def StringSchema: AvroSchemaType[String] = new AvroSchemaType[String] {
     def schema = Schema.create(Schema.Type.STRING)
   }
 
   // collections
-  implicit def CollectionSchema[CC[x] <: Iterable[x], T](implicit sch: AvroSchemaType[T]) = new AvroSchemaType[CC[T]] {
+  implicit def CollectionSchema[CC[x] <: Iterable[x], T](implicit sch: AvroSchemaType[T]): AvroSchemaType[CC[T]] = new AvroSchemaType[CC[T]] {
     def schema = Schema.createArray(sch.schema)
   }
 
-  implicit def ArraySchema[CC[x] <: Array[x], T](implicit sch: AvroSchemaType[T]) = new AvroSchemaType[CC[T]] {
+  implicit def ArraySchema[CC[x] <: Array[x], T](implicit sch: AvroSchemaType[T]): AvroSchemaType[CC[T]] { val schema: Schema } = new AvroSchemaType[CC[T]] {
     val schema = Schema.createArray(sch.schema)
   }
 
   //maps
-  implicit def MapSchema[CC[String, x] <: Map[String, x], T](implicit sch: AvroSchemaType[T]) = new AvroSchemaType[CC[String, T]] {
+  implicit def MapSchema[CC[String, x] <: Map[String, x], T](implicit sch: AvroSchemaType[T]): AvroSchemaType[CC[String, T]] = new AvroSchemaType[CC[String, T]] {
     def schema = Schema.createMap(sch.schema)
   }
 
   // Avro SpecificRecord
-  implicit def SpecificRecordSchema[T <: SpecificRecord](implicit mf: Manifest[T]) = new AvroSchemaType[T] {
+  implicit def SpecificRecordSchema[T <: SpecificRecord](implicit mf: Manifest[T]): AvroSchemaType[T] = new AvroSchemaType[T] {
     def schema = mf.runtimeClass.newInstance.asInstanceOf[SpecificRecord].getSchema
   }
 

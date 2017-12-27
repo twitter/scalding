@@ -1,7 +1,7 @@
 package com.twitter.scalding.db.macros.impl
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
@@ -50,6 +50,7 @@ object ColumnDefinitionProviderImpl {
         This will mean the macro is operating on a non-resolved type.""")
 
     // Field To JDBCColumn
+    @tailrec
     def matchField(accessorTree: List[MethodSymbol],
       oTpe: Type,
       fieldName: FieldName,
@@ -98,8 +99,8 @@ object ColumnDefinitionProviderImpl {
           case (k, l) =>
             (k, l.map(_._2).reduce(_ ++ _))
         }.filter {
-          case (k, v) =>
-            !v.isEmpty
+          case (_, v) =>
+            v.nonEmpty
         }
 
       outerTpe
@@ -191,8 +192,10 @@ object ColumnDefinitionProviderImpl {
       case (cf: ColumnFormat[_], pos: Int) =>
         val fieldName = cf.fieldName.toStr
         val typeNameTerm = newTermName(c.fresh(s"colTypeName_$pos"))
+        // MySQL uses names like `DATE`, `INTEGER` and `VARCHAR`;
+        // Vertica uses names like `Date`, `Integer` and `Varchar`
         val typeName = q"""
-        val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1})
+        val $typeNameTerm = $rsmdTerm.getColumnTypeName(${pos + 1}).toUpperCase(java.util.Locale.US)
         """
         // certain types have synonyms, so we group them together here
         // note: this is mysql specific
@@ -201,6 +204,15 @@ object ColumnDefinitionProviderImpl {
           case "VARCHAR" => q"""List("VARCHAR", "CHAR").contains($typeNameTerm)"""
           case "BOOLEAN" | "TINYINT" => q"""List("BOOLEAN", "BOOL", "TINYINT").contains($typeNameTerm)"""
           case "INT" => q"""List("INTEGER", "INT").contains($typeNameTerm)"""
+          // In Vertica, `INTEGER`, `INT`, `BIGINT`, `INT8`, `SMALLINT`, and `TINYINT` are all 64 bits
+          // https://my.vertica.com/docs/7.1.x/HTML/Content/Authoring/SQLReferenceManual/DataTypes/Numeric/INTEGER.htm
+          // In MySQL, `TINYINT`, `SMALLINT`, `MEDIUMINT`, `INT`, and `BIGINT` are all <= 64 bits
+          // https://dev.mysql.com/doc/refman/5.7/en/integer-types.html
+          // As the user has told us this field can store a `BIGINT`, we can safely accept any of these
+          // types from the database.
+          case "BIGINT" =>
+            q"""List("INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
+               "TINYINT", "SMALLINT", "MEDIUMINT").contains($typeNameTerm)"""
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""

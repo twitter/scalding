@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.Reader
 import com.twitter.algebird.Semigroup
 import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStep, FlowStepListener, FlowSkipStrategy, FlowStepStrategy }
 import cascading.pipe.Pipe
@@ -116,7 +115,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
   //This is the FlowDef used by all Sources this job creates
   @transient
-  implicit protected val flowDef = {
+  implicit protected val flowDef: FlowDef = {
     val fd = new FlowDef
     fd.setName(name)
     fd
@@ -188,6 +187,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     defaultComparator.map(init.setDefaultComparator)
       .getOrElse(init)
       .setSerialization(Right(classOf[serialization.KryoHadoop]), ioSerializations)
+      .addCascadingClassSerializationTokens(reflectedClasses)
       .setScaldingVersion
       .setCascadingAppName(name)
       .setCascadingAppId(name)
@@ -196,6 +196,12 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .maybeSetSubmittedTimestamp()._2
       .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
   }
+
+  private def reflectedClasses: Set[Class[_]] =
+    if (args.optional(Args.jobClassReflection).map(_.toBoolean).getOrElse(true)) {
+      ReferencedClassFinder.findReferencedClasses(getClass)
+    } else Set.empty
+
 
   /**
    * This is here so that Mappable.toIterator can find an implicit config
@@ -346,7 +352,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   def timeout[T](timeout: AbsoluteDuration)(t: => T): Option[T] = {
     val f = timeoutExecutor.submit(new Callable[Option[T]] {
       def call(): Option[T] = Some(t)
-    });
+    })
     try {
       f.get(timeout.toMillisecs, TimeUnit.MILLISECONDS)
     } catch {
@@ -389,7 +395,7 @@ trait DefaultDateRangeJob extends Job {
   // Optionally take --tz argument, or use Pacific time.  Derived classes may
   // override defaultTimeZone to change the default.
   def defaultTimeZone = PACIFIC
-  implicit lazy val tz = args.optional("tz") match {
+  implicit lazy val tz: java.util.TimeZone = args.optional("tz") match {
     case Some(tzn) => java.util.TimeZone.getTimeZone(tzn)
     case None => defaultTimeZone
   }
@@ -410,7 +416,7 @@ trait DefaultDateRangeJob extends Job {
     (s, e)
   }
 
-  implicit lazy val dateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
+  implicit lazy val dateRange: DateRange = DateRange(startDate, if (period > 0) startDate + Days(period) - Millisecs(1) else endDate)
 
   override def next: Option[Job] =
     if (period > 0) {

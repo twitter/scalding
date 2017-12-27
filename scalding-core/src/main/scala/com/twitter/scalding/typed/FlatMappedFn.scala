@@ -20,38 +20,87 @@ import java.io.Serializable
 import com.twitter.scalding.TupleConverter
 import cascading.tuple.TupleEntry
 
-/** Closures are difficult for serialization. This class avoids that. */
-sealed trait FlatMapFn[+R] extends Function1[TupleEntry, TraversableOnce[R]]
-  with java.io.Serializable {
+/**
+ * This is one of 4 core, non composed operations:
+ * identity
+ * filter
+ * map
+ * flatMap
+ */
+sealed trait FlatMapping[-A, +B] extends java.io.Serializable
+object FlatMapping {
+  def filter[A](fn: A => Boolean): FlatMapping[A, A] =
+    Filter[A, A](fn, implicitly)
 
-  def filter(fn2: R => Boolean): FlatMapFn[R] =
-    FilteredFn(this, fn2)
-  def flatMap[R1](fn2: R => TraversableOnce[R1]): FlatMapFn[R1] =
-    FlatMappedFn(this, fn2)
-  def map[R1](fn2: R => R1): FlatMapFn[R1] =
-    MapFn(this, fn2)
+  def filterKeys[K, V](fn: K => Boolean): FlatMapping[(K, V), (K, V)] =
+    filter { kv => fn(kv._1) }
+
+  case class Identity[A, B](ev: A =:= B) extends FlatMapping[A, B]
+  case class Filter[A, B](fn: A => Boolean, ev: A =:= B) extends FlatMapping[A, B]
+  case class Map[A, B](fn: A => B) extends FlatMapping[A, B]
+  case class FlatM[A, B](fn: A => TraversableOnce[B]) extends FlatMapping[A, B]
 }
 
-/* This is the initial way we get a FlatMapFn */
-case class Converter[R](conv: TupleConverter[R]) extends FlatMapFn[R] {
-  // make sure not to start with an Iterator to keep everything lazy
-  def apply(te: TupleEntry) = Iterator(conv(te))
+/**
+ * This is a composition of one or more FlatMappings
+ */
+sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
+  import FlatMappedFn._
+
+  final def runAfter[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
+    case Single(FlatMapping.Identity(_)) => Single(fn.asInstanceOf[FlatMapping[Z, B]]) // since we have A =:= B, we know this cast is safe
+    case notId => fn match {
+      case FlatMapping.Identity(ev) => this.asInstanceOf[FlatMappedFn[Z, B]] // we have Z =:= A we know this cast is safe
+      case notIdFn => Series(notIdFn, notId) // only make a Series without either side being identity
+    }
+  }
+
+  /**
+   * We interpret this composition once to minimize pattern matching when we execute
+   */
+  private[this] val toFn: A => TraversableOnce[B] = {
+    import FlatMapping._
+
+    def loop[A1, B1](fn: FlatMappedFn[A1, B1]): A1 => TraversableOnce[B1] = fn match {
+      case Single(Identity(ev)) =>
+        { (t: A1) => Iterator.single(t.asInstanceOf[B1]) } // A1 =:= B1
+      case Single(Filter(f, ev)) =>
+        { (t: A1) => if (f(t)) Iterator.single(t.asInstanceOf[B1]) else Iterator.empty } // A1 =:= B1
+      case Single(Map(f)) => f.andThen(Iterator.single)
+      case Single(FlatM(f)) => f
+      case Series(Identity(ev), rest) => loop(rest).asInstanceOf[A1 => TraversableOnce[B1]] // we know that A1 =:= C
+      case Series(Filter(f, ev), rest) =>
+        val next = loop(rest).asInstanceOf[A1 => TraversableOnce[B1]] // A1 =:= C
+
+        { (t: A1) => if (f(t)) next(t) else Iterator.empty }
+      case Series(Map(f), rest) =>
+        val next = loop(rest)
+        f.andThen(next)
+      case Series(FlatM(f), rest) =>
+        val next = loop(rest)
+        f.andThen(_.flatMap(next))
+    }
+
+    loop(this)
+  }
+
+  def apply(a: A): TraversableOnce[B] = toFn(a)
 }
 
-/* This is the mzero of this Monad */
-case object Empty extends FlatMapFn[Nothing] {
-  def apply(te: TupleEntry) = Iterator.empty
+object FlatMappedFn {
+  import FlatMapping._
 
-  override def filter(fn2: Nothing => Boolean): FlatMapFn[Nothing] = this
-  override def flatMap[R1](fn2: Nothing => TraversableOnce[R1]): FlatMapFn[R1] = this
-  override def map[R1](fn2: Nothing => R1): FlatMapFn[R1] = this
-}
-case class MapFn[T, R](fmap: FlatMapFn[T], fn: T => R) extends FlatMapFn[R] {
-  def apply(te: TupleEntry) = fmap(te).map(fn)
-}
-case class FlatMappedFn[T, R](fmap: FlatMapFn[T], fn: T => TraversableOnce[R]) extends FlatMapFn[R] {
-  def apply(te: TupleEntry) = fmap(te).flatMap(fn)
-}
-case class FilteredFn[R](fmap: FlatMapFn[R], fn: R => Boolean) extends FlatMapFn[R] {
-  def apply(te: TupleEntry) = fmap(te).filter(fn)
+  def asId[A, B](f: FlatMappedFn[A, B]): Option[(_ >: A) =:= (_ <: B)] = f match {
+    case Single(i@Identity(_)) => Some(i.ev)
+    case _ => None
+  }
+
+  def asFilter[A, B](f: FlatMappedFn[A, B]): Option[(A => Boolean, (_ >: A) =:= (_ <: B))] = f match {
+    case Single(filter@Filter(_, _)) => Some((filter.fn, filter.ev))
+    case _ => None
+  }
+
+  def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](implicitly[T =:= T]))
+  case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]
+  case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C]) extends FlatMappedFn[A, C]
 }

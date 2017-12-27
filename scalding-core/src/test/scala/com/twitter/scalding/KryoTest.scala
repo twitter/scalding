@@ -32,9 +32,11 @@ import com.twitter.algebird.{
   Monoid
 }
 
-import com.twitter.chill.config.ConfiguredInstantiator
+import com.twitter.chill.config.{ ConfiguredInstantiator, ScalaMapConfig }
 import com.twitter.chill.hadoop.HadoopConfig
 import com.twitter.chill.hadoop.KryoSerialization
+
+import com.esotericsoftware.kryo.io.{ Input, Output }
 
 import org.apache.hadoop.conf.Configuration
 
@@ -93,9 +95,22 @@ class KryoTest extends WordSpec with Matchers {
   def serializationRT(ins: List[AnyRef]) = deserialize(serialize(ins))
 
   "KryoSerializers and KryoDeserializers" should {
+    "round trip for KryoHadoop" in {
+      val kryoHadoop = new serialization.KryoHadoop(new HadoopConfig(new Configuration))
+      val bootstrapKryo = new serialization.KryoHadoop(new ScalaMapConfig(Map.empty)).newKryo
+
+      val buffer = new Array[Byte](1024 * 1024)
+      val output = new Output(buffer)
+      bootstrapKryo.writeClassAndObject(output, kryoHadoop)
+
+      val input = new Input(buffer)
+      val deserialized = bootstrapKryo.readClassAndObject(input).asInstanceOf[serialization.KryoHadoop]
+      deserialized.newKryo
+    }
+
     "round trip any non-array object" in {
       import HyperLogLog._
-      implicit val hllmon = new HyperLogLogMonoid(4)
+      implicit val hllmon: HyperLogLogMonoid = new HyperLogLogMonoid(4)
       val test = List(1, 2, "hey", (1, 2), Args("--this is --a --b --test 34"),
         ("hey", "you"),
         ("slightly", 1L, "longer", 42, "tuple"),
@@ -145,7 +160,7 @@ class KryoTest extends WordSpec with Matchers {
     }
     "handle Date, RichDate and DateRange" in {
       import DateOps._
-      implicit val tz = PACIFIC
+      implicit val tz: java.util.TimeZone = PACIFIC
       val myDate: RichDate = "1999-12-30T14"
       val simpleDate: java.util.Date = myDate.value
       val myDateRange = DateRange("2012-01-02", "2012-06-09")

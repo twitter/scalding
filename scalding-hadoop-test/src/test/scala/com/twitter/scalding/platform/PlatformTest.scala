@@ -15,19 +15,19 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
-import java.util.{Iterator => JIterator}
+import java.util.{ Iterator => JIterator }
 
 import cascading.flow.FlowException
-import cascading.pipe.joiner.{InnerJoin, JoinerClosure}
+import cascading.pipe.joiner.{ InnerJoin, JoinerClosure }
 import cascading.scheme.Scheme
-import cascading.scheme.hadoop.{TextLine => CHTextLine}
+import cascading.scheme.hadoop.{ TextLine => CHTextLine }
 import cascading.tap.Tap
-import cascading.tuple.{Fields, Tuple}
+import cascading.tuple.{ Fields, Tuple }
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
-import com.twitter.scalding.source.{FixedTypedText, NullSink, TypedText}
-import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.{Matchers, WordSpec}
+import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
+import org.scalacheck.{ Arbitrary, Gen }
+import org.scalatest.{ Matchers, WordSpec }
 
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
@@ -231,8 +231,8 @@ object MultipleGroupByJobData {
 class MultipleGroupByJob(args: Args) extends Job(args) {
   import com.twitter.scalding.serialization._
   import MultipleGroupByJobData._
-  implicit val stringOrdSer = new StringOrderedSerialization()
-  implicit val stringTup2OrdSer = new OrderedSerialization2(stringOrdSer, stringOrdSer)
+  implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization()
+  implicit val stringTup2OrdSer: OrderedSerialization[(String, String)] = new OrderedSerialization2(stringOrdSer, stringOrdSer)
   val otherStream = TypedPipe.from(data).map{ k => (k, k) }.group
 
   TypedPipe.from(data)
@@ -405,7 +405,7 @@ class GroupedLimitJobWithSteps(args: Args) extends Job(args) {
 }
 
 object OrderedSerializationTest {
-  implicit val genASGK = Arbitrary {
+  implicit val genASGK: Arbitrary[NestedCaseClass] = Arbitrary {
     for {
       ts <- Arbitrary.arbitrary[Long]
       b <- Gen.nonEmptyListOf(Gen.alphaNumChar).map (_.mkString)
@@ -418,8 +418,13 @@ object OrderedSerializationTest {
 
 case class NestedCaseClass(day: RichDate, key: (String, String))
 
-class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+// Need to define this in a separate companion object to work around Scala 2.12 compile issues
+object OrderedSerializationImplicitDefs {
   implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+}
+
+class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> 1L).group.sorted.mapValueStream(_.map(_ * 2)).toTypedPipe.group
 
@@ -437,7 +442,7 @@ class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
 }
 
 class ComplexJob2(input: List[NestedCaseClass], args: Args) extends Job(args) {
-  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> (1L, "asfg"))
 
@@ -577,12 +582,6 @@ class TestTypedEmptySource extends FileSource with TextSourceScheme with Mappabl
     TupleConverter.asSuperConverter[(Long, String), U](implicitly[TupleConverter[(Long, String)]])
 }
 
-class TestFieldsEmptySource(val fields: Fields = new Fields("customNamedOffset", "customNamedLine")) extends FileSource with SuccessFileSource {
-  override def hdfsPaths: Iterable[String] = Iterable.empty
-  override def localPaths: Iterable[String] = Iterable.empty
-  override def hdfsScheme = HadoopSchemeInstance(new CHTextLine(fields, CHTextLine.DEFAULT_CHARSET).asInstanceOf[Scheme[_, _, _, _, _]])
-}
-
 // Tests the scenario where you have no data present in the directory pointed to by a source typically
 // due to the directory being empty (but for a _SUCCESS file)
 // We test out that this shouldn't result in a Cascading planner error during {@link Job.buildFlow}
@@ -590,19 +589,6 @@ class EmptyDataJob(args: Args) extends Job(args) {
   TypedPipe.from(new TestTypedEmptySource)
     .map { case (offset, line) => line }
     .write(TypedTsv[String]("output"))
-}
-
-class FieldsEmptyDataJob(args: Args) extends Job(args) {
-  val x = new TestFieldsEmptySource(new Fields("offset1", "line1")).read
-  val y = new TestFieldsEmptySource(new Fields("offset2", "line2")).read
-
-  // Empty sources can return an empty MemoryTap
-  // Here we are testing that this MemoryTap has the right Fields setup in it.
-  // joinWithSmaller triggers the issue we are testing, specially that 'line1 and 'line2
-  // are available in the MemoryTaps according to the planner. Previous we had used Fields.All
-  // and we get the error that field 'line1 and field 'line2 cannot be found in UNKNOWN fields
-  x.joinWithSmaller('line1 -> 'line2, y)
-    .write(Tsv("output"))
 }
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
@@ -825,12 +811,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(16, 18, 19, 22, 23).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:$i"
-          }
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
@@ -998,17 +980,14 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
+  // If we support empty sources again in the future, update this test
   "An EmptyData source" should {
     "read from empty source and write to output without errors" in {
-      HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
-        .run()
-    }
-  }
-
-  "A FieldsEmptyData source" should {
-    "read from empty source and write to output without errors" in {
-      HadoopPlatformJobTest(new FieldsEmptyDataJob(_), cluster)
-        .run()
+      val e = intercept[FlowException] {
+        HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
+          .run()
+      }
+      assert(e.getCause.getClass === classOf[InvalidSourceException])
     }
   }
 

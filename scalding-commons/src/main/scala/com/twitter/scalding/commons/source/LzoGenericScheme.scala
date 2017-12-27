@@ -41,7 +41,7 @@ private[source] object ExternalizerSerializer {
     import com.twitter.bijection.Inversion.attemptWhen
     import com.twitter.bijection.codec.Base64
 
-    implicit val baseInj = JavaSerializationInjection[Externalizer[T]]
+    implicit val baseInj: Injection[Externalizer[T], Array[Byte]] = JavaSerializationInjection[Externalizer[T]]
 
     implicit val unwrap: Injection[GZippedBase64String, String] =
       // this does not catch cases where it's Base64 but not compressed
