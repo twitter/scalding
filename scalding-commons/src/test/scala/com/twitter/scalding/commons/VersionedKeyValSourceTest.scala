@@ -19,14 +19,14 @@ import org.apache.hadoop.fs.Path
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.scalding.commons.datastores.VersionedStore
-import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
-import org.apache.hadoop.mapred.JobConf
-import java.io.{ File, FileWriter }
-import org.apache.hadoop.mapred.{SequenceFileInputFormat, JobConf}
+import java.io.FileWriter
 
+import org.apache.hadoop.mapred.{ JobConf, SequenceFileInputFormat }
 import java.io.File
+
+import org.apache.hadoop.conf.Configuration
 // Use the scalacheck generators
 import scala.collection.mutable.Buffer
 
@@ -145,7 +145,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
 
       val keyValueSize = VersionedKeyValSource(path)
         .source
-        .getSize(new JobConf())
+        .getSize(new Configuration())
 
       contentSize should be (keyValueSize)
     }
@@ -162,7 +162,13 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       val p = store.createVersion(v)
       new File(p).mkdirs()
       // create a part file here
-      new File(p + "/part-00000").createNewFile()
+      contentFn(v)
+        .foreach { text =>
+          val content = new FileWriter(new File(p + "/test"))
+          content.write(text)
+          content.close()
+        }
+
       // and succeed
       store.succeedVersion(p)
     }
