@@ -443,7 +443,8 @@ lazy val scaldingParquetScroogeCascading = module("parquet-scrooge-cascading")
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-core"),
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion,
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion
+        exclude("com.google.guava", "guava"),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
         exclude("com.google.guava", "guava"),
       "junit" % "junit" % junitVersion % "test"
