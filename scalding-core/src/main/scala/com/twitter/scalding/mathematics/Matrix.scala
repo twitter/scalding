@@ -30,6 +30,7 @@ import cascading.tap._
 import com.twitter.scalding.Dsl._
 import scala.math.max
 import scala.annotation.tailrec
+import com.twitter.scalding.quotation.Quoted
 
 /**
  * Matrix class - represents an infinite (hopefully sparse) matrix.
@@ -138,10 +139,11 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
   }
 
   def toBlockMatrix[Group, Row, Col, Val](implicit ev: <:<[T, (Group, Row, Col, Val)], ord: Ordering[(Group, Row)],
-    setter: TupleSetter[(Group, Row, Col, Val)]): BlockMatrix[Group, Row, Col, Val] =
+    setter: TupleSetter[(Group, Row, Col, Val)],
+    q: Quoted): BlockMatrix[Group, Row, Col, Val] =
     mapToBlockMatrix { _.asInstanceOf[(Group, Row, Col, Val)] }
 
-  def mapToBlockMatrix[Group, Row, Col, Val](fn: (T) => (Group, Row, Col, Val))(implicit ord: Ordering[(Group, Row)]): BlockMatrix[Group, Row, Col, Val] = {
+  def mapToBlockMatrix[Group, Row, Col, Val](fn: (T) => (Group, Row, Col, Val))(implicit ord: Ordering[(Group, Row)], q: Quoted): BlockMatrix[Group, Row, Col, Val] = {
     val matPipe = TypedPipe
       .from(mappable)
       .map(fn)

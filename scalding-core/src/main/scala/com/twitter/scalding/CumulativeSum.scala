@@ -1,6 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.twitter.algebird._
+import com.twitter.scalding.quotation.Quoted
 
 /**
  * Extension for TypedPipe to add a cumulativeSum method.
@@ -39,7 +40,8 @@ object CumulativeSum {
     def cumulativeSum(
       implicit sg: Semigroup[V],
       ordU: Ordering[U],
-      ordK: Ordering[K]): SortedGrouped[K, (U, V)] = {
+      ordK: Ordering[K],
+      quoted: Quoted): SortedGrouped[K, (U, V)] = {
       pipe.group
         .sortBy { case (u, _) => u }
         .scanLeft(Nil: List[(U, V)]) {
@@ -62,7 +64,8 @@ object CumulativeSum {
       implicit ordS: Ordering[S],
       sg: Semigroup[V],
       ordU: Ordering[U],
-      ordK: Ordering[K]): TypedPipe[(K, (U, V))] = {
+      ordK: Ordering[K],
+      q: Quoted): TypedPipe[(K, (U, V))] = {
 
       val sumPerS = pipe
         .map { case (k, (u, v)) => (k, partition(u)) -> v }

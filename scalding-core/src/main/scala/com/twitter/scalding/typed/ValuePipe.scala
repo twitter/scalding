@@ -19,11 +19,12 @@ import com.twitter.algebird._
 import com.twitter.scalding.{ Mode, IterableSource }
 
 import com.twitter.scalding.Execution
+import com.twitter.scalding.quotation.Quoted
 
 object ValuePipe extends java.io.Serializable {
   implicit def toTypedPipe[V](v: ValuePipe[V]): TypedPipe[V] = v.toTypedPipe
 
-  def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V): ValuePipe[V] =
+  def fold[T, U, V](l: ValuePipe[T], r: ValuePipe[U])(f: (T, U) => V)(implicit q: Quoted): ValuePipe[V] =
     l.leftCross(r).collect { case (t, Some(u)) => f(t, u) }
 
   def apply[T](t: T): ValuePipe[T] = LiteralValue(t)
@@ -36,17 +37,17 @@ object ValuePipe extends java.io.Serializable {
  * It allows to perform scalar based operations on pipes like normalization.
  */
 sealed trait ValuePipe[+T] extends java.io.Serializable {
-  def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] = that match {
+  def leftCross[U](that: ValuePipe[U])(implicit q: Quoted): ValuePipe[(T, Option[U])] = that match {
     case EmptyValue => map((_, None))
     case LiteralValue(v2) => map((_, Some(v2)))
     // We don't know if a computed value is empty or not. We need to run the MR job:
     case _ => ComputedValue(toTypedPipe.leftCross(that))
   }
-  def collect[U](fn: PartialFunction[T, U]): ValuePipe[U] =
+  def collect[U](fn: PartialFunction[T, U])(implicit q: Quoted): ValuePipe[U] =
     filter(fn.isDefinedAt(_)).map(fn(_))
 
-  def map[U](fn: T => U): ValuePipe[U]
-  def filter(fn: T => Boolean): ValuePipe[T]
+  def map[U](fn: T => U)(implicit q: Quoted): ValuePipe[U]
+  def filter(fn: T => Boolean)(implicit q: Quoted): ValuePipe[T]
   /**
    * Identical to toOptionExecution.map(_.get)
    * The result will be an exception if there is no value.
@@ -84,36 +85,36 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
       }
     }
 
-  def debug: ValuePipe[T]
+  def debug(implicit q: Quoted): ValuePipe[T]
 }
 case object EmptyValue extends ValuePipe[Nothing] {
-  override def leftCross[U](that: ValuePipe[U]) = this
-  override def map[U](fn: Nothing => U): ValuePipe[U] = this
-  override def filter(fn: Nothing => Boolean) = this
+  override def leftCross[U](that: ValuePipe[U])(implicit q: Quoted) = this
+  override def map[U](fn: Nothing => U)(implicit q: Quoted): ValuePipe[U] = this
+  override def filter(fn: Nothing => Boolean)(implicit q: Quoted) = this
   override def toTypedPipe: TypedPipe[Nothing] = TypedPipe.empty
   override def toOptionExecution = Execution.from(None)
 
-  def debug: ValuePipe[Nothing] = {
+  def debug(implicit q: Quoted): ValuePipe[Nothing] = {
     println("EmptyValue")
     this
   }
 }
 final case class LiteralValue[T](value: T) extends ValuePipe[T] {
-  override def map[U](fn: T => U) = LiteralValue(fn(value))
-  override def filter(fn: T => Boolean) = if (fn(value)) this else EmptyValue
+  override def map[U](fn: T => U)(implicit q: Quoted) = LiteralValue(fn(value))
+  override def filter(fn: T => Boolean)(implicit q: Quoted) = if (fn(value)) this else EmptyValue
   override def toTypedPipe = TypedPipe.from(Iterable(value))
   override def toOptionExecution = Execution.from(Some(value))
 
-  def debug: ValuePipe[T] = map { v =>
+  def debug(implicit q: Quoted): ValuePipe[T] = map { (v: T) =>
     println("LiteralValue(" + v.toString + ")")
     v
   }
 }
 final case class ComputedValue[T](override val toTypedPipe: TypedPipe[T]) extends ValuePipe[T] {
-  override def map[U](fn: T => U) = ComputedValue(toTypedPipe.map(fn))
-  override def filter(fn: T => Boolean) = ComputedValue(toTypedPipe.filter(fn))
+  override def map[U](fn: T => U)(implicit q: Quoted) = ComputedValue(toTypedPipe.map(fn))
+  override def filter(fn: T => Boolean)(implicit q: Quoted) = ComputedValue(toTypedPipe.filter(fn))
 
-  def debug: ValuePipe[T] = map { value =>
+  def debug(implicit q: Quoted): ValuePipe[T] = map { (value: T) =>
     println("ComputedValue(" + value.toString + ")")
     value
   }

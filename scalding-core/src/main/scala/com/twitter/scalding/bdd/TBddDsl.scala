@@ -5,8 +5,11 @@ import com.twitter.scalding._
 import com.twitter.scalding.source.TypedText
 import scala.collection.mutable.Buffer
 import TDsl._
+import com.twitter.scalding.quotation.Quoted
 
 trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
+
+  private implicit val q: Quoted = Quoted.internal
 
   def Given[TypeIn](source: TypedTestSource[TypeIn]): TestCaseGiven1[TypeIn] = new TestCaseGiven1[TypeIn](source)
 
