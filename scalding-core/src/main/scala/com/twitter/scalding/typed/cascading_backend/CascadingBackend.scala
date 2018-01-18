@@ -2,26 +2,17 @@ package com.twitter.scalding.typed.cascading_backend
 
 import cascading.flow.FlowDef
 import cascading.operation.Operation
-import cascading.pipe.{ CoGroup, Each, Pipe, HashJoin }
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
-import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
-import com.twitter.scalding.{
-  CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowStateMap, GroupBuilder,
-  HadoopMode, LineNumber, IterableSource, MapsideReduce, Mode,
-  RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
-}
+import cascading.pipe.{CoGroup, Each, HashJoin, Pipe}
+import cascading.tuple.{Fields, TupleEntry, Tuple => CTuple}
+import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter}
+import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
+import com.twitter.scalding.{CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowStateMap, GroupBuilder, HadoopMode, IterableSource, LineNumber, MapsideReduce, Mode, RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.serialization.{
-  Boxed,
-  BoxedOrderedSerialization,
-  CascadingBinaryComparator,
-  EquivSerialization,
-  OrderedSerialization,
-  WrappedSerialization
-}
+import com.twitter.scalding.serialization.{Boxed, BoxedOrderedSerialization, CascadingBinaryComparator, EquivSerialization, OrderedSerialization, WrappedSerialization}
 import java.util.WeakHashMap
-import scala.collection.mutable.{ Map => MMap }
+
+import scala.collection.immutable
+import scala.collection.mutable.{Map => MMap}
 
 object CascadingBackend {
   import TypedPipe._
@@ -274,14 +265,14 @@ object CascadingBackend {
         uniquePipes match {
           case Nil => loop(EmptyTypedPipe, rest, ds ::: descriptions)
           case h :: Nil => loop(h, rest, ds ::: descriptions)
-          case otherwise =>
+          case h :: tail =>
             // push all the remaining flatmaps up:
-            val pipes = otherwise.map(loop(_, rest, Nil))
-            // make the cascading pipe
             // TODO: a better optimization is to not materialize this
             // node at all if there is no fan out since groupBy and cogroupby
             // can accept multiple inputs
-            val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
+            val headPipe = loop(h, rest, ds ::: descriptions)
+            val tailPipes = tail.map(loop(_, rest, Nil))
+            val merged = RichPipe.mergeAvoidingHashes(headPipe, tailPipes)
             applyDescriptions(merged, ds ::: descriptions)
         }
       case src@SourcePipe(_) =>
