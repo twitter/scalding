@@ -857,8 +857,8 @@ trait TypedComplexHashAndMergeJobBase {
   def tdXe: TypedPipe[String]
 }
 
-class TypedComplexHashAndMergeJob(args: Args ,
-                                  fieldsToMerge: Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])])
+class TypedComplexHashAndMergeJob(args: Args,
+  fieldsToMerge: Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])])
   extends Job(args) with TypedComplexHashAndMergeJobBase {
 
   override def name: String = super.name + " (" + fieldsToMerge.map(_._1).mkString(" ++ ") + ")"
@@ -884,7 +884,7 @@ class TypedComplexHashAndMergeTest extends WordSpec with Matchers {
     ("a", _.ta),
     ("a∩b", _.taXb),
     ("c", _.tc),
-    ("d",  _.td),
+    ("d", _.td),
     ("d∩e", _.tdXe))
 
   val selection = fields.permutations.take(3) // Take'em all if you need to prove all permutations work equally (kind of slow, and internally we do use commutativity)
@@ -941,8 +941,8 @@ class TypedTwistedHashAndMergeJob(args: Args) extends Job(args) {
     (y.head, y.tail)
   }).group
 
-  val twistAB: TypedPipe[String] = twistA.hashJoin(twistB).values.map { case (a,b) => a + "≡" + b }
-  val twistBA: TypedPipe[String] = twistB.hashJoin(twistA).values.map { case (a,b) => a + "≢" + b }
+  val twistAB: TypedPipe[String] = twistA.hashJoin(twistB).values.map { case (a, b) => a + "≡" + b }
+  val twistBA: TypedPipe[String] = twistB.hashJoin(twistA).values.map { case (a, b) => a + "≢" + b }
 
   (taXbXe ++ tdXeXb ++ twistAB ++ twistBA)
     .write(TypedText.tsv[String]("output"))
