@@ -143,9 +143,9 @@ class CustomHistoryService(val history: JobConf => Seq[(String, Long)]) extends 
   import Utils._
 
   override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] = {
-    if (info.step.getOrdinal == 1) {
+    if (info.step.getOrdinal == 0) {
       makeHistory(info.step.getConfig, history)
-    } else if (info.step.getOrdinal == 2) {
+    } else if (info.step.getOrdinal == 1) {
       Success(Nil)
     } else {
       makeHistory(info.step.getConfig, _ => Seq(

@@ -68,7 +68,11 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
         case Some(MemoryEstimate(_, Some(reduceMem))) =>
           LOG.info(s"Overriding only reduce memory to: $reduceMem in Mb")
           setMemory(reduceMem, (Config.ReduceJavaOpts, Config.ReduceMemory), conf)
-        case _ => LOG.info("Memory estimators didn't calculate any value. Skipping setting memory overrides")
+        case _ =>
+          LOG.info("Memory estimators didn't calculate any value. Skipping setting memory overrides")
+          // explicitly unset these as Cascading seems to set them to 1024M
+          conf.unset(Config.MapMemory)
+          conf.unset(Config.ReduceMemory)
       }
     }
   }
