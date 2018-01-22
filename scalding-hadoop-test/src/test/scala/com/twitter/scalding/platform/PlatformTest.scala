@@ -623,7 +623,6 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-
   "A MergeTwoSinksForceToDiskJob" should {
     import TinyJoinAndMergeJob._
 
@@ -652,7 +651,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .sink(output2) { _.toSet == outputData.toSet }
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps should have size 4
+          steps should have size 3
         }
         .run()
     }
@@ -746,7 +745,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .run()
     }
   }
-  
+
   "A TsvNoCacheJob" should {
     import TsvNoCacheJob._
 
