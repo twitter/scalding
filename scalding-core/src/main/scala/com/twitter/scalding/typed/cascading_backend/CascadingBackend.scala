@@ -270,7 +270,7 @@ object CascadingBackend {
             // TODO: a better optimization is to not materialize this
             // node at all if there is no fan out since groupBy and cogroupby
             // can accept multiple inputs
-            val headPipe = loop(h, rest, ds ::: descriptions)
+            val headPipe = loop(h, rest, Nil)
             val tailPipes = tail.map(loop(_, rest, Nil))
             val merged = RichPipe.mergeAvoidingHashes(headPipe, tailPipes)
             applyDescriptions(merged, ds ::: descriptions)
