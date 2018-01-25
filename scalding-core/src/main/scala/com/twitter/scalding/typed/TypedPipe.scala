@@ -191,7 +191,7 @@ object TypedPipe extends Serializable {
  * Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-sealed trait TypedPipe[+T] extends Serializable {
+sealed abstract class TypedPipe[+T] extends Serializable {
 
   protected def withLine: TypedPipe[T] =
     LineNumber.tryNonScaldingCaller.map(_.toString) match {
