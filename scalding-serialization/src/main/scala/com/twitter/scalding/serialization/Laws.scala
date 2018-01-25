@@ -22,6 +22,6 @@ package com.twitter.scalding.serialization
 sealed trait Law[T] {
   def name: String
 }
-case class Law1[T](override val name: String, check: T => Boolean) extends Law[T]
-case class Law2[T](override val name: String, check: (T, T) => Boolean) extends Law[T]
-case class Law3[T](override val name: String, check: (T, T, T) => Boolean) extends Law[T]
+final case class Law1[T](override val name: String, check: T => Boolean) extends Law[T]
+final case class Law2[T](override val name: String, check: (T, T) => Boolean) extends Law[T]
+final case class Law3[T](override val name: String, check: (T, T, T) => Boolean) extends Law[T]

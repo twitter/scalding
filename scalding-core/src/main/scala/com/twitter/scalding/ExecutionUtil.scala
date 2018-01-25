@@ -55,7 +55,7 @@ object ExecutionUtil {
    * final aggregation of the Monoids computed for each duration.
    */
   def runDateRangeWithParallelismSum[T](duration: Duration, parallelism: Int = 1)(fn: DateRange => Execution[T])(implicit dr: DateRange, semigroup: Semigroup[T]): Execution[T] = {
-    require(dr.each(duration).nonEmpty, s"Date Range can not be empty")
+    require(dr.each(duration).nonEmpty, "Date Range can not be empty")
 
     runDateRangeWithParallelism(duration, parallelism)(fn)(dr)
       .map(_.reduceLeft[T]{ case (l, r) => Semigroup.plus(l, r) })

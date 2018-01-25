@@ -1,10 +1,13 @@
 # Scalding
 
+[![Build status](https://img.shields.io/travis/twitter/scalding/develop.svg)](http://travis-ci.org/twitter/scalding)
+[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+[![Latest version](https://index.scala-lang.org/twitter/scalding/scalding-core/latest.svg?color=orange)](https://index.scala-lang.org/twitter/scalding/scalding-core)
+[![Chat](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Scalding is a Scala library that makes it easy to specify Hadoop MapReduce jobs. Scalding is built on top of [Cascading](http://www.cascading.org/), a Java library that abstracts away low-level Hadoop details. Scalding is comparable to [Pig](http://pig.apache.org/), but offers tight integration with Scala, bringing advantages of Scala to your MapReduce jobs.
 
 ![Scalding Logo](https://raw.github.com/twitter/scalding/develop/logo/scalding.png)
-
-Current version: `0.16.0`
 
 ## Word Count
 
@@ -39,8 +42,7 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 
 * [**Getting Started**](https://github.com/twitter/scalding/wiki/Getting-Started) page on the [Scalding Wiki](https://github.com/twitter/scalding/wiki)
 * [Scalding Scaladocs](http://twitter.github.com/scalding) provide details beyond the API References. Prefer using this as it's always up to date.
-* [**REPL in Wonderland**](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) a hands-on tour of the
-  scalding REPL requiring only git and java installed.
+* [**REPL in Wonderland**](tutorial/WONDERLAND.md) a hands-on tour of the scalding REPL requiring only git and java installed.
 * [**Runnable tutorials**](https://github.com/twitter/scalding/tree/master/tutorial) in the source.
 * The API Reference, including many example Scalding snippets:
   * [Type-safe API Reference](https://github.com/twitter/scalding/wiki/Type-safe-api-reference)
@@ -52,8 +54,27 @@ You can find more example code under [examples/](https://github.com/twitter/scal
 
 Please feel free to use the beautiful [Scalding logo](https://drive.google.com/folderview?id=0B3i3pDi3yVgNbm9pMUdDcHFKVEk&usp=sharing) artwork anywhere.
 
-## Code of Conduct
-This, and all github.com/twitter projects, are under the [Twitter Open Source Code of Conduct](https://engineering.twitter.com/opensource/code-of-conduct). Additionally, see the [Typelevel Code of Conduct](http://typelevel.org/conduct) for specific examples of harassing behavior that are not tolerated.
+## Contact
+For user questions or scalding development (internals, extending, release planning):
+<https://groups.google.com/forum/#!forum/scalding-dev> (Google search also works as a first step)
+
+In the remote possibility that there exist bugs in this code, please report them to:
+<https://github.com/twitter/scalding/issues>
+
+Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
+
+Chat: [![Gitter](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+## Get Involved + Code of Conduct
+Pull requests and bug reports are always welcome!
+
+We use a lightweight form of project governence inspired by the one used by Apache projects.
+Please see [Contributing and Committership](https://github.com/twitter/analytics-infra-governance#contributing-and-committership) for our code of conduct and our pull request review process.
+The TL;DR is send us a pull request, iterate on the feedback + discussion, and get a +1 from a [Committer](COMMITTERS.md) in order to get your PR accepted.
+
+The current list of active committers (who can +1 a pull request) can be found here: [Committers](COMMITTERS.md)
+
+A list of contributors to the project can be found here: [Contributors](https://github.com/twitter/scalding/graphs/contributors)
 
 ## Building
 There is a script (called sbt) in the root that loads the correct sbt version to build:
@@ -76,17 +97,17 @@ We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage re
 
 Scalding modules are available from maven central.
 
-The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.16.0-RC1`.
+The current groupid and version for all modules is, respectively, `"com.twitter"` and  `0.17.2`.
 
 Current published artifacts are
 
-* `scalding-core_2.10`
-* `scalding-args_2.10`
-* `scalding-date_2.10`
-* `scalding-commons_2.10`
-* `scalding-avro_2.10`
-* `scalding-parquet_2.10`
-* `scalding-repl_2.10`
+* `scalding-core_2.11`, `scalding-core_2.12`
+* `scalding-args_2.11`, `scalding-args_2.12`
+* `scalding-date_2.11`, `scalding-date_2.12`
+* `scalding-commons_2.11`, `scalding-commons_2.12`
+* `scalding-avro_2.11`, `scalding-avro_2.12`
+* `scalding-parquet_2.11`, `scalding-parquet_2.12`
+* `scalding-repl_2.11`, `scalding-repl_2.12`
 
 
 The suffix denotes the scala version.
@@ -101,17 +122,6 @@ The suffix denotes the scala version.
 * Twitter
 
 To see a full list of users or to add yourself, see the [wiki](https://github.com/twitter/scalding/wiki/Powered-By)
-
-## Contact
-For user questions or scalding development (internals, extending, release planning):
-<https://groups.google.com/forum/#!forum/scalding-dev> (Google search also works as a first step)
-
-In the remote possibility that there exist bugs in this code, please report them to:
-<https://github.com/twitter/scalding/issues>
-
-Follow [@Scalding](http://twitter.com/scalding) on Twitter for updates.
-
-Chat: [![Gitter](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Authors:
 * Avi Bryant <http://twitter.com/avibryant>
@@ -142,6 +152,7 @@ Thanks for assistance and contributions:
 A full list of [contributors](https://github.com/twitter/scalding/graphs/contributors) can be found on GitHub.
 
 ## License
-Copyright 2013 Twitter, Inc.
 
-Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Copyright 2016 Twitter, Inc.
+
+Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)

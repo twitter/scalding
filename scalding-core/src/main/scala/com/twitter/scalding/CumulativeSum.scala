@@ -30,7 +30,7 @@ import com.twitter.algebird._
  * than 2 entries.
  */
 object CumulativeSum {
-  implicit def toCumulativeSum[K, U, V](pipe: TypedPipe[(K, (U, V))]) =
+  implicit def toCumulativeSum[K, U, V](pipe: TypedPipe[(K, (U, V))]): CumulativeSumExtension[K, U, V] =
     new CumulativeSumExtension(pipe)
 
   class CumulativeSumExtension[K, U, V](

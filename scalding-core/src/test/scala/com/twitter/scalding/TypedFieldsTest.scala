@@ -78,7 +78,7 @@ class UntypedFieldsJob(args: Args) extends Job(args) {
 
 class TypedFieldsJob(args: Args) extends Job(args) {
 
-  implicit val ordering = new Ordering[Opaque] {
+  implicit val ordering: Ordering[Opaque] = new Ordering[Opaque] {
     def compare(a: Opaque, b: Opaque) = a.str compare b.str
   }
 

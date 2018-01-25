@@ -23,6 +23,7 @@ import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
 import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding._
+import com.twitter.scalding.typed.functions._
 
 object KeyedListLike {
   /** KeyedListLike items are implicitly convertable to TypedPipe */
@@ -68,7 +69,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
 
     if (n < 1) {
       // This means don't take anything, which is legal, but strange
-      filterKeys(_ => false)
+      filterKeys(Constant(false))
     } else if (n == 1) {
       head
     } else {
@@ -123,9 +124,9 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * Use Algebird Aggregator to do the reduction
    */
   def aggregate[B, C](agg: Aggregator[T, B, C]): This[K, C] =
-    mapValues[B](agg.prepare(_))
+    mapValues[B](AggPrepare(agg))
       .sum[B](agg.semigroup)
-      .mapValues[C](agg.present(_))
+      .mapValues[C](AggPresent(agg))
 
   /**
    * .filter(fn).toTypedPipe == .toTypedPipe.filter(fn)
@@ -134,35 +135,27 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * and out of cascading/hadoop types.
    */
   def filter(fn: ((K, T)) => Boolean): This[K, T] =
-    mapGroup { (k: K, items: Iterator[T]) => items.filter { t => fn((k, t)) } }
+    mapGroup(FilterGroup(fn))
 
   /**
    * flatten the values
    * Useful after sortedTake, for instance
    */
   def flattenValues[U](implicit ev: T <:< TraversableOnce[U]): This[K, U] =
-    mapValueStream(_.flatMap { us => us.asInstanceOf[TraversableOnce[U]] })
+    flatMapValues(Widen(SubTypes.fromEv(ev)))
 
   /**
    * This is just short hand for mapValueStream(identity), it makes sure the
    * planner sees that you want to force a shuffle. For expert tuning
    */
   def forceToReducers: This[K, T] =
-    mapValueStream(identity)
+    mapValueStream(Identity())
 
   /**
    * Use this to get the first value encountered.
    * prefer this to take(1).
    */
-  def head: This[K, T] = sum {
-    new Semigroup[T] {
-      override def plus(left: T, right: T) = left
-      // Don't enumerate every item, just take the first
-      override def sumOption(to: TraversableOnce[T]): Option[T] =
-        if (to.isEmpty) None
-        else Some(to.toIterator.next)
-    }
-  }
+  def head: This[K, T] = sum(HeadSemigroup[T]())
 
   /**
    * This is a special case of mapValueStream, but can be optimized because it doesn't need
@@ -171,21 +164,21 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * but for Grouped we can avoid resorting to mapValueStream
    */
   def mapValues[V](fn: T => V): This[K, V] =
-    mapGroup { (_, iter) => iter.map(fn) }
+    mapGroup(MapGroupMapValues(fn))
 
   /**
    * Similar to mapValues, but works like flatMap, returning a collection of outputs
    * for each value input.
    */
   def flatMapValues[V](fn: T => TraversableOnce[V]): This[K, V] =
-    mapGroup { (_, iter) => iter.flatMap(fn) }
+    mapGroup(MapGroupFlatMapValues(fn))
 
   /**
    * Use this when you don't care about the key for the group,
    * otherwise use mapGroup
    */
   def mapValueStream[V](smfn: Iterator[T] => Iterator[V]): This[K, V] =
-    mapGroup { (k: K, items: Iterator[T]) => smfn(items) }
+    mapGroup(MapValueStream(smfn))
 
   /**
    * Add all items according to the implicit Semigroup
@@ -203,7 +196,8 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * Like the above this can be optimized in some Grouped cases.
    * If you don't have a commutative operator, use reduceLeft
    */
-  def reduce[U >: T](fn: (U, U) => U): This[K, U] = sum(Semigroup.from(fn))
+  def reduce[U >: T](fn: (U, U) => U): This[K, U] =
+    sum(SemigroupFromFn(fn))
 
   /**
    * Take the largest k things according to the implicit ordering.
@@ -233,41 +227,42 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
     sortedTake(k)(Ordering.fromLessThan(lessThan))
 
   /** For each key, Return the product of all the values */
-  def product[U >: T](implicit ring: Ring[U]): This[K, U] = reduce(ring.times)
+  def product[U >: T](implicit ring: Ring[U]): This[K, U] =
+    sum(SemigroupFromProduct(ring))
 
   /** For each key, count the number of values that satisfy a predicate */
   def count(fn: T => Boolean): This[K, Long] =
-    mapValues { t => if (fn(t)) 1L else 0L }.sum
+    mapValues(Count(fn)).sum
 
   /** For each key, check to see if a predicate is true for all Values*/
   def forall(fn: T => Boolean): This[K, Boolean] =
-    mapValues { fn(_) }.product
+    mapValues(fn).product
 
   /**
    * For each key, selects all elements except first n ones.
    */
   def drop(n: Int): This[K, T] =
-    mapValueStream { _.drop(n) }
+    mapValueStream(Drop(n))
 
   /**
    * For each key, Drops longest prefix of elements that satisfy the given predicate.
    */
-  def dropWhile(p: (T) => Boolean): This[K, T] =
-    mapValueStream { _.dropWhile(p) }
+  def dropWhile(p: T => Boolean): This[K, T] =
+    mapValueStream(DropWhile(p))
 
   /**
    * For each key, Selects first n elements. Don't use this if n == 1, head is faster in that case.
    */
   def take(n: Int): This[K, T] =
-    if (n < 1) filterKeys(_ => false) // just don't keep anything
+    if (n < 1) filterKeys(Constant(false)) // just don't keep anything
     else if (n == 1) head
-    else mapValueStream { _.take(n) }
+    else mapValueStream(Take(n))
 
   /**
    * For each key, Takes longest prefix of elements that satisfy the given predicate.
    */
-  def takeWhile(p: (T) => Boolean): This[K, T] =
-    mapValueStream { _.takeWhile(p) }
+  def takeWhile(p: T => Boolean): This[K, T] =
+    mapValueStream(TakeWhile(p))
 
   /**
    * Folds are composable aggregations that make one pass over the data.
@@ -275,22 +270,22 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * and this method
    */
   def fold[V](f: Fold[T, V]): This[K, V] =
-    mapValueStream(it => Iterator(f.overTraversable(it)))
+    mapValueStream(FoldIterator(f))
 
   /**
    * If the fold depends on the key, use this method to construct
    * the fold for each key
    */
   def foldWithKey[V](fn: K => Fold[T, V]): This[K, V] =
-    mapGroup { (k, vs) => Iterator(fn(k).overTraversable(vs)) }
+    mapGroup(FoldWithKeyIterator(fn))
 
   /** For each key, fold the values. see scala.collection.Iterable.foldLeft */
   def foldLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
-    mapValueStream { stream => Iterator(stream.foldLeft(z)(fn)) }
+    mapValueStream(FoldLeftIterator(z, fn))
 
   /** For each key, scanLeft the values. see scala.collection.Iterable.scanLeft */
   def scanLeft[B](z: B)(fn: (B, T) => B): This[K, B] =
-    mapValueStream { _.scanLeft(z)(fn) }
+    mapValueStream(ScanLeftIterator(z, fn))
 
   /**
    * Similar to reduce but always on the reduce-side (never optimized to mapside),
@@ -299,23 +294,24 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * the old value comes in on the left.
    */
   def reduceLeft[U >: T](fn: (U, U) => U): This[K, U] =
-    sumLeft[U](Semigroup.from(fn))
+    sumLeft[U](SemigroupFromFn(fn))
 
   /**
    * Semigroups MAY have a faster implementation of sum for iterators,
    * so prefer using sum/sumLeft to reduce/reduceLeft
    */
   def sumLeft[U >: T](implicit sg: Semigroup[U]): This[K, U] =
-    mapValueStream[U](Semigroup.sumOption[U](_).iterator)
+    mapValueStream[U](SumAll(sg))
 
   /** For each key, give the number of values */
-  def size: This[K, Long] = mapValues { x => 1L }.sum
+  def size: This[K, Long] = mapValues(Constant(1L)).sum
 
   /**
    * For each key, give the number of unique values. WARNING: May OOM.
    * This assumes the values for each key can fit in memory.
    */
-  def distinctSize: This[K, Long] = toSet[T].mapValues(_.size)
+  def distinctSize: This[K, Long] =
+    toSet[T].mapValues(SizeOfSet())
 
   /**
    * For each key, remove duplicate values. WARNING: May OOM.
@@ -330,7 +326,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * You really should try to ask why you need all the values, and if you
    * want to do some custom reduction, do it in mapGroup or mapValueStream
    */
-  def toList: This[K, List[T]] = mapValues { List(_) }.sum
+  def toList: This[K, List[T]] = mapValues(ToList[T]()).sum
   /**
    * AVOID THIS IF POSSIBLE
    * Same risks apply here as to toList: you may OOM. See toList.
@@ -339,23 +335,23 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * but Set is invariant.  See:
    * http://stackoverflow.com/questions/676615/why-is-scalas-immutable-set-not-covariant-in-its-type
    */
-  def toSet[U >: T]: This[K, Set[U]] = mapValues { Set[U](_) }.sum
+  def toSet[U >: T]: This[K, Set[U]] = mapValues(ToSet[U]()).sum
 
   /** For each key, give the maximum value*/
   def max[B >: T](implicit cmp: Ordering[B]): This[K, T] =
-    reduce(cmp.max).asInstanceOf[This[K, T]]
+    reduce(MaxOrd[T, B](cmp))
 
   /** For each key, give the maximum value by some function*/
   def maxBy[B](fn: T => B)(implicit cmp: Ordering[B]): This[K, T] =
-    reduce(Ordering.by(fn).max)
+    reduce(MaxOrdBy(fn, cmp))
 
   /** For each key, give the minimum value*/
   def min[B >: T](implicit cmp: Ordering[B]): This[K, T] =
-    reduce(cmp.min).asInstanceOf[This[K, T]]
+    reduce(MinOrd[T, B](cmp))
 
   /** For each key, give the minimum value by some function*/
   def minBy[B](fn: T => B)(implicit cmp: Ordering[B]): This[K, T] =
-    reduce(Ordering.by(fn).min)
+    reduce(MinOrdBy(fn, cmp))
 
   /** Convert to a TypedPipe and only keep the keys */
   def keys: TypedPipe[K] = toTypedPipe.keys

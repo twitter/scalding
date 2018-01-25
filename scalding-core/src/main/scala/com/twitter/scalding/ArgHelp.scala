@@ -5,10 +5,10 @@ sealed trait DescribedArg {
   def description: String
 }
 
-case class RequiredArg(key: String, description: String) extends DescribedArg
-case class OptionalArg(key: String, description: String) extends DescribedArg
-case class ListArg(key: String, description: String) extends DescribedArg
-case class BooleanArg(key: String, description: String) extends DescribedArg
+final case class RequiredArg(key: String, description: String) extends DescribedArg
+final case class OptionalArg(key: String, description: String) extends DescribedArg
+final case class ListArg(key: String, description: String) extends DescribedArg
+final case class BooleanArg(key: String, description: String) extends DescribedArg
 
 class HelpException extends RuntimeException("User asked for help")
 class DescriptionValidationException(msg: String) extends RuntimeException(msg)

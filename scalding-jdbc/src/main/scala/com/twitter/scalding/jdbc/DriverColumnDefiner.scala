@@ -34,7 +34,7 @@ trait DriverColumnDefiner[Type <: JdbcType] {
     sizeOp: Option[Int] = None,
     defOp: Option[String]) = {
     val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
-    val defStr = defOp.map { " DEFAULT '" + _.toString + "' " }.getOrElse(" ")
+    val defStr = defOp.map { " DEFAULT '" + _ + "' " }.getOrElse(" ")
     ColumnDefinition(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
   }
 

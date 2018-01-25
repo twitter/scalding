@@ -39,7 +39,9 @@ import scala.collection.JavaConverters._
 /**
  * thrown when validateTaps fails
  */
-class InvalidSourceException(message: String) extends RuntimeException(message)
+class InvalidSourceException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+  def this(message: String) = this(message, null)
+}
 
 /**
  * InvalidSourceTap used in createTap method when we want to defer
@@ -51,7 +53,10 @@ class InvalidSourceException(message: String) extends RuntimeException(message)
  *
  * hdfsPaths represents user-supplied list that was detected as not containing any valid paths.
  */
-class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobConf, RecordReader[_, _]] {
+class InvalidSourceTap(val e: Throwable) extends SourceTap[JobConf, RecordReader[_, _]] {
+
+  def this(hdfsPaths: Iterable[String]) =
+    this(new InvalidSourceException(s"No good paths in $hdfsPaths"))
 
   private final val randomId = UUID.randomUUID.toString
 
@@ -61,8 +66,7 @@ class InvalidSourceTap(val hdfsPaths: Iterable[String]) extends SourceTap[JobCon
 
   override def getModifiedTime(conf: JobConf): Long = 0L
 
-  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator =
-    throw new InvalidSourceException(s"InvalidSourceTap: No good paths in $hdfsPaths")
+  override def openForRead(flow: FlowProcess[JobConf], input: RecordReader[_, _]): TupleEntryIterator = throw new InvalidSourceException("Encountered InvalidSourceTap!", e)
 
   override def resourceExists(conf: JobConf): Boolean = false
 
@@ -246,6 +250,24 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     val conv = converter
     mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
   }
+
+  /**
+   * Transform this Mappable into another by mapping after.
+   * We don't call this map because of conflicts with Mappable, unfortunately
+   */
+  override def andThen[U](fn: T => U): Mappable[U] = {
+    val self = this // compiler generated self can cause problems with serialization
+    new Mappable[U] {
+      override def sourceFields = self.sourceFields
+      def converter[V >: U]: TupleConverter[V] = self.converter.andThen(fn)
+      override def read(implicit fd: FlowDef, mode: Mode): Pipe = self.read
+      override def andThen[U1](fn2: U => U1) = self.andThen(fn.andThen(fn2))
+      def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
+        self.createTap(readOrWrite)(mode)
+      override def validateTaps(mode: Mode): Unit = self.validateTaps(mode)
+    }
+  }
+
 }
 
 /**

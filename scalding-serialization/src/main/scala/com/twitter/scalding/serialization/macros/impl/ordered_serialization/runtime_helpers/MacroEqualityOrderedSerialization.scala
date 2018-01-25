@@ -21,7 +21,9 @@ object MacroEqualityOrderedSerialization {
   private val seed = "MacroEqualityOrderedSerialization".hashCode
 }
 
-abstract class MacroEqualityOrderedSerialization[T] extends OrderedSerialization[T] with EquivSerialization[T] {
+abstract class MacroEqualityOrderedSerialization[T]
+  extends OrderedSerialization[T]
+  with EquivSerialization[T] {
   def uniqueId: String
   override def hashCode = MacroEqualityOrderedSerialization.seed ^ uniqueId.hashCode
   override def equals(other: Any): Boolean = other match {

@@ -17,10 +17,12 @@ package com.twitter.scalding
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapreduce.MRJobConfig
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 import com.twitter.chill.{ ExternalizerCodec, ExternalizerInjection, Externalizer, KryoInstantiator }
 import com.twitter.chill.config.{ ScalaMapConfig, ConfiguredInstantiator }
 import com.twitter.bijection.{ Base64String, Injection }
+import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
 
 import cascading.pipe.assembly.AggregateBy
 import cascading.flow.{ FlowListener, FlowStepListener, FlowProps, FlowStepStrategy }
@@ -28,14 +30,16 @@ import cascading.property.AppProps
 import cascading.tuple.collect.SpillableProps
 
 import java.security.MessageDigest
+import java.net.URI
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
+import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
 /**
  * This is a wrapper class on top of Map[String, String]
  */
-trait Config extends Serializable {
+abstract class Config extends Serializable {
 
   import Config._ // get the constants
   def toMap: Map[String, String]
@@ -49,6 +53,27 @@ trait Config extends Serializable {
       case (Some(v), r) => (r, this + (k -> v))
       case (None, r) => (r, this - k)
     }
+
+  /**
+   * Add files to be localized to the config. Intended to be used by user code.
+   * @param cachedFiles CachedFiles to be added
+   * @return new Config with cached files
+   */
+  def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
+    cachedFiles.foldLeft(this) { case (config, file) =>
+        file match {
+          case hadoopFile: HadoopCachedFile =>
+            Config.addDistributedCacheFile(hadoopFile.sourceUri, config)
+          case _ => config
+        }
+    }
+
+  /**
+   * Get cached files from config
+   */
+  def getDistributedCachedFiles: Seq[CachedFile] = {
+    Config.getDistributedCacheFile(this)
+  }
 
   /**
    * This is a name that if present is passed to flow.setName,
@@ -77,14 +102,17 @@ trait Config extends Serializable {
    * is used to create the Class.forName
    */
   def getCascadingAppJar: Option[Try[Class[_]]] =
-    get(AppProps.APP_JAR_CLASS).map { str =>
-      // The Class[_] messes up using Try(Class.forName(str)) on scala 2.9.3
+    getClassForKey(AppProps.APP_JAR_CLASS)
+
+  def getClassForKey(k: String): Option[Try[Class[_]]] =
+    get(k).map { str =>
       try {
         Success(
           // Make sure we are using the class-loader for the current thread
           Class.forName(str, true, Thread.currentThread().getContextClassLoader))
       } catch { case err: Throwable => Failure(err) }
     }
+
 
   /*
    * Used in joins to determine how much of the "right hand side" of
@@ -111,17 +139,30 @@ trait Config extends Serializable {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  @deprecated("Use setRequireOrderedSerializationMode", "12/14/17")
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+
+  @deprecated("Use getRequireOrderedSerializationMode", "12/14/17")
+  def getRequireOrderedSerialization: Boolean =
+    getRequireOrderedSerializationMode == Some(RequireOrderedSerializationMode.Fail)
+
   /**
    * Set this configuration option to require all grouping/cogrouping
    * to use OrderedSerialization
    */
-  def setRequireOrderedSerialization(b: Boolean): Config =
-    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+  def setRequireOrderedSerializationMode(r: Option[RequireOrderedSerializationMode]): Config =
+    r.map {
+      v => this + (ScaldingRequireOrderedSerialization -> (v.toString))
+    }.getOrElse(this)
 
-  def getRequireOrderedSerialization: Boolean =
+  def getRequireOrderedSerializationMode: Option[RequireOrderedSerializationMode] =
     get(ScaldingRequireOrderedSerialization)
-      .map(_.toBoolean)
-      .getOrElse(false)
+      .map(_.toLowerCase()).collect {
+        case "true" => RequireOrderedSerializationMode.Fail // backwards compatibility
+        case "fail" => RequireOrderedSerializationMode.Fail
+        case "log" => RequireOrderedSerializationMode.Log
+      }
 
   def getCascadingSerializationTokens: Map[Int, String] =
     get(Config.CascadingSerializationTokens)
@@ -214,6 +255,19 @@ trait Config extends Serializable {
 
   def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
+
+  def getOptimizationPhases: Option[Try[typed.OptimizationPhases]] =
+    getClassForKey(Config.OptimizationPhases).map { tryClass =>
+      tryClass.flatMap { clazz =>
+        Try(clazz.newInstance().asInstanceOf[typed.OptimizationPhases])
+      }
+    }
+
+  def setOptimizationPhases(clazz: Class[_ <: typed.OptimizationPhases]): Config =
+    setOptimizationPhasesFromName(clazz.getName)
+
+  def setOptimizationPhasesFromName(className: String): Config =
+    this + (Config.OptimizationPhases -> className)
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
   def setScaldingVersion: Config =
@@ -370,6 +424,27 @@ trait Config extends Serializable {
       .map(_.toBoolean)
       .getOrElse(false)
 
+  /**
+   * Set to true to enable very verbose logging during FileSource's validation and planning.
+   * This can help record what files were present / missing at runtime. Should only be enabled
+   * for debugging.
+   */
+  def setVerboseFileSourceLogging(b: Boolean): Config =
+    this + (VerboseFileSourceLoggingKey -> b.toString)
+
+  def getSkipNullCounters: Boolean =
+    get(SkipNullCounters)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
+  /**
+   * If this is true, on hadoop, when we get a null Counter
+   * for a given name, we just ignore the counter instead
+   * of NPE
+   */
+  def setSkipNullCounters(boolean: Boolean): Config =
+    this + (SkipNullCounters -> boolean.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -389,11 +464,14 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
   val FlowListeners: String = "scalding.observability.flowlisteners"
   val FlowStepListeners: String = "scalding.observability.flowsteplisteners"
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
+  val VerboseFileSourceLoggingKey: String = "scalding.filesource.verbose.logging"
+  val OptimizationPhases: String = "scalding.optimization.phases"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -409,6 +487,21 @@ object Config {
 
   /** Whether the number of reducers has been set explicitly using a `withReducers` */
   val WithReducersSetExplicitly = "scalding.with.reducers.set.explicitly"
+
+  /** Name of parameter to specify which class to use as the default estimator. */
+  val MemoryEstimators = "scalding.memory.estimator.classes"
+
+  /** Hadoop map memory */
+  val MapMemory = "mapreduce.map.memory.mb"
+
+  /** Hadoop map java opts */
+  val MapJavaOpts = "mapreduce.map.java.opts"
+
+  /** Hadoop reduce java opts */
+  val ReduceJavaOpts = "mapreduce.reduce.java.opts"
+
+  /** Hadoop reduce memory */
+  val ReduceMemory = "mapreduce.reduce.memory.mb"
 
   /** Manual description for use in .dot and MR step names set using a `withDescription`. */
   val PipeDescriptions = "scalding.pipe.descriptions"
@@ -502,7 +595,7 @@ object Config {
    * Either union these two, or return the keys that overlap
    */
   def disjointUnion[K >: String, V >: String](m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
-    val asMap = conf.toMap.toMap[K, V] // linter:ignore we are upcasting K, V
+    val asMap = conf.toMap.toMap[K, V] // linter:disable:TypeToType // we are upcasting K, V
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
     else Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
@@ -511,7 +604,7 @@ object Config {
    * This overwrites any keys in m that exist in config.
    */
   def overwrite[K >: String, V >: String](m: Map[K, V], conf: Config): Map[K, V] =
-    m ++ (conf.toMap.toMap[K, V]) // linter:ignore we are upcasting K, V
+    m ++ (conf.toMap.toMap[K, V]) // linter:disable:TypeToType // we are upcasting K, V
 
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
@@ -557,6 +650,47 @@ object Config {
     val bytes = fromInputStream(is)
     is.close()
     md5Hex(bytes)
+  }
+
+  /**
+   * Add a file to be localized to the config. Intended to be used by user code.
+   *
+   * @param qualifiedURI The qualified uri of the cache to be localized
+   * @param config Config to add the cache to
+   *
+   * @return new Config with cached files
+   *
+   * @see basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
+   */
+  private def addDistributedCacheFile(qualifiedURI: URI, config: Config): Config = {
+    val newFile = DistributedCacheFile
+      .symlinkedUriFor(qualifiedURI)
+      .toString
+
+    val newFiles = config
+      .get(MRJobConfig.CACHE_FILES)
+      .map(files => files + "," + newFile)
+      .getOrElse(newFile)
+
+    config + (MRJobConfig.CACHE_FILES -> newFiles)
+  }
+
+  /**
+   * Get distributed cache files from config
+   *
+   * @param config Config with cached files
+   */
+  private def getDistributedCacheFile(config: Config): Seq[CachedFile] = {
+    config
+      .get(MRJobConfig.CACHE_FILES)
+      .toSeq
+      .flatMap(_.split(","))
+      .filter(_.nonEmpty)
+      .map { file =>
+        val symlinkedUri = new URI(file)
+        val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
+        HadoopCachedFile(qualifiedUri)
+      }
   }
 
   private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =

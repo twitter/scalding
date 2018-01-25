@@ -15,24 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding.platform
 
+import java.util.{ Iterator => JIterator }
+
 import cascading.flow.FlowException
-import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
+import cascading.pipe.joiner.{ InnerJoin, JoinerClosure }
+import cascading.scheme.Scheme
+import cascading.scheme.hadoop.{ TextLine => CHTextLine }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple }
-
 import com.twitter.scalding._
-import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
 import com.twitter.scalding.serialization.OrderedSerialization
-import java.util.{ Iterator => JIterator }
+import com.twitter.scalding.source.{ FixedTypedText, NullSink, TypedText }
 import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.{ Matchers, WordSpec }
-import org.slf4j.{ LoggerFactory, Logger }
+
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
-import scala.math.Ordering
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -112,8 +110,8 @@ object MultipleGroupByJobData {
 class MultipleGroupByJob(args: Args) extends Job(args) {
   import com.twitter.scalding.serialization._
   import MultipleGroupByJobData._
-  implicit val stringOrdSer = new StringOrderedSerialization()
-  implicit val stringTup2OrdSer = new OrderedSerialization2(stringOrdSer, stringOrdSer)
+  implicit val stringOrdSer: OrderedSerialization[String] = new StringOrderedSerialization()
+  implicit val stringTup2OrdSer: OrderedSerialization[(String, String)] = new OrderedSerialization2(stringOrdSer, stringOrdSer)
   val otherStream = TypedPipe.from(data).map{ k => (k, k) }.group
 
   TypedPipe.from(data)
@@ -134,32 +132,6 @@ class MultipleGroupByJob(args: Args) extends Job(args) {
     .map(_._1)
     .write(TypedTsv("output"))
 
-}
-
-class TypedPipeWithDescriptionJob(args: Args) extends Job(args) {
-  TypedPipe.from[String](List("word1", "word1", "word2"))
-    .withDescription("map stage - assign words to 1")
-    .map { w => (w, 1L) }
-    .group
-    .withDescription("reduce stage - sum")
-    .sum
-    .withDescription("write")
-    .write(TypedTsv[(String, Long)]("output"))
-}
-
-class TypedPipeJoinWithDescriptionJob(args: Args) extends Job(args) {
-  PlatformTest.setAutoForceRight(mode, true)
-
-  val x = TypedPipe.from[(Int, Int)](List((1, 1)))
-  val y = TypedPipe.from[(Int, String)](List((1, "first")))
-  val z = TypedPipe.from[(Int, Boolean)](List((2, true))).group
-
-  x.hashJoin(y) // this triggers an implicit that somehow pushes the line number to the next one
-    .withDescription("hashJoin")
-    .leftJoin(z)
-    .withDescription("leftJoin")
-    .values
-    .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
 }
 
 class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
@@ -312,7 +284,7 @@ class GroupedLimitJobWithSteps(args: Args) extends Job(args) {
 }
 
 object OrderedSerializationTest {
-  implicit val genASGK = Arbitrary {
+  implicit val genASGK: Arbitrary[NestedCaseClass] = Arbitrary {
     for {
       ts <- Arbitrary.arbitrary[Long]
       b <- Gen.nonEmptyListOf(Gen.alphaNumChar).map (_.mkString)
@@ -325,8 +297,13 @@ object OrderedSerializationTest {
 
 case class NestedCaseClass(day: RichDate, key: (String, String))
 
-class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+// Need to define this in a separate companion object to work around Scala 2.12 compile issues
+object OrderedSerializationImplicitDefs {
   implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+}
+
+class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> 1L).group.sorted.mapValueStream(_.map(_ * 2)).toTypedPipe.group
 
@@ -344,7 +321,7 @@ class ComplexJob(input: List[NestedCaseClass], args: Args) extends Job(args) {
 }
 
 class ComplexJob2(input: List[NestedCaseClass], args: Args) extends Job(args) {
-  implicit def primitiveOrderedBufferSupplier[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
+  import OrderedSerializationImplicitDefs._
 
   val ds1 = TypedPipe.from(input).map(_ -> (1L, "asfg"))
 
@@ -435,6 +412,22 @@ object PlatformTest {
       case _ => ()
     }
   }
+}
+
+class TestTypedEmptySource extends FileSource with TextSourceScheme with Mappable[(Long, String)] with SuccessFileSource {
+  override def hdfsPaths: Iterable[String] = Iterable.empty
+  override def localPaths: Iterable[String] = Iterable.empty
+  override def converter[U >: (Long, String)] =
+    TupleConverter.asSuperConverter[(Long, String), U](implicitly[TupleConverter[(Long, String)]])
+}
+
+// Tests the scenario where you have no data present in the directory pointed to by a source typically
+// due to the directory being empty (but for a _SUCCESS file)
+// We test out that this shouldn't result in a Cascading planner error during {@link Job.buildFlow}
+class EmptyDataJob(args: Args) extends Job(args) {
+  TypedPipe.from(new TestTypedEmptySource)
+    .map { case (offset, line) => line }
+    .write(TypedTsv[String]("output"))
 }
 
 // Keeping all of the specifications in the same tests puts the result output all together at the end.
@@ -528,12 +521,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
           val steps = flow.getFlowSteps.asScala
           steps should have size 1
           val firstStep = steps.headOption.map(_.getConfig.get(Config.StepDescriptions)).getOrElse("")
-          val lines = List(155, 157, 158, 161, 162).map { i =>
-            s"com.twitter.scalding.platform.TypedPipeJoinWithDescriptionJob.<init>(PlatformTest.scala:$i"
-          }
           firstStep should include ("leftJoin")
           firstStep should include ("hashJoin")
-          lines.foreach { l => firstStep should include (l) }
           steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
@@ -664,8 +653,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
             "reduce stage - sum",
             "write",
             // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:143)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(PlatformTest.scala:147)")
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:30)",
+            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:34)")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
           descs.foreach { d =>
@@ -698,6 +687,17 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
       HadoopPlatformJobTest(new IterableSourceDistinctJob(_), cluster)
         .sink[String]("output") { _.toList shouldBe data }
         .run()
+    }
+  }
+
+  // If we support empty sources again in the future, update this test
+  "An EmptyData source" should {
+    "read from empty source and write to output without errors" in {
+      val e = intercept[FlowException] {
+        HadoopPlatformJobTest(new EmptyDataJob(_), cluster)
+          .run()
+      }
+      assert(e.getCause.getClass === classOf[InvalidSourceException])
     }
   }
 

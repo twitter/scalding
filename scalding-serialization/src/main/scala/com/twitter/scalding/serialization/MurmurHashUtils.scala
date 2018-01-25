@@ -43,7 +43,7 @@ object MurmurHashUtils {
   }
 
   final def hashUnencodedChars(input: CharSequence): Int = {
-    var h1 = seed;
+    var h1 = seed
 
     // step through the CharSequence 2 chars at a time
     var i = 0

@@ -56,7 +56,7 @@ case class JsonLine(p: String, fields: Fields = Fields.ALL,
         case (_, None) => null
         case (h :: Nil, Some(fs)) => fs.get(h).orNull
         case (h :: tail, Some(fs)) => fs.get(h).orNull match {
-          case fs: Map[String, AnyRef] => nestedRetrieval(Option(fs), tail)
+          case fs: Map[String @unchecked, AnyRef @unchecked] => nestedRetrieval(Option(fs), tail)
           case _ => null
         }
         case (Nil, _) => null

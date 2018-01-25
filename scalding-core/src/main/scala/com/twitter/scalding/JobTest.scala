@@ -26,12 +26,16 @@ import org.apache.hadoop.mapred.JobConf
 import scala.util.Try
 
 object JobTest {
+
+  @deprecated(message = "Use the non-reflection based JobTest apply methods", since = "0.16.1")
   def apply(jobName: String) = {
     new JobTest((args: Args) => Job(jobName, args))
   }
+
   def apply(cons: (Args) => Job) = {
     new JobTest(cons)
   }
+
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
       manifest[T].runtimeClass
@@ -104,7 +108,7 @@ class JobTest(cons: (Args) => Job) {
     sourceBuffer(s, iTuple)
 
   // This use of `_.get` is probably safe, but difficult to prove correct
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def sink[A](s: Source)(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
     if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
@@ -174,7 +178,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   // Registers test files, initializes the global mode, and creates a job.
-  private def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
+  private[scalding] def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
     // Create a global mode to use for testing.
     val testMode: TestMode =
       if (useHadoop) {
@@ -196,6 +200,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   @tailrec
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   private final def runJob(job: Job, runNext: Boolean): Unit = {
     // Disable automatic cascading update
     System.setProperty("cascading.update.skip", "true")

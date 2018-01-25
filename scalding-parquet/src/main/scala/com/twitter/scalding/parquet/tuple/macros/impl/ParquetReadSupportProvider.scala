@@ -3,9 +3,10 @@ package com.twitter.scalding.parquet.tuple.macros.impl
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
 import com.twitter.scalding.parquet.tuple.scheme._
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
-object ParquetReadSupportProvider {
+class ParquetReadSupportProvider(schemaProvider: ParquetSchemaProvider) {
+
   private[this] sealed trait CollectionType
   private[this] case object NOT_A_COLLECTION extends CollectionType
   private[this] case object OPTION extends CollectionType
@@ -105,20 +106,20 @@ object ParquetReadSupportProvider {
       }
 
       def matchPrimitiveField(converterType: Type): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val innerConverter: Tree = q"new $converterType()"
         val converter: Tree = fieldConverter(converterName, innerConverter, isPrimitive = true)
         createFieldMatchResult(converterName, converter)
       }
 
       def matchCaseClassField(groupConverter: Tree): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val converter: Tree = fieldConverter(converterName, groupConverter)
         createFieldMatchResult(converterName, converter)
       }
 
       def matchMapField(K: Type, V: Type, keyConverter: Tree, valueConverter: Tree): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val mapConverter = createMapFieldConverter(converterName, K, V, keyConverter, valueConverter)
         createFieldMatchResult(converterName, mapConverter)
       }
@@ -194,7 +195,7 @@ object ParquetReadSupportProvider {
     val groupConverter = buildGroupConverter(T.tpe, converters, converterGetters, convertersResetCalls,
       buildTupleValue(T.tpe, fieldValues))
 
-    val schema = ParquetSchemaProvider.toParquetSchemaImpl[T](ctx)
+    val schema = schemaProvider.toParquetSchemaImpl[T](ctx)
     val readSupport = q"""
       new _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetReadSupport[$T]($schema) {
         override val tupleConverter: _root_.com.twitter.scalding.parquet.tuple.scheme.ParquetTupleConverter[$T] = $groupConverter

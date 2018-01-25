@@ -5,6 +5,7 @@ import com.twitter.scalding._
 import java.io.File
 import java.net.URI
 import java.nio.ByteBuffer
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
 import org.apache.hadoop.fs.Path
@@ -48,12 +49,34 @@ object URIHasher {
  *
  * {{{
  * class YourJob(args: Args) extends Job(args) {
- *   val theCachedFile = DistributedCacheFile("hdfs://ur-namenode/path/to/your/file.txt")
+ *   val theCachedFile = DistributedCacheFile("/path/to/your/file.txt")
  *
  *   def somethingThatUsesTheCachedFile() {
  *     doSomethingWith(theCachedFile.path) // or theCachedFile.file
  *   }
  * }
+ *
+ * example with Execution:
+ *
+ * {{{
+ * object YourExecJob extends ExecutionApp {
+ *  override def job =
+ *    Execution.withCachedFile("/path/to/your/file.txt") { file =>
+ *      doSomething(theCachedFile.path)
+ *    }
+ * }
+ *
+ * example with Execution and multiple files:
+ *
+ * object YourExecJob extends ExecutionApp {
+ *  override def job =
+ *    Execution.withCachedFile("/path/to/your/one.txt") { one =>
+ *      Execution.withCachedFile("/path/to/your/second.txt") { second =>
+ *        doSomething(one.path, second.path)
+ *      }
+ *    }
+ * }
+ *
  * }}}
  *
  */
@@ -65,11 +88,35 @@ object DistributedCacheFile {
    * @param uri The fully qualified URI that points to the hdfs file to add
    * @return A CachedFile instance
    */
-  def apply(uri: URI)(implicit mode: Mode): CachedFile =
-    UncachedFile(Right(uri)).add()
+  def apply(uri: URI)(implicit mode: Mode): CachedFile = {
+    val cachedFile = UncachedFile(Right(uri)).cached(mode)
 
-  def apply(path: String)(implicit mode: Mode): CachedFile =
-    UncachedFile(Left(path)).add()
+    addCachedFile(cachedFile, mode)
+
+    cachedFile
+  }
+
+  def apply(path: String)(implicit mode: Mode): CachedFile = {
+    val cachedFile = UncachedFile(Left(path)).cached(mode)
+
+    addCachedFile(cachedFile, mode)
+
+    cachedFile
+  }
+
+  private[scalding] def cachedFile(uri: URI, mode: Mode): CachedFile =
+    UncachedFile(Right(uri)).cached(mode)
+
+  private[scalding] def cachedFile(path: String, mode: Mode): CachedFile =
+    UncachedFile(Left(path)).cached(mode)
+
+  private[scalding] def addCachedFile(cachedFile: CachedFile, mode: Mode): Unit = {
+    (cachedFile, mode) match {
+      case (hadoopFile: HadoopCachedFile, hadoopMode: HadoopMode) =>
+        HDistributedCache.addCacheFile(symlinkedUriFor(hadoopFile.sourceUri), hadoopMode.jobConf)
+      case _ =>
+    }
+  }
 
   def symlinkNameFor(uri: URI): String = {
     val hexsum = URIHasher(uri)
@@ -84,9 +131,7 @@ object DistributedCacheFile {
 
 final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 
-  import DistributedCacheFile._
-
-  def add()(implicit mode: Mode): CachedFile =
+  def cached(mode: Mode): CachedFile =
     mode match {
       case Hdfs(_, conf) => addHdfs(conf)
       case HadoopTest(conf, _) => addHdfs(conf)
@@ -105,16 +150,16 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
   }
 
   private[this] def addHdfs(conf: Configuration): CachedFile = {
-    HDistributedCache.createSymlink(conf)
-
     def makeQualifiedStr(path: String, conf: Configuration): URI =
       makeQualified(new Path(path), conf)
 
     def makeQualifiedURI(uri: URI, conf: Configuration): URI =
       makeQualified(new Path(uri.toString), conf) // uri.toString because hadoop 0.20.2 doesn't take a URI
 
-    def makeQualified(p: Path, conf: Configuration): URI =
-      p.makeQualified(p.getFileSystem(conf)).toUri // make sure we have fully-qualified URI
+    def makeQualified(p: Path, conf: Configuration): URI = {
+      val fileSystem = p.getFileSystem(conf)
+      p.makeQualified(fileSystem.getUri, fileSystem.getWorkingDirectory).toUri
+    }
 
     val sourceUri =
       source match {
@@ -122,7 +167,6 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
         case Right(uri) => makeQualifiedURI(uri, conf)
       }
 
-    HDistributedCache.addCacheFile(symlinkedUriFor(sourceUri), conf)
     HadoopCachedFile(sourceUri)
   }
 }
@@ -136,8 +180,8 @@ sealed abstract class CachedFile {
 }
 
 final case class LocallyCachedFile private[scalding] (sourcePath: String) extends CachedFile {
-  def path = file.getCanonicalPath
-  def file = new File(sourcePath).getCanonicalFile
+  def path: String = file.getCanonicalPath
+  def file: File = new File(sourcePath).getCanonicalFile
 }
 
 final case class HadoopCachedFile private[scalding] (sourceUri: URI) extends CachedFile {

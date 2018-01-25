@@ -54,14 +54,14 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
   private def getNextMiddlefield: String = {
     val out = "__middlefield__" + maxMF.toString
     maxMF += 1
-    return out
+    out
   }
 
   private def tryAggregateBy(ab: AggregateBy, ev: Pipe => Every): Boolean = {
     // Concat if there if not none
     reds = reds.map(rl => ab :: rl)
     evs = ev :: evs
-    return !reds.isEmpty
+    reds.nonEmpty
   }
 
   /**
@@ -289,6 +289,7 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
     gb
   }
 
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def schedule(name: String, pipe: Pipe): Pipe = {
     val maybeProjectedPipe = projectFields.map { pipe.project(_) }.getOrElse(pipe)
     groupMode match {
@@ -381,7 +382,7 @@ class ScanLeftIterator[T, U](it: Iterator[T], init: U, fn: (U, T) => U) extends 
   protected var prev: Option[U] = None
   def hasNext: Boolean = { prev.isEmpty || it.hasNext }
   // Don't use pattern matching in a performance-critical section
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def next = {
     prev = prev.map { fn(_, it.next) }
       .orElse(Some(init))

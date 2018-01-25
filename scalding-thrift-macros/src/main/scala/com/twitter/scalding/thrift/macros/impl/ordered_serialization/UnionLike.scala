@@ -25,7 +25,7 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 object UnionLike {
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -72,7 +72,7 @@ object UnionLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def hash(c: Context)(element: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -110,7 +110,7 @@ object UnionLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def put(c: Context)(inputStream: c.TermName, element: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -146,7 +146,7 @@ object UnionLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial", "org.wartremover.warts.Return"))
   def length(c: Context)(element: c.Tree)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): CompileTimeLengthTypes[c.type] = {
     import CompileTimeLengthTypes._
     import c.universe._
@@ -205,7 +205,7 @@ object UnionLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def get(c: Context)(inputStream: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
@@ -249,7 +249,7 @@ object UnionLike {
   }
 
   // This `_.get` could be removed by switching `subData` to a non-empty list type
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def compare(c: Context)(cmpType: c.Type, elementA: c.TermName, elementB: c.TermName)(subData: List[(Int, c.Type, Option[TreeOrderedBuf[c.type]])]): c.Tree = {
     import c.universe._
 

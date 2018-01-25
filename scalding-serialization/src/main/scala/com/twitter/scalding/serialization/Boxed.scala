@@ -542,7 +542,9 @@ case class BoxedOrderedSerialization[K](box: K => Boxed[K],
   override def dynamicSize(k: Boxed[K]) = ord.dynamicSize(k.get)
 }
 
-object Boxed {
+// Moving boxed lamdbas into a new object and breaking them up into 2 lists
+// to get around this Scala 2.12 bug: https://issues.scala-lang.org/browse/SI-10232
+object BoxedLambdas {
   /* You might wonder: "Why not do something a little more type-safe like this?"
    *
    *     private[this] def f0[K](t: K) = new Boxed0(t)
@@ -560,7 +562,7 @@ object Boxed {
    * using `Any` here instead of parametrizing everything over a type parameter
    * `K`.
    */
-  private[this] val allBoxes = List(
+  private[serialization] val boxes1 = List(
     ({ t: Any => new Boxed0(t) }, classOf[Boxed0[Any]]),
     ({ t: Any => new Boxed1(t) }, classOf[Boxed1[Any]]),
     ({ t: Any => new Boxed2(t) }, classOf[Boxed2[Any]]),
@@ -685,7 +687,9 @@ object Boxed {
     ({ t: Any => new Boxed121(t) }, classOf[Boxed121[Any]]),
     ({ t: Any => new Boxed122(t) }, classOf[Boxed122[Any]]),
     ({ t: Any => new Boxed123(t) }, classOf[Boxed123[Any]]),
-    ({ t: Any => new Boxed124(t) }, classOf[Boxed124[Any]]),
+    ({ t: Any => new Boxed124(t) }, classOf[Boxed124[Any]]))
+
+  private[serialization] val boxes2 = List(
     ({ t: Any => new Boxed125(t) }, classOf[Boxed125[Any]]),
     ({ t: Any => new Boxed126(t) }, classOf[Boxed126[Any]]),
     ({ t: Any => new Boxed127(t) }, classOf[Boxed127[Any]]),
@@ -812,6 +816,12 @@ object Boxed {
     ({ t: Any => new Boxed248(t) }, classOf[Boxed248[Any]]),
     ({ t: Any => new Boxed249(t) }, classOf[Boxed249[Any]]),
     ({ t: Any => new Boxed250(t) }, classOf[Boxed250[Any]]))
+}
+
+object Boxed {
+  import BoxedLambdas._
+
+  private[this] val allBoxes = boxes1 ++ boxes2
 
   private[this] val boxes: AtomicReference[List[(Any => Boxed[Any], Class[_ <: Boxed[Any]])]] =
     new AtomicReference(allBoxes)
@@ -823,7 +833,7 @@ object Boxed {
   private[scalding] def nextCached[K](cacheKey: Option[AnyRef]): (K => Boxed[K], Class[Boxed[K]]) =
     cacheKey match {
       case Some(cls) =>
-        val untypedRes = Option(boxedCache.get(cls)) match {
+        val untypedRes = Option(boxedCache.get(cls)) match { // linter:ignore
           case Some(r) => r
           case None =>
             val r = next[Any]()

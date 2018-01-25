@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingWithHitsCache, AdaptiveCache }
+  import com.twitter.algebird.{ Semigroup, SummingWithHitsCache, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -155,7 +155,7 @@ package com.twitter.scalding {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
       if (evicted.isDefined) {
         // Don't use pattern matching in performance-critical code
-        @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+        @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
         val it = evicted.get.iterator
         val tecol = functionCall.getOutputCollector
         while (it.hasNext) {
@@ -213,7 +213,7 @@ package com.twitter.scalding {
     }
 
     // Don't use pattern matching in a performance-critical section
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     @inline
     private def add(evicted: Option[Map[K, V]], functionCall: FunctionCall[MapsideCache[K, V]]): Unit = {
       // Use iterator and while for optimal performance (avoid closures/fn calls)
@@ -241,7 +241,7 @@ package com.twitter.scalding {
     }
 
     // Don't use pattern matching in a performance-critical section
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     private[this] def mergeTraversableOnce[K, V: Semigroup](items: TraversableOnce[(K, V)]): Map[K, V] = {
       val mutable = scala.collection.mutable.OpenHashMap[K, V]() // Scala's OpenHashMap seems faster than Java and Scala's HashMap Impl's
       val innerIter = items.toIterator
@@ -257,7 +257,7 @@ package com.twitter.scalding {
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[MapsideCache[K, V]]): Unit = {
       val cache = functionCall.getContext
-      implicit val sg = boxedSemigroup.get
+      implicit val sg: Semigroup[V] = boxedSemigroup.get
       val res: Map[K, V] = mergeTraversableOnce(lockedFn.get(functionCall.getArguments))
       val evicted = cache.putAll(res)
       add(evicted, functionCall)
@@ -306,7 +306,7 @@ package com.twitter.scalding {
     }
   }
 
-  class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
+  final class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -315,7 +315,7 @@ package com.twitter.scalding {
     def flush = summingCache.flush
 
     // Don't use pattern matching in performance-critical code
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def put(key: K, value: V): Option[Map[K, V]] = {
       val (curHits, evicted) = summingCache.putWithHits(Map(key -> value))
       misses.increment(1 - curHits)
@@ -327,7 +327,7 @@ package com.twitter.scalding {
     }
 
     // Don't use pattern matching in a performance-critical section
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def putAll(kvs: Map[K, V]): Option[Map[K, V]] = {
       val (curHits, evicted) = summingCache.putWithHits(kvs)
       misses.increment(kvs.size - curHits)
@@ -339,7 +339,7 @@ package com.twitter.scalding {
     }
   }
 
-  class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
+  final class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -350,7 +350,7 @@ package com.twitter.scalding {
     def flush = adaptiveCache.flush
 
     // Don't use pattern matching in performance-critical code
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def put(key: K, value: V) = {
       val (stats, evicted) = adaptiveCache.putWithStats(Map(key -> value))
       misses.increment(1 - stats.hits)
@@ -366,7 +366,7 @@ package com.twitter.scalding {
     }
 
     // Don't use pattern matching in a performance-critical section
-    @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+    @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def putAll(kvs: Map[K, V]): Option[Map[K, V]] = {
       val (stats, evicted) = adaptiveCache.putWithStats(kvs)
       misses.increment(kvs.size - stats.hits)
@@ -467,10 +467,6 @@ package com.twitter.scalding {
     }
 
     def complete(flowProcess: FlowProcess[_], call: AggregatorCall[X]): Unit = {
-      emit(flowProcess, call)
-    }
-
-    def emit(flowProcess: FlowProcess[_], call: AggregatorCall[X]): Unit = {
       call.getOutputCollector.add(set(call.getContext))
     }
   }
@@ -657,7 +653,7 @@ package com.twitter.scalding {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[Poisson]): Unit = {
       super.prepare(flowProcess, operationCall)
       val p = new Poisson(frac, seed)
-      operationCall.setContext(p);
+      operationCall.setContext(p)
     }
 
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Poisson]): Unit = {

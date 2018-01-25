@@ -21,7 +21,7 @@ trait BddDsl extends FieldConversions with PipeOperationsConversions {
       jobTest.source[T](source, data)(setter)
   }
 
-  implicit def fromSimpleTypeDataToSourceWithoutSchema[T](data: Iterable[T])(implicit setter: TupleSetter[T]) =
+  implicit def fromSimpleTypeDataToSourceWithoutSchema[T](data: Iterable[T])(implicit setter: TupleSetter[T]): SimpleTypeTestSourceWithoutSchema[T] =
     new SimpleTypeTestSourceWithoutSchema(data)(setter)
 
   class TestSource(data: TestSourceWithoutSchema, schema: Fields) {

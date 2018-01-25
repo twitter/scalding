@@ -1823,9 +1823,9 @@ class CounterJobTest extends WordSpec with Matchers {
 object DailySuffixTsvJob {
   val strd1 = "2014-05-01"
   val strd2 = "2014-05-02"
-  implicit val tz = DateOps.UTC
-  implicit val parser = DateParser.default
-  implicit val dr = DateRange(RichDate(strd1), RichDate(strd2))
+  implicit val tz: java.util.TimeZone = DateOps.UTC
+  implicit val parser: DateParser = DateParser.default
+  implicit val dr: DateRange = DateRange(RichDate(strd1), RichDate(strd2))
 
   def source(str: String) = DailySuffixTsv(str)
 }

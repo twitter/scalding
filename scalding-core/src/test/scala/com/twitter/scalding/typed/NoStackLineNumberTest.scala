@@ -30,16 +30,22 @@ class NoStackLineNumberTest extends WordSpec {
   "No Stack Shouldn't block getting line number info" should {
     "actually get the no stack info" in {
       import Dsl._
-      implicit val fd = new FlowDef
-      implicit val m = new Hdfs(false, new Configuration)
+      implicit val fd: FlowDef = new FlowDef
+      implicit val m: Hdfs = new Hdfs(false, new Configuration)
 
       val pipeFut = com.twitter.example.scalding.typed.InAnotherPackage.buildF.map { tp =>
         tp.toPipe('a, 'b)
       }
       val pipe = Await.result(pipeFut, SDuration.Inf)
-      // We pick up line number info via the NoStackAndThenClass
+      // We pick up line number info via TypedPipe.withLine
       // So this should have some non-scalding info in it.
-      assert(RichPipe.getPipeDescriptions(pipe).size > 0)
+      val allDesc = RichPipe(pipe)
+        .upstreamPipes
+        .map(RichPipe.getPipeDescriptions(_).toSet)
+        .foldLeft(Set.empty[String])(_ | _)
+
+      assert(allDesc.size > 0)
+      assert(allDesc.exists(_.contains("com.twitter.example.scalding.typed.InAnotherPackage")))
     }
   }
 }

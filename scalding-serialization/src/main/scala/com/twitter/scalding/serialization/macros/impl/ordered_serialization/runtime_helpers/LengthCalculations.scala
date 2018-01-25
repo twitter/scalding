@@ -26,14 +26,14 @@ sealed trait MaybeLength {
 case object NoLengthCalculation extends MaybeLength {
   def +(that: MaybeLength): MaybeLength = this
 }
-case class ConstLen(toInt: Int) extends MaybeLength {
+final case class ConstLen(toInt: Int) extends MaybeLength {
   def +(that: MaybeLength): MaybeLength = that match {
     case ConstLen(c) => ConstLen(toInt + c)
     case DynamicLen(d) => DynamicLen(toInt + d)
     case NoLengthCalculation => NoLengthCalculation
   }
 }
-case class DynamicLen(toInt: Int) extends MaybeLength {
+final case class DynamicLen(toInt: Int) extends MaybeLength {
   def +(that: MaybeLength): MaybeLength = that match {
     case ConstLen(c) => DynamicLen(toInt + c)
     case DynamicLen(d) => DynamicLen(toInt + d)

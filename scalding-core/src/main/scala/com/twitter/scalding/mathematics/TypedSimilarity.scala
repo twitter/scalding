@@ -34,10 +34,10 @@ case class Edge[+N, +E](from: N, to: N, data: E) {
 }
 
 abstract sealed trait Degree { val degree: Int }
-case class InDegree(override val degree: Int) extends Degree
-case class OutDegree(override val degree: Int) extends Degree
-case class Weight(weight: Double)
-case class L2Norm(norm: Double)
+final case class InDegree(override val degree: Int) extends Degree
+final case class OutDegree(override val degree: Int) extends Degree
+final case class Weight(weight: Double)
+final case class L2Norm(norm: Double)
 
 object GraphOperations extends Serializable {
   /**

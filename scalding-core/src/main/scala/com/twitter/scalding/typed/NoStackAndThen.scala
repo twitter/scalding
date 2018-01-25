@@ -53,10 +53,10 @@ object NoStackAndThen {
   def apply[A, B](fn: A => B): NoStackAndThen[A, B] = WithStackTrace(NoStackWrap(fn), buildStackEntry)
 
   private sealed trait ReversedStack[-A, +B]
-  private case class EmptyStack[-A, +B](fn: A => B) extends ReversedStack[A, B]
-  private case class NonEmpty[-A, B, +C](head: A => B, rest: ReversedStack[B, C]) extends ReversedStack[A, C]
+  private final case class EmptyStack[-A, +B](fn: A => B) extends ReversedStack[A, B]
+  private final case class NonEmpty[-A, B, +C](head: A => B, rest: ReversedStack[B, C]) extends ReversedStack[A, C]
 
-  private[scalding] case class WithStackTrace[A, B](inner: NoStackAndThen[A, B], stackEntry: Array[StackTraceElement]) extends NoStackAndThen[A, B] {
+  private[scalding] final case class WithStackTrace[A, B](inner: NoStackAndThen[A, B], stackEntry: Array[StackTraceElement]) extends NoStackAndThen[A, B] {
     override def apply(a: A): B = inner(a)
 
     override def andThen[C](fn: B => C): NoStackAndThen[A, C] =
@@ -67,11 +67,11 @@ object NoStackAndThen {
   }
 
   // Just wraps a function
-  private case class NoStackWrap[A, B](fn: A => B) extends NoStackAndThen[A, B] {
+  private final case class NoStackWrap[A, B](fn: A => B) extends NoStackAndThen[A, B] {
     def apply(a: A) = fn(a)
   }
   // This is the defunctionalized andThen
-  private case class NoStackMore[A, B, C](first: NoStackAndThen[A, B], andThenFn: (B) => C) extends NoStackAndThen[A, C] {
+  private final case class NoStackMore[A, B, C](first: NoStackAndThen[A, B], andThenFn: (B) => C) extends NoStackAndThen[A, C] {
     /*
      * scala cannot optimize tail calls if the types change.
      * Any call that changes types, we replace that type with Any. These casts

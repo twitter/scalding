@@ -52,11 +52,11 @@ object TupleConverterImpl {
       def columns: Int
       def applyTree(offset: Int): Tree
     }
-    case class PrimitiveBuilder(primitiveGetter: Int => Tree) extends ConverterBuilder {
+    final case class PrimitiveBuilder(primitiveGetter: Int => Tree) extends ConverterBuilder {
       def columns = 1
       def applyTree(offset: Int) = primitiveGetter(offset)
     }
-    case class OptionBuilder(evidentCol: Int, of: ConverterBuilder) extends ConverterBuilder {
+    final case class OptionBuilder(evidentCol: Int, of: ConverterBuilder) extends ConverterBuilder {
       def columns = of.columns
       def applyTree(offset: Int) = {
         val testIdx = offset + evidentCol
@@ -64,7 +64,7 @@ object TupleConverterImpl {
             else Some(${of.applyTree(offset)})"""
       }
     }
-    case class CaseClassBuilder(tpe: Type, members: Vector[ConverterBuilder]) extends ConverterBuilder {
+    final case class CaseClassBuilder(tpe: Type, members: Vector[ConverterBuilder]) extends ConverterBuilder {
       val columns = members.map(_.columns).sum
       def applyTree(offset: Int) = {
         val trees = members.scanLeft((offset, Option.empty[Tree])) {

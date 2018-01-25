@@ -15,33 +15,24 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ File, InputStream, OutputStream }
-import java.util.{ UUID, Properties }
+import java.io.{ InputStream, OutputStream }
+import java.util.{ Properties, UUID }
 
 import cascading.scheme.Scheme
-import cascading.scheme.local.{ TextLine => CLTextLine, TextDelimited => CLTextDelimited }
-import cascading.scheme.hadoop.{
-  TextLine => CHTextLine,
-  TextDelimited => CHTextDelimited,
-  SequenceFile => CHSequenceFile
-}
+import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
+import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
+import cascading.tap.{ MultiSourceTap, SinkMode, Tap }
 import cascading.tap.hadoop.Hfs
-import cascading.tap.MultiSourceTap
-import cascading.tap.SinkMode
-import cascading.tap.Tap
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
-
 import com.etsy.cascading.tap.local.LocalTap
 import com.twitter.algebird.{ MapAlgebra, OrVal }
-
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, PathFilter, Path }
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.OutputCollector
-import org.apache.hadoop.mapred.RecordReader
+import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
+import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.slf4j.LoggerFactory
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * A base class for sources that take a scheme trait.
@@ -87,7 +78,7 @@ trait LocalSourceOverride extends SchemedSource {
    * Creates a local tap.
    *
    * @param sinkMode The mode for handling output conflicts.
-   * @returns A tap.
+   * @return A tap.
    */
   def createLocalTap(sinkMode: SinkMode): Tap[JobConf, _, _] = {
     val taps = localPaths.map {
@@ -119,6 +110,31 @@ object AcceptAllPathFilter extends PathFilter {
 }
 
 object FileSource {
+  val LOG = LoggerFactory.getLogger(this.getClass)
+
+  private[this] def verboseLogEnabled(conf: Configuration): Boolean =
+    conf.getBoolean(Config.VerboseFileSourceLoggingKey, false)
+
+  private[this] def ifVerboseLog(conf: Configuration)(msgFn: => String): Unit = {
+    if (verboseLogEnabled(conf)) {
+      val stack = Thread.currentThread
+        .getStackTrace
+        .iterator
+        .drop(2) // skip getStackTrace and ifVerboseLog
+        .mkString("\n")
+
+      // evaluate call by name param once
+      val msg = msgFn
+
+      LOG.info(
+        s"""
+          |***FileSource Verbose Log***
+          |$stack
+          |
+          |$msg
+        """.stripMargin)
+    }
+  }
 
   def glob(glob: String, conf: Configuration, filter: PathFilter = AcceptAllPathFilter): Iterable[FileStatus] = {
     val path = new Path(glob)
@@ -133,7 +149,22 @@ object FileSource {
    * @return whether globPath contains non hidden files
    */
   def globHasNonHiddenPaths(globPath: String, conf: Configuration): Boolean = {
-    !glob(globPath, conf, HiddenFileFilter).isEmpty
+    val res = glob(globPath, conf, HiddenFileFilter)
+
+    ifVerboseLog(conf) {
+      val allFiles = glob(globPath, conf, AcceptAllPathFilter).mkString("\n")
+      val matched = res.mkString("\n")
+      s"""
+         |globHasNonHiddenPaths:
+         |globPath: $globPath
+         |all files matching globPath, using HiddenFileFilter:
+         |$matched
+         |all files matching globPath, w/o filtering:
+         |$allFiles
+        """.stripMargin
+    }
+
+    res.nonEmpty
   }
 
   /**
@@ -198,7 +229,13 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
    * TODO: consider writing a more in-depth version of this method in [[TimePathedSource]] that looks for
    * TODO: missing days / hours etc.
    */
-  protected def pathIsGood(p: String, conf: Configuration) = FileSource.globHasNonHiddenPaths(p, conf)
+  protected def pathIsGood(globPattern: String, conf: Configuration) = {
+    if (conf.getBoolean("scalding.require_success_file", false)) {
+      FileSource.allGlobFilesWithSuccess(globPattern, conf, true)
+    } else {
+      FileSource.globHasNonHiddenPaths(globPattern, conf)
+    }
+  }
 
   def hdfsPaths: Iterable[String]
   // By default, we write to the LAST path returned by hdfsPaths
@@ -279,7 +316,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
   /*
    * Get all the set of valid paths based on source strictness.
    */
-  protected def goodHdfsPaths(hdfsMode: Hdfs) = {
+  protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] = {
     hdfsMode match {
       //we check later that all the paths are good
       case Hdfs(true, _) => hdfsPaths
@@ -492,9 +529,12 @@ object TextLine {
     new TextLine(p, sm, textEncoding)
 }
 
-class TextLine(p: String, override val sinkMode: SinkMode, override val textEncoding: String) extends FixedPathSource(p) with TextLineScheme {
+class TextLine(p: String, override val sinkMode: SinkMode, override val textEncoding: String) extends FixedPathSource(p) with TextLineScheme with TypedSink[String] {
   // For some Java interop
+
   def this(p: String) = this(p, TextLine.defaultSinkMode, TextLine.defaultTextEncoding)
+
+  override def setter[U <: String] = TupleSetter.asSubSetter[String, U](TupleSetter.of[String])
 }
 
 /**
