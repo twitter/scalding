@@ -3,7 +3,7 @@ resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.
 resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "sonatype-releases"  at "https://oss.sonatype.org/content/repositories/releases",
-  "Twitter Maven" at "http://maven.twttr.com"
+  "Twitter Maven" at "https://maven.twttr.com"
 )
 
 addSbtPlugin("com.eed3si9n"       % "sbt-assembly"        % "0.10.2")
