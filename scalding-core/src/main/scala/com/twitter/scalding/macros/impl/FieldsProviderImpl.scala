@@ -15,6 +15,7 @@
  */
 package com.twitter.scalding.macros.impl
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.reflect.runtime.universe._
@@ -82,6 +83,7 @@ object FieldsProviderImpl {
 
     import TypeDescriptorProviderImpl.{ optionInner, evidentColumn }
 
+    @tailrec
     def isNumbered(t: Type): Boolean =
       t match {
         case tpe if tpe =:= typeOf[Boolean] => true

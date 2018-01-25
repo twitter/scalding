@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 object SizeHint {
-  implicit val ordering = SizeHintOrdering
+  implicit val ordering: Ordering[SizeHint] = SizeHintOrdering
   // Return a sparsity assuming all the diagonal is present, but nothing else
   def asDiagonal(h: SizeHint): SizeHint = {
     def make(r: BigInt, c: BigInt) = {

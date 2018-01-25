@@ -34,7 +34,7 @@ package object scalding {
   /**
    * Make sure this is in sync with version.sbt
    */
-  val scaldingVersion: String = "0.16.0"
+  val scaldingVersion: String = "0.17.2"
 
   object RichPathFilter {
     implicit def toRichPathFilter(f: PathFilter) = new RichPathFilter(f)

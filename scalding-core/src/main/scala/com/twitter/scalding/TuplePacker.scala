@@ -38,11 +38,11 @@ trait TuplePacker[T] extends java.io.Serializable {
 object TuplePacker extends CaseClassPackers
 
 trait CaseClassPackers extends LowPriorityTuplePackers {
-  implicit def caseClassPacker[T <: Product](implicit mf: Manifest[T]) = new OrderedTuplePacker[T]
+  implicit def caseClassPacker[T <: Product](implicit mf: Manifest[T]): OrderedTuplePacker[T] = new OrderedTuplePacker[T]
 }
 
 trait LowPriorityTuplePackers extends java.io.Serializable {
-  implicit def genericTuplePacker[T: Manifest] = new ReflectionTuplePacker[T]
+  implicit def genericTuplePacker[T: Manifest]: ReflectionTuplePacker[T] = new ReflectionTuplePacker[T]
 }
 
 /**
@@ -67,7 +67,7 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
   /* The `_.get` is safe because of the `_.isEmpty` check.  ScalaTest does not
    * seem to support a more type safe way of doing this.
    */
-  @SuppressWarnings(Array("org.brianmckenna.wartremover.warts.OptionPartial"))
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def validate(): Unit = {
     //We can't touch setters because that shouldn't be accessed until map/reduce side, not
     //on submitter.

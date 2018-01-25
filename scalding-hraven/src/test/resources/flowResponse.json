@@ -1,0 +1,3303 @@
+[ {
+  "flowKey" : {
+    "cluster" : "test@cluster",
+    "userName" : "testuser",
+    "appId" : "somegoodjob",
+    "runId" : 1492636627835,
+    "encodedRunId" : 9223370544218147972
+  },
+  "flowName" : "somegoodjob",
+  "userName" : "testuser",
+  "jobCount" : 3,
+  "totalMaps" : 368,
+  "totalReduces" : 136,
+  "mapFileBytesRead" : 111415465732,
+  "mapFileBytesWritten" : 222939745150,
+  "reduceFileBytesRead" : 159412950342,
+  "hdfsBytesRead" : 261872610033,
+  "hdfsBytesWritten" : 101710652089,
+  "mapSlotMillis" : 26673895,
+  "reduceSlotMillis" : 16718566,
+  "megabyteMillis" : 140725068288,
+  "cost" : 0.15269647166666667,
+  "reduceShuffleBytes" : 111314400214,
+  "duration" : 1278809,
+  "wallClockTime" : 1292275,
+  "cluster" : "test@cluster",
+  "appId" : "somegoodjob",
+  "runId" : 1492636627835,
+  "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+  "hadoopVersion" : "TWO",
+  "submitTime" : 1492636719034,
+  "launchTime" : 1492636732500,
+  "finishTime" : 1492638011309,
+  "queue" : "testuser",
+  "counters" : {
+    "Scalding Custom" : {
+      "test_user" : 749
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 47654313,
+      "Tuples_Read" : 183443467
+    },
+    "evictions" : {
+      "MapsideReduce" : 12588706
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "REDUCE_INPUT_RECORDS" : 66501607,
+      "SPILLED_RECORDS" : 212145628,
+      "VIRTUAL_MEMORY_BYTES" : 2050469523456,
+      "LOCALIZED_NANOS" : 523231295546,
+      "SPLIT_RAW_BYTES" : 772454,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 379508682777,
+      "REDUCE_SHUFFLE_BYTES" : 111314400214,
+      "PHYSICAL_MEMORY_BYTES" : 446650638336,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "LOCALIZED_FILES_CACHED" : 508618,
+      "CPU_MILLISECONDS" : 32777850,
+      "LOCALIZED_FILES_MISSED" : 65239,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 111314400214,
+      "MERGED_MAP_OUTPUTS" : 19834,
+      "MAP_INPUT_RECORDS" : 183443467,
+      "LOCALIZED_BYTES_MISSED" : 76410918436,
+      "GC_TIME_MILLIS" : 3666842,
+      "REDUCE_INPUT_GROUPS" : 49999258,
+      "SHUFFLED_MAPS" : 19834,
+      "REDUCE_OUTPUT_RECORDS" : 47654313,
+      "LOCALIZED_BYTES_CACHED" : 464339205620,
+      "MAP_OUTPUT_RECORDS" : 66501607,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "COMMITTED_HEAP_BYTES" : 457269559296
+    },
+    "hits" : {
+      "MapsideReduce" : 1545
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 382535497232,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 1890,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 261872610033,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 270828416074,
+      "HDFS_WRITE_OPS" : 292,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 101710652089
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 114155920,
+      "Tuples_Read" : 249945074,
+      "Read_Duration" : 15736600,
+      "Write_Duration" : 5645584,
+      "Process_Begin_Time" : 752289113507899,
+      "Process_End_Time" : 752289136140472
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 151396662,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 16467158
+    },
+    "org.apache.hadoop.mapreduce.JobCounter" : {
+      "TOTAL_LAUNCHED_MAPS" : 383,
+      "VCORES_MILLIS_REDUCES" : 14628747,
+      "TOTAL_LAUNCHED_REDUCES" : 137,
+      "NUM_KILLED_MAPS" : 15,
+      "OTHER_LOCAL_MAPS" : 193,
+      "DATA_LOCAL_MAPS" : 14,
+      "NUM_KILLED_REDUCES" : 1,
+      "MB_MILLIS_MAPS" : 83649341440,
+      "SLOTS_MILLIS_REDUCES" : 16718566,
+      "VCORES_MILLIS_MAPS" : 23339660,
+      "MB_MILLIS_REDUCES" : 52429429248,
+      "SLOTS_MILLIS_MAPS" : 26673895,
+      "RACK_LOCAL_MAPS" : 178,
+      "MILLIS_REDUCES" : 14628747,
+      "MILLIS_MAPS" : 23339660
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    }
+  },
+  "mapCounters" : {
+    "Scalding Custom" : {
+      "test_user" : 749
+    },
+    "hits" : {
+      "MapsideReduce" : 1545
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 222939745150,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 1472,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 261872610033,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 111415465732,
+      "HDFS_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Read" : 183443467
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 66501607,
+      "Tuples_Read" : 183443467,
+      "Read_Duration" : 12255275,
+      "Write_Duration" : 1936172,
+      "Process_Begin_Time" : 549290456528594,
+      "Process_End_Time" : 549290471470429
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 151396662,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 16467158
+    },
+    "evictions" : {
+      "MapsideReduce" : 12588706
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 50274,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 111314400214,
+      "MERGED_MAP_OUTPUTS" : 0,
+      "SPILLED_RECORDS" : 114990966,
+      "VIRTUAL_MEMORY_BYTES" : 1488733134848,
+      "MAP_INPUT_RECORDS" : 183443467,
+      "LOCALIZED_NANOS" : 404720635591,
+      "SPLIT_RAW_BYTES" : 772454,
+      "LOCALIZED_BYTES_MISSED" : 58694615852,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 379508682777,
+      "PHYSICAL_MEMORY_BYTES" : 384967135232,
+      "GC_TIME_MILLIS" : 3588158,
+      "LOCALIZED_FILES_CACHED" : 366240,
+      "LOCALIZED_BYTES_CACHED" : 333801489356,
+      "MAP_OUTPUT_RECORDS" : 66501607,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 21975550,
+      "COMMITTED_HEAP_BYTES" : 388319395840
+    }
+  },
+  "reduceCounters" : {
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 159595752082,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 418,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 0,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 159412950342,
+      "HDFS_WRITE_OPS" : 292,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 101710652089
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 47654313
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 47654313,
+      "Tuples_Read" : 66501607,
+      "Read_Duration" : 3481325,
+      "Write_Duration" : 3709412,
+      "Process_Begin_Time" : 202998656979305,
+      "Process_End_Time" : 202998664670043
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 14954,
+      "MERGED_MAP_OUTPUTS" : 19834,
+      "REDUCE_INPUT_RECORDS" : 66501607,
+      "SPILLED_RECORDS" : 97154662,
+      "VIRTUAL_MEMORY_BYTES" : 561736388608,
+      "LOCALIZED_NANOS" : 117077260352,
+      "LOCALIZED_BYTES_MISSED" : 17711987894,
+      "FAILED_SHUFFLE" : 0,
+      "REDUCE_SHUFFLE_BYTES" : 111314400214,
+      "PHYSICAL_MEMORY_BYTES" : 61683503104,
+      "GC_TIME_MILLIS" : 78684,
+      "REDUCE_INPUT_GROUPS" : 49999258,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "SHUFFLED_MAPS" : 19834,
+      "LOCALIZED_FILES_CACHED" : 138988,
+      "REDUCE_OUTPUT_RECORDS" : 47654313,
+      "LOCALIZED_BYTES_CACHED" : 127341550620,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 10802300,
+      "COMMITTED_HEAP_BYTES" : 68950163456
+    }
+  },
+  "jobs" : [ {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492636627835,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609466,
+        "jobIdString" : "job_1470171371859_6609466"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609466,
+        "jobIdString" : "job_1470171371859_6609466"
+      },
+      "encodedRunId" : 9223370544218147972
+    },
+    "jobId" : "job_1470171371859_6609466",
+    "jobName" : "[757B3B58BB294F3F90AF5F83B8580C9E/A5F2F3029B964D4687A37F67670F8243] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(2/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492636719034,
+    "launchTime" : 1492636732500,
+    "finishTime" : 1492637099729,
+    "totalMaps" : 121,
+    "totalReduces" : 64,
+    "finishedMaps" : 121,
+    "finishedReduces" : 64,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 37795618712,
+    "mapFileBytesWritten" : 75485125090,
+    "reduceFileBytesRead" : 37635771874,
+    "hdfsBytesRead" : 94267826741,
+    "hdfsBytesWritten" : 37796931657,
+    "mapSlotMillis" : 13579749,
+    "reduceSlotMillis" : 7677084,
+    "reduceShuffleBytes" : 37660545208,
+    "megabyteMillis" : 68165602304,
+    "cost" : 0.07396441222222222,
+    "counters" : {
+      "Scalding Custom" : {
+        "test_user" : 749
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16439297,
+        "Tuples_Read" : 75698331
+      },
+      "evictions" : {
+        "MapsideReduce" : 12588706
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 16467158,
+        "SPILLED_RECORDS" : 49363208,
+        "VIRTUAL_MEMORY_BYTES" : 753780228096,
+        "LOCALIZED_NANOS" : 211444954699,
+        "SPLIT_RAW_BYTES" : 321497,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 129012446460,
+        "REDUCE_SHUFFLE_BYTES" : 37660545208,
+        "PHYSICAL_MEMORY_BYTES" : 222611759104,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 185293,
+        "CPU_MILLISECONDS" : 14149680,
+        "LOCALIZED_FILES_MISSED" : 25261,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 37660545208,
+        "MERGED_MAP_OUTPUTS" : 7744,
+        "MAP_INPUT_RECORDS" : 75698331,
+        "LOCALIZED_BYTES_MISSED" : 29807994052,
+        "GC_TIME_MILLIS" : 3528882,
+        "REDUCE_INPUT_GROUPS" : 16439297,
+        "SHUFFLED_MAPS" : 7744,
+        "REDUCE_OUTPUT_RECORDS" : 16439297,
+        "LOCALIZED_BYTES_CACHED" : 168574833664,
+        "MAP_OUTPUT_RECORDS" : 16467158,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 219938238464
+      },
+      "hits" : {
+        "MapsideReduce" : 1545
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 113206590143,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 676,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 94267826741,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 75431390586,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 37796931657
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 32906455,
+        "Tuples_Read" : 92165489,
+        "Read_Duration" : 7976477,
+        "Write_Duration" : 1878377,
+        "Process_Begin_Time" : 276137816396411,
+        "Process_End_Time" : 276137827048673
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 75698331,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 16467158
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 132,
+        "VCORES_MILLIS_REDUCES" : 6717449,
+        "TOTAL_LAUNCHED_REDUCES" : 64,
+        "NUM_KILLED_MAPS" : 11,
+        "OTHER_LOCAL_MAPS" : 75,
+        "DATA_LOCAL_MAPS" : 1,
+        "MB_MILLIS_MAPS" : 42586095104,
+        "SLOTS_MILLIS_REDUCES" : 7677084,
+        "VCORES_MILLIS_MAPS" : 11882281,
+        "MB_MILLIS_REDUCES" : 24075337216,
+        "SLOTS_MILLIS_MAPS" : 13579749,
+        "RACK_LOCAL_MAPS" : 58,
+        "MILLIS_REDUCES" : 6717449,
+        "MILLIS_MAPS" : 11882281
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      }
+    },
+    "mapCounters" : {
+      "Scalding Custom" : {
+        "test_user" : 749
+      },
+      "hits" : {
+        "MapsideReduce" : 1545
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 75485125090,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 484,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 94267826741,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 37795618712,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 75698331
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16467158,
+        "Tuples_Read" : 75698331,
+        "Read_Duration" : 6583101,
+        "Write_Duration" : 1230218,
+        "Process_Begin_Time" : 180609047914354,
+        "Process_End_Time" : 180609056298876
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 75698331,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 16467158
+      },
+      "evictions" : {
+        "MapsideReduce" : 12588706
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 17197,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 37660545208,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 32909712,
+        "VIRTUAL_MEMORY_BYTES" : 489125904384,
+        "MAP_INPUT_RECORDS" : 75698331,
+        "LOCALIZED_NANOS" : 150246438277,
+        "SPLIT_RAW_BYTES" : 321497,
+        "LOCALIZED_BYTES_MISSED" : 20416784175,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 129012446460,
+        "PHYSICAL_MEMORY_BYTES" : 193147375616,
+        "GC_TIME_MILLIS" : 3495443,
+        "LOCALIZED_FILES_CACHED" : 119775,
+        "LOCALIZED_BYTES_CACHED" : 108638492318,
+        "MAP_OUTPUT_RECORDS" : 16467158,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 10839880,
+        "COMMITTED_HEAP_BYTES" : 187491102720
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 37721465053,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 192,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 37635771874,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 37796931657
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16439297
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16439297,
+        "Tuples_Read" : 16467158,
+        "Read_Duration" : 1393376,
+        "Write_Duration" : 648159,
+        "Process_Begin_Time" : 95528768482057,
+        "Process_End_Time" : 95528770749797
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 8060,
+        "MERGED_MAP_OUTPUTS" : 7744,
+        "REDUCE_INPUT_RECORDS" : 16467158,
+        "SPILLED_RECORDS" : 16453496,
+        "VIRTUAL_MEMORY_BYTES" : 264654323712,
+        "LOCALIZED_NANOS" : 60713180069,
+        "LOCALIZED_BYTES_MISSED" : 9389689314,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 37660545208,
+        "PHYSICAL_MEMORY_BYTES" : 29464383488,
+        "GC_TIME_MILLIS" : 33439,
+        "REDUCE_INPUT_GROUPS" : 16439297,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 7744,
+        "LOCALIZED_FILES_CACHED" : 64388,
+        "REDUCE_OUTPUT_RECORDS" : 16439297,
+        "LOCALIZED_BYTES_CACHED" : 58870952798,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3309800,
+        "COMMITTED_HEAP_BYTES" : 32447135744
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "2"
+    },
+    "submitDate" : 1492636719034,
+    "launchDate" : 1492636732500,
+    "finishDate" : 1492637099729,
+    "runTime" : 367229
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492636627835,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609558,
+        "jobIdString" : "job_1470171371859_6609558"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609558,
+        "jobIdString" : "job_1470171371859_6609558"
+      },
+      "encodedRunId" : 9223370544218147972
+    },
+    "jobId" : "job_1470171371859_6609558",
+    "jobName" : "[757B3B58BB294F3F90AF5F83B8580C9E/CE20226849374E27A88A88828634B0A1] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(1/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492637189747,
+    "launchTime" : 1492637201324,
+    "finishTime" : 1492637387288,
+    "totalMaps" : 185,
+    "totalReduces" : 62,
+    "finishedMaps" : 185,
+    "finishedReduces" : 62,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 38087140565,
+    "mapFileBytesWritten" : 76339257791,
+    "reduceFileBytesRead" : 63401214784,
+    "hdfsBytesRead" : 132064823998,
+    "hdfsBytesWritten" : 35539895434,
+    "mapSlotMillis" : 9895558,
+    "reduceSlotMillis" : 4403484,
+    "reduceShuffleBytes" : 38141261549,
+    "megabyteMillis" : 45603508736,
+    "cost" : 0.049482973888888886,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 139823447713,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 926,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 132064823998,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 101488355349,
+        "HDFS_WRITE_OPS" : 124,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 35539895434
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 15607508,
+        "Tuples_Read" : 92137628
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 50034449,
+        "Tuples_Read" : 126564569,
+        "Read_Duration" : 5795589,
+        "Write_Duration" : 930624,
+        "Process_Begin_Time" : 368681399803019,
+        "Process_End_Time" : 368681406897953
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 75698331,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 188,
+        "VCORES_MILLIS_REDUCES" : 3853049,
+        "TOTAL_LAUNCHED_REDUCES" : 63,
+        "NUM_KILLED_MAPS" : 3,
+        "OTHER_LOCAL_MAPS" : 77,
+        "DATA_LOCAL_MAPS" : 11,
+        "NUM_KILLED_REDUCES" : 1,
+        "MB_MILLIS_MAPS" : 31032472576,
+        "SLOTS_MILLIS_REDUCES" : 4403484,
+        "VCORES_MILLIS_MAPS" : 8658614,
+        "MB_MILLIS_REDUCES" : 13809327616,
+        "SLOTS_MILLIS_MAPS" : 9895558,
+        "RACK_LOCAL_MAPS" : 100,
+        "MILLIS_REDUCES" : 3853049,
+        "MILLIS_MAPS" : 8658614
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 34426941,
+        "SPILLED_RECORDS" : 105895650,
+        "VIRTUAL_MEMORY_BYTES" : 1004495097856,
+        "LOCALIZED_NANOS" : 246352867221,
+        "SPLIT_RAW_BYTES" : 387097,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 129571356432,
+        "REDUCE_SHUFFLE_BYTES" : 38141261549,
+        "PHYSICAL_MEMORY_BYTES" : 170776510464,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 248625,
+        "CPU_MILLISECONDS" : 11651100,
+        "LOCALIZED_FILES_MISSED" : 32113,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38141261549,
+        "MERGED_MAP_OUTPUTS" : 11470,
+        "MAP_INPUT_RECORDS" : 92137628,
+        "LOCALIZED_BYTES_MISSED" : 37651200580,
+        "GC_TIME_MILLIS" : 100047,
+        "REDUCE_INPUT_GROUPS" : 33559951,
+        "SHUFFLED_MAPS" : 11470,
+        "REDUCE_OUTPUT_RECORDS" : 15607508,
+        "LOCALIZED_BYTES_CACHED" : 226859897415,
+        "MAP_OUTPUT_RECORDS" : 34426941,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 181911969792
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 76339257791,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 740,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 132064823998,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 38087140565,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 92137628
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 34426941,
+        "Tuples_Read" : 92137628,
+        "Read_Duration" : 4571858,
+        "Write_Duration" : 430227,
+        "Process_Begin_Time" : 276137886793246,
+        "Process_End_Time" : 276137891951274
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 75698331,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 25224,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38141261549,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 50866238,
+        "VIRTUAL_MEMORY_BYTES" : 748630978560,
+        "MAP_INPUT_RECORDS" : 92137628,
+        "LOCALIZED_NANOS" : 193724866170,
+        "SPLIT_RAW_BYTES" : 387097,
+        "LOCALIZED_BYTES_MISSED" : 29337513318,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 129571356432,
+        "PHYSICAL_MEMORY_BYTES" : 142990761984,
+        "GC_TIME_MILLIS" : 68431,
+        "LOCALIZED_FILES_CACHED" : 184196,
+        "LOCALIZED_BYTES_CACHED" : 167978930317,
+        "MAP_OUTPUT_RECORDS" : 34426941,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 8247540,
+        "COMMITTED_HEAP_BYTES" : 150478807040
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 63484189922,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 186,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 63401214784,
+        "HDFS_WRITE_OPS" : 124,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 35539895434
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 15607508
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 15607508,
+        "Tuples_Read" : 34426941,
+        "Read_Duration" : 1223731,
+        "Write_Duration" : 500397,
+        "Process_Begin_Time" : 92543513009773,
+        "Process_End_Time" : 92543514946679
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 6885,
+        "MERGED_MAP_OUTPUTS" : 11470,
+        "REDUCE_INPUT_RECORDS" : 34426941,
+        "SPILLED_RECORDS" : 55029412,
+        "VIRTUAL_MEMORY_BYTES" : 255864119296,
+        "LOCALIZED_NANOS" : 51994187544,
+        "LOCALIZED_BYTES_MISSED" : 8312094452,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 38141261549,
+        "PHYSICAL_MEMORY_BYTES" : 27785748480,
+        "GC_TIME_MILLIS" : 31616,
+        "REDUCE_INPUT_GROUPS" : 33559951,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 11470,
+        "LOCALIZED_FILES_CACHED" : 63299,
+        "REDUCE_OUTPUT_RECORDS" : 15607508,
+        "LOCALIZED_BYTES_CACHED" : 57815578550,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3403560,
+        "COMMITTED_HEAP_BYTES" : 31433162752
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "1"
+    },
+    "submitDate" : 1492637189747,
+    "launchDate" : 1492637201324,
+    "finishDate" : 1492637387288,
+    "runTime" : 185964
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492636627835,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609614,
+        "jobIdString" : "job_1470171371859_6609614"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6609614,
+        "jobIdString" : "job_1470171371859_6609614"
+      },
+      "encodedRunId" : 9223370544218147972
+    },
+    "jobId" : "job_1470171371859_6609614",
+    "jobName" : "[757B3B58BB294F3F90AF5F83B8580C9E/8B29C94927F245C5A2D7CA117AFC2565] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(3/3) .../unhydrated/2017/04/19/19",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492637423760,
+    "launchTime" : 1492637430152,
+    "finishTime" : 1492638011309,
+    "totalMaps" : 62,
+    "totalReduces" : 10,
+    "finishedMaps" : 62,
+    "finishedReduces" : 10,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 35532706455,
+    "mapFileBytesWritten" : 71115362269,
+    "reduceFileBytesRead" : 58375963684,
+    "hdfsBytesRead" : 35539959294,
+    "hdfsBytesWritten" : 28373824998,
+    "mapSlotMillis" : 3198588,
+    "reduceSlotMillis" : 4637998,
+    "reduceShuffleBytes" : 35512593457,
+    "megabyteMillis" : 26955957248,
+    "cost" : 0.029249085555555554,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 129505459376,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 288,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 35539959294,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 93908670139,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 28373824998
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 15607508,
+        "Tuples_Read" : 15607508
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 31215016,
+        "Tuples_Read" : 31215016,
+        "Read_Duration" : 1964534,
+        "Write_Duration" : 2836583,
+        "Process_Begin_Time" : 107469897308469,
+        "Process_End_Time" : 107469902193846
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 63,
+        "VCORES_MILLIS_REDUCES" : 4058249,
+        "TOTAL_LAUNCHED_REDUCES" : 10,
+        "NUM_KILLED_MAPS" : 1,
+        "OTHER_LOCAL_MAPS" : 41,
+        "DATA_LOCAL_MAPS" : 2,
+        "MB_MILLIS_MAPS" : 10030773760,
+        "SLOTS_MILLIS_REDUCES" : 4637998,
+        "VCORES_MILLIS_MAPS" : 2798765,
+        "MB_MILLIS_REDUCES" : 14544764416,
+        "SLOTS_MILLIS_MAPS" : 3198588,
+        "RACK_LOCAL_MAPS" : 20,
+        "MILLIS_REDUCES" : 4058249,
+        "MILLIS_MAPS" : 2798765
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 15607508,
+        "SPILLED_RECORDS" : 56886770,
+        "VIRTUAL_MEMORY_BYTES" : 292194197504,
+        "LOCALIZED_NANOS" : 65433473626,
+        "SPLIT_RAW_BYTES" : 63860,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 120924879885,
+        "REDUCE_SHUFFLE_BYTES" : 35512593457,
+        "PHYSICAL_MEMORY_BYTES" : 53262368768,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 74700,
+        "CPU_MILLISECONDS" : 6977070,
+        "LOCALIZED_FILES_MISSED" : 7865,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 35512593457,
+        "MERGED_MAP_OUTPUTS" : 620,
+        "MAP_INPUT_RECORDS" : 15607508,
+        "LOCALIZED_BYTES_MISSED" : 8951723804,
+        "GC_TIME_MILLIS" : 37913,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "SHUFFLED_MAPS" : 620,
+        "REDUCE_OUTPUT_RECORDS" : 15607508,
+        "LOCALIZED_BYTES_CACHED" : 68904474541,
+        "MAP_OUTPUT_RECORDS" : 15607508,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 55419351040
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 71115362269,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 248,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 35539959294,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 35532706455,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 15607508
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 15607508,
+        "Tuples_Read" : 15607508,
+        "Read_Duration" : 1100316,
+        "Write_Duration" : 275727,
+        "Process_Begin_Time" : 92543521820994,
+        "Process_End_Time" : 92543523220279
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 7853,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 35512593457,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 31215016,
+        "VIRTUAL_MEMORY_BYTES" : 250976251904,
+        "MAP_INPUT_RECORDS" : 15607508,
+        "LOCALIZED_NANOS" : 60749331144,
+        "SPLIT_RAW_BYTES" : 63860,
+        "LOCALIZED_BYTES_MISSED" : 8940318359,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 120924879885,
+        "PHYSICAL_MEMORY_BYTES" : 48828997632,
+        "GC_TIME_MILLIS" : 24284,
+        "LOCALIZED_FILES_CACHED" : 62269,
+        "LOCALIZED_BYTES_CACHED" : 57184066721,
+        "MAP_OUTPUT_RECORDS" : 15607508,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 2888130,
+        "COMMITTED_HEAP_BYTES" : 50349486080
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 58390097107,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 40,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 58375963684,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 28373824998
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 15607508
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 15607508,
+        "Tuples_Read" : 15607508,
+        "Read_Duration" : 864218,
+        "Write_Duration" : 2560856,
+        "Process_Begin_Time" : 14926375487475,
+        "Process_End_Time" : 14926378973567
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 9,
+        "MERGED_MAP_OUTPUTS" : 620,
+        "REDUCE_INPUT_RECORDS" : 15607508,
+        "SPILLED_RECORDS" : 25671754,
+        "VIRTUAL_MEMORY_BYTES" : 41217945600,
+        "LOCALIZED_NANOS" : 4369892739,
+        "LOCALIZED_BYTES_MISSED" : 10204128,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 35512593457,
+        "PHYSICAL_MEMORY_BYTES" : 4433371136,
+        "GC_TIME_MILLIS" : 13629,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 620,
+        "LOCALIZED_FILES_CACHED" : 11301,
+        "REDUCE_OUTPUT_RECORDS" : 15607508,
+        "LOCALIZED_BYTES_CACHED" : 10655019272,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 4088940,
+        "COMMITTED_HEAP_BYTES" : 5069864960
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "3"
+    },
+    "submitDate" : 1492637423760,
+    "launchDate" : 1492637430152,
+    "finishDate" : 1492638011309,
+    "runTime" : 581157
+  } ]
+}, {
+  "flowKey" : {
+    "cluster" : "test@cluster",
+    "userName" : "testuser",
+    "appId" : "somegoodjob",
+    "runId" : 1492632715606,
+    "encodedRunId" : 9223370544222060201
+  },
+  "flowName" : "somegoodjob",
+  "userName" : "testuser",
+  "jobCount" : 3,
+  "totalMaps" : 385,
+  "totalReduces" : 137,
+  "mapFileBytesRead" : 113172163234,
+  "mapFileBytesWritten" : 226544957183,
+  "reduceFileBytesRead" : 163250996657,
+  "hdfsBytesRead" : 266627900618,
+  "hdfsBytesWritten" : 103607443641,
+  "mapSlotMillis" : 29331332,
+  "reduceSlotMillis" : 17119024,
+  "megabyteMillis" : 150597505536,
+  "cost" : 0.16340875166666663,
+  "reduceShuffleBytes" : 113144899105,
+  "duration" : 1355698,
+  "wallClockTime" : 1368561,
+  "cluster" : "test@cluster",
+  "appId" : "somegoodjob",
+  "runId" : 1492632715606,
+  "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+  "hadoopVersion" : "TWO",
+  "submitTime" : 1492632797525,
+  "launchTime" : 1492632810388,
+  "finishTime" : 1492634166086,
+  "queue" : "testuser",
+  "counters" : {
+    "Scalding Custom" : {
+      "test_user" : 810
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 48800236,
+      "Tuples_Read" : 195996831
+    },
+    "evictions" : {
+      "MapsideReduce" : 12771518
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "REDUCE_INPUT_RECORDS" : 72741055,
+      "SPILLED_RECORDS" : 231774506,
+      "VIRTUAL_MEMORY_BYTES" : 2122960666624,
+      "LOCALIZED_NANOS" : 682258492993,
+      "SPLIT_RAW_BYTES" : 815480,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 387016458073,
+      "REDUCE_SHUFFLE_BYTES" : 113144899105,
+      "PHYSICAL_MEMORY_BYTES" : 464332615680,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "LOCALIZED_FILES_CACHED" : 526479,
+      "CPU_MILLISECONDS" : 36129990,
+      "LOCALIZED_FILES_MISSED" : 67753,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 113144899105,
+      "MERGED_MAP_OUTPUTS" : 21045,
+      "MAP_INPUT_RECORDS" : 195996831,
+      "LOCALIZED_BYTES_MISSED" : 79988792697,
+      "GC_TIME_MILLIS" : 3804321,
+      "REDUCE_INPUT_GROUPS" : 55895910,
+      "SHUFFLED_MAPS" : 21045,
+      "REDUCE_OUTPUT_RECORDS" : 48800236,
+      "LOCALIZED_BYTES_CACHED" : 479959047536,
+      "MAP_OUTPUT_RECORDS" : 72741055,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "COMMITTED_HEAP_BYTES" : 474627133440
+    },
+    "hits" : {
+      "MapsideReduce" : 1603
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 389979938079,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 1961,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 266627900618,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 276423159891,
+      "HDFS_WRITE_OPS" : 294,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 103607443641
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 121541291,
+      "Tuples_Read" : 268737886,
+      "Read_Duration" : 17360974,
+      "Write_Duration" : 6210507,
+      "Process_Begin_Time" : 779154533017338,
+      "Process_End_Time" : 779154558057047
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 163208962,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 16803506
+    },
+    "org.apache.hadoop.mapreduce.JobCounter" : {
+      "TOTAL_LAUNCHED_MAPS" : 403,
+      "VCORES_MILLIS_REDUCES" : 14979147,
+      "TOTAL_LAUNCHED_REDUCES" : 141,
+      "NUM_KILLED_MAPS" : 17,
+      "OTHER_LOCAL_MAPS" : 205,
+      "DATA_LOCAL_MAPS" : 19,
+      "NUM_KILLED_REDUCES" : 4,
+      "MB_MILLIS_MAPS" : 91983058944,
+      "SLOTS_MILLIS_REDUCES" : 17119024,
+      "VCORES_MILLIS_MAPS" : 25664916,
+      "NUM_FAILED_MAPS" : 1,
+      "MB_MILLIS_REDUCES" : 53685262848,
+      "SLOTS_MILLIS_MAPS" : 29331332,
+      "RACK_LOCAL_MAPS" : 180,
+      "MILLIS_REDUCES" : 14979147,
+      "MILLIS_MAPS" : 25664916
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    }
+  },
+  "mapCounters" : {
+    "Scalding Custom" : {
+      "test_user" : 810
+    },
+    "hits" : {
+      "MapsideReduce" : 1603
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 226544957183,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 1540,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 266627900618,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 113172163234,
+      "HDFS_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Read" : 195996831
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 72741055,
+      "Tuples_Read" : 195996831,
+      "Read_Duration" : 13299362,
+      "Write_Duration" : 2170007,
+      "Process_Begin_Time" : 574663776002832,
+      "Process_End_Time" : 574663792332928
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 163208962,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 16803506
+    },
+    "evictions" : {
+      "MapsideReduce" : 12771518
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 51827,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 113144899105,
+      "MERGED_MAP_OUTPUTS" : 0,
+      "SPILLED_RECORDS" : 122300442,
+      "VIRTUAL_MEMORY_BYTES" : 1557522055168,
+      "MAP_INPUT_RECORDS" : 195996831,
+      "LOCALIZED_NANOS" : 526011367517,
+      "SPLIT_RAW_BYTES" : 815480,
+      "LOCALIZED_BYTES_MISSED" : 61496078904,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 387016458073,
+      "PHYSICAL_MEMORY_BYTES" : 402146570240,
+      "GC_TIME_MILLIS" : 3714743,
+      "LOCALIZED_FILES_CACHED" : 383930,
+      "LOCALIZED_BYTES_CACHED" : 349131284361,
+      "MAP_OUTPUT_RECORDS" : 72741055,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 23949430,
+      "COMMITTED_HEAP_BYTES" : 405168017408
+    }
+  },
+  "reduceCounters" : {
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 163434980896,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 421,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 0,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 163250996657,
+      "HDFS_WRITE_OPS" : 294,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 103607443641
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 48800236
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 48800236,
+      "Tuples_Read" : 72741055,
+      "Read_Duration" : 4061612,
+      "Write_Duration" : 4040500,
+      "Process_Begin_Time" : 204490757014506,
+      "Process_End_Time" : 204490765724119
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 15914,
+      "MERGED_MAP_OUTPUTS" : 21045,
+      "REDUCE_INPUT_RECORDS" : 72741055,
+      "SPILLED_RECORDS" : 109474064,
+      "VIRTUAL_MEMORY_BYTES" : 565438611456,
+      "LOCALIZED_NANOS" : 154690352172,
+      "LOCALIZED_BYTES_MISSED" : 18484109247,
+      "FAILED_SHUFFLE" : 0,
+      "REDUCE_SHUFFLE_BYTES" : 113144899105,
+      "PHYSICAL_MEMORY_BYTES" : 62186045440,
+      "GC_TIME_MILLIS" : 89578,
+      "REDUCE_INPUT_GROUPS" : 55895910,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "SHUFFLED_MAPS" : 21045,
+      "LOCALIZED_FILES_CACHED" : 139160,
+      "REDUCE_OUTPUT_RECORDS" : 48800236,
+      "LOCALIZED_BYTES_CACHED" : 127635845787,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 12180560,
+      "COMMITTED_HEAP_BYTES" : 69459116032
+    }
+  },
+  "jobs" : [ {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492632715606,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608374,
+        "jobIdString" : "job_1470171371859_6608374"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608374,
+        "jobIdString" : "job_1470171371859_6608374"
+      },
+      "encodedRunId" : 9223370544222060201
+    },
+    "jobId" : "job_1470171371859_6608374",
+    "jobName" : "[C6D9BD40285E426AA4186394C126B551/B89F9F1DAE1B4A98B710A4D32EC55873] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(2/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492632797525,
+    "launchTime" : 1492632810388,
+    "finishTime" : 1492633163993,
+    "totalMaps" : 129,
+    "totalReduces" : 64,
+    "finishedMaps" : 129,
+    "finishedReduces" : 64,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 38269393803,
+    "mapFileBytesWritten" : 76454763405,
+    "reduceFileBytesRead" : 39043379028,
+    "hdfsBytesRead" : 96004737363,
+    "hdfsBytesWritten" : 38303868081,
+    "mapSlotMillis" : 14364674,
+    "reduceSlotMillis" : 6616707,
+    "reduceShuffleBytes" : 38146657114,
+    "megabyteMillis" : 67245979136,
+    "cost" : 0.07296655722222221,
+    "counters" : {
+      "Scalding Custom" : {
+        "test_user" : 810
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16775502,
+        "Tuples_Read" : 81604481
+      },
+      "evictions" : {
+        "MapsideReduce" : 12771518
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 16803506,
+        "SPILLED_RECORDS" : 50771480,
+        "VIRTUAL_MEMORY_BYTES" : 786154287104,
+        "LOCALIZED_NANOS" : 261150864082,
+        "SPLIT_RAW_BYTES" : 342753,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 131133636940,
+        "REDUCE_SHUFFLE_BYTES" : 38146657114,
+        "PHYSICAL_MEMORY_BYTES" : 232995028992,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 194946,
+        "CPU_MILLISECONDS" : 15268200,
+        "LOCALIZED_FILES_MISSED" : 24664,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38146657114,
+        "MERGED_MAP_OUTPUTS" : 8256,
+        "MAP_INPUT_RECORDS" : 81604481,
+        "LOCALIZED_BYTES_MISSED" : 29607543994,
+        "GC_TIME_MILLIS" : 3649536,
+        "REDUCE_INPUT_GROUPS" : 16775502,
+        "SHUFFLED_MAPS" : 8256,
+        "REDUCE_OUTPUT_RECORDS" : 16775502,
+        "LOCALIZED_BYTES_CACHED" : 177307666049,
+        "MAP_OUTPUT_RECORDS" : 16803506,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 229451812864
+      },
+      "hits" : {
+        "MapsideReduce" : 1603
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 115583763634,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 708,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 96004737363,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 77312772831,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 38303868081
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 33579008,
+        "Tuples_Read" : 98407987,
+        "Read_Duration" : 8487639,
+        "Write_Duration" : 2047170,
+        "Process_Begin_Time" : 288078153269647,
+        "Process_End_Time" : 288078164714486
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 81604481,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 16803506
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 141,
+        "VCORES_MILLIS_REDUCES" : 5789619,
+        "TOTAL_LAUNCHED_REDUCES" : 65,
+        "NUM_KILLED_MAPS" : 12,
+        "OTHER_LOCAL_MAPS" : 77,
+        "DATA_LOCAL_MAPS" : 1,
+        "NUM_KILLED_REDUCES" : 1,
+        "MB_MILLIS_MAPS" : 45047618560,
+        "SLOTS_MILLIS_REDUCES" : 6616707,
+        "VCORES_MILLIS_MAPS" : 12569090,
+        "MB_MILLIS_REDUCES" : 20749994496,
+        "SLOTS_MILLIS_MAPS" : 14364674,
+        "RACK_LOCAL_MAPS" : 64,
+        "MILLIS_REDUCES" : 5789619,
+        "MILLIS_MAPS" : 12569090
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      }
+    },
+    "mapCounters" : {
+      "Scalding Custom" : {
+        "test_user" : 810
+      },
+      "hits" : {
+        "MapsideReduce" : 1603
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 76454763405,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 516,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 96004737363,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 38269393803,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 81604481
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16803506,
+        "Tuples_Read" : 81604481,
+        "Read_Duration" : 6942029,
+        "Write_Duration" : 1399751,
+        "Process_Begin_Time" : 192549636233632,
+        "Process_End_Time" : 192549645230601
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 81604481,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 16803506
+      },
+      "evictions" : {
+        "MapsideReduce" : 12771518
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 16732,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38146657114,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 33575024,
+        "VIRTUAL_MEMORY_BYTES" : 521721344000,
+        "MAP_INPUT_RECORDS" : 81604481,
+        "LOCALIZED_NANOS" : 180981945921,
+        "SPLIT_RAW_BYTES" : 342753,
+        "LOCALIZED_BYTES_MISSED" : 20331938692,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 131133636940,
+        "PHYSICAL_MEMORY_BYTES" : 203313250304,
+        "GC_TIME_MILLIS" : 3612486,
+        "LOCALIZED_FILES_CACHED" : 129296,
+        "LOCALIZED_BYTES_CACHED" : 117255771650,
+        "MAP_OUTPUT_RECORDS" : 16803506,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 11626970,
+        "COMMITTED_HEAP_BYTES" : 197002711040
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 39129000229,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 192,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 39043379028,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 38303868081
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16775502
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16775502,
+        "Tuples_Read" : 16803506,
+        "Read_Duration" : 1545610,
+        "Write_Duration" : 647419,
+        "Process_Begin_Time" : 95528517036015,
+        "Process_End_Time" : 95528519483885
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 7927,
+        "MERGED_MAP_OUTPUTS" : 8256,
+        "REDUCE_INPUT_RECORDS" : 16803506,
+        "SPILLED_RECORDS" : 17196456,
+        "VIRTUAL_MEMORY_BYTES" : 264432943104,
+        "LOCALIZED_NANOS" : 79671609404,
+        "LOCALIZED_BYTES_MISSED" : 9269815365,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 38146657114,
+        "PHYSICAL_MEMORY_BYTES" : 29681778688,
+        "GC_TIME_MILLIS" : 37050,
+        "REDUCE_INPUT_GROUPS" : 16775502,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 8256,
+        "LOCALIZED_FILES_CACHED" : 64521,
+        "REDUCE_OUTPUT_RECORDS" : 16775502,
+        "LOCALIZED_BYTES_CACHED" : 58990754107,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3641230,
+        "COMMITTED_HEAP_BYTES" : 32449101824
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "2"
+    },
+    "submitDate" : 1492632797525,
+    "launchDate" : 1492632810388,
+    "finishDate" : 1492633163993,
+    "runTime" : 353605
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492632715606,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608570,
+        "jobIdString" : "job_1470171371859_6608570"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608570,
+        "jobIdString" : "job_1470171371859_6608570"
+      },
+      "encodedRunId" : 9223370544222060201
+    },
+    "jobId" : "job_1470171371859_6608570",
+    "jobName" : "[C6D9BD40285E426AA4186394C126B551/953E3620701A4D9183064DE40D3509F2] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(1/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492633250502,
+    "launchTime" : 1492633263806,
+    "finishTime" : 1492633490918,
+    "totalMaps" : 193,
+    "totalReduces" : 63,
+    "finishedMaps" : 193,
+    "finishedReduces" : 63,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 38605064146,
+    "mapFileBytesWritten" : 77444144858,
+    "reduceFileBytesRead" : 64369198442,
+    "hdfsBytesRead" : 134308670528,
+    "hdfsBytesWritten" : 36314427837,
+    "mapSlotMillis" : 11418369,
+    "reduceSlotMillis" : 5361488,
+    "reduceShuffleBytes" : 38721089102,
+    "megabyteMillis" : 53551882752,
+    "cost" : 0.05810751166666666,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 141897586642,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 961,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 134308670528,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 102974262588,
+        "HDFS_WRITE_OPS" : 126,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 36314427837
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16012367,
+        "Tuples_Read" : 98379983
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 55937549,
+        "Tuples_Read" : 138305165,
+        "Read_Duration" : 6707040,
+        "Write_Duration" : 1074482,
+        "Process_Begin_Time" : 382114128351773,
+        "Process_End_Time" : 382114136600916
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 81604481,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 196,
+        "VCORES_MILLIS_REDUCES" : 4691302,
+        "TOTAL_LAUNCHED_REDUCES" : 66,
+        "NUM_KILLED_MAPS" : 3,
+        "OTHER_LOCAL_MAPS" : 86,
+        "DATA_LOCAL_MAPS" : 15,
+        "NUM_KILLED_REDUCES" : 3,
+        "MB_MILLIS_MAPS" : 35808005632,
+        "SLOTS_MILLIS_REDUCES" : 5361488,
+        "VCORES_MILLIS_MAPS" : 9991073,
+        "MB_MILLIS_REDUCES" : 16813626368,
+        "SLOTS_MILLIS_MAPS" : 11418369,
+        "RACK_LOCAL_MAPS" : 95,
+        "MILLIS_REDUCES" : 4691302,
+        "MILLIS_MAPS" : 9991073
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 39925182,
+        "SPILLED_RECORDS" : 122551413,
+        "VIRTUAL_MEMORY_BYTES" : 1040169828352,
+        "LOCALIZED_NANOS" : 328012266597,
+        "SPLIT_RAW_BYTES" : 407837,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 131829322449,
+        "REDUCE_SHUFFLE_BYTES" : 38721089102,
+        "PHYSICAL_MEMORY_BYTES" : 177282752512,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 260456,
+        "CPU_MILLISECONDS" : 13393960,
+        "LOCALIZED_FILES_MISSED" : 30470,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38721089102,
+        "MERGED_MAP_OUTPUTS" : 12159,
+        "MAP_INPUT_RECORDS" : 98379983,
+        "LOCALIZED_BYTES_MISSED" : 35659339426,
+        "GC_TIME_MILLIS" : 114044,
+        "REDUCE_INPUT_GROUPS" : 39120398,
+        "SHUFFLED_MAPS" : 12159,
+        "REDUCE_OUTPUT_RECORDS" : 16012367,
+        "LOCALIZED_BYTES_CACHED" : 238450653585,
+        "MAP_OUTPUT_RECORDS" : 39925182,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 188948316160
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 77444144858,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 772,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 134308670528,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 38605064146,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 98379983
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 39925182,
+        "Tuples_Read" : 98379983,
+        "Read_Duration" : 5140255,
+        "Write_Duration" : 483616,
+        "Process_Begin_Time" : 288078225244627,
+        "Process_End_Time" : 288078231048777
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 81604481,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 23153,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38721089102,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 56700684,
+        "VIRTUAL_MEMORY_BYTES" : 780523053056,
+        "MAP_INPUT_RECORDS" : 98379983,
+        "LOCALIZED_NANOS" : 259273008863,
+        "SPLIT_RAW_BYTES" : 407837,
+        "LOCALIZED_BYTES_MISSED" : 27242131551,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 131829322449,
+        "PHYSICAL_MEMORY_BYTES" : 149129138176,
+        "GC_TIME_MILLIS" : 75962,
+        "LOCALIZED_FILES_CACHED" : 195323,
+        "LOCALIZED_BYTES_CACHED" : 178606685961,
+        "MAP_OUTPUT_RECORDS" : 39925182,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 9260920,
+        "COMMITTED_HEAP_BYTES" : 157008166912
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 64453441784,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 189,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 64369198442,
+        "HDFS_WRITE_OPS" : 126,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 36314427837
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16012367
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16012367,
+        "Tuples_Read" : 39925182,
+        "Read_Duration" : 1566785,
+        "Write_Duration" : 590866,
+        "Process_Begin_Time" : 94035903107146,
+        "Process_End_Time" : 94035905552139
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 7313,
+        "MERGED_MAP_OUTPUTS" : 12159,
+        "REDUCE_INPUT_RECORDS" : 39925182,
+        "SPILLED_RECORDS" : 65850729,
+        "VIRTUAL_MEMORY_BYTES" : 259646775296,
+        "LOCALIZED_NANOS" : 68072310662,
+        "LOCALIZED_BYTES_MISSED" : 8415594516,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 38721089102,
+        "PHYSICAL_MEMORY_BYTES" : 28153614336,
+        "GC_TIME_MILLIS" : 38082,
+        "REDUCE_INPUT_GROUPS" : 39120398,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 12159,
+        "LOCALIZED_FILES_CACHED" : 64003,
+        "REDUCE_OUTPUT_RECORDS" : 16012367,
+        "LOCALIZED_BYTES_CACHED" : 58778579076,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 4133040,
+        "COMMITTED_HEAP_BYTES" : 31940149248
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "1"
+    },
+    "submitDate" : 1492633250502,
+    "launchDate" : 1492633263806,
+    "finishDate" : 1492633490918,
+    "runTime" : 227112
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492632715606,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608659,
+        "jobIdString" : "job_1470171371859_6608659"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6608659,
+        "jobIdString" : "job_1470171371859_6608659"
+      },
+      "encodedRunId" : 9223370544222060201
+    },
+    "jobId" : "job_1470171371859_6608659",
+    "jobName" : "[C6D9BD40285E426AA4186394C126B551/F612986BE34B4779BBC6323D3B3011F1] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(3/3) .../unhydrated/2017/04/19/18",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492633529277,
+    "launchTime" : 1492633543389,
+    "finishTime" : 1492634166086,
+    "totalMaps" : 63,
+    "totalReduces" : 10,
+    "finishedMaps" : 63,
+    "finishedReduces" : 10,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 36297705285,
+    "mapFileBytesWritten" : 72646048920,
+    "reduceFileBytesRead" : 59838419187,
+    "hdfsBytesRead" : 36314492727,
+    "hdfsBytesWritten" : 28989147723,
+    "mapSlotMillis" : 3548289,
+    "reduceSlotMillis" : 5140829,
+    "reduceShuffleBytes" : 36277152889,
+    "megabyteMillis" : 29799643648,
+    "cost" : 0.032334682777777776,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 132498587803,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 292,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 36314492727,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 96136124472,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 28989147723
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16012367,
+        "Tuples_Read" : 16012367
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 32024734,
+        "Tuples_Read" : 32024734,
+        "Read_Duration" : 2166295,
+        "Write_Duration" : 3088855,
+        "Process_Begin_Time" : 108962251395918,
+        "Process_End_Time" : 108962256741645
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 66,
+        "VCORES_MILLIS_REDUCES" : 4498226,
+        "TOTAL_LAUNCHED_REDUCES" : 10,
+        "NUM_KILLED_MAPS" : 2,
+        "OTHER_LOCAL_MAPS" : 42,
+        "DATA_LOCAL_MAPS" : 3,
+        "MB_MILLIS_MAPS" : 11127434752,
+        "SLOTS_MILLIS_REDUCES" : 5140829,
+        "VCORES_MILLIS_MAPS" : 3104753,
+        "NUM_FAILED_MAPS" : 1,
+        "MB_MILLIS_REDUCES" : 16121641984,
+        "SLOTS_MILLIS_MAPS" : 3548289,
+        "RACK_LOCAL_MAPS" : 21,
+        "MILLIS_REDUCES" : 4498226,
+        "MILLIS_MAPS" : 3104753
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 16012367,
+        "SPILLED_RECORDS" : 58451613,
+        "VIRTUAL_MEMORY_BYTES" : 296636551168,
+        "LOCALIZED_NANOS" : 93095362314,
+        "SPLIT_RAW_BYTES" : 64890,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 124053498684,
+        "REDUCE_SHUFFLE_BYTES" : 36277152889,
+        "PHYSICAL_MEMORY_BYTES" : 54054834176,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 71077,
+        "CPU_MILLISECONDS" : 7467830,
+        "LOCALIZED_FILES_MISSED" : 12619,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 36277152889,
+        "MERGED_MAP_OUTPUTS" : 630,
+        "MAP_INPUT_RECORDS" : 16012367,
+        "LOCALIZED_BYTES_MISSED" : 14721909277,
+        "GC_TIME_MILLIS" : 40741,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "SHUFFLED_MAPS" : 630,
+        "REDUCE_OUTPUT_RECORDS" : 16012367,
+        "LOCALIZED_BYTES_CACHED" : 64200727902,
+        "MAP_OUTPUT_RECORDS" : 16012367,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 56227004416
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 72646048920,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 252,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 36314492727,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 36297705285,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 16012367
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16012367,
+        "Tuples_Read" : 16012367,
+        "Read_Duration" : 1217078,
+        "Write_Duration" : 286640,
+        "Process_Begin_Time" : 94035914524573,
+        "Process_End_Time" : 94035916053550
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 11942,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 36277152889,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 32024734,
+        "VIRTUAL_MEMORY_BYTES" : 255277658112,
+        "MAP_INPUT_RECORDS" : 16012367,
+        "LOCALIZED_NANOS" : 85756412733,
+        "SPLIT_RAW_BYTES" : 64890,
+        "LOCALIZED_BYTES_MISSED" : 13922008661,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 124053498684,
+        "PHYSICAL_MEMORY_BYTES" : 49704181760,
+        "GC_TIME_MILLIS" : 26295,
+        "LOCALIZED_FILES_CACHED" : 59311,
+        "LOCALIZED_BYTES_CACHED" : 53268826750,
+        "MAP_OUTPUT_RECORDS" : 16012367,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3061540,
+        "COMMITTED_HEAP_BYTES" : 51157139456
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 59852538883,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 40,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 59838419187,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 28989147723
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 16012367
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 16012367,
+        "Tuples_Read" : 16012367,
+        "Read_Duration" : 949217,
+        "Write_Duration" : 2802215,
+        "Process_Begin_Time" : 14926336871345,
+        "Process_End_Time" : 14926340688095
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 674,
+        "MERGED_MAP_OUTPUTS" : 630,
+        "REDUCE_INPUT_RECORDS" : 16012367,
+        "SPILLED_RECORDS" : 26426879,
+        "VIRTUAL_MEMORY_BYTES" : 41358893056,
+        "LOCALIZED_NANOS" : 6946432106,
+        "LOCALIZED_BYTES_MISSED" : 798699366,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 36277152889,
+        "PHYSICAL_MEMORY_BYTES" : 4350652416,
+        "GC_TIME_MILLIS" : 14446,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 630,
+        "LOCALIZED_FILES_CACHED" : 10636,
+        "REDUCE_OUTPUT_RECORDS" : 16012367,
+        "LOCALIZED_BYTES_CACHED" : 9866512604,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 4406290,
+        "COMMITTED_HEAP_BYTES" : 5069864960
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "3"
+    },
+    "submitDate" : 1492633529277,
+    "launchDate" : 1492633543389,
+    "finishDate" : 1492634166086,
+    "runTime" : 622697
+  } ]
+}, {
+  "flowKey" : {
+    "cluster" : "test@cluster",
+    "userName" : "testuser",
+    "appId" : "somegoodjob",
+    "runId" : 1492629120238,
+    "encodedRunId" : 9223370544225655569
+  },
+  "flowName" : "somegoodjob",
+  "userName" : "testuser",
+  "jobCount" : 3,
+  "totalMaps" : 415,
+  "totalReduces" : 141,
+  "mapFileBytesRead" : 119652359797,
+  "mapFileBytesWritten" : 239507162599,
+  "reduceFileBytesRead" : 184321388670,
+  "hdfsBytesRead" : 282024326201,
+  "hdfsBytesWritten" : 109915817955,
+  "mapSlotMillis" : 29834574,
+  "reduceSlotMillis" : 17818367,
+  "megabyteMillis" : 154376586752,
+  "cost" : 0.1675093172222222,
+  "reduceShuffleBytes" : 119607357030,
+  "duration" : 1386911,
+  "wallClockTime" : 1422000,
+  "cluster" : "test@cluster",
+  "appId" : "somegoodjob",
+  "runId" : 1492629120238,
+  "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+  "hadoopVersion" : "TWO",
+  "submitTime" : 1492629217932,
+  "launchTime" : 1492629253021,
+  "finishTime" : 1492630639932,
+  "queue" : "testuser",
+  "counters" : {
+    "Scalding Custom" : {
+      "test_user" : 805
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 51711261,
+      "Tuples_Read" : 206828887
+    },
+    "evictions" : {
+      "MapsideReduce" : 12711135
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "REDUCE_INPUT_RECORDS" : 75745072,
+      "SPILLED_RECORDS" : 247366146,
+      "VIRTUAL_MEMORY_BYTES" : 2261545836544,
+      "LOCALIZED_NANOS" : 621652509094,
+      "SPLIT_RAW_BYTES" : 888563,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 410957748527,
+      "REDUCE_SHUFFLE_BYTES" : 119607357030,
+      "PHYSICAL_MEMORY_BYTES" : 514274934784,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "LOCALIZED_FILES_CACHED" : 573353,
+      "CPU_MILLISECONDS" : 36940780,
+      "LOCALIZED_FILES_MISSED" : 59363,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 119607357030,
+      "MERGED_MAP_OUTPUTS" : 23560,
+      "MAP_INPUT_RECORDS" : 206828887,
+      "LOCALIZED_BYTES_MISSED" : 69180413795,
+      "GC_TIME_MILLIS" : 3829080,
+      "REDUCE_INPUT_GROUPS" : 57952423,
+      "SHUFFLED_MAPS" : 23560,
+      "REDUCE_OUTPUT_RECORDS" : 51711261,
+      "LOCALIZED_BYTES_CACHED" : 527031421131,
+      "MAP_OUTPUT_RECORDS" : 75745072,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "COMMITTED_HEAP_BYTES" : 524035977216
+    },
+    "hits" : {
+      "MapsideReduce" : 1935
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 424018044192,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 2093,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 282024326201,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 303973748467,
+      "HDFS_WRITE_OPS" : 302,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 109915817955
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 127456333,
+      "Tuples_Read" : 282573959,
+      "Read_Duration" : 17267767,
+      "Write_Duration" : 6329319,
+      "Process_Begin_Time" : 829902072807036,
+      "Process_End_Time" : 829902097833076
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 172118504,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 17739761
+    },
+    "org.apache.hadoop.mapreduce.JobCounter" : {
+      "TOTAL_LAUNCHED_MAPS" : 432,
+      "VCORES_MILLIS_REDUCES" : 15591072,
+      "TOTAL_LAUNCHED_REDUCES" : 145,
+      "NUM_KILLED_MAPS" : 17,
+      "OTHER_LOCAL_MAPS" : 204,
+      "DATA_LOCAL_MAPS" : 15,
+      "NUM_KILLED_REDUCES" : 4,
+      "MB_MILLIS_MAPS" : 93561226752,
+      "SLOTS_MILLIS_REDUCES" : 17818367,
+      "VCORES_MILLIS_MAPS" : 26105253,
+      "MB_MILLIS_REDUCES" : 55878402048,
+      "SLOTS_MILLIS_MAPS" : 29834574,
+      "RACK_LOCAL_MAPS" : 213,
+      "MILLIS_REDUCES" : 15591072,
+      "MILLIS_MAPS" : 26105253
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    }
+  },
+  "mapCounters" : {
+    "Scalding Custom" : {
+      "test_user" : 805
+    },
+    "hits" : {
+      "MapsideReduce" : 1935
+    },
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 239507162599,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 1660,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 282024326201,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 119652359797,
+      "HDFS_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 0
+    },
+    "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+      "BYTES_READ" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Read" : 206828887
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 75745072,
+      "Tuples_Read" : 206828887,
+      "Read_Duration" : 13387512,
+      "Write_Duration" : 2169585,
+      "Process_Begin_Time" : 619441287516435,
+      "Process_End_Time" : 619441303935634
+    },
+    "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+      "Errors" : 0,
+      "Records Read" : 172118504,
+      "Records Skipped" : 0
+    },
+    "misses" : {
+      "MapsideReduce" : 17739761
+    },
+    "evictions" : {
+      "MapsideReduce" : 12711135
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 45265,
+      "MAP_OUTPUT_MATERIALIZED_BYTES" : 119607357030,
+      "MERGED_MAP_OUTPUTS" : 0,
+      "SPILLED_RECORDS" : 128166590,
+      "VIRTUAL_MEMORY_BYTES" : 1678871752704,
+      "MAP_INPUT_RECORDS" : 206828887,
+      "LOCALIZED_NANOS" : 439998797901,
+      "SPLIT_RAW_BYTES" : 888563,
+      "LOCALIZED_BYTES_MISSED" : 52866562203,
+      "FAILED_SHUFFLE" : 0,
+      "MAP_OUTPUT_BYTES" : 410957748527,
+      "PHYSICAL_MEMORY_BYTES" : 450766368768,
+      "GC_TIME_MILLIS" : 3740200,
+      "LOCALIZED_FILES_CACHED" : 424448,
+      "LOCALIZED_BYTES_CACHED" : 389758256396,
+      "MAP_OUTPUT_RECORDS" : 75745072,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 24525290,
+      "COMMITTED_HEAP_BYTES" : 452546949120
+    }
+  },
+  "reduceCounters" : {
+    "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+      "VIEWFS_LARGE_READ_OPS" : 0,
+      "FILE_BYTES_WRITTEN" : 184510881593,
+      "FILE_LARGE_READ_OPS" : 0,
+      "FILE_WRITE_OPS" : 0,
+      "VIEWFS_BYTES_READ" : 0,
+      "VIEWFS_READ_OPS" : 0,
+      "HDFS_READ_OPS" : 433,
+      "VIEWFS_WRITE_OPS" : 0,
+      "HDFS_BYTES_READ" : 0,
+      "HDFS_LARGE_READ_OPS" : 0,
+      "FILE_READ_OPS" : 0,
+      "FILE_BYTES_READ" : 184321388670,
+      "HDFS_WRITE_OPS" : 302,
+      "VIEWFS_BYTES_WRITTEN" : 0,
+      "HDFS_BYTES_WRITTEN" : 109915817955
+    },
+    "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+      "BYTES_WRITTEN" : 0
+    },
+    "cascading.flow.StepCounters" : {
+      "Tuples_Written" : 51711261
+    },
+    "cascading.flow.SliceCounters" : {
+      "Tuples_Written" : 51711261,
+      "Tuples_Read" : 75745072,
+      "Read_Duration" : 3880255,
+      "Write_Duration" : 4159734,
+      "Process_Begin_Time" : 210460785290601,
+      "Process_End_Time" : 210460793897442
+    },
+    "Shuffle Errors" : {
+      "CONNECTION" : 0,
+      "WRONG_LENGTH" : 0,
+      "BAD_ID" : 0,
+      "WRONG_MAP" : 0,
+      "WRONG_REDUCE" : 0,
+      "IO_ERROR" : 0
+    },
+    "org.apache.hadoop.mapreduce.TaskCounter" : {
+      "LOCALIZED_FILES_MISSED" : 14087,
+      "MERGED_MAP_OUTPUTS" : 23560,
+      "REDUCE_INPUT_RECORDS" : 75745072,
+      "SPILLED_RECORDS" : 119199556,
+      "VIRTUAL_MEMORY_BYTES" : 582674083840,
+      "LOCALIZED_NANOS" : 175613465264,
+      "LOCALIZED_BYTES_MISSED" : 16309415297,
+      "FAILED_SHUFFLE" : 0,
+      "REDUCE_SHUFFLE_BYTES" : 119607357030,
+      "PHYSICAL_MEMORY_BYTES" : 63508566016,
+      "GC_TIME_MILLIS" : 88880,
+      "REDUCE_INPUT_GROUPS" : 57952423,
+      "COMBINE_OUTPUT_RECORDS" : 0,
+      "SHUFFLED_MAPS" : 23560,
+      "LOCALIZED_FILES_CACHED" : 145515,
+      "REDUCE_OUTPUT_RECORDS" : 51711261,
+      "LOCALIZED_BYTES_CACHED" : 134076999091,
+      "COMBINE_INPUT_RECORDS" : 0,
+      "CPU_MILLISECONDS" : 12415490,
+      "COMMITTED_HEAP_BYTES" : 71489028096
+    }
+  },
+  "jobs" : [ {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492629120238,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607397,
+        "jobIdString" : "job_1470171371859_6607397"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607397,
+        "jobIdString" : "job_1470171371859_6607397"
+      },
+      "encodedRunId" : 9223370544225655569
+    },
+    "jobId" : "job_1470171371859_6607397",
+    "jobName" : "[8BEFB46B10BB4992B069A0452C1A7209/6CEF6CE735EA4F22A1D10798AB978AC9] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(2/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492629217932,
+    "launchTime" : 1492629253021,
+    "finishTime" : 1492629545471,
+    "totalMaps" : 142,
+    "totalReduces" : 64,
+    "finishedMaps" : 142,
+    "finishedReduces" : 64,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 40340004073,
+    "mapFileBytesWritten" : 80595282050,
+    "reduceFileBytesRead" : 52002327599,
+    "hdfsBytesRead" : 101477835921,
+    "hdfsBytesWritten" : 40416854940,
+    "mapSlotMillis" : 13609547,
+    "reduceSlotMillis" : 6905340,
+    "reduceShuffleBytes" : 40209861419,
+    "megabyteMillis" : 65532563968,
+    "cost" : 0.07110738277777777,
+    "counters" : {
+      "Scalding Custom" : {
+        "test_user" : 805
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17709505,
+        "Tuples_Read" : 86059252
+      },
+      "evictions" : {
+        "MapsideReduce" : 12711135
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 17739761,
+        "SPILLED_RECORDS" : 58676037,
+        "VIRTUAL_MEMORY_BYTES" : 838904201216,
+        "LOCALIZED_NANOS" : 198603202103,
+        "SPLIT_RAW_BYTES" : 376726,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 138812514335,
+        "REDUCE_SHUFFLE_BYTES" : 40209861419,
+        "PHYSICAL_MEMORY_BYTES" : 268000686080,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 213660,
+        "CPU_MILLISECONDS" : 15391480,
+        "LOCALIZED_FILES_MISSED" : 20666,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 40209861419,
+        "MERGED_MAP_OUTPUTS" : 9088,
+        "MAP_INPUT_RECORDS" : 86059252,
+        "LOCALIZED_BYTES_MISSED" : 24468451612,
+        "GC_TIME_MILLIS" : 3670350,
+        "REDUCE_INPUT_GROUPS" : 17709505,
+        "SHUFFLED_MAPS" : 9088,
+        "REDUCE_OUTPUT_RECORDS" : 17709505,
+        "LOCALIZED_BYTES_CACHED" : 196312461278,
+        "MAP_OUTPUT_RECORDS" : 17739761,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 263016857600
+      },
+      "hits" : {
+        "MapsideReduce" : 1935
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 132683302440,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 760,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 101477835921,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 92342331672,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 40416854940
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 35449266,
+        "Tuples_Read" : 103799013,
+        "Read_Duration" : 8173153,
+        "Write_Duration" : 1968986,
+        "Process_Begin_Time" : 307481645061346,
+        "Process_End_Time" : 307481656087835
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 86059252,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 17739761
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 153,
+        "VCORES_MILLIS_REDUCES" : 6042173,
+        "TOTAL_LAUNCHED_REDUCES" : 64,
+        "NUM_KILLED_MAPS" : 11,
+        "OTHER_LOCAL_MAPS" : 79,
+        "DATA_LOCAL_MAPS" : 3,
+        "MB_MILLIS_MAPS" : 42679540736,
+        "SLOTS_MILLIS_REDUCES" : 6905340,
+        "VCORES_MILLIS_MAPS" : 11908354,
+        "MB_MILLIS_REDUCES" : 21655148032,
+        "SLOTS_MILLIS_MAPS" : 13609547,
+        "RACK_LOCAL_MAPS" : 71,
+        "MILLIS_REDUCES" : 6042173,
+        "MILLIS_MAPS" : 11908354
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      }
+    },
+    "mapCounters" : {
+      "Scalding Custom" : {
+        "test_user" : 805
+      },
+      "hits" : {
+        "MapsideReduce" : 1935
+      },
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 80595282050,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 568,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 101477835921,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 40340004073,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 86059252
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 17739761,
+        "Tuples_Read" : 86059252,
+        "Read_Duration" : 6780865,
+        "Write_Duration" : 1351893,
+        "Process_Begin_Time" : 211953357561478,
+        "Process_End_Time" : 211953366347172
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 86059252,
+        "Records Skipped" : 0
+      },
+      "misses" : {
+        "MapsideReduce" : 17739761
+      },
+      "evictions" : {
+        "MapsideReduce" : 12711135
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 14551,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 40209861419,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 35450896,
+        "VIRTUAL_MEMORY_BYTES" : 574310744064,
+        "MAP_INPUT_RECORDS" : 86059252,
+        "LOCALIZED_NANOS" : 135576295314,
+        "SPLIT_RAW_BYTES" : 376726,
+        "LOCALIZED_BYTES_MISSED" : 17303870269,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 138812514335,
+        "PHYSICAL_MEMORY_BYTES" : 238844108800,
+        "GC_TIME_MILLIS" : 3634307,
+        "LOCALIZED_FILES_CACHED" : 146193,
+        "LOCALIZED_BYTES_CACHED" : 134149432257,
+        "MAP_OUTPUT_RECORDS" : 17739761,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 11684060,
+        "COMMITTED_HEAP_BYTES" : 230569721856
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 52088020390,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 192,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 52002327599,
+        "HDFS_WRITE_OPS" : 128,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 40416854940
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17709505
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 17709505,
+        "Tuples_Read" : 17739761,
+        "Read_Duration" : 1392288,
+        "Write_Duration" : 617093,
+        "Process_Begin_Time" : 95528287499868,
+        "Process_End_Time" : 95528289740663
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 6111,
+        "MERGED_MAP_OUTPUTS" : 9088,
+        "REDUCE_INPUT_RECORDS" : 17739761,
+        "SPILLED_RECORDS" : 23225141,
+        "VIRTUAL_MEMORY_BYTES" : 264593457152,
+        "LOCALIZED_NANOS" : 57979043535,
+        "LOCALIZED_BYTES_MISSED" : 7163002919,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 40209861419,
+        "PHYSICAL_MEMORY_BYTES" : 29156577280,
+        "GC_TIME_MILLIS" : 36043,
+        "REDUCE_INPUT_GROUPS" : 17709505,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 9088,
+        "LOCALIZED_FILES_CACHED" : 66337,
+        "REDUCE_OUTPUT_RECORDS" : 17709505,
+        "LOCALIZED_BYTES_CACHED" : 61097640473,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3707420,
+        "COMMITTED_HEAP_BYTES" : 32447135744
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "2"
+    },
+    "submitDate" : 1492629217932,
+    "launchDate" : 1492629253021,
+    "finishDate" : 1492629545471,
+    "runTime" : 292450
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492629120238,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607542,
+        "jobIdString" : "job_1470171371859_6607542"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607542,
+        "jobIdString" : "job_1470171371859_6607542"
+      },
+      "encodedRunId" : 9223370544225655569
+    },
+    "jobId" : "job_1470171371859_6607542",
+    "jobName" : "[8BEFB46B10BB4992B069A0452C1A7209/6A94935E7180499FAC11473213CE76EF] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(1/3)",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492629664906,
+    "launchTime" : 1492629678327,
+    "finishTime" : 1492629922728,
+    "totalMaps" : 206,
+    "totalReduces" : 67,
+    "finishedMaps" : 206,
+    "finishedReduces" : 67,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 40706072815,
+    "mapFileBytesWritten" : 81646497859,
+    "reduceFileBytesRead" : 67871106082,
+    "hdfsBytesRead" : 141894757029,
+    "hdfsBytesWritten" : 38651664308,
+    "mapSlotMillis" : 12455721,
+    "reduceSlotMillis" : 5467194,
+    "reduceShuffleBytes" : 40814059608,
+    "megabyteMillis" : 57207329280,
+    "cost" : 0.062073925,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 149607275269,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 1025,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 141894757029,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 108577178897,
+        "HDFS_WRITE_OPS" : 134,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 38651664308
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17000878,
+        "Tuples_Read" : 103768757
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 58005311,
+        "Tuples_Read" : 144773190,
+        "Read_Duration" : 6765949,
+        "Write_Duration" : 1103794,
+        "Process_Begin_Time" : 407487916987017,
+        "Process_End_Time" : 407487925303041
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 86059252,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 210,
+        "VCORES_MILLIS_REDUCES" : 4783795,
+        "TOTAL_LAUNCHED_REDUCES" : 71,
+        "NUM_KILLED_MAPS" : 4,
+        "OTHER_LOCAL_MAPS" : 80,
+        "DATA_LOCAL_MAPS" : 12,
+        "NUM_KILLED_REDUCES" : 4,
+        "MB_MILLIS_MAPS" : 39061141504,
+        "SLOTS_MILLIS_REDUCES" : 5467194,
+        "VCORES_MILLIS_MAPS" : 10898756,
+        "MB_MILLIS_REDUCES" : 17145121280,
+        "SLOTS_MILLIS_MAPS" : 12455721,
+        "RACK_LOCAL_MAPS" : 118,
+        "MILLIS_REDUCES" : 4783795,
+        "MILLIS_MAPS" : 10898756
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 41004433,
+        "SPILLED_RECORDS" : 126273593,
+        "VIRTUAL_MEMORY_BYTES" : 1110279864320,
+        "LOCALIZED_NANOS" : 345506465153,
+        "SPLIT_RAW_BYTES" : 442894,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 139514063958,
+        "REDUCE_SHUFFLE_BYTES" : 40814059608,
+        "PHYSICAL_MEMORY_BYTES" : 189141204992,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 280089,
+        "CPU_MILLISECONDS" : 13531660,
+        "LOCALIZED_FILES_MISSED" : 30081,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 40814059608,
+        "MERGED_MAP_OUTPUTS" : 13802,
+        "MAP_INPUT_RECORDS" : 103768757,
+        "LOCALIZED_BYTES_MISSED" : 34340180070,
+        "GC_TIME_MILLIS" : 115317,
+        "REDUCE_INPUT_GROUPS" : 40242908,
+        "SHUFFLED_MAPS" : 13802,
+        "REDUCE_OUTPUT_RECORDS" : 17000878,
+        "LOCALIZED_BYTES_CACHED" : 257901926946,
+        "MAP_OUTPUT_RECORDS" : 41004433,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 201552314368
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 81646497859,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 824,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 141894757029,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 40706072815,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 103768757
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 41004433,
+        "Tuples_Read" : 103768757,
+        "Read_Duration" : 5291658,
+        "Write_Duration" : 508458,
+        "Process_Begin_Time" : 307481720391658,
+        "Process_End_Time" : 307481726373180
+      },
+      "LzoBlocks of com.twitter.tweetypie.thriftscala.TweetEvent" : {
+        "Errors" : 0,
+        "Records Read" : 86059252,
+        "Records Skipped" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 22237,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 40814059608,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 58713938,
+        "VIRTUAL_MEMORY_BYTES" : 833510277120,
+        "MAP_INPUT_RECORDS" : 103768757,
+        "LOCALIZED_NANOS" : 232395288843,
+        "SPLIT_RAW_BYTES" : 442894,
+        "LOCALIZED_BYTES_MISSED" : 25571400633,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 139514063958,
+        "PHYSICAL_MEMORY_BYTES" : 159147757568,
+        "GC_TIME_MILLIS" : 77909,
+        "LOCALIZED_FILES_CACHED" : 210955,
+        "LOCALIZED_BYTES_CACHED" : 194143118995,
+        "MAP_OUTPUT_RECORDS" : 41004433,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 9496830,
+        "COMMITTED_HEAP_BYTES" : 167580286976
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 67960777410,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 201,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 67871106082,
+        "HDFS_WRITE_OPS" : 134,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 38651664308
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17000878
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 17000878,
+        "Tuples_Read" : 41004433,
+        "Read_Duration" : 1474291,
+        "Write_Duration" : 595336,
+        "Process_Begin_Time" : 100006196595359,
+        "Process_End_Time" : 100006198929861
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 7840,
+        "MERGED_MAP_OUTPUTS" : 13802,
+        "REDUCE_INPUT_RECORDS" : 41004433,
+        "SPILLED_RECORDS" : 67559655,
+        "VIRTUAL_MEMORY_BYTES" : 276769587200,
+        "LOCALIZED_NANOS" : 112735693806,
+        "LOCALIZED_BYTES_MISSED" : 8767128243,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 40814059608,
+        "PHYSICAL_MEMORY_BYTES" : 29993447424,
+        "GC_TIME_MILLIS" : 37408,
+        "REDUCE_INPUT_GROUPS" : 40242908,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 13802,
+        "LOCALIZED_FILES_CACHED" : 68004,
+        "REDUCE_OUTPUT_RECORDS" : 17000878,
+        "LOCALIZED_BYTES_CACHED" : 62693419403,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 4034830,
+        "COMMITTED_HEAP_BYTES" : 33972027392
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "1"
+    },
+    "submitDate" : 1492629664906,
+    "launchDate" : 1492629678327,
+    "finishDate" : 1492629922728,
+    "runTime" : 244401
+  }, {
+    "jobKey" : {
+      "cluster" : "test@cluster",
+      "userName" : "testuser",
+      "appId" : "somegoodjob",
+      "runId" : 1492629120238,
+      "jobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607618,
+        "jobIdString" : "job_1470171371859_6607618"
+      },
+      "qualifiedJobId" : {
+        "cluster" : "test@cluster",
+        "jobEpoch" : 1470171371859,
+        "jobSequence" : 6607618,
+        "jobIdString" : "job_1470171371859_6607618"
+      },
+      "encodedRunId" : 9223370544225655569
+    },
+    "jobId" : "job_1470171371859_6607618",
+    "jobName" : "[8BEFB46B10BB4992B069A0452C1A7209/B2D7B4CDD6864E76BE5F19F61600A47B] com.twitter.testuser.forward.testuserUnhydratedBatchJob/(3/3) .../unhydrated/2017/04/19/17",
+    "user" : "testuser",
+    "priority" : "",
+    "status" : "SUCCEEDED",
+    "version" : "02CFBD0A94AD5E297C2E4D6665B3B6F0",
+    "hadoopVersion" : "TWO",
+    "queue" : "testuser",
+    "submitTime" : 1492629953696,
+    "launchTime" : 1492629971471,
+    "finishTime" : 1492630639932,
+    "totalMaps" : 67,
+    "totalReduces" : 10,
+    "finishedMaps" : 67,
+    "finishedReduces" : 10,
+    "failedMaps" : 0,
+    "failedReduces" : 0,
+    "mapFileBytesRead" : 38606282909,
+    "mapFileBytesWritten" : 77265382690,
+    "reduceFileBytesRead" : 64447954989,
+    "hdfsBytesRead" : 38651733251,
+    "hdfsBytesWritten" : 30847298707,
+    "mapSlotMillis" : 3769306,
+    "reduceSlotMillis" : 5445833,
+    "reduceShuffleBytes" : 38583436003,
+    "megabyteMillis" : 31636693504,
+    "cost" : 0.03432800944444444,
+    "counters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 141727466483,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 308,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 38651733251,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 103054237898,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 30847298707
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17000878,
+        "Tuples_Read" : 17000878
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 34001756,
+        "Tuples_Read" : 34001756,
+        "Read_Duration" : 2328665,
+        "Write_Duration" : 3256539,
+        "Process_Begin_Time" : 114932510758673,
+        "Process_End_Time" : 114932516442200
+      },
+      "org.apache.hadoop.mapreduce.JobCounter" : {
+        "TOTAL_LAUNCHED_MAPS" : 69,
+        "VCORES_MILLIS_REDUCES" : 4765104,
+        "TOTAL_LAUNCHED_REDUCES" : 10,
+        "NUM_KILLED_MAPS" : 2,
+        "OTHER_LOCAL_MAPS" : 45,
+        "MB_MILLIS_MAPS" : 11820544512,
+        "SLOTS_MILLIS_REDUCES" : 5445833,
+        "VCORES_MILLIS_MAPS" : 3298143,
+        "MB_MILLIS_REDUCES" : 17078132736,
+        "SLOTS_MILLIS_MAPS" : 3769306,
+        "RACK_LOCAL_MAPS" : 24,
+        "MILLIS_REDUCES" : 4765104,
+        "MILLIS_MAPS" : 3298143
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "REDUCE_INPUT_RECORDS" : 17000878,
+        "SPILLED_RECORDS" : 62416516,
+        "VIRTUAL_MEMORY_BYTES" : 312361771008,
+        "LOCALIZED_NANOS" : 77542841838,
+        "SPLIT_RAW_BYTES" : 68943,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 132631170234,
+        "REDUCE_SHUFFLE_BYTES" : 38583436003,
+        "PHYSICAL_MEMORY_BYTES" : 57133043712,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "LOCALIZED_FILES_CACHED" : 79604,
+        "CPU_MILLISECONDS" : 8017640,
+        "LOCALIZED_FILES_MISSED" : 8616,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38583436003,
+        "MERGED_MAP_OUTPUTS" : 670,
+        "MAP_INPUT_RECORDS" : 17000878,
+        "LOCALIZED_BYTES_MISSED" : 10371782113,
+        "GC_TIME_MILLIS" : 43413,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "SHUFFLED_MAPS" : 670,
+        "REDUCE_OUTPUT_RECORDS" : 17000878,
+        "LOCALIZED_BYTES_CACHED" : 72817032907,
+        "MAP_OUTPUT_RECORDS" : 17000878,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "COMMITTED_HEAP_BYTES" : 59466805248
+      }
+    },
+    "mapCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 77265382690,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 268,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 38651733251,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 38606282909,
+        "HDFS_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 0
+      },
+      "org.apache.hadoop.mapreduce.lib.input.FileInputFormatCounter" : {
+        "BYTES_READ" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Read" : 17000878
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 17000878,
+        "Tuples_Read" : 17000878,
+        "Read_Duration" : 1314989,
+        "Write_Duration" : 309234,
+        "Process_Begin_Time" : 100006209563299,
+        "Process_End_Time" : 100006211215282
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 8477,
+        "MAP_OUTPUT_MATERIALIZED_BYTES" : 38583436003,
+        "MERGED_MAP_OUTPUTS" : 0,
+        "SPILLED_RECORDS" : 34001756,
+        "VIRTUAL_MEMORY_BYTES" : 271050731520,
+        "MAP_INPUT_RECORDS" : 17000878,
+        "LOCALIZED_NANOS" : 72027213744,
+        "SPLIT_RAW_BYTES" : 68943,
+        "LOCALIZED_BYTES_MISSED" : 9991291301,
+        "FAILED_SHUFFLE" : 0,
+        "MAP_OUTPUT_BYTES" : 132631170234,
+        "PHYSICAL_MEMORY_BYTES" : 52774502400,
+        "GC_TIME_MILLIS" : 27984,
+        "LOCALIZED_FILES_CACHED" : 67300,
+        "LOCALIZED_BYTES_CACHED" : 61465705144,
+        "MAP_OUTPUT_RECORDS" : 17000878,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 3344400,
+        "COMMITTED_HEAP_BYTES" : 54396940288
+      }
+    },
+    "reduceCounters" : {
+      "org.apache.hadoop.mapreduce.FileSystemCounter" : {
+        "VIEWFS_LARGE_READ_OPS" : 0,
+        "FILE_BYTES_WRITTEN" : 64462083793,
+        "FILE_LARGE_READ_OPS" : 0,
+        "FILE_WRITE_OPS" : 0,
+        "VIEWFS_BYTES_READ" : 0,
+        "VIEWFS_READ_OPS" : 0,
+        "HDFS_READ_OPS" : 40,
+        "VIEWFS_WRITE_OPS" : 0,
+        "HDFS_BYTES_READ" : 0,
+        "HDFS_LARGE_READ_OPS" : 0,
+        "FILE_READ_OPS" : 0,
+        "FILE_BYTES_READ" : 64447954989,
+        "HDFS_WRITE_OPS" : 40,
+        "VIEWFS_BYTES_WRITTEN" : 0,
+        "HDFS_BYTES_WRITTEN" : 30847298707
+      },
+      "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter" : {
+        "BYTES_WRITTEN" : 0
+      },
+      "cascading.flow.StepCounters" : {
+        "Tuples_Written" : 17000878
+      },
+      "cascading.flow.SliceCounters" : {
+        "Tuples_Written" : 17000878,
+        "Tuples_Read" : 17000878,
+        "Read_Duration" : 1013676,
+        "Write_Duration" : 2947305,
+        "Process_Begin_Time" : 14926301195374,
+        "Process_End_Time" : 14926305226918
+      },
+      "Shuffle Errors" : {
+        "CONNECTION" : 0,
+        "WRONG_LENGTH" : 0,
+        "BAD_ID" : 0,
+        "WRONG_MAP" : 0,
+        "WRONG_REDUCE" : 0,
+        "IO_ERROR" : 0
+      },
+      "org.apache.hadoop.mapreduce.TaskCounter" : {
+        "LOCALIZED_FILES_MISSED" : 136,
+        "MERGED_MAP_OUTPUTS" : 670,
+        "REDUCE_INPUT_RECORDS" : 17000878,
+        "SPILLED_RECORDS" : 28414760,
+        "VIRTUAL_MEMORY_BYTES" : 41311039488,
+        "LOCALIZED_NANOS" : 4898727923,
+        "LOCALIZED_BYTES_MISSED" : 379284135,
+        "FAILED_SHUFFLE" : 0,
+        "REDUCE_SHUFFLE_BYTES" : 38583436003,
+        "PHYSICAL_MEMORY_BYTES" : 4358541312,
+        "GC_TIME_MILLIS" : 15429,
+        "REDUCE_INPUT_GROUPS" : 10,
+        "COMBINE_OUTPUT_RECORDS" : 0,
+        "SHUFFLED_MAPS" : 670,
+        "LOCALIZED_FILES_CACHED" : 11174,
+        "REDUCE_OUTPUT_RECORDS" : 17000878,
+        "LOCALIZED_BYTES_CACHED" : 10285939215,
+        "COMBINE_INPUT_RECORDS" : 0,
+        "CPU_MILLISECONDS" : 4673240,
+        "COMMITTED_HEAP_BYTES" : 5069864960
+      }
+    },
+    "tasks" : [ ],
+    "configuration" : {
+      "cascading.flow.step.num" : "3"
+    },
+    "submitDate" : 1492629953696,
+    "launchDate" : 1492629971471,
+    "finishDate" : 1492630639932,
+    "runTime" : 668461
+  } ]
+} ]

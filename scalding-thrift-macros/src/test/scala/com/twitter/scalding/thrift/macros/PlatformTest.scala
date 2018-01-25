@@ -43,7 +43,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
   import ScroogeGenerators._
 
-  implicit def arbitraryInstanceProvider[T: Arbitrary] = new InstanceProvider[T] {
+  implicit def arbitraryInstanceProvider[T: Arbitrary]: InstanceProvider[T] = new InstanceProvider[T] {
     def g(idx: Int) = ScroogeGenerators.dataProvider[T](idx)
   }
 

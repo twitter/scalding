@@ -35,7 +35,7 @@ trait TupleUnpacker[T] extends java.io.Serializable {
 }
 
 trait LowPriorityTupleUnpackers {
-  implicit def genericUnpacker[T: Manifest] = new ReflectionTupleUnpacker[T]
+  implicit def genericUnpacker[T: Manifest]: ReflectionTupleUnpacker[T] = new ReflectionTupleUnpacker[T]
 }
 
 /**

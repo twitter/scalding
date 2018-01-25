@@ -35,3 +35,7 @@ tutorial/data/avrooutput0.avro
 .scalding_repl
 scalding-hadoop-test/NOTICE
 NOTICE
+
+# Auto-copied by sbt-microsites
+docs/src/main/tut/contributing.md
+.DS_Store

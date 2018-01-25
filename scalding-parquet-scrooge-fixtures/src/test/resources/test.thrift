@@ -86,14 +86,6 @@ struct StructWithReorderedOptionalFields {
   1: optional i32 fieldOne,
 }
 
-struct TestPersonWithRequiredPhone {
-  1: required Name name,
-  2: optional i32 age,
-  3: Address address,
-  4: string info,
-  5: required Phone phone
-}
-
 struct StructWithIndexStartsFrom4 {
   6: required Phone phone
 }

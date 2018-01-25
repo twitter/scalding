@@ -34,7 +34,7 @@ object SealedTraitOrderedBuf {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"$id"))
 
-    val knownDirectSubclasses = outerType.typeSymbol.asClass.knownDirectSubclasses
+    val knownDirectSubclasses = StableKnownDirectSubclasses(c)(outerType)
 
     if (knownDirectSubclasses.isEmpty)
       c.abort(c.enclosingPosition, s"Unable to access any knownDirectSubclasses for $outerType , a bug in scala 2.10/2.11 makes this unreliable.")

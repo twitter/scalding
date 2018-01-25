@@ -44,7 +44,7 @@ trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.S
 }
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
-  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit g: TupleGetter[A]) =
+  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit g: TupleGetter[A]): TupleConverter[A] =
     new TupleConverter[A] {
       def apply(tup: TupleEntry) = g.get(tup.getTuple, 0)
       def arity = 1

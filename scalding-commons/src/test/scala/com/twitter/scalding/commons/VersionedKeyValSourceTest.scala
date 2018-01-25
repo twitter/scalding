@@ -19,12 +19,14 @@ import org.apache.hadoop.fs.Path
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 import com.twitter.scalding.commons.datastores.VersionedStore
-import com.twitter.scalding.typed.IterablePipe
 import com.twitter.bijection.Injection
 import com.google.common.io.Files
-import org.apache.hadoop.mapred.{SequenceFileInputFormat, JobConf}
+import java.io.FileWriter
 
+import org.apache.hadoop.mapred.{ JobConf, SequenceFileInputFormat }
 import java.io.File
+
+import org.apache.hadoop.conf.Configuration
 // Use the scalacheck generators
 import scala.collection.mutable.Buffer
 
@@ -32,7 +34,7 @@ class TypedWriteIncrementalJob(args: Args) extends Job(args) {
   import RichPipeEx._
   val pipe = TypedPipe.from(TypedTsv[Int]("input"))
 
-  implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
+  implicit val inj: Injection[(Int, Int), (Array[Byte], Array[Byte])] = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
     .map{ k => (k, k) }
@@ -49,7 +51,7 @@ class MoreComplexTypedWriteIncrementalJob(args: Args) extends Job(args) {
   import RichPipeEx._
   val pipe = TypedPipe.from(TypedTsv[Int]("input"))
 
-  implicit val inj = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
+  implicit val inj: Injection[(Int, Int), (Array[Byte], Array[Byte])] = Injection.connect[(Int, Int), (Array[Byte], Array[Byte])]
 
   pipe
     .map{ k => (k, k) }
@@ -63,7 +65,7 @@ class ToIteratorJob(args: Args) extends Job(args) {
   val source = VersionedKeyValSource[Int, Int]("input")
 
   val iteratorCopy = source.toIterator.toList
-  val iteratorPipe = IterablePipe(iteratorCopy)
+  val iteratorPipe = TypedPipe.from(iteratorCopy)
 
   val duplicatedPipe = TypedPipe.from(source) ++ iteratorPipe
 
@@ -82,6 +84,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
           assert(outputBuffer.size === input.size)
+          val singleInj = implicitly[Injection[Int, Array[Byte]]]
           assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
@@ -95,6 +98,7 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       .sink[(Int, Int)](VersionedKeyValSource[Array[Byte], Array[Byte]]("output")) { outputBuffer: Buffer[(Int, Int)] =>
         "Outputs must be as expected" in {
           assert(outputBuffer.size === input.size)
+          val singleInj = implicitly[Injection[Int, Array[Byte]]]
           assert(input.map{ k => (k, k) }.sortBy(_._1).toString === outputBuffer.sortBy(_._1).toList.toString)
         }
       }
@@ -129,12 +133,28 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       // should not throw
       validateVersion(path)
     }
+
+    "calculate right size of source" in {
+      val oldContent = "size of old content should be ignored"
+      val content = "Hello World"
+      val contentSize = content.getBytes.length
+      val path = setupLocalVersionStore(100L to 102L, {
+        case 102L => Some(content)
+        case _ => Some(oldContent)
+      })
+
+      val keyValueSize = VersionedKeyValSource(path)
+        .source
+        .getSize(new Configuration())
+
+      contentSize should be (keyValueSize)
+    }
   }
 
   /**
    * Creates a temp dir and then creates the provided versions within it.
    */
-  private def setupLocalVersionStore(versions: Seq[Long]): String = {
+  private def setupLocalVersionStore(versions: Seq[Long], contentFn: Long => Option[String] = _ => None): String = {
     val root = Files.createTempDir()
     root.deleteOnExit()
     val store = new VersionedStore(root.getAbsolutePath)
@@ -142,7 +162,13 @@ class VersionedKeyValSourceTest extends WordSpec with Matchers {
       val p = store.createVersion(v)
       new File(p).mkdirs()
       // create a part file here
-      new File(p + "/part-00000").createNewFile()
+      contentFn(v)
+        .foreach { text =>
+          val content = new FileWriter(new File(p + "/test"))
+          content.write(text)
+          content.close()
+        }
+
       // and succeed
       store.succeedVersion(p)
     }

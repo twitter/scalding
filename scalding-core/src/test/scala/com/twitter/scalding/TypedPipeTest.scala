@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import org.scalatest.{ FunSuite, Matchers, WordSpec }
 
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.TypedText
 // Use the scalacheck generators
 import org.scalacheck.Gen
@@ -117,6 +118,15 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         .run
         .runHadoop
         .finish()
+    }
+  }
+}
+
+class TypedPipeMonoidTest extends WordSpec with Matchers {
+  "typedPipeMonoid.zero" should {
+    "be equal to TypePipe.empty" in {
+      val mon = implicitly[Monoid[TypedPipe[Int]]]
+      assert(mon.zero == TypedPipe.empty)
     }
   }
 }
@@ -847,8 +857,8 @@ trait TypedComplexHashAndMergeJobBase {
   def tdXe: TypedPipe[String]
 }
 
-class TypedComplexHashAndMergeJob(args: Args ,
-                                  fieldsToMerge: Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])])
+class TypedComplexHashAndMergeJob(args: Args,
+  fieldsToMerge: Seq[(String, TypedComplexHashAndMergeJobBase => TypedPipe[String])])
   extends Job(args) with TypedComplexHashAndMergeJobBase {
 
   override def name: String = super.name + " (" + fieldsToMerge.map(_._1).mkString(" ++ ") + ")"
@@ -874,7 +884,7 @@ class TypedComplexHashAndMergeTest extends WordSpec with Matchers {
     ("a", _.ta),
     ("a∩b", _.taXb),
     ("c", _.tc),
-    ("d",  _.td),
+    ("d", _.td),
     ("d∩e", _.tdXe))
 
   val selection = fields.permutations.take(3) // Take'em all if you need to prove all permutations work equally (kind of slow, and internally we do use commutativity)
@@ -931,8 +941,8 @@ class TypedTwistedHashAndMergeJob(args: Args) extends Job(args) {
     (y.head, y.tail)
   }).group
 
-  val twistAB: TypedPipe[String] = twistA.hashJoin(twistB).values.map { case (a,b) => a + "≡" + b }
-  val twistBA: TypedPipe[String] = twistB.hashJoin(twistA).values.map { case (a,b) => a + "≢" + b }
+  val twistAB: TypedPipe[String] = twistA.hashJoin(twistB).values.map { case (a, b) => a + "≡" + b }
+  val twistBA: TypedPipe[String] = twistB.hashJoin(twistA).values.map { case (a, b) => a + "≢" + b }
 
   (taXbXe ++ tdXeXb ++ twistAB ++ twistBA)
     .write(TypedText.tsv[String]("output"))
@@ -1517,7 +1527,7 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)
@@ -1536,7 +1546,7 @@ class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)

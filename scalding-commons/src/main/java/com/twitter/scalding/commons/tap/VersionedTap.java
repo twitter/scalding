@@ -3,6 +3,7 @@ package com.twitter.scalding.commons.tap;
 import java.io.IOException;
 
 import com.twitter.scalding.commons.datastores.VersionedStore;
+import com.twitter.scalding.tap.GlobHfs;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -13,12 +14,11 @@ import org.apache.hadoop.mapred.RecordReader;
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.scheme.Scheme;
-import cascading.tap.hadoop.Hfs;
 
 import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR;
 
-public class VersionedTap extends Hfs {
-  public enum TapMode {SOURCE, SINK}
+public class VersionedTap extends GlobHfs {
+  public static enum TapMode {SOURCE, SINK}
 
   public Long version = null;
 
@@ -109,6 +109,11 @@ public class VersionedTap extends Hfs {
 
     Path fullyQualifiedPath = getFileSystem(conf).makeQualified(new Path(newVersionPath));
     HadoopUtil.setOutputPath(conf, fullyQualifiedPath);
+  }
+
+  @Override
+  public long getSize(Configuration conf) throws IOException {
+    return getSize(new Path(getSourcePath(conf)), conf);
   }
 
   @Override

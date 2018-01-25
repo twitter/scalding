@@ -282,7 +282,7 @@ object ReplImplicits extends FieldConversions {
    * Convert KeyedListLike to enriched ShellTypedPipe
    * (e.g. allows .snapshot to be called on Grouped, CoGrouped, etc)
    */
-  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T])(implicit state: BaseReplState) =
+  implicit def keyedListLikeToShellTypedPipe[K, V, T[K, +V] <: KeyedListLike[K, V, T]](kll: KeyedListLike[K, V, T])(implicit state: BaseReplState): ShellTypedPipe[(K, V)] =
     new ShellTypedPipe(kll.toTypedPipe)(state)
 
   /**
@@ -309,12 +309,12 @@ object ReplState extends BaseReplState
  */
 object ReplImplicitContext {
   /** Implicit execution context for using the Execution monad */
-  implicit val executionContext = ConcurrentExecutionContext.global
+  implicit val executionContext: scala.concurrent.ExecutionContextExecutor = ConcurrentExecutionContext.global
   /** Implicit repl state used for ShellPipes */
-  implicit def stateImpl = ReplState
+  implicit def stateImpl: ReplState.type = ReplState
   /** Implicit flowDef for this Scalding shell session. */
-  implicit def flowDefImpl = ReplState.flowDef
+  implicit def flowDefImpl: FlowDef = ReplState.flowDef
   /** Defaults to running in local mode if no mode is specified. */
-  implicit def modeImpl = ReplState.mode
-  implicit def configImpl = ReplState.config
+  implicit def modeImpl: Mode = ReplState.mode
+  implicit def configImpl: Config = ReplState.config
 }

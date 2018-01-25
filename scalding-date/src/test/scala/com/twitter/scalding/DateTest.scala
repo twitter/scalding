@@ -20,7 +20,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class DateTest extends WordSpec {
-  implicit val tz = DateOps.PACIFIC
+  implicit val tz: TimeZone = DateOps.PACIFIC
 
   implicit def dateParser: DateParser = DateParser.default
 

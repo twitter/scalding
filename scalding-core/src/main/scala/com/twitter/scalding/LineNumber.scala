@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import org.slf4j.{ Logger, LoggerFactory }
+
 object LineNumber {
   /**
    * depth 0 means the StackTraceElement for the caller
@@ -29,6 +31,8 @@ object LineNumber {
   def ignorePath(classPrefix: String): Option[StackTraceElement] = ignorePath(Set(classPrefix))
   def ignorePath(classPrefixes: Set[String]): Option[StackTraceElement] =
     ignorePaths(classPrefixes, Thread.currentThread().getStackTrace)
+
+  private val LOG: Logger = LoggerFactory.getLogger(LineNumber.getClass)
 
   private[this] def ignorePaths(classPrefixes: Set[String], stack: Seq[StackTraceElement]): Option[StackTraceElement] =
     stack.drop(2)
@@ -72,8 +76,15 @@ object LineNumber {
       .iterator
       .filter { se => se.getClassName.startsWith(scaldingPrefix) }
       .filter { se =>
-        val cls = Class.forName(se.getClassName)
-        jobClass.isAssignableFrom(cls)
+        try {
+          val cls = Class.forName(se.getClassName)
+          jobClass.isAssignableFrom(cls)
+        } catch {
+          // skip classes that we don't find. We seem to run into this for some lambdas on Scala 2.12 in travis
+          case cnf: ClassNotFoundException =>
+            LOG.warn(s"Skipping $se.getClassName as we can't find the class")
+            false
+        }
       })
 
     scaldingJobCaller
