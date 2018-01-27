@@ -35,6 +35,8 @@ object OptimizationRules {
       new Memoize.RecursiveK[TypedPipe, LiteralPipe] {
 
         def toFunction[A] = {
+          case (cp: CounterPipe[a], f) =>
+            Unary(f(cp.pipe), CounterPipe(_: TypedPipe[(a, Iterable[((String, String), Long)])]))
           case (c: CrossPipe[a, b], f) =>
             Binary(f(c.left), f(c.right), CrossPipe(_: TypedPipe[a], _: TypedPipe[b]))
           case (cv@CrossValue(_, _), f) =>
@@ -457,6 +459,7 @@ object OptimizationRules {
       }
 
     def apply[T](on: Dag[TypedPipe]) = {
+      case CounterPipe(a) if needsFork(on, a) => maybeFork(on, a).map(CounterPipe(_))
       case CrossPipe(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossPipe(_, b))
       case CrossPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(CrossPipe(a, _))
       case CrossValue(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossValue(_, b))

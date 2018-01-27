@@ -302,6 +302,9 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
   def plan[T](m: Memo, tp: TypedPipe[T]): (Memo, Op[T]) =
     m.plan(tp) {
       tp match {
+        case CounterPipe(pipe) =>
+          // TODO: counters not yet supported, but can be with an concurrent hashmap
+          plan(m, pipe.map(_._1))
         case cp@CrossPipe(_, _) =>
           plan(m, cp.viaHashJoin)
 

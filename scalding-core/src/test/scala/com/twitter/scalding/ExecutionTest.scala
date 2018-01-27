@@ -437,6 +437,34 @@ class ExecutionTest extends WordSpec with Matchers {
       c1.shouldSucceed() should ===(100)
       c2.shouldSucceed() should ===(100)
     }
+    "zip does not duplicate pure counters" in {
+      val c1 = {
+        val e1 = TypedPipe.from(0 until 100)
+          .count("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e1.zip(e1)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
+
+      val c2 = {
+        val e2 = TypedPipe.from(0 until 100)
+          .count("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e2.flatMap(Execution.from(_)).zip(e2)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
+
+      c1.shouldSucceed() should ===(100)
+      c2.shouldSucceed() should ===(100)
+    }
 
     "Running a large loop won't exhaust boxed instances" in {
       var timesEvaluated = 0
