@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -347,9 +347,10 @@ object OptimizationRules {
             case h :: tail => loop(h, tail, acc)
           }
         case notMerge =>
+          val acc1 = notMerge :: acc
           todo match {
-            case Nil => (first :: acc).reverse
-            case h :: tail => loop(h, tail, first :: acc)
+            case Nil => acc1.reverse
+            case h :: tail => loop(h, tail, acc1)
           }
       }
 
@@ -519,6 +520,9 @@ object OptimizationRules {
 
   /**
    * a.filter(f).filter(g) == a.filter { x => f(x) && g(x) }
+   *
+   * also if a filterKeys follows a filter, we might as well
+   * compose because we can't push the filterKeys up higher
    */
   object ComposeFilter extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -538,6 +542,8 @@ object OptimizationRules {
         go(f)
       case FilterKeys(FilterKeys(in, fn0), fn1) =>
         Some(FilterKeys(in, ComposedFilterFn(fn0, fn1)))
+      case FilterKeys(Filter(in, fn0), fn1) =>
+        Some(Filter(in, ComposedFilterFn(fn0, FilterKeysToFilter(fn1))))
       case _ => None
     }
   }
@@ -642,6 +648,31 @@ object OptimizationRules {
         go(f)
       case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
         WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
+    }
+  }
+
+  /**
+   * (a ++ a) == a.flatMap { t => List(t, t) }
+   */
+  object DiamondToFlatMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case m@MergedTypedPipe(_, _) =>
+        val pipes = unrollMerge(m)
+        val flatMapped =
+          pipes.groupBy { tp => tp: TypedPipe[T] }
+            .iterator
+            .map {
+              case (p, Nil) => sys.error(s"unreachable: $p has no values")
+              case (p, _ :: Nil) => p // just once
+              case (p, repeated) =>
+                val rsize = repeated.size
+                p.flatMap(Iterator.fill(rsize)(_))
+            }
+            .toVector
+
+        if (pipes.size == flatMapped.size) None // we didn't reduce the number of merges
+        else Some(TypedPipe.typedPipeMonoid.sum(flatMapped))
+      case _ => None
     }
   }
 
@@ -939,8 +970,8 @@ object OptimizationRules {
       AddExplicitForks,
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
       composeSame.orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
-      // phase 2, combine different kinds of map operations into flatMaps
-      composeIntoFlatMap.orElse(simplifyEmpty),
-      // phase 3, add any explicit forces to the optimized graph
+      // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
+      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap),
+      // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 }

@@ -315,7 +315,8 @@ object CascadingBackend {
       OptimizationRules.IgnoreNoOpGroup ::
       (OptimizationRules.standardMapReduceRules :::
         List(
-          OptimizationRules.FilterLocally,
+          OptimizationRules.FilterLocally, // after filtering, we may have filtered to nothing, lets see
+          OptimizationRules.simplifyEmpty,
           // add any explicit forces to the optimized graph
           Rule.orElse(List(
             forceHash,

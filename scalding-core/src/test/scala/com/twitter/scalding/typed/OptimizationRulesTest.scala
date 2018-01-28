@@ -8,7 +8,7 @@ import org.apache.hadoop.conf.Configuration
 import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks.forAll
+import org.scalatest.prop.PropertyChecks
 import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
 import scala.util.{ Failure, Success, Try }
@@ -21,7 +21,6 @@ object TypedPipeGen {
   }
 
   def mapped(srcGen: Gen[TypedPipe[Int]]): Gen[TypedPipe[Int]] = {
-    val mappedRec = Gen.lzy(mapped(srcGen))
     val next1: Gen[TypedPipe[Int] => TypedPipe[Int]] =
       Gen.oneOf(
         tpGen(srcGen).map { p: TypedPipe[Int] =>
@@ -30,7 +29,7 @@ object TypedPipeGen {
         tpGen(srcGen).map { p: TypedPipe[Int] =>
           { x: TypedPipe[Int] => x.cross(ValuePipe(2)).values }
         },
-        Gen.const({ t: TypedPipe[Int] => t.debug }),
+        //Gen.const({ t: TypedPipe[Int] => t.debug }), debug spews a lot to the terminal
         Arbitrary.arbitrary[Int => Boolean].map { fn =>
           { t: TypedPipe[Int] => t.filter(fn) }
         },
@@ -136,7 +135,10 @@ object TypedPipeGen {
    * Iterable sources
    */
   val genWithIterableSources: Gen[TypedPipe[Int]] =
-    tpGen(Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))
+    Gen.choose(0, 20) // don't make giant lists which take too long to evaluate
+      .flatMap { sz =>
+        tpGen(Gen.listOfN(sz, Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))
+      }
 
   val genKeyedWithFake: Gen[TypedPipe[(Int, Int)]] =
     keyed(srcGen)
@@ -153,6 +155,7 @@ object TypedPipeGen {
     ComposeFilterFlatMap,
     ComposeFilterMap,
     DescribeLater,
+    DiamondToFlatMap,
     RemoveDuplicateForceFork,
     IgnoreNoOpGroup,
     DeferMerge,
@@ -190,7 +193,9 @@ class ConstantOptimizer extends OptimizationPhases {
   })
 }
 
-class OptimizationRulesTest extends FunSuite {
+// we need to extend PropertyChecks, it seems, to control the number of successful runs
+// for optimization rules, we want to do many tests
+class OptimizationRulesTest extends FunSuite with PropertyChecks {
   import OptimizationRules.toLiteral
 
   def invert[T](t: TypedPipe[T]) =
@@ -235,13 +240,13 @@ class OptimizationRulesTest extends FunSuite {
 
   test("all optimization rules don't change results") {
     import TypedPipeGen.{ genWithIterableSources, genRule }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100000)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
   }
 
   test("all optimization rules do not increase steps") {
     import TypedPipeGen.{ allRules, genWithIterableSources, genRuleFrom }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 1000)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
 
     val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
       Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
