@@ -38,5 +38,21 @@ object SubTypes extends java.io.Serializable {
   def fromEv[A, B](ev: A <:< B): SubTypes[A, B] = // linter:disable:UnusedParameter
     // in scala 2.13, this won't need a cast, but the cast is safe
     fromSubType[A, A].asInstanceOf[SubTypes[A, B]]
+
+  def tuple2_1[A, B, C](implicit ev: SubTypes[A, B]): SubTypes[(A, C), (B, C)] = {
+    // This is a bit complex, but it is a proof that this
+    // is safe that does not use casting
+    type Pair[-T] = SubTypes[(T, C), (B, C)]
+    val idPair: Pair[B] = SubTypes.fromSubType[(B, C), (B, C)]
+    ev.subst[Pair](idPair)
+  }
+
+  def tuple2_2[A, B, C](implicit ev: SubTypes[B, C]): SubTypes[(A, B), (A, C)] = {
+    // This is a bit complex, but it is a proof that this
+    // is safe that does not use casting
+    type Pair[-T] = SubTypes[(A, T), (A, C)]
+    val idPair: Pair[C] = SubTypes.fromSubType[(A, C), (A, C)]
+    ev.subst[Pair](idPair)
+  }
 }
 

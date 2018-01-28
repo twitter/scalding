@@ -38,6 +38,12 @@ object TDsl extends Serializable with GeneratedTupleAdders {
 
   implicit def sourceToTypedPipe[T](src: TypedSource[T]): TypedPipe[T] =
     TypedPipe.from(src)
+
+  implicit def mappableToTypedPipeKeyed[K, V](src: Mappable[(K, V)]): TypedPipe.Keyed[K, V] =
+    new TypedPipe.Keyed(TypedPipe.from(src))
+
+  implicit def sourceToTypedPipeKeyed[K, V](src: TypedSource[(K, V)]): TypedPipe.Keyed[K, V] =
+    new TypedPipe.Keyed(TypedPipe.from(src))
 }
 
 /*

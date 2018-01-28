@@ -28,6 +28,9 @@ import com.twitter.scalding.typed.functions._
 object KeyedListLike {
   /** KeyedListLike items are implicitly convertable to TypedPipe */
   implicit def toTypedPipe[K, V, S[K, +V] <: KeyedListLike[K, V, S]](keyed: KeyedListLike[K, V, S]): TypedPipe[(K, V)] = keyed.toTypedPipe
+
+  implicit def toTypedPipeKeyed[K, V, S[K, +V] <: KeyedListLike[K, V, S]](keyed: KeyedListLike[K, V, S]): TypedPipe.Keyed[K, V] =
+    new TypedPipe.Keyed(keyed.toTypedPipe)
 }
 
 /**
