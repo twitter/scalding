@@ -599,6 +599,9 @@ object OptimizationRules {
    *
    * This is a rule you may want to apply after having
    * composed all the filters first
+   *
+   * This may be a deoptimization on some platforms that have native filters since
+   * you could avoid the Iterator boxing in that case.
    */
   object ComposeFilterMap extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -829,6 +832,33 @@ object OptimizationRules {
       case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
     }
   }
+
+  /**
+   * This is useful on map-reduce like systems to avoid
+   * serializing data into the system that you are going
+   * to then filter
+   */
+  object FilterLocally extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case f@Filter(_, _) =>
+        def go[T1 <: T](f: Filter[T1]): Option[TypedPipe[T]] =
+          f match {
+            case Filter(IterablePipe(iter), fn) =>
+              Some(IterablePipe(iter.filter(fn)))
+            case _ => None
+          }
+        go(f)
+      case f@FilterKeys(_, _) =>
+        def go[K, V, T >: (K, V)](f: FilterKeys[K, V]): Option[TypedPipe[T]] =
+          f match {
+            case FilterKeys(IterablePipe(iter), fn) =>
+              Some(IterablePipe(iter.filter { case (k, _) => fn(k) }))
+            case _ => None
+          }
+        go(f)
+      case _ => None
+    }
+  }
   /**
    * ForceToDisk before hashJoin, this makes sure any filters
    * have been applied
@@ -888,7 +918,6 @@ object OptimizationRules {
       List(
         ComposeMapFlatMap,
         ComposeFilterFlatMap,
-        ComposeFilterMap,
         ComposeFlatMap))
 
   val simplifyEmpty: Rule[TypedPipe] =
@@ -906,10 +935,10 @@ object OptimizationRules {
    */
   val standardMapReduceRules: List[Rule[TypedPipe]] =
     List(
-      // phase 0, add explicit forks
+      // phase 0, add explicit forks to not duplicate pipes on fanout below
       AddExplicitForks,
-      // phase 1, compose flatMap/map, move descriptions down etc...
-      composeSame.orElse(DescribeLater),
+      // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
+      composeSame.orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
       // phase 2, combine different kinds of map operations into flatMaps
       composeIntoFlatMap.orElse(simplifyEmpty),
       // phase 3, add any explicit forces to the optimized graph

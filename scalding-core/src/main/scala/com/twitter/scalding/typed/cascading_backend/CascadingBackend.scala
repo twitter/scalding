@@ -310,18 +310,17 @@ object CascadingBackend {
    * should be highly likely to improve the graph.
    */
   def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
-    /**
-     * TODO:
-     * we need to have parity for the normal optimizations
-     * scalding has been applying in 0.17
-     *
-     */
-    def std(forceHash: Rule[TypedPipe]) = OptimizationRules.standardMapReduceRules :+
-      // add any explicit forces to the optimized graph
-      Rule.orElse(List(
-        forceHash,
-        OptimizationRules.RemoveDuplicateForceFork)
-      )
+
+    def std(forceHash: Rule[TypedPipe]) =
+      OptimizationRules.IgnoreNoOpGroup ::
+      (OptimizationRules.standardMapReduceRules :::
+        List(
+          OptimizationRules.FilterLocally,
+          // add any explicit forces to the optimized graph
+          Rule.orElse(List(
+            forceHash,
+            OptimizationRules.RemoveDuplicateForceFork)
+          )))
 
     config.getOptimizationPhases match {
       case Some(tryPhases) => tryPhases.get.phases

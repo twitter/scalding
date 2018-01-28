@@ -157,6 +157,7 @@ object TypedPipeGen {
     IgnoreNoOpGroup,
     DeferMerge,
     FilterKeysEarly,
+    FilterLocally,
     EmptyIsOftenNoOp,
     EmptyIterableIsEmpty,
     ForceToDiskBeforeHashJoin)
