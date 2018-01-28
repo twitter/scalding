@@ -388,10 +388,10 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * in some sense, this is the dual of groupAll
    */
   @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
-  def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] = {
-    val pipe: TypedPipe[(U, Unit)] = withValue(())
-    pipe.group
-  }
+  def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] =
+    widen[U]
+      .withValue(())
+      .group
 
   /**
    * Set a key to to the given value.
