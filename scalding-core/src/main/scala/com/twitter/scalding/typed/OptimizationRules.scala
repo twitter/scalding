@@ -3,6 +3,8 @@ package com.twitter.scalding.typed
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
 import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
+import com.twitter.scalding.quotation.Projections
+import com.twitter.scalding.quotation.Quoted
 
 object OptimizationRules {
   type LiteralPipe[T] = Literal[TypedPipe, T]
@@ -10,6 +12,8 @@ object OptimizationRules {
   import Literal.{ Unary, Binary }
   import TypedPipe._
 
+  private implicit val q = Quoted.internal
+  
   /**
    * Since our TypedPipe is covariant, but the Literal is not
    * this is actually safe in this context, but not in general
@@ -70,14 +74,14 @@ object OptimizationRules {
             Unary(f(p.input), Mapped(_: TypedPipe[a], p.fn))
           case (p: MergedTypedPipe[a], f) =>
             Binary(f(p.left), f(p.right), MergedTypedPipe(_: TypedPipe[a], _: TypedPipe[a]))
-          case (src@SourcePipe(_), _) =>
+          case (src@SourcePipe(_,  _), _) =>
             Literal.Const(src)
           case (p: SumByLocalKeys[a, b], f) =>
             widen(Unary(f(p.input), SumByLocalKeys(_: TypedPipe[(a, b)], p.semigroup)))
           case (p: TrappedPipe[a], f) =>
             Unary(f(p.input), TrappedPipe[a](_: TypedPipe[a], p.sink, p.conv))
           case (p: WithDescriptionTypedPipe[a], f) =>
-            Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.description, p.deduplicate))
+            Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.description, p.deduplicate, p.quoted))
           case (p: WithOnComplete[a], f) =>
             Unary(f(p.input), WithOnComplete(_: TypedPipe[a], p.fn))
           case (EmptyTypedPipe, _) =>
@@ -379,7 +383,7 @@ object OptimizationRules {
         case ForceToDisk(_) => None
         case Fork(t) if on.contains(ForceToDisk(t)) => Some(ForceToDisk(t))
         case Fork(_) => None
-        case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_) => None
+        case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_, _) => None
         case other if !on.hasSingleDependent(other) =>
           Some {
             // if we are already forcing this, use it
@@ -488,7 +492,7 @@ object OptimizationRules {
         go(t)
       case CoGroupedPipe(cgp) => forkCoGroup(on, cgp).map(CoGroupedPipe(_))
       case WithOnComplete(p, fn) => maybeFork(on, p).map(WithOnComplete(_, fn))
-      case WithDescriptionTypedPipe(p, d1, d2) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, d1, d2))
+      case WithDescriptionTypedPipe(p, d1, d2, q) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, d1, d2, q))
       case _ => None
     }
   }
@@ -621,24 +625,24 @@ object OptimizationRules {
    */
   object DescribeLater extends PartialRule[TypedPipe] {
     def applyWhere[T](on: Dag[TypedPipe]) = {
-      case Mapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup)
-      case MapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(MapValues(in, fn), desc, dedup)
-      case FlatMapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FlatMapped(in, fn), desc, dedup)
-      case FlatMapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FlatMapValues(in, fn), desc, dedup)
-      case f@Filter(WithDescriptionTypedPipe(_, _, _), _) =>
+      case Mapped(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+        WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup, quoted)
+      case MapValues(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+        WithDescriptionTypedPipe(MapValues(in, fn), desc, dedup, quoted)
+      case FlatMapped(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+        WithDescriptionTypedPipe(FlatMapped(in, fn), desc, dedup, quoted)
+      case FlatMapValues(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+        WithDescriptionTypedPipe(FlatMapValues(in, fn), desc, dedup, quoted)
+      case f@Filter(WithDescriptionTypedPipe(_, _, _, _), _) =>
         def go[A](f: Filter[A]): TypedPipe[A] =
           f match {
-            case Filter(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-              WithDescriptionTypedPipe(Filter(in, fn), desc, dedup)
+            case Filter(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+              WithDescriptionTypedPipe(Filter(in, fn), desc, dedup, quoted)
             case unreachable => unreachable
           }
         go(f)
-      case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
+      case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup, quoted), fn) =>
+        WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup, quoted)
     }
   }
 
@@ -654,6 +658,24 @@ object OptimizationRules {
       case Fork(Fork(t)) => Fork(t)
       case Fork(ForceToDisk(t)) => ForceToDisk(t)
       case Fork(t) if on.contains(ForceToDisk(t)) => ForceToDisk(t)
+    }
+  }
+
+  object ApplyProjectionPushdown extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case s @ SourcePipe(source, _) =>
+        val p =
+          source.projectionMeta.map {
+            case ProjectionMeta(classTag, superClass, _) =>
+              val tpe = classTag.runtimeClass.getName
+              Projections.flatten {
+                on.transitiveDependentsOf(s).collect {
+                  case WithDescriptionTypedPipe(_, _, _, Some(quoted)) =>
+                    quoted.projections.of(tpe, superClass)
+                }.toList
+              }
+          }
+        s.copy(projections = p.filter(_.set.nonEmpty))
     }
   }
 
@@ -817,7 +839,7 @@ object OptimizationRules {
       case TrappedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp) => EmptyTypedPipe
       case WithOnComplete(EmptyTypedPipe, _) => EmptyTypedPipe // there is nothing to do, so we never have workers complete
-      case WithDescriptionTypedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe // descriptions apply to tasks, but empty has no tasks
+      case WithDescriptionTypedPipe(EmptyTypedPipe, _, _, _) => EmptyTypedPipe // descriptions apply to tasks, but empty has no tasks
     }
   }
 
@@ -840,11 +862,11 @@ object OptimizationRules {
     // checkpointed
     final def maybeForce[T](t: TypedPipe[T]): TypedPipe[T] =
       t match {
-        case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
+        case SourcePipe(_, _) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
         case WithOnComplete(pipe, fn) =>
           WithOnComplete(maybeForce(pipe), fn)
-        case WithDescriptionTypedPipe(pipe, desc, dedup) =>
-          WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
+        case WithDescriptionTypedPipe(pipe, desc, dedup, quoted) =>
+          WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup, quoted)
         case pipe => ForceToDisk(pipe)
       }
 

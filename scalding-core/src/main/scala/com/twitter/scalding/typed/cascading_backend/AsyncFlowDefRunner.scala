@@ -295,7 +295,7 @@ class AsyncFlowDefRunner extends Writer { self =>
         val result = optimized match {
           case Left(iter) if iter.isEmpty => TypedPipe.EmptyTypedPipe
           case Left(iter) => TypedPipe.IterablePipe(iter)
-          case Right(mappable) => TypedPipe.SourcePipe(mappable)
+          case Right(mappable) => TypedPipe.SourcePipe(mappable, None)
         }
         val fut = Future.successful(result)
         updateState(_.addForce(conf, mode, init, result, fut))
@@ -310,7 +310,7 @@ class AsyncFlowDefRunner extends Writer { self =>
             opt match {
               case TypedPipe.EmptyTypedPipe => addIter(init, Left(Nil))
               case TypedPipe.IterablePipe(as) => addIter(init, Left(as))
-              case TypedPipe.SourcePipe(src: Mappable[A]) => addIter(init, Right(src))
+              case TypedPipe.SourcePipe(src: Mappable[A], _) => addIter(init, Right(src))
               case other =>
                 // we need to write the pipe out first.
                 force(init, opt)
@@ -355,7 +355,7 @@ class AsyncFlowDefRunner extends Writer { self =>
     getForced(conf, m, initial).flatMap {
       case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
       case TypedPipe.IterablePipe(iter) => Future.successful(iter)
-      case TypedPipe.SourcePipe(src: Mappable[T]) =>
+      case TypedPipe.SourcePipe(src: Mappable[T], _) =>
         Future.successful(
           new Iterable[T] {
             def iterator = src.toIterator(conf, m)

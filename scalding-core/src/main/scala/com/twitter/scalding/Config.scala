@@ -431,6 +431,11 @@ abstract class Config extends Serializable {
    */
   def setVerboseFileSourceLogging(b: Boolean): Config =
     this + (VerboseFileSourceLoggingKey -> b.toString)
+    
+  def getAutomaticProjectionPushdown: Boolean =
+    get(ExperimentalAutomaticProjectionPushdown)
+      .map(_.toBoolean)
+      .getOrElse(false)
 
   def getSkipNullCounters: Boolean =
     get(SkipNullCounters)
@@ -515,6 +520,11 @@ object Config {
    */
   val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
 
+  /**
+   * Enables automatic projection pushdown (experimental)
+   */
+  val ExperimentalAutomaticProjectionPushdown: String = "scalding.experimental.automatic_projection_pushdown"
+  
   val empty: Config = Config(Map.empty)
 
   /*

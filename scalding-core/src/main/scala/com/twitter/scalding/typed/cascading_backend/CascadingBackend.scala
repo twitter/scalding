@@ -25,9 +25,13 @@ import com.twitter.scalding.serialization.{
 }
 import java.util.WeakHashMap
 import scala.collection.mutable.{ Map => MMap }
+import org.apache.hadoop.mapred.JobConf
+import com.twitter.scalding.quotation.Quoted
 
 object CascadingBackend {
   import TypedPipe._
+  
+  private implicit val q: Quoted = Quoted.internal
 
   private val valueField: Fields = new Fields("value")
   private val kvFields: Fields = new Fields("key", "value")
@@ -232,9 +236,16 @@ object CascadingBackend {
                 val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
                 CascadingPipe.single[T](merged, flowDef)
             }
-          case (SourcePipe(typedSrc), _) =>
+          case (SourcePipe(typedSrc, p), _) =>
             val fd = new FlowDef
             val pipe = typedSrc.read(fd, mode)
+            typedSrc.projectionMeta.foreach { meta =>
+              (p, mode) match {
+                case (Some(p), h: HadoopMode) => 
+                  meta.setProjections(h.jobConf, p)
+                case _ => 
+              }
+            }
             CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
           case (sblk@SumByLocalKeys(_, _), rec) =>
             def go[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] = {
@@ -262,12 +273,12 @@ object CascadingBackend {
             val pipe = RichPipe.assignName(pp)
             fd.addTrap(pipe, sink.createTap(Write)(mode))
             CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
-          case (WithDescriptionTypedPipe(input, descr, dedup), rec) =>
+          case (WithDescriptionTypedPipe(input, descr, dedup, quoted), rec) =>
 
             @annotation.tailrec
             def loop[A](t: TypedPipe[A], acc: List[(String, Boolean)]): (TypedPipe[A], List[(String, Boolean)]) =
               t match {
-                case WithDescriptionTypedPipe(i, desc, ded) =>
+                case WithDescriptionTypedPipe(i, desc, ded, quoted) =>
                   loop(i, (desc, ded) :: acc)
                 case notDescr => (notDescr, acc)
               }
@@ -316,20 +327,29 @@ object CascadingBackend {
      * scalding has been applying in 0.17
      *
      */
-    def std(forceHash: Rule[TypedPipe]) = OptimizationRules.standardMapReduceRules :+
-      // add any explicit forces to the optimized graph
-      Rule.orElse(List(
-        forceHash,
-        OptimizationRules.RemoveDuplicateForceFork)
-      )
+    def std(forceHash: Rule[TypedPipe], automaticProjectionPushdown: Rule[TypedPipe]) =
+      OptimizationRules.standardMapReduceRules :+
+        // add any explicit forces to the optimized graph
+        Rule.orElse(List(
+          forceHash,
+          OptimizationRules.RemoveDuplicateForceFork)) :+
+        automaticProjectionPushdown
 
     config.getOptimizationPhases match {
       case Some(tryPhases) => tryPhases.get.phases
       case None =>
+
+        def onlyIf(cond: Boolean)(rule: Rule[TypedPipe]): Rule[TypedPipe] =
+          if (cond) rule
+          else Rule.empty
+
         val force =
-          if (config.getHashJoinAutoForceRight) OptimizationRules.ForceToDiskBeforeHashJoin
-          else Rule.empty[TypedPipe]
-        std(force)
+          onlyIf(config.getHashJoinAutoForceRight)(OptimizationRules.ForceToDiskBeforeHashJoin)
+
+        val automaticProjectionPushdown =
+          onlyIf(config.getAutomaticProjectionPushdown)(OptimizationRules.ApplyProjectionPushdown)
+
+        std(force, automaticProjectionPushdown)
     }
   }
 

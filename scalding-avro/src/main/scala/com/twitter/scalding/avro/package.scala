@@ -15,6 +15,7 @@
 
 package com.twitter.scalding
 
+import com.twitter.scalding.quotation.Quoted
 import cascading.flow.FlowDef
 import org.apache.avro.Schema
 import collection.JavaConverters._
@@ -26,7 +27,8 @@ package object avro {
     conv: TupleConverter[T],
     set: TupleSetter[T],
     flow: FlowDef,
-    mode: Mode): Unit = {
+    mode: Mode,
+    q: Quoted): Unit = {
     val sink = PackedAvroSource[T](path)
     pipe.write(sink)
   }
@@ -35,7 +37,8 @@ package object avro {
     conv: TupleConverter[T],
     set: TupleSetter[T],
     flow: FlowDef,
-    mode: Mode): Unit = {
+    mode: Mode,
+    q: Quoted): Unit = {
     import Dsl._
     val sink = UnpackedAvroSource[T](path, Some(schema))
     val outFields = {

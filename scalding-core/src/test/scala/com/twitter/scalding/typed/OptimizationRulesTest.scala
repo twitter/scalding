@@ -12,6 +12,7 @@ import org.scalatest.prop.PropertyChecks.forAll
 import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
 import scala.util.{ Failure, Success, Try }
+import com.twitter.scalding.quotation.Quoted
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
@@ -159,7 +160,8 @@ object TypedPipeGen {
     FilterKeysEarly,
     EmptyIsOftenNoOp,
     EmptyIterableIsEmpty,
-    ForceToDiskBeforeHashJoin)
+    ForceToDiskBeforeHashJoin,
+    ApplyProjectionPushdown)
 
   def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
     for {
@@ -406,7 +408,7 @@ class OptimizationRulesTest extends FunSuite {
       eqCheck(tp.hashLookup(keyed))
       eqCheck(tp.groupRandomly(100))
       val ordInt = implicitly[Ordering[Int]]
-      eqCheck(tp.distinctBy(fn0)(ordInt))
+      eqCheck(tp.distinctBy(fn0)(ordInt, implicitly[Quoted]))
     }
   }
 }

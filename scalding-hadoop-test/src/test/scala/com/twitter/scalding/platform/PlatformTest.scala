@@ -31,6 +31,7 @@ import org.scalatest.{ Matchers, WordSpec }
 
 import scala.collection.JavaConverters._
 import scala.language.experimental.macros
+import com.twitter.scalding.quotation.Quoted
 
 class InAndOutJob(args: Args) extends Job(args) {
   Tsv("input").read.write(Tsv("output"))
@@ -116,13 +117,13 @@ class MultipleGroupByJob(args: Args) extends Job(args) {
 
   TypedPipe.from(data)
     .map{ k => (k, 1L) }
-    .group[String, Long](implicitly, stringOrdSer)
+    .group[String, Long](implicitly, stringOrdSer, implicitly[Quoted])
     .sum
     .map {
       case (k, _) =>
         ((k, k), 1L)
     }
-    .sumByKey[(String, String), Long](implicitly, stringTup2OrdSer, implicitly)
+    .sumByKey[(String, String), Long](implicitly, stringTup2OrdSer, implicitly, implicitly[Quoted])
     .map(_._1._1)
     .map { t =>
       (t.toString, t)
@@ -653,8 +654,8 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
             "reduce stage - sum",
             "write",
             // should see the .group and the .write show up as line numbers
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:30)",
-            "com.twitter.scalding.platform.TypedPipeWithDescriptionJob.<init>(TestJobsWithDescriptions.scala:34)")
+            "TestJobsWithDescriptions.scala:31",
+            "TestJobsWithDescriptions.scala:34")
 
           val foundDescs = steps.map(_.getConfig.get(Config.StepDescriptions))
           descs.foreach { d =>

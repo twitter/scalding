@@ -29,6 +29,9 @@ import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
 import scala.util.Try
+import com.twitter.scalding.quotation.Quoted
+import com.twitter.scalding.quotation.Projection
+import com.twitter.scalding.quotation.Projections
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -76,7 +79,7 @@ object TypedPipe extends Serializable {
    * Create a TypedPipe from a TypedSource. This is the preferred way to make a TypedPipe
    */
   def from[T](source: TypedSource[T]): TypedPipe[T] =
-    SourcePipe(source)
+    SourcePipe(source, None)
 
   /**
    * Create a TypedPipe from an Iterable in memory.
@@ -108,7 +111,7 @@ object TypedPipe extends Serializable {
    *
    * This method is the Vitaly-was-right method.
    */
-  implicit def toHashJoinable[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K]): HashJoinable[K, V] =
+  implicit def toHashJoinable[K, V](pipe: TypedPipe[(K, V)])(implicit ord: Ordering[K], m: Quoted): HashJoinable[K, V] =
     /*
      * Note, it would not be safe to make the return type of this Grouped[K, V] since that has some
      * different semantics than TypedPipe, however, it is not unclear when we only go to
@@ -119,7 +122,7 @@ object TypedPipe extends Serializable {
   /**
    * TypedPipe instances are monoids. They are isomorphic to multisets.
    */
-  implicit def typedPipeMonoid[T]: Monoid[TypedPipe[T]] = new Monoid[TypedPipe[T]] {
+  implicit def typedPipeMonoid[T](implicit m: Quoted): Monoid[TypedPipe[T]] = new Monoid[TypedPipe[T]] {
     def zero = TypedPipe.empty
     def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
       left ++ right
@@ -140,11 +143,11 @@ object TypedPipe extends Serializable {
 
    final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
    final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
-     def viaHashJoin: TypedPipe[(T, U)] =
+     def viaHashJoin(implicit m: Quoted): TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values
    }
    final case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
-     def viaHashJoin: TypedPipe[(T, U)] =
+     def viaHashJoin(implicit m: Quoted): TypedPipe[(T, U)] =
         right match {
           case EmptyValue =>
             EmptyTypedPipe
@@ -167,10 +170,10 @@ object TypedPipe extends Serializable {
    final case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
    final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
    final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
-   final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
+   final case class SourcePipe[T](source: TypedSource[T], projections: Option[Projections]) extends TypedPipe[T]
    final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
    final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
-   final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
+   final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean, quoted: Option[Quoted]) extends TypedPipe[T]
    final case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
 
    case object EmptyTypedPipe extends TypedPipe[Nothing]
@@ -179,8 +182,8 @@ object TypedPipe extends Serializable {
       /**
        * If any errors happen below this line, but before a groupBy, write to a TypedSink
        */
-      def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
-        TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withLine
+      def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T], m: Quoted): TypedPipe[T] =
+        TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withQuoted
    }
 }
 
@@ -193,21 +196,16 @@ object TypedPipe extends Serializable {
  */
 sealed abstract class TypedPipe[+T] extends Serializable {
 
-  protected def withLine: TypedPipe[T] =
-    LineNumber.tryNonScaldingCaller.map(_.toString) match {
-      case None =>
-        this
-      case Some(desc) =>
-        TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
-    }
+  protected def withQuoted(implicit m: Quoted): TypedPipe[T] =
+    TypedPipe.WithDescriptionTypedPipe(this, m.toString, true, Some(m)) // deduplicate line numbers
 
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
    * {code for { l <- list1; l2 <- list2 } yield (l, l2) }
    */
-  def cross[U](tiny: TypedPipe[U]): TypedPipe[(T, U)] =
-    TypedPipe.CrossPipe(this, tiny).withLine
+  def cross[U](tiny: TypedPipe[U])(implicit m: Quoted): TypedPipe[(T, U)] =
+    TypedPipe.CrossPipe(this, tiny).withQuoted
 
   /**
    * This is the fundamental mapper operation.
@@ -222,26 +220,26 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * (by returning 1 item per input), it can be used to explode 1 input into many outputs,
    * or even a combination of all of the above at once.
    */
-  def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
-    TypedPipe.FlatMapped(this, f).withLine
+  def flatMap[U](f: T => TraversableOnce[U])(implicit m: Quoted): TypedPipe[U] =
+    TypedPipe.FlatMapped(this, f).withQuoted
 
   /**
    * Export back to a raw cascading Pipe. useful for interop with the scalding
    * Fields API or with Cascading code.
    * Avoid this if possible. Prefer to write to TypedSink.
    */
-  final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+  final def toPipe[U >: T](fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U], m: Quoted): Pipe =
     // we have to be cafeful to pass the setter we want since a low priority implicit can always be
     // found :(
-    cascading_backend.CascadingBackend.toPipe[U](withLine, fieldNames)(flowDef, mode, setter)
+    cascading_backend.CascadingBackend.toPipe[U](withQuoted, fieldNames)(flowDef, mode, setter)
 
   /**
    * Merge two TypedPipes (no order is guaranteed)
    * This is only realized when a group (or join) is
    * performed.
    */
-  def ++[U >: T](other: TypedPipe[U]): TypedPipe[U] =
-    TypedPipe.MergedTypedPipe(this, other).withLine
+  def ++[U >: T](other: TypedPipe[U])(implicit m: Quoted): TypedPipe[U] =
+    TypedPipe.MergedTypedPipe(this, other).withQuoted
 
   /**
    * Aggregate all items in this pipe into a single ValuePipe
@@ -251,7 +249,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *
    * Same as groupAll.aggregate.values
    */
-  def aggregate[B, C](agg: Aggregator[T, B, C]): ValuePipe[C] =
+  def aggregate[B, C](agg: Aggregator[T, B, C])(implicit m: Quoted): ValuePipe[C] =
     ComputedValue(groupAll.aggregate(agg).values)
 
   /**
@@ -259,13 +257,13 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * in some sense, this is the dual of groupAll
    */
   @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
-  def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] =
+  def asKeys[U >: T](implicit ord: Ordering[U], m: Quoted): Grouped[U, Unit] =
     map(WithConstant(())).group
 
   /**
    * If T <:< U, then this is safe to treat as TypedPipe[U] due to covariance
    */
-  protected def raiseTo[U](implicit ev: T <:< U): TypedPipe[U] =
+  protected def raiseTo[U](implicit ev: T <:< U, m: Quoted): TypedPipe[U] =
     SubTypes.fromEv(ev).liftCo[TypedPipe](this)
 
   /**
@@ -274,22 +272,22 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *   collect { case Some(x) => fn(x) }
    * }
    */
-  def collect[U](fn: PartialFunction[T, U]): TypedPipe[U] =
+  def collect[U](fn: PartialFunction[T, U])(implicit m: Quoted): TypedPipe[U] =
     filter(PartialFunctionToFilter(fn)).map(fn)
 
   /**
    * Attach a ValuePipe to each element this TypedPipe
    */
-  def cross[V](p: ValuePipe[V]): TypedPipe[(T, V)] =
-    TypedPipe.CrossValue(this, p).withLine
+  def cross[V](p: ValuePipe[V])(implicit m: Quoted): TypedPipe[(T, V)] =
+    TypedPipe.CrossValue(this, p).withQuoted
 
   /** prints the current pipe to stdout */
-  def debug: TypedPipe[T] =
-    TypedPipe.DebugPipe(this).withLine
+  def debug(implicit m: Quoted): TypedPipe[T] =
+    TypedPipe.DebugPipe(this).withQuoted
 
   /** adds a description to the pipe */
   def withDescription(description: String): TypedPipe[T] =
-    TypedPipe.WithDescriptionTypedPipe[T](this, description, false)
+    TypedPipe.WithDescriptionTypedPipe[T](this, description, false, None)
 
   /**
    * Returns the set of distinct elements in the TypedPipe
@@ -306,14 +304,14 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * The latter creates 1 map/reduce phase rather than 2
    */
   @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
-  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
-    asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
+  def distinct(implicit ord: Ordering[_ >: T], m: Quoted): TypedPipe[T] =
+    asKeys(ord.asInstanceOf[Ordering[T]], m).sum.keys
 
   /**
    * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.")
-  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U]): TypedPipe[T] = {
+  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U], m: Quoted): TypedPipe[T] = {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
 
@@ -326,14 +324,14 @@ sealed abstract class TypedPipe[+T] extends Serializable {
   }
 
   /** Merge two TypedPipes of different types by using Either */
-  def either[R](that: TypedPipe[R]): TypedPipe[Either[T, R]] =
+  def either[R](that: TypedPipe[R])(implicit m: Quoted): TypedPipe[Either[T, R]] =
     map(AsLeft()) ++ (that.map(AsRight()))
 
   /**
    * Sometimes useful for implementing custom joins with groupBy + mapValueStream when you know
    * that the value/key can fit in memory. Beware.
    */
-  def eitherValues[K, V, R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K, V)): TypedPipe[(K, Either[V, R])] =
+  def eitherValues[K, V, R](that: TypedPipe[(K, R)])(implicit ev: T <:< (K, V), m: Quoted): TypedPipe[(K, Either[V, R])] =
     mapValues(AsLeft[V, R]()) ++ (that.mapValues(AsRight[V, R]()))
 
   /**
@@ -346,34 +344,34 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *
    * Ideally the planner would see this
    */
-  def fork: TypedPipe[T] = TypedPipe.Fork(this).withLine
+  def fork(implicit m: Quoted): TypedPipe[T] = TypedPipe.Fork(this).withQuoted
 
   /**
    * limit the output to at most count items, if at least count items exist.
    */
-  def limit(count: Int): TypedPipe[T] =
+  def limit(count: Int)(implicit m: Quoted): TypedPipe[T] =
     groupAll.bufferedTake(count).values
 
   /** Transform each element via the function f */
-  def map[U](f: T => U): TypedPipe[U] =
-    TypedPipe.Mapped(this, f).withLine
+  def map[U](f: T => U)(implicit m: Quoted): TypedPipe[U] =
+    TypedPipe.Mapped(this, f).withQuoted
 
   /** Transform only the values (sometimes requires giving the types due to scala type inference) */
-  def mapValues[K, V, U](f: V => U)(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
-    TypedPipe.MapValues(raiseTo[(K, V)], f).withLine
+  def mapValues[K, V, U](f: V => U)(implicit ev: T <:< (K, V), m: Quoted): TypedPipe[(K, U)] =
+    TypedPipe.MapValues(raiseTo[(K, V)], f).withQuoted
 
   /** Similar to mapValues, but allows to return a collection of outputs for each input value */
-  def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V)): TypedPipe[(K, U)] =
-    TypedPipe.FlatMapValues(raiseTo[(K, V)], f).withLine
+  def flatMapValues[K, V, U](f: V => TraversableOnce[U])(implicit ev: T <:< (K, V), m: Quoted): TypedPipe[(K, U)] =
+    TypedPipe.FlatMapValues(raiseTo[(K, V)], f).withQuoted
 
   /**
    * Keep only items that satisfy this predicate
    */
-  def filter(f: T => Boolean): TypedPipe[T] =
-    TypedPipe.Filter(this, f).withLine
+  def filter(f: T => Boolean)(implicit m: Quoted): TypedPipe[T] =
+    TypedPipe.Filter(this, f).withQuoted
 
   // This is just to appease for comprehension
-  def withFilter(f: T => Boolean): TypedPipe[T] = filter(f)
+  def withFilter(f: T => Boolean)(implicit m: Quoted): TypedPipe[T] = filter(f)
 
   /**
    * If T is a (K, V) for some V, then we can use this function to filter.
@@ -381,25 +379,25 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *
    * This is here to match the function in KeyedListLike, where it is optimized
    */
-  def filterKeys[K, V](fn: K => Boolean)(implicit ev: T <:< (K, V)): TypedPipe[(K, V)] =
-    TypedPipe.FilterKeys(raiseTo[(K, V)], fn).withLine
+  def filterKeys[K, V](fn: K => Boolean)(implicit ev: T <:< (K, V), m: Quoted): TypedPipe[(K, V)] =
+    TypedPipe.FilterKeys(raiseTo[(K, V)], fn).withQuoted
 
   /**
    * Keep only items that don't satisfy the predicate.
    * `filterNot` is the same as `filter` with a negated predicate.
    */
-  def filterNot(f: T => Boolean): TypedPipe[T] =
+  def filterNot(f: T => Boolean)(implicit m: Quoted): TypedPipe[T] =
     filter(!f(_))
 
   /** flatten an Iterable */
-  def flatten[U](implicit ev: T <:< TraversableOnce[U]): TypedPipe[U] =
+  def flatten[U](implicit ev: T <:< TraversableOnce[U], m: Quoted): TypedPipe[U] =
     raiseTo[TraversableOnce[U]].flatMap(Identity[TraversableOnce[U]]())
 
   /**
    * flatten just the values
    * This is more useful on KeyedListLike, but added here to reduce assymmetry in the APIs
    */
-  def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U])): TypedPipe[(K, U)] =
+  def flattenValues[K, U](implicit ev: T <:< (K, TraversableOnce[U]), m: Quoted): TypedPipe[(K, U)] =
     flatMapValues[K, TraversableOnce[U], U](Identity[TraversableOnce[U]]())
 
   /**
@@ -408,31 +406,31 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * This is useful for experts who see some heuristic of the planner causing
    * slower performance.
    */
-  def forceToDisk: TypedPipe[T] =
-    TypedPipe.ForceToDisk(this).withLine
+  def forceToDisk(implicit m: Quoted): TypedPipe[T] =
+    TypedPipe.ForceToDisk(this).withQuoted
 
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
    */
-  def group[K, V](implicit ev: <:<[T, (K, V)], ord: Ordering[K]): Grouped[K, V] =
+  def group[K, V](implicit ev: <:<[T, (K, V)], ord: Ordering[K], m: Quoted): Grouped[K, V] =
     //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
     //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
     //automatically group.  We cast because it is safe to do so, and we need to convert to K,V, but
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(raiseTo[(K, V)].withLine)
+    Grouped(raiseTo[(K, V)].withQuoted)
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] =
-    groupBy(Constant(()))(UnitOrderedSerialization).withReducers(1)
+  def groupAll(implicit m: Quoted): Grouped[Unit, T] =
+    groupBy(Constant(()))(UnitOrderedSerialization, m).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
-  def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
+  def groupBy[K](g: T => K)(implicit ord: Ordering[K], m: Quoted): Grouped[K, T] =
   map(MakeKey(g)).group
 
   /** Group using an explicit Ordering on the key. */
-  def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
+  def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)], m: Quoted): Grouped[K, V] = group(ev, ord, m)
 
   /**
    * Forces a shuffle by randomly assigning each item into one
@@ -443,8 +441,8 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *
    * You probably want shard if you are just forcing a shuffle.
    */
-  def groupRandomly(partitions: Int): Grouped[Int, T] =
-    groupBy(RandomNextInt(123, partitions))(TypedPipe.identityOrdering)
+  def groupRandomly(partitions: Int)(implicit m: Quoted): Grouped[Int, T] =
+    groupBy(RandomNextInt(123, partitions))(TypedPipe.identityOrdering, m)
       .withReducers(partitions)
 
   /**
@@ -452,7 +450,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *
    * Sometimes what you really want is a groupBy in these cases.
    */
-  def partition(p: T => Boolean): (TypedPipe[T], TypedPipe[T]) = {
+  def partition(p: T => Boolean)(implicit m: Quoted): (TypedPipe[T], TypedPipe[T]) = {
     val forked = fork
     (forked.filter(p), forked.filterNot(p))
   }
@@ -463,14 +461,14 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * does not require a reduce step.
    * This method makes sure to fix the seed, otherwise restarts cause subtle errors.
    */
-  def sample(fraction: Double): TypedPipe[T] = sample(fraction, defaultSeed)
+  def sample(fraction: Double)(implicit m: Quoted): TypedPipe[T] = sample(fraction, defaultSeed)
 
   /**
    * Sample a fraction (between 0 and 1) uniformly independently at random each element of the pipe with
    * a given seed.
    * Does not require a reduce step.
    */
-  def sample(fraction: Double, seed: Long): TypedPipe[T] = {
+  def sample(fraction: Double, seed: Long)(implicit m: Quoted): TypedPipe[T] = {
     require(0.0 <= fraction && fraction <= 1.0, s"got $fraction which is an invalid fraction")
     filter(RandomFilter(seed, fraction))
   }
@@ -489,21 +487,21 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * The main use case is to reduce the values down before a key expansion
    * such as is often done in a data cube.
    */
-  def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V]): TypedPipe[(K, V)] =
-    TypedPipe.SumByLocalKeys(raiseTo[(K, V)], sg).withLine
+  def sumByLocalKeys[K, V](implicit ev: T <:< (K, V), sg: Semigroup[V], m: Quoted): TypedPipe[(K, V)] =
+    TypedPipe.SumByLocalKeys(raiseTo[(K, V)], sg).withQuoted
 
   /**
    * Used to force a shuffle into a given size of nodes.
    * Only use this if your mappers are taking far longer than
    * the time to shuffle.
    */
-  def shard(partitions: Int): TypedPipe[T] = groupRandomly(partitions).forceToReducers.values
+  def shard(partitions: Int)(implicit m: Quoted): TypedPipe[T] = groupRandomly(partitions).forceToReducers.values
 
   /**
    * Reasonably common shortcut for cases of total associative/commutative reduction
    * returns a ValuePipe with only one element if there is any input, otherwise EmptyValue.
    */
-  def sum[U >: T](implicit plus: Semigroup[U]): ValuePipe[U] = {
+  def sum[U >: T](implicit plus: Semigroup[U], m: Quoted): ValuePipe[U] = {
     // every 1000 items, compact.
     lazy implicit val batchedSG: Semigroup[Batched[U]] = Batched.compactingSemigroup[U](1000)
     // TODO: literals like this defeat caching in the planner
@@ -521,7 +519,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
   /**
    * Reasonably common shortcut for cases of associative/commutative reduction by Key
    */
-  def sumByKey[K, V](implicit ev: T <:< (K, V), ord: Ordering[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
+  def sumByKey[K, V](implicit ev: T <:< (K, V), ord: Ordering[K], plus: Semigroup[V], m: Quoted): UnsortedGrouped[K, V] =
     group[K, V].sum[V]
 
   /**
@@ -548,9 +546,9 @@ sealed abstract class TypedPipe[+T] extends Serializable {
     Execution.toIterable(this)
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
-  def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
+  def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U], m: Quoted): Pipe = {
     val setter = up.newSetter(fieldNames)
-    toPipe[U](fieldNames)(fd, mode, setter)
+    toPipe[U](fieldNames)(fd, mode, setter, m)
   }
 
   /**
@@ -560,16 +558,16 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * to avoid it. Execution also has onComplete that can run when an Execution
    * has completed.
    */
-  def onComplete(fn: () => Unit): TypedPipe[T] =
-    TypedPipe.WithOnComplete[T](this, fn).withLine
+  def onComplete(fn: () => Unit)(implicit m: Quoted): TypedPipe[T] =
+    TypedPipe.WithOnComplete[T](this, fn).withQuoted
 
   /**
    * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink)
    * you need to do something like: toPipe(fieldNames).write(dest)
    * @return a pipe equivalent to the current pipe.
    */
-  def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    dest.writeFrom(toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter))
+  def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode, m: Quoted): TypedPipe[T] = {
+    dest.writeFrom(toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter, m))
     // We want to fork after this point
     fork
   }
@@ -604,22 +602,22 @@ sealed abstract class TypedPipe[+T] extends Serializable {
     }
 
   /** Just keep the keys, or ._1 (if this type is a Tuple2) */
-  def keys[K](implicit ev: <:<[T, (K, Any)]): TypedPipe[K] =
+  def keys[K](implicit ev: <:<[T, (K, Any)], m: Quoted): TypedPipe[K] =
     raiseTo[(K, Any)].map(GetKey())
 
   /** swap the keys with the values */
-  def swap[K, V](implicit ev: <:<[T, (K, V)]): TypedPipe[(V, K)] =
+  def swap[K, V](implicit ev: <:<[T, (K, V)], m: Quoted): TypedPipe[(V, K)] =
     raiseTo[(K, V)].map(Swap())
 
   /** Just keep the values, or ._2 (if this type is a Tuple2) */
-  def values[V](implicit ev: <:<[T, (Any, V)]): TypedPipe[V] =
+  def values[V](implicit ev: <:<[T, (Any, V)], m: Quoted): TypedPipe[V] =
     raiseTo[(Any, V)].map(GetValue())
 
   /**
    * ValuePipe may be empty, so, this attaches it as an Option
    * cross is the same as leftCross(p).collect { case (t, Some(v)) => (t, v) }
    */
-  def leftCross[V](p: ValuePipe[V]): TypedPipe[(T, Option[V])] =
+  def leftCross[V](p: ValuePipe[V])(implicit m: Quoted): TypedPipe[(T, Option[V])] =
     p match {
       case EmptyValue => map(WithConstant(None))
       case LiteralValue(v) => map(WithConstant(Some(v)))
@@ -627,7 +625,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
     }
 
   /** uses hashJoin but attaches None if thatPipe is empty */
-  def leftCross[V](thatPipe: TypedPipe[V]): TypedPipe[(T, Option[V])] =
+  def leftCross[V](thatPipe: TypedPipe[V])(implicit m: Quoted): TypedPipe[(T, Option[V])] =
     map(((), _)).hashLeftJoin(thatPipe.groupAll).values
 
   /**
@@ -641,7 +639,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *  }
    * }
    */
-  def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V): TypedPipe[V] =
+  def mapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => V)(implicit m: Quoted): TypedPipe[V] =
     leftCross(value).map(TuplizeFunction(f))
 
   /**
@@ -655,7 +653,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *  }
    * }
    */
-  def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V]): TypedPipe[V] =
+  def flatMapWithValue[U, V](value: ValuePipe[U])(f: (T, Option[U]) => TraversableOnce[V])(implicit m: Quoted): TypedPipe[V] =
     leftCross(value).flatMap(TuplizeFunction(f))
 
   /**
@@ -669,7 +667,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    *  }
    * }
    */
-  def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean): TypedPipe[T] =
+  def filterWithValue[U](value: ValuePipe[U])(f: (T, Option[U]) => Boolean)(implicit m: Quoted): TypedPipe[T] =
     leftCross(value).filter(TuplizeFunction(f)).map(GetKey())
 
   /**
@@ -682,21 +680,21 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * The iterable on the right is over all elements with a matching key K, and it may be empty
    * if there are no values for this key K.
    */
-  def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, R)] =
-    TypedPipe.HashCoGroup(ev(this), smaller, joiner).withLine
+  def hashCogroup[K, V, W, R](smaller: HashJoinable[K, W])(joiner: (K, V, Iterable[W]) => Iterator[R])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)], m: Quoted): TypedPipe[(K, R)] =
+    TypedPipe.HashCoGroup(ev(this), smaller, joiner).withQuoted
 
   /** Do an inner-join without shuffling this TypedPipe, but replicating argument to all tasks */
-  def hashJoin[K, V, W](smaller: HashJoinable[K, W])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, (V, W))] =
+  def hashJoin[K, V, W](smaller: HashJoinable[K, W])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)], m: Quoted): TypedPipe[(K, (V, W))] =
     hashCogroup[K, V, W, (V, W)](smaller)(Joiner.hashInner2)
 
   /** Do an leftjoin without shuffling this TypedPipe, but replicating argument to all tasks */
-  def hashLeftJoin[K, V, W](smaller: HashJoinable[K, W])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)]): TypedPipe[(K, (V, Option[W]))] =
+  def hashLeftJoin[K, V, W](smaller: HashJoinable[K, W])(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)], m: Quoted): TypedPipe[(K, (V, Option[W]))] =
     hashCogroup[K, V, W, (V, Option[W])](smaller)(Joiner.hashLeft2)
 
   /**
    * For each element, do a map-side (hash) left join to look up a value
    */
-  def hashLookup[K >: T, V](grouped: HashJoinable[K, V]): TypedPipe[(K, Option[V])] =
+  def hashLookup[K >: T, V](grouped: HashJoinable[K, V])(implicit m: Quoted): TypedPipe[(K, Option[V])] =
     map(WithConstant(()))
       .hashLeftJoin(grouped)
       .map(DropValue1())
@@ -721,7 +719,8 @@ sealed abstract class TypedPipe[+T] extends Serializable {
     delta: Double = 0.01, //5 rows (= 5 hashes)
     seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
       serialization: K => Array[Byte],
-      ordering: Ordering[K]): Sketched[K, V] =
+      ordering: Ordering[K],
+      m: Quoted): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
 }
 
@@ -731,10 +730,10 @@ sealed abstract class TypedPipe[+T] extends Serializable {
  * import Syntax.joinOnMappablePipe
  */
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
-  def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
-  def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
-  def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
-  def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
+  def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K], m: Quoted): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
+  def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K], m: Quoted): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
+  def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K], m: Quoted): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
+  def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K], m: Quoted): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
 }
 
 /**

@@ -24,6 +24,7 @@ import scala.language.experimental.macros
 
 // This was a bad design choice, we should have just put these in the CMSHasher object
 import CMSHasherImplicits._
+import com.twitter.scalding.quotation.Quoted
 
 /**
  * This class is generally only created by users
@@ -45,7 +46,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   lazy val sketch: TypedPipe[CMS[Bytes]] = {
     // every 10k items, compact into a CMS to prevent very slow mappers
     lazy implicit val batchedSG: com.twitter.algebird.Semigroup[Batched[CMS[Bytes]]] = Batched.compactingSemigroup[CMS[Bytes]](10000)
-
+    implicit val q: Quoted = Quoted.internal
     pipe
       .map { case (k, _) => ((), Batched(cms.create(Bytes(serialize(k))))) }
       .sumByLocalKeys
@@ -83,6 +84,8 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   extends MustHaveReducers {
 
   def reducers = Some(numReducers)
+
+  private implicit val q: Quoted = Quoted.internal
 
   //the most of any one reducer we want to try to take up with a single key
   private val maxReducerFraction = 0.1
