@@ -440,7 +440,7 @@ class ExecutionTest extends WordSpec with Matchers {
     "zip does not duplicate pure counters" in {
       val c1 = {
         val e1 = TypedPipe.from(0 until 100)
-          .count("scalding", "test")
+          .tallyAll("scalding", "test")
           .writeExecution(source.NullSink)
 
         e1.zip(e1)
@@ -452,7 +452,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val c2 = {
         val e2 = TypedPipe.from(0 until 100)
-          .count("scalding", "test")
+          .tallyAll("scalding", "test")
           .writeExecution(source.NullSink)
 
         e2.flatMap(Execution.from(_)).zip(e2)

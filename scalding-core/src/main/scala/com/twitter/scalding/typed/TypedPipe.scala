@@ -185,22 +185,26 @@ object TypedPipe extends Serializable {
    }
 
 
-  private case class CountByFn[A](group: String, fn: A => String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
+  private case class TallyByFn[A](group: String, fn: A => String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
     def apply(a: A) = (a, (((group, fn(a)), 1L)) :: Nil)
   }
-  private case class CountFn[A](group: String, counter: String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
+  private case class TallyFn[A](group: String, counter: String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
     private[this] val inc = ((group, counter), 1L) :: Nil
     def apply(a: A) = (a, inc)
   }
-  private case class CountLeft[A, B](group: String, fn: A => Either[String, B]) extends Function1[A, (List[B], Iterable[((String, String), Long)])] {
+  private case class TallyLeft[A, B](group: String, fn: A => Either[String, B]) extends Function1[A, (List[B], Iterable[((String, String), Long)])] {
     def apply(a: A) = fn(a) match {
       case Right(b) => (b :: Nil, Nil)
       case Left(cnt) => (Nil, ((group, cnt), 1L) :: Nil)
     }
   }
 
-  implicit class CounterPipeEnrichment[A, B <: Iterable[((String, String), Long)]](val pipe: TypedPipe[(A, B)]) extends AnyVal {
-    def incrementCounters: TypedPipe[A] =
+  implicit class TallyEnrichment[A, B <: Iterable[((String, String), Long)]](val pipe: TypedPipe[(A, B)]) extends AnyVal {
+    /**
+     * Increment hadoop counters with a (group, counter) by the amount in the second
+     * part of the tuple, and remove that second part
+     */
+    def tally: TypedPipe[A] =
       CounterPipe(pipe)
   }
 }
@@ -227,14 +231,16 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * The counter group will be the same for each item, the counter name
    * is determined by the result of the `fn` passed in.
    */
-  def countBy(group: String)(fn: T => String): TypedPipe[T] =
-    map(TypedPipe.CountByFn(group, fn)).incrementCounters
+  def tallyBy(group: String)(fn: T => String): TypedPipe[T] =
+    map(TypedPipe.TallyByFn(group, fn)).tally
 
   /**
    * Increment a specific diagnostic counter by 1 for each item in the pipe.
+   *
+   * this is the same as tallyBy(group)(_ => counter)
    */
-  def count(group: String, counter: String): TypedPipe[T] =
-    map(TypedPipe.CountFn(group, counter)).incrementCounters
+  def tallyAll(group: String, counter: String): TypedPipe[T] =
+    map(TypedPipe.TallyFn(group, counter)).tally
 
   /**
    * Increment a diagnostic counter for each failure. This is like map,
@@ -242,8 +248,9 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * and a `Left[String]` for each failure, with the String describing the failure.
    * Each failure will be counted, and the result is just the successes.
    */
-  def countLeft[B](group: String)(fn: T => Either[String, B]): TypedPipe[B] =
-    map(TypedPipe.CountLeft(group, fn)).incrementCounters.flatten
+  def tallyLeft[B](group: String)(fn: T => Either[String, B]): TypedPipe[B] =
+    map(TypedPipe.TallyLeft(group, fn)).tally.flatten
+
   /**
    * Implements a cross product.  The right side should be tiny
    * This gives the same results as
