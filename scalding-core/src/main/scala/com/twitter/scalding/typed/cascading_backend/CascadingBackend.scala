@@ -173,10 +173,13 @@ object CascadingBackend {
             go(fk)
           case (f@Filter(_, _), rec) =>
             // hand holding for type inference
-            def go[T1 <: T](f: Filter[T1]): CascadingPipe[T] =
-              // TODO, maybe it is better to tell cascading we are
-              // doing a filter here: https://github.com/cwensel/cascading/blob/wip-4.0/cascading-core/src/main/java/cascading/operation/Filter.java
-              rec(FlatMapped(f.input, FlatMappedFn.fromFilter(f.fn)))
+            def go[T1 <: T](f: Filter[T1]): CascadingPipe[T] = {
+              val Filter(input, fn) = f
+              val CascadingPipe(pipe, initF, fd, conv) = rec(input)
+              // This does not need a setter, which is nice.
+              val fpipe = RichPipe(pipe).filter[T1](initF)(fn)(TupleConverter.asSuperConverter(conv))
+              CascadingPipe[T](fpipe, initF, fd, conv)
+            }
 
             go(f)
           case (f@FlatMapValues(_, _), rec) =>
@@ -209,9 +212,15 @@ object CascadingBackend {
               rec(Mapped[(K, A), (K, B)](fn.input, MapValuesToMap(fn.fn)))
 
             go(f)
-          case (Mapped(input, fn), rec) =>
-            // TODO: a native scalding Map operation would be slightly more efficient here
-            rec(FlatMapped(input, FlatMappedFn.fromMap(fn)))
+          case (m@Mapped(_, _), rec) =>
+            def go[A, B <: T](m: Mapped[A, B]): CascadingPipe[T] = {
+              val Mapped(input, fn) = m
+              val CascadingPipe(pipe, initF, fd, conv) = rec(input)
+              val fmpipe = RichPipe(pipe).mapTo[A, T](initF -> f0)(fn)(TupleConverter.asSuperConverter(conv), singleSetter)
+              CascadingPipe.single[B](fmpipe, fd)
+            }
+
+            go(m)
 
           case (m@MergedTypedPipe(_, _), rec) =>
             OptimizationRules.unrollMerge(m) match {
