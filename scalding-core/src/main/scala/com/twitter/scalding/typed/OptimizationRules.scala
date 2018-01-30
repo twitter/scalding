@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -35,6 +35,8 @@ object OptimizationRules {
       new Memoize.RecursiveK[TypedPipe, LiteralPipe] {
 
         def toFunction[A] = {
+          case (cp: CounterPipe[a], f) =>
+            Unary(f(cp.pipe), CounterPipe(_: TypedPipe[(a, Iterable[((String, String), Long)])]))
           case (c: CrossPipe[a, b], f) =>
             Binary(f(c.left), f(c.right), CrossPipe(_: TypedPipe[a], _: TypedPipe[b]))
           case (cv@CrossValue(_, _), f) =>
@@ -347,9 +349,10 @@ object OptimizationRules {
             case h :: tail => loop(h, tail, acc)
           }
         case notMerge =>
+          val acc1 = notMerge :: acc
           todo match {
-            case Nil => (first :: acc).reverse
-            case h :: tail => loop(h, tail, first :: acc)
+            case Nil => acc1.reverse
+            case h :: tail => loop(h, tail, acc1)
           }
       }
 
@@ -457,6 +460,7 @@ object OptimizationRules {
       }
 
     def apply[T](on: Dag[TypedPipe]) = {
+      case CounterPipe(a) if needsFork(on, a) => maybeFork(on, a).map(CounterPipe(_))
       case CrossPipe(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossPipe(_, b))
       case CrossPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(CrossPipe(a, _))
       case CrossValue(a, b) if needsFork(on, a) => maybeFork(on, a).map(CrossValue(_, b))
@@ -519,6 +523,9 @@ object OptimizationRules {
 
   /**
    * a.filter(f).filter(g) == a.filter { x => f(x) && g(x) }
+   *
+   * also if a filterKeys follows a filter, we might as well
+   * compose because we can't push the filterKeys up higher
    */
   object ComposeFilter extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -538,6 +545,8 @@ object OptimizationRules {
         go(f)
       case FilterKeys(FilterKeys(in, fn0), fn1) =>
         Some(FilterKeys(in, ComposedFilterFn(fn0, fn1)))
+      case FilterKeys(Filter(in, fn0), fn1) =>
+        Some(Filter(in, ComposedFilterFn(fn0, FilterKeysToFilter(fn1))))
       case _ => None
     }
   }
@@ -599,6 +608,9 @@ object OptimizationRules {
    *
    * This is a rule you may want to apply after having
    * composed all the filters first
+   *
+   * This may be a deoptimization on some platforms that have native filters since
+   * you could avoid the Iterator boxing in that case.
    */
   object ComposeFilterMap extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -639,6 +651,31 @@ object OptimizationRules {
         go(f)
       case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
         WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
+    }
+  }
+
+  /**
+   * (a ++ a) == a.flatMap { t => List(t, t) }
+   */
+  object DiamondToFlatMap extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case m@MergedTypedPipe(_, _) =>
+        val pipes = unrollMerge(m)
+        val flatMapped =
+          pipes.groupBy { tp => tp: TypedPipe[T] }
+            .iterator
+            .map {
+              case (p, Nil) => sys.error(s"unreachable: $p has no values")
+              case (p, _ :: Nil) => p // just once
+              case (p, repeated) =>
+                val rsize = repeated.size
+                p.flatMap(Iterator.fill(rsize)(_))
+            }
+            .toVector
+
+        if (pipes.size == flatMapped.size) None // we didn't reduce the number of merges
+        else Some(TypedPipe.typedPipeMonoid.sum(flatMapped))
+      case _ => None
     }
   }
 
@@ -829,6 +866,33 @@ object OptimizationRules {
       case IterablePipe(it) if it.isEmpty => EmptyTypedPipe
     }
   }
+
+  /**
+   * This is useful on map-reduce like systems to avoid
+   * serializing data into the system that you are going
+   * to then filter
+   */
+  object FilterLocally extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case f@Filter(_, _) =>
+        def go[T1 <: T](f: Filter[T1]): Option[TypedPipe[T]] =
+          f match {
+            case Filter(IterablePipe(iter), fn) =>
+              Some(IterablePipe(iter.filter(fn)))
+            case _ => None
+          }
+        go(f)
+      case f@FilterKeys(_, _) =>
+        def go[K, V, T >: (K, V)](f: FilterKeys[K, V]): Option[TypedPipe[T]] =
+          f match {
+            case FilterKeys(IterablePipe(iter), fn) =>
+              Some(IterablePipe(iter.filter { case (k, _) => fn(k) }))
+            case _ => None
+          }
+        go(f)
+      case _ => None
+    }
+  }
   /**
    * ForceToDisk before hashJoin, this makes sure any filters
    * have been applied
@@ -888,7 +952,6 @@ object OptimizationRules {
       List(
         ComposeMapFlatMap,
         ComposeFilterFlatMap,
-        ComposeFilterMap,
         ComposeFlatMap))
 
   val simplifyEmpty: Rule[TypedPipe] =
@@ -906,12 +969,12 @@ object OptimizationRules {
    */
   val standardMapReduceRules: List[Rule[TypedPipe]] =
     List(
-      // phase 0, add explicit forks
+      // phase 0, add explicit forks to not duplicate pipes on fanout below
       AddExplicitForks,
-      // phase 1, compose flatMap/map, move descriptions down etc...
-      composeSame.orElse(DescribeLater),
-      // phase 2, combine different kinds of map operations into flatMaps
-      composeIntoFlatMap.orElse(simplifyEmpty),
-      // phase 3, add any explicit forces to the optimized graph
+      // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
+      composeSame.orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
+      // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
+      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap),
+      // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 }

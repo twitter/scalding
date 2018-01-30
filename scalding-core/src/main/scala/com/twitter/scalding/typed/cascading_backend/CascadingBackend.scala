@@ -10,7 +10,7 @@ import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
   CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowStateMap, GroupBuilder,
-  HadoopMode, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
+  HadoopMode, IncrementCounters, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
 import com.twitter.scalding.typed._
@@ -155,6 +155,14 @@ object CascadingBackend {
     Memoize.functionK[TypedPipe, CascadingPipe](
       new Memoize.RecursiveK[TypedPipe, CascadingPipe] {
         def toFunction[T] = {
+          case (cp@CounterPipe(_), rec) =>
+            def go[A](cp: CounterPipe[A]): CascadingPipe[A] = {
+              val CascadingPipe(pipe0, initF, fd, conv) = rec(cp.pipe)
+              val cpipe = RichPipe(pipe0)
+                .eachTo(initF -> f0)(new IncrementCounters[A](_, TupleConverter.asSuperConverter(conv)))
+              CascadingPipe.single[A](cpipe, fd)
+            }
+            go(cp)
           case (cp@CrossPipe(_, _), rec) =>
             rec(cp.viaHashJoin)
           case (cv@CrossValue(_, _), rec) =>
@@ -173,10 +181,13 @@ object CascadingBackend {
             go(fk)
           case (f@Filter(_, _), rec) =>
             // hand holding for type inference
-            def go[T1 <: T](f: Filter[T1]): CascadingPipe[T] =
-              // TODO, maybe it is better to tell cascading we are
-              // doing a filter here: https://github.com/cwensel/cascading/blob/wip-4.0/cascading-core/src/main/java/cascading/operation/Filter.java
-              rec(FlatMapped(f.input, FlatMappedFn.fromFilter(f.fn)))
+            def go[T1 <: T](f: Filter[T1]): CascadingPipe[T] = {
+              val Filter(input, fn) = f
+              val CascadingPipe(pipe, initF, fd, conv) = rec(input)
+              // This does not need a setter, which is nice.
+              val fpipe = RichPipe(pipe).filter[T1](initF)(fn)(TupleConverter.asSuperConverter(conv))
+              CascadingPipe[T](fpipe, initF, fd, conv)
+            }
 
             go(f)
           case (f@FlatMapValues(_, _), rec) =>
@@ -209,9 +220,15 @@ object CascadingBackend {
               rec(Mapped[(K, A), (K, B)](fn.input, MapValuesToMap(fn.fn)))
 
             go(f)
-          case (Mapped(input, fn), rec) =>
-            // TODO: a native scalding Map operation would be slightly more efficient here
-            rec(FlatMapped(input, FlatMappedFn.fromMap(fn)))
+          case (m@Mapped(_, _), rec) =>
+            def go[A, B <: T](m: Mapped[A, B]): CascadingPipe[T] = {
+              val Mapped(input, fn) = m
+              val CascadingPipe(pipe, initF, fd, conv) = rec(input)
+              val fmpipe = RichPipe(pipe).mapTo[A, T](initF -> f0)(fn)(TupleConverter.asSuperConverter(conv), singleSetter)
+              CascadingPipe.single[B](fmpipe, fd)
+            }
+
+            go(m)
 
           case (m@MergedTypedPipe(_, _), rec) =>
             OptimizationRules.unrollMerge(m) match {
@@ -310,18 +327,18 @@ object CascadingBackend {
    * should be highly likely to improve the graph.
    */
   def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
-    /**
-     * TODO:
-     * we need to have parity for the normal optimizations
-     * scalding has been applying in 0.17
-     *
-     */
-    def std(forceHash: Rule[TypedPipe]) = OptimizationRules.standardMapReduceRules :+
-      // add any explicit forces to the optimized graph
-      Rule.orElse(List(
-        forceHash,
-        OptimizationRules.RemoveDuplicateForceFork)
-      )
+
+    def std(forceHash: Rule[TypedPipe]) =
+      OptimizationRules.IgnoreNoOpGroup ::
+      (OptimizationRules.standardMapReduceRules :::
+        List(
+          OptimizationRules.FilterLocally, // after filtering, we may have filtered to nothing, lets see
+          OptimizationRules.simplifyEmpty,
+          // add any explicit forces to the optimized graph
+          Rule.orElse(List(
+            forceHash,
+            OptimizationRules.RemoveDuplicateForceFork)
+          )))
 
     config.getOptimizationPhases match {
       case Some(tryPhases) => tryPhases.get.phases
