@@ -17,18 +17,15 @@ package com.twitter.scalding.serialization
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-
-import com.twitter.scalding.DateRange
-import com.twitter.scalding.RichDate
-import com.twitter.scalding.Args
-
+import com.twitter.scalding.{ Args, CascadingTokenUpdater, DateRange, RichDate, Config => ScaldingConfig }
 import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
-import com.twitter.chill.{ SingletonSerializer, ScalaKryoInstantiator, KryoInstantiator }
+import com.twitter.chill.{ IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiator, SingletonSerializer }
 
 class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
   val useRefs = config.getBoolean("scalding.kryo.setreferences", false)
+  val cascadingSerializationTokens = config.get(ScaldingConfig.CascadingSerializationTokens)
 
   /**
    * TODO!!!
@@ -55,6 +52,16 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     newK.addDefaultSerializer(classOf[com.twitter.algebird.HLL], new HLLSerializer)
     // Don't serialize Boxed instances using Kryo.
     newK.addDefaultSerializer(classOf[com.twitter.scalding.serialization.Boxed[_]], new ThrowingSerializer)
+    newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.TypedPipe[_]], new SerializeAsUnit)
+    newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.ReduceStep[_, _, _]], new SerializeAsUnit)
+
+    // Register every boxed class so they are given cascading tokens
+    for {
+      boxedClass <- Boxed.allClasses
+    } {
+      newK.register(boxedClass, new ThrowingSerializer)
+    }
+
     /**
      * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
      * (which is its own bug), force using the fields serializer here
@@ -89,6 +96,40 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     val classLoader = Thread.currentThread.getContextClassLoader
     newK.setClassLoader(classLoader)
 
+    customRegistrar(newK)
+
+    /**
+     * Register any cascading tokenized classes not already registered
+     */
+    val tokenizedClasses =
+      CascadingTokenUpdater
+        .parseTokens(cascadingSerializationTokens)
+        .toList
+        .sorted // Go through this list in order the tokens were allocated
+
+    for {
+      (id, className) <- tokenizedClasses
+      clazz <- getClassOpt(className)
+      if !newK.alreadyRegistered(clazz)
+    } {
+      newK.register(clazz)
+    }
+
     newK
+  }
+
+  private def getClassOpt(name: String): Option[Class[_]] =
+    try {
+      Some(Class.forName(name))
+    } catch {
+      case _: ClassNotFoundException => None
+    }
+
+  /**
+   * If you override KryoHadoop, prefer to add registrations here instead of overriding [[newKryo]].
+   * That way, any additional default serializers will be used for registering cascading tokenized classes.
+   */
+  def customRegistrar: IKryoRegistrar = new IKryoRegistrar {
+    override def apply(k: Kryo): Unit = {}
   }
 }

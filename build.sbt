@@ -21,11 +21,12 @@ val avroVersion = "1.7.4"
 val bijectionVersion = "0.9.5"
 val cascadingAvroVersion = "2.1.2"
 val chillVersion = "0.8.4"
+val dagonVersion = "0.2.2"
 val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
 val hbaseVersion = "0.94.10"
-val hravenVersion = "0.9.17.t05"
+val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
@@ -46,9 +47,9 @@ val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencie
 val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   organization := "com.twitter",
 
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.11.11",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.1"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.3"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -56,7 +57,9 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   javacOptions in doc := Seq("-source", "1.6"),
 
-  wartremoverErrors in (Compile, compile) += Wart.OptionPartial,
+  wartremoverErrors in (Compile, compile) ++= Seq(
+    Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
+    Wart.Return, Wart.EitherProjectionPartial),
 
   libraryDependencies ++= Seq(
     "org.mockito" % "mockito-all" % "1.8.5" % "test",
@@ -71,7 +74,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     Opts.resolver.sonatypeSnapshots,
     Opts.resolver.sonatypeReleases,
     "Concurrent Maven Repo" at "http://conjars.org/repo",
-    "Twitter Maven" at "http://maven.twttr.com",
+    "Twitter Maven" at "https://maven.twttr.com",
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
   ),
 
@@ -101,6 +104,11 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       "-language:higherKinds",
       "-language:existentials"
     ),
+
+  scalacOptions in(Compile, doc) ++= Seq(scalaVersion.value).flatMap {
+    case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
+    case _ => Seq()
+  },
 
   /**
    * add linter for common scala issues:
@@ -208,6 +216,7 @@ lazy val scalding = Project(
  .aggregate(
   scaldingArgs,
   scaldingDate,
+  scaldingQuotation,
   scaldingCore,
   scaldingCommons,
   scaldingAvro,
@@ -218,6 +227,7 @@ lazy val scalding = Project(
   scaldingJson,
   scaldingJdbc,
   scaldingHadoopTest,
+  scaldingEstimatorsTest,
   scaldingDb,
   maple,
   executionTutorial,
@@ -233,6 +243,7 @@ lazy val scaldingAssembly = Project(
  .aggregate(
   scaldingArgs,
   scaldingDate,
+  scaldingQuotation,
   scaldingCore,
   scaldingCommons,
   scaldingAvro,
@@ -267,11 +278,13 @@ lazy val noPublishSettings = Seq(
 val ignoredModules = Set[String]("benchmarks")
 
 def youngestForwardCompatible(subProj: String) =
-  Some(subProj)
-    .filterNot(ignoredModules.contains(_))
-    .map {
-    s => "com.twitter" %% (s"scalding-$s") % "0.16.0"
-  }
+  None
+// Enable mima binary check back after releasing 0.18.0
+//  Some(subProj)
+//    .filterNot(ignoredModules.contains(_))
+//    .map {
+//    s => "com.twitter" %% (s"scalding-$s") % "0.17.0"
+//  }
 
 def module(name: String) = {
   val id = "scalding-%s".format(name)
@@ -301,11 +314,19 @@ lazy val scaldingBenchmarks = module("benchmarks")
     parallelExecution in Test := false
   ).dependsOn(scaldingCore)
 
+lazy val scaldingQuotation = module("quotation").settings(
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
+  )
+)
+
 lazy val scaldingCore = module("core").settings(
   libraryDependencies ++= Seq(
     "cascading" % "cascading-core" % cascadingVersion,
     "cascading" % "cascading-hadoop" % cascadingVersion,
     "cascading" % "cascading-local" % cascadingVersion,
+    "com.stripe" %% "dagon-core" % dagonVersion,
     "com.twitter" % "chill-hadoop" % chillVersion,
     "com.twitter" % "chill-java" % chillVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
@@ -321,7 +342,7 @@ lazy val scaldingCore = module("core").settings(
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple)
+).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
 
 lazy val scaldingCommons = module("commons").settings(
   libraryDependencies ++= Seq(
@@ -520,6 +541,23 @@ lazy val scaldingHadoopTest = module("hadoop-test").settings(
     "org.scalatest" %% "scalatest" % scalaTestVersion
   )
 ).dependsOn(scaldingCore, scaldingSerialization)
+
+lazy val scaldingEstimatorsTest = module("estimators-test").settings(
+  libraryDependencies ++= Seq(
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
+    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+    "com.twitter" %% "chill-algebird" % chillVersion,
+    "org.slf4j" % "slf4j-api" % slf4jVersion,
+    "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+    "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+    "org.scalatest" %% "scalatest" % scalaTestVersion
+  )
+).dependsOn(scaldingHadoopTest % "test")
 
 // This one uses a different naming convention
 lazy val maple = Project(

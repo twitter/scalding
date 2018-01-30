@@ -30,7 +30,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
     (v: Fields) shouldBe (new Fields(v.toString.tail))
   }
   def setAndCheckSymS(v: Seq[Symbol]): Unit = {
-    fields(v) shouldBe (new Fields(v.map(_.toString.tail): _*))
+    (v: Fields) shouldBe (new Fields(v.map(_.toString.tail): _*))
   }
   def setAndCheckField(v: Field[_]): Unit = {
     val vF: Fields = v
@@ -48,7 +48,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
     (v: Fields) shouldBe (new Fields(v.toString))
   }
   def setAndCheckEnumValueS(v: Seq[Enumeration#Value]): Unit = {
-    (parseAnySeqToFields(v)) shouldBe (new Fields(v.map(_.toString): _*))
+    (v: Fields) shouldBe (new Fields(v.map(_.toString): _*))
   }
   def checkFieldsWithComparators(actual: Fields, expected: Fields): Unit = {
     // sometimes one or the other is actually a RichFields, so rather than test for
@@ -94,12 +94,15 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
     "convert from ints" in {
       setAndCheck(int2Integer(0))
       setAndCheck(int2Integer(5))
+      setAndCheckS(List(1, 23, 3, 4).map(int2Integer))
+      setAndCheckS((0 until 10).map(int2Integer))
     }
     "convert from strings" in {
       setAndCheck("hey")
       setAndCheck("world")
-      setAndCheckS(List("one", "two", "three"))(strFields)
-      setAndCheckS(Seq("one", "two", "three"))(strFields)
+      setAndCheckS(List("one", "two", "three"))
+      //Synonym for list
+      setAndCheckS(Seq("one", "two", "three"))
     }
     "convert from symbols" in {
       setAndCheckSym('hey)
@@ -197,7 +200,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       f2 = 'hey -> 'you
       f2 shouldBe (new Fields("hey"), new Fields("you"))
 
-      f2 = intFields((0 until 10)) -> 'you
+      f2 = (0 until 10) -> 'you
       f2 shouldBe (new Fields((0 until 10).map(int2Integer): _*), new Fields("you"))
 
       f2 = (('hey, 'world) -> 'other)
@@ -221,7 +224,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       fields.setComparators(foo.ord)
       f2 shouldBe (fields, new Fields("bar", "bell"))
 
-      f2 = strFields(Seq("one", "two", "three")) -> strFields(Seq("1", "2", "3"))
+      f2 = Seq("one", "two", "three") -> Seq("1", "2", "3")
       f2 shouldBe (new Fields("one", "two", "three"), new Fields("1", "2", "3"))
       f2 = List("one", "two", "three") -> List("1", "2", "3")
       f2 shouldBe (new Fields("one", "two", "three"), new Fields("1", "2", "3"))

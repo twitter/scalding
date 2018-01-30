@@ -15,6 +15,8 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.tuple.hadoop.SerializationToken
+
 object CascadingTokenUpdater {
   private final val lowestAllowed = 128 // cascading rules
 
@@ -26,11 +28,11 @@ object CascadingTokenUpdater {
     else
       tokClass
         .split(",")
-        .map(_.trim)
-        .filter(_.size > 1)
         .toIterator
+        .map(_.trim)
+        .filter(_.nonEmpty)
         .map(_.split("="))
-        .filter(_.size == 2)
+        .filter(_.length == 2)
         .map { ary => (ary(0).toInt, ary(1)) }
         .toMap
 
@@ -55,8 +57,23 @@ object CascadingTokenUpdater {
 
   def update(config: Config, clazzes: Set[Class[_]]): Config = {
     val toks = config.getCascadingSerializationTokens
+
+    val serializations = config.get(Config.IoSerializationsKey).getOrElse("")
+    val fromSerializations: Seq[String] = if (serializations.isEmpty)
+      Seq.empty
+    else
+      for {
+        serialization <- serializations.split(",")
+        clazz = Class.forName(serialization)
+        tokenAnnotation = clazz.getAnnotation(classOf[SerializationToken])
+        if tokenAnnotation != null
+        className <- tokenAnnotation.classNames()
+      } yield {
+        className
+      }
+
     // We don't want to assign tokens to classes already in the map
-    val newClasses: Iterable[String] = clazzes.map { _.getName } -- toks.values
+    val newClasses: Iterable[String] = clazzes.map { _.getName } -- fromSerializations -- toks.values
 
     config + (Config.CascadingSerializationTokens -> toksToString(toks ++ assignTokens(firstAvailableToken(toks), newClasses)))
   }

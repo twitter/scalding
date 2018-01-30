@@ -23,6 +23,7 @@ import com.twitter.scalding.ExecutionContext.getDesc
 import java.io.InputStream
 import java.util.Comparator
 import scala.util.{ Failure, Success, Try }
+import org.slf4j.LoggerFactory
 
 /**
  * This is the type that should be fed to cascading to enable binary comparators
@@ -40,11 +41,13 @@ class CascadingBinaryComparator[T](ob: OrderedSerialization[T]) extends Comparat
 
 object CascadingBinaryComparator {
 
+  private val LOG = LoggerFactory.getLogger(this.getClass)
+
   /**
    * This method will walk the flowDef and make sure all the
    * groupBy/cogroups are using a CascadingBinaryComparator
    */
-  private[scalding] def checkForOrderedSerialization[T](flow: Flow[T]): Try[Unit] = {
+  private[scalding] def checkForOrderedSerialization[T](flow: Flow[T], mode: RequireOrderedSerializationMode): Try[Unit] = {
     import collection.JavaConverters._
     import cascading.pipe._
     import com.twitter.scalding.RichPipe
@@ -53,8 +56,17 @@ object CascadingBinaryComparator {
     def reduce(it: TraversableOnce[Try[Unit]]): Try[Unit] =
       it.find(_.isFailure).getOrElse(Success(()))
 
-    def failure(s: String): Try[Unit] =
-      Failure(new RuntimeException("Cannot verify OrderedSerialization: " + s))
+    def failure(s: String): Try[Unit] = {
+      val message =
+        s"Cannot verify OrderedSerialization: $s. Add `import com.twitter.scalding.serialization.RequiredBinaryComparators._`"
+      mode match {
+        case RequireOrderedSerializationMode.Fail =>
+          Failure(new RuntimeException(message))
+        case RequireOrderedSerializationMode.Log =>
+          LOG.warn(message)
+          Try(())
+      }
+    }
 
     def check(s: Splice): Try[Unit] = {
       val m = s.getKeySelectors.asScala

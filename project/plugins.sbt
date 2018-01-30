@@ -3,7 +3,7 @@ resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.
 resolvers ++= Seq(
   "jgit-repo" at "http://download.eclipse.org/jgit/maven",
   "sonatype-releases"  at "https://oss.sonatype.org/content/repositories/releases",
-  "Twitter Maven" at "http://maven.twttr.com"
+  "Twitter Maven" at "https://maven.twttr.com"
 )
 
 addSbtPlugin("com.eed3si9n"       % "sbt-assembly"        % "0.10.2")
@@ -18,4 +18,4 @@ addSbtPlugin("com.typesafe.sbt"   % "sbt-git"             % "0.6.2")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-scalariform"     % "1.3.0")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"       % "1.5.0")
 addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"        % "1.0")
-addSbtPlugin("org.wartremover"    % "sbt-wartremover"     % "2.0.2")
+addSbtPlugin("org.wartremover"    % "sbt-wartremover"     % "2.1.1")

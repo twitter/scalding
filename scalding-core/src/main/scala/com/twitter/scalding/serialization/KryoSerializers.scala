@@ -32,6 +32,12 @@ class ThrowingSerializer[T] extends KSerializer[T] {
     sys.error("Kryo should never be used to serialize an instance, class: $t")
 }
 
+// We use this for TypedPipe subclasses which should never be needed when we run
+class SerializeAsUnit[T >: Null] extends KSerializer[T] {
+  override def write(kryo: Kryo, output: Output, t: T): Unit = ()
+  override def read(kryo: Kryo, input: Input, t: Class[T]): T = null
+}
+
 /**
  * *
  * Below are some serializers for objects in the scalding project.
@@ -40,7 +46,7 @@ class RichDateSerializer extends KSerializer[RichDate] {
   // RichDates are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, date: RichDate): Unit = {
-    out.writeLong(date.timestamp, true);
+    out.writeLong(date.timestamp, true)
   }
 
   def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate =
@@ -51,12 +57,12 @@ class DateRangeSerializer extends KSerializer[DateRange] {
   // DateRanges are immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, range: DateRange): Unit = {
-    out.writeLong(range.start.timestamp, true);
-    out.writeLong(range.end.timestamp, true);
+    out.writeLong(range.start.timestamp, true)
+    out.writeLong(range.end.timestamp, true)
   }
 
   def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
-    DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)));
+    DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)))
   }
 }
 

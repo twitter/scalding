@@ -60,7 +60,7 @@ class ParquetSchemaProvider(fieldRenamer: (String => String)) {
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
-          val fieldName = accessorMethod.name.toTermName.toString
+          val fieldName = accessorMethod.name.toString
           val fieldType = accessorMethod.returnType
           matchField(fieldType, fieldName, isOption = false)
         }.toList

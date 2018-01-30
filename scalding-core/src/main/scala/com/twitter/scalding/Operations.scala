@@ -22,7 +22,7 @@ package com.twitter.scalding {
   import com.twitter.chill.MeatLocker
   import scala.collection.JavaConverters._
 
-  import com.twitter.algebird.{ Semigroup, StatefulSummer, SummingWithHitsCache, AdaptiveCache }
+  import com.twitter.algebird.{ Semigroup, SummingWithHitsCache, AdaptiveCache }
   import com.twitter.scalding.mathematics.Poisson
   import serialization.Externalizer
   import scala.util.Try
@@ -257,7 +257,7 @@ package com.twitter.scalding {
 
     override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[MapsideCache[K, V]]): Unit = {
       val cache = functionCall.getContext
-      implicit val sg = boxedSemigroup.get
+      implicit val sg: Semigroup[V] = boxedSemigroup.get
       val res: Map[K, V] = mergeTraversableOnce(lockedFn.get(functionCall.getArguments))
       val evicted = cache.putAll(res)
       add(evicted, functionCall)
@@ -306,7 +306,7 @@ package com.twitter.scalding {
     }
   }
 
-  class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
+  final class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -339,7 +339,7 @@ package com.twitter.scalding {
     }
   }
 
-  class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
+  final class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -653,7 +653,7 @@ package com.twitter.scalding {
     override def prepare(flowProcess: FlowProcess[_], operationCall: OperationCall[Poisson]): Unit = {
       super.prepare(flowProcess, operationCall)
       val p = new Poisson(frac, seed)
-      operationCall.setContext(p);
+      operationCall.setContext(p)
     }
 
     def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Poisson]): Unit = {
@@ -686,6 +686,27 @@ package com.twitter.scalding {
         tup.set(0, resIter.next)
         oc.add(tup)
       }
+    }
+  }
+
+  /**
+   * This gets a pair out of a tuple, incruments the counters with the left, and passes the value
+   * on
+   */
+  class IncrementCounters[A](pass: Fields, conv: TupleConverter[(A, Iterable[((String, String), Long)])])
+    extends BaseOperation[Any](pass)
+    with Function[Any] {
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]): Unit = {
+      val (a, inc) = conv(functionCall.getArguments)
+      val iter = inc.iterator
+      while (iter.hasNext) {
+        val ((k1, k2), amt) = iter.next
+        flowProcess.increment(k1, k2, amt)
+      }
+      val tup = Tuple.size(1)
+      tup.set(0, a)
+      functionCall.getOutputCollector.add(tup)
     }
   }
 }

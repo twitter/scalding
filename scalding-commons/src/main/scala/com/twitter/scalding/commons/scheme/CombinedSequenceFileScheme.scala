@@ -1,9 +1,8 @@
 package com.twitter.scalding.commons.scheme
 
 import cascading.scheme.Scheme
-import com.twitter.elephantbird.cascading2.scheme.{CombinedSequenceFile, CombinedWritableSequenceFile}
-import com.twitter.scalding.{HadoopSchemeInstance, SequenceFileScheme, WritableSequenceFileScheme}
-
+import com.twitter.elephantbird.cascading2.scheme.{ CombinedSequenceFile, CombinedWritableSequenceFile }
+import com.twitter.scalding.{ HadoopSchemeInstance, SequenceFileScheme, WritableSequenceFileScheme }
 
 trait CombinedSequenceFileScheme extends SequenceFileScheme {
   // TODO Cascading doesn't support local mode yet

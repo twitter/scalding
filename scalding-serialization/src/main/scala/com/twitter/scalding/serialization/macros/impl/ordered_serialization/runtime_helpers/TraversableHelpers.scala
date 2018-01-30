@@ -21,7 +21,8 @@ import scala.collection.mutable.Buffer
 object TraversableHelpers {
   import com.twitter.scalding.serialization.JavaStreamEnrichments._
 
-  final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(consume: (InputStream, InputStream) => Int): Int = {
+  final def rawCompare(inputStreamA: InputStream, inputStreamB: InputStream)(
+    consume: (InputStream, InputStream) => Int): Int = {
     val lenA = inputStreamA.readPosVarInt
     val lenB = inputStreamB.readPosVarInt
 
@@ -37,7 +38,8 @@ object TraversableHelpers {
     else java.lang.Integer.compare(lenA, lenB)
   }
 
-  final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(implicit ord: Ordering[T]): Int = {
+  final def iteratorCompare[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
+    implicit ord: Ordering[T]): Int = {
     @annotation.tailrec
     def result: Int =
       if (iteratorA.isEmpty) {
@@ -55,7 +57,8 @@ object TraversableHelpers {
     result
   }
 
-  final def iteratorEquiv[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(implicit eq: Equiv[T]): Boolean = {
+  final def iteratorEquiv[T](iteratorA: Iterator[T], iteratorB: Iterator[T])(
+    implicit eq: Equiv[T]): Boolean = {
     @annotation.tailrec
     def result: Boolean =
       if (iteratorA.isEmpty) iteratorB.isEmpty
@@ -64,6 +67,7 @@ object TraversableHelpers {
 
     result
   }
+
   /**
    * This returns the same result as
    *
@@ -74,7 +78,8 @@ object TraversableHelpers {
    * the complexity should be O(N + M) rather than O(N log N + M log M) for the full
    * sort case
    */
-  final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T])(implicit ord: Ordering[T]): Int = {
+  final def sortedCompare[T](travA: Iterable[T], travB: Iterable[T])(
+    implicit ord: Ordering[T]): Int = {
     def compare(startA: Int, endA: Int, a: Buffer[T], startB: Int, endB: Int, b: Buffer[T]): Int =
       if (startA == endA) {
         if (startB == endB) 0 // both empty
@@ -82,7 +87,11 @@ object TraversableHelpers {
       } else if (startB == endB) 1 // non-empty is bigger than empty
       else {
         @annotation.tailrec
-        def partition(pivot: T, pivotStart: Int, pivotEnd: Int, endX: Int, x: Buffer[T]): (Int, Int) = {
+        def partition(pivot: T,
+          pivotStart: Int,
+          pivotEnd: Int,
+          endX: Int,
+          x: Buffer[T]): (Int, Int) =
           if (pivotEnd >= endX) (pivotStart, pivotEnd)
           else {
             val t = x(pivotEnd)
@@ -106,7 +115,6 @@ object TraversableHelpers {
               partition(pivot, pivotStart + 1, pivotEnd + 1, endX, x)
             }
           }
-        }
         val pivot = a(startA)
         val (aps, ape) = partition(pivot, startA, startA + 1, endA, a)
         val (bps, bpe) = partition(pivot, startB, startB, endB, b)

@@ -13,6 +13,12 @@ project/plugins/lib_managed/
 project/plugins/src_managed/
 /.idea/
 /.idea_modules/
+.project
+.classpath
+.cache-main
+.cache-tests
+.tmpBin
+bin
 *.iml
 sonatype.sbt
 tutorial/data/cofollows.tsv
@@ -38,3 +44,4 @@ NOTICE
 
 # Auto-copied by sbt-microsites
 docs/src/main/tut/contributing.md
+.DS_Store

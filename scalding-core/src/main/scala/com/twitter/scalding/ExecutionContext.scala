@@ -16,16 +16,17 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
 import cascading.flow.planner.BaseFlowStep
+import cascading.flow.{ Flow, FlowDef, FlowStepStrategy }
 import cascading.pipe.Pipe
+import com.twitter.scalding.estimation.memory.MemoryEstimatorStepStrategy
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
 import org.apache.hadoop.mapred.JobConf
+import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
-import org.slf4j.{ Logger, LoggerFactory }
 
 /*
  * This has all the state needed to build a single flow
@@ -72,10 +73,11 @@ trait ExecutionContext {
       // identify the flowDef
       val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(configWithId).connect(flowDef)
-      if (config.getRequireOrderedSerialization) {
+
+      config.getRequireOrderedSerializationMode.map { mode =>
         // This will throw, but be caught by the outer try if
         // we have groupby/cogroupby not using OrderedSerializations
-        CascadingBinaryComparator.checkForOrderedSerialization(flow).get
+        CascadingBinaryComparator.checkForOrderedSerialization(flow, mode).get
       }
 
       flow match {
@@ -93,13 +95,14 @@ trait ExecutionContext {
       mode match {
         case _: HadoopMode =>
           val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
+          val memoryEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.MemoryEstimators).toList.map(_ => MemoryEstimatorStepStrategy)
 
           val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
             case Success(fn) => fn(mode, configWithId)
             case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
           }
 
-          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ otherStrategies)
+          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ memoryEstimatorStrategy ++ otherStrategies)
 
           optionalFinalStrategy.foreach { strategy =>
             flow.setFlowStepStrategy(strategy)
@@ -151,10 +154,10 @@ object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
   private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
-    baseFlowStep.getGraph.vertexSet.asScala.toSeq.flatMap(_ match {
+    baseFlowStep.getGraph.vertexSet.asScala.flatMap {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
       case _ => List() // no descriptions
-    })
+    }(collection.breakOut)
   }
   /*
    * implicit val ec = ExecutionContext.newContext(config)

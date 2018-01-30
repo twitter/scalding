@@ -23,13 +23,23 @@ import java.util.Comparator
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
+/**
+ * These are particularly unsafe and we don't recommend using them
+ */
+trait DeprecatedFieldConversions extends LowPriorityFieldConversions {
+  implicit def travOnceToFields[T](t: TraversableOnce[Any]): Fields =
+    parseAnySeqToFields(t)
+}
+
+object DeprecatedFieldConversions extends DeprecatedFieldConversions
+
 trait LowPriorityFieldConversions {
   /**
    * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
    * Not sure we should be this flexible, but given that Cascading will throw an
    * exception before scheduling the job, I guess this is okay.
    */
-  def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T) = {
+  def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T): Fields = {
     val fields = new Fields(anyf.toSeq.map { anyToFieldArg }: _*)
     anyf.foreach {
       _ match {
@@ -129,22 +139,22 @@ trait FieldConversions extends LowPriorityFieldConversions {
   }
 
   //Single entry fields:
-  implicit def unitToFields(u: Unit) = Fields.NONE // linter:ignore
-  implicit def intToFields(x: Int) = integerToFields(Integer.valueOf(x))
-  implicit def integerToFields(x: java.lang.Integer) = new Fields(x)
-  implicit def stringToFields(x: String) = new Fields(x)
-  implicit def enumValueToFields(x: Enumeration#Value) = new Fields(x.toString)
+  implicit def unitToFields(u: Unit): Fields = Fields.NONE // linter:ignore
+  implicit def intToFields(x: Int): Fields = new Fields(new java.lang.Integer(x))
+  implicit def integerToFields(x: java.lang.Integer): Fields = new Fields(x)
+  implicit def stringToFields(x: String): Fields = new Fields(x)
+  implicit def enumValueToFields(x: Enumeration#Value): Fields = new Fields(x.toString)
   /**
    * '* means Fields.ALL, otherwise we take the .name
    */
-  implicit def symbolToFields(x: Symbol) = {
+  implicit def symbolToFields(x: Symbol): Fields = {
     if (x == '*) {
       Fields.ALL
     } else {
       new Fields(x.name)
     }
   }
-  implicit def fieldToFields(f: Field[_]) = RichFields(f)
+  implicit def fieldToFields(f: Field[_]): RichFields = RichFields(f)
 
   @tailrec
   final def newSymbol(avoid: Set[Symbol], guess: Symbol, trial: Int = 0): Symbol = {
@@ -189,12 +199,12 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
     new Fields(enumeration.values.toList.map { _.toString }: _*)
 
-  def fields[T <: TraversableOnce[Symbol]](f: T) = new Fields(f.toSeq.map(_.name): _*)
-  def strFields[T <: TraversableOnce[String]](f: T) = new Fields(f.toSeq: _*)
-  def intFields[T <: TraversableOnce[Int]](f: T) =
+  def fields[T <: TraversableOnce[Symbol]](f: T): Fields = new Fields(f.toSeq.map(_.name): _*)
+  def strFields[T <: TraversableOnce[String]](f: T): Fields = new Fields(f.toSeq: _*)
+  def intFields[T <: TraversableOnce[Int]](f: T): Fields =
     new Fields(f.toSeq.map(Integer.valueOf): _*)
 
-  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f: T) = RichFields(f.toSeq)
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f: T): Fields = RichFields(f.toSeq)
 
   //Handle a pair generally:
   implicit def tuple2ToFieldsPair[T, U](pair: (T, U))(implicit tf: T => Fields, uf: U => Fields): (Fields, Fields) = {
@@ -259,10 +269,10 @@ sealed trait Field[T] extends java.io.Serializable {
 }
 
 @DefaultSerializer(classOf[serialization.IntFieldSerializer])
-case class IntField[T](override val id: java.lang.Integer)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
+final case class IntField[T](override val id: java.lang.Integer)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 @DefaultSerializer(classOf[serialization.StringFieldSerializer])
-case class StringField[T](override val id: String)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
+final case class StringField[T](override val id: String)(implicit override val ord: Ordering[T], override val mf: Option[Manifest[T]]) extends Field[T]
 
 object Field {
   def apply[T](index: Int)(implicit ord: Ordering[T], mf: Manifest[T]) = IntField[T](index)(ord, Some(mf))

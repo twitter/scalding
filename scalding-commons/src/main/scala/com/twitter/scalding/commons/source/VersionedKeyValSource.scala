@@ -127,22 +127,20 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
     }
 
   def sinkExists(mode: Mode): Boolean =
-    sinkVersion match {
-      case Some(version) =>
-        mode match {
-          case Test(buffers) =>
-            buffers(this) map { !_.isEmpty } getOrElse false
+    sinkVersion.exists { version =>
+      mode match {
+        case Test(buffers) =>
+          buffers(this) map { !_.isEmpty } getOrElse false
 
-          case HadoopTest(conf, buffers) =>
-            buffers(this) map { !_.isEmpty } getOrElse false
+        case HadoopTest(conf, buffers) =>
+          buffers(this) map { !_.isEmpty } getOrElse false
 
-          case m: HadoopMode =>
-            val conf = new JobConf(m.jobConf)
-            val store = sink.getStore(conf)
-            store.hasVersion(version)
-          case _ => sys.error(s"Unknown mode $mode")
-        }
-      case None => false
+        case m: HadoopMode =>
+          val conf = new JobConf(m.jobConf)
+          val store = sink.getStore(conf)
+          store.hasVersion(version)
+        case _ => sys.error(s"Unknown mode $mode")
+      }
     }
 
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
@@ -211,10 +209,10 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
 
 object RichPipeEx extends java.io.Serializable {
   implicit def pipeToRichPipeEx(pipe: Pipe): RichPipeEx = new RichPipeEx(pipe)
-  implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) =
+  implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]): TypedRichPipeEx[K, V] =
     new TypedRichPipeEx(pipe)
   implicit def keyedListLikeToRichPipeEx[K: Ordering, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
-    kll: KeyedListLike[K, V, T]) = typedPipeToRichPipeEx(kll.toTypedPipe)
+    kll: KeyedListLike[K, V, T]): TypedRichPipeEx[K, V] = typedPipeToRichPipeEx(kll.toTypedPipe)
 }
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {

@@ -29,7 +29,7 @@ import scala.concurrent.{Await, Future, Promise, ExecutionContext => ConcurrentE
 import scala.util.Random
 import scala.util.{Failure, Success, Try}
 import ExecutionContext._
-import com.twitter.scalding.Execution.TempFileCleanup
+import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileCleanup
 import org.apache.hadoop.conf.Configuration
 
 object ExecutionTestJobs {
@@ -59,18 +59,12 @@ object ExecutionTestJobs {
   }
 
   def writeExecutionWithTempFile(tempFile: String, testData: List[String]): Execution[List[String]] = {
-    val writeFn = { (conf: Config, mode: Mode) =>
-      (TypedPipe.from(testData), TypedTsv[String](tempFile))
-    }
-    val readFn = { (conf: Config, mode: Mode) =>
-      testData
-    }
+    val forced = TypedPipe.from(testData).map(s => s)
+      .forceToDiskExecution
 
-    val filesToDeleteFn = { (conf: Config, mode: Mode) =>
-      Set(tempFile)
-    }
-
-    Execution.write(writeFn, readFn, filesToDeleteFn)
+    Execution.withConfig(forced) { conf => conf + ("hadoop.tmp.dir" -> tempFile) }
+      .flatMap(_.toIterableExecution)
+      .map(_.toList)
   }
 }
 
@@ -110,6 +104,14 @@ class ExecutionTest extends WordSpec with Matchers {
         case Failure(e) => fail(s"Failed running execution, exception:\n$e")
       }
     }
+    def shouldSucceedHadoop(): T = {
+      val mode = Hdfs(true, new Configuration)
+      val r = ex.waitFor(Config.defaultFrom(mode), mode)
+      r match {
+        case Success(s) => s
+        case Failure(e) => fail(s"Failed running execution, exception:\n$e")
+      }
+    }
     def shouldFail(): Unit = {
       val r = ex.waitFor(Config.default, Local(true))
       assert(r.isFailure)
@@ -124,9 +126,8 @@ class ExecutionTest extends WordSpec with Matchers {
     hooksField.get(null).asInstanceOf[util.IdentityHashMap[Thread, Thread]].asScala.keys.toSeq
   }
 
-  def isTempFileCleanupHook(hook: Thread): Boolean = {
+  def isTempFileCleanupHook(hook: Thread): Boolean =
     classOf[TempFileCleanup].isAssignableFrom(hook.getClass)
-  }
 
   "An Execution" should {
     "run" in {
@@ -330,7 +331,7 @@ class ExecutionTest extends WordSpec with Matchers {
       Files.exists(tempFileOne) should be(true)
       Files.exists(tempFileTwo) should be(true)
 
-      val cleanupThread = TempFileCleanup(Seq(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
+      val cleanupThread = TempFileCleanup(List(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
       cleanupThread.run()
 
       Files.exists(tempFileOne) should be(false)
@@ -344,7 +345,8 @@ class ExecutionTest extends WordSpec with Matchers {
         isTempFileCleanupHook(hook) should be(false)
       }
 
-      ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData).shouldSucceed()
+      ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
+        .shouldSucceedHadoop()
 
       // This is hacky, but there's a small chance that the new cleanup hook isn't registered by the time we get here
       // A small sleep like this appears to be sufficient to ensure we can see it
@@ -352,7 +354,10 @@ class ExecutionTest extends WordSpec with Matchers {
       val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
       cleanupHook shouldBe defined
 
-      cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup should contain theSameElementsAs Set(tempFile)
+      val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
+
+      assert(files.size == 1)
+      assert(files.head.contains(tempFile))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
@@ -368,7 +373,8 @@ class ExecutionTest extends WordSpec with Matchers {
       }
 
       ExecutionTestJobs.writeExecutionWithTempFile(tempFileOne, testDataOne)
-        .zip(ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo)).shouldSucceed()
+        .zip(ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo))
+        .shouldSucceedHadoop()
 
       // This is hacky, but there's a small chance that the new cleanup hook isn't registered by the time we get here
       // A small sleep like this appears to be sufficient to ensure we can see it
@@ -376,7 +382,11 @@ class ExecutionTest extends WordSpec with Matchers {
       val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
       cleanupHook shouldBe defined
 
-      cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup should contain theSameElementsAs Set(tempFileOne, tempFileTwo)
+      val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
+
+      assert(files.size == 2)
+      assert(files.head.contains(tempFileOne) || files.head.contains(tempFileTwo))
+      assert(files(1).contains(tempFileOne) || files(1).contains(tempFileTwo))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
@@ -423,6 +433,34 @@ class ExecutionTest extends WordSpec with Matchers {
         e2.flatMap(Execution.from(_)).zip(e2)
       }
         .getCounters.map { case (_, c) => c("test") }
+
+      c1.shouldSucceed() should ===(100)
+      c2.shouldSucceed() should ===(100)
+    }
+    "zip does not duplicate pure counters" in {
+      val c1 = {
+        val e1 = TypedPipe.from(0 until 100)
+          .tallyAll("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e1.zip(e1)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
+
+      val c2 = {
+        val e2 = TypedPipe.from(0 until 100)
+          .tallyAll("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e2.flatMap(Execution.from(_)).zip(e2)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
 
       c1.shouldSucceed() should ===(100)
       c2.shouldSucceed() should ===(100)

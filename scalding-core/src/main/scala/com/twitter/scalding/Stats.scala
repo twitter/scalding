@@ -4,6 +4,7 @@ import cascading.flow.{ Flow, FlowListener, FlowDef, FlowProcess }
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
+import org.apache.hadoop.mapreduce.Counter
 import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -59,13 +60,27 @@ sealed private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
 
-private[scalding] case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
+private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
   override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
 }
 
-private[scalding] case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
-  private[this] val cntr = fp.getReporter().getCounter(statKey.group, statKey.counter)
-  override def increment(amount: Long): Unit = cntr.increment(amount)
+private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
+  // we use a nullable type here for efficiency
+  private[this] val counter: Counter = (for {
+    r <- Option(fp.getReporter)
+    c <- Option(r.getCounter(statKey.group, statKey.counter))
+  } yield c).orNull
+
+  def skipNull: Boolean =
+    fp.getProperty(Config.SkipNullCounters) match {
+      case null => false // by default don't skip
+      case isset => isset.toString.toBoolean
+    }
+
+  require((counter != null) || skipNull, s"counter for $statKey is null and ${Config.SkipNullCounters} is not set to true")
+
+  override def increment(amount: Long): Unit =
+    if (counter != null) counter.increment(amount) else ()
 }
 
 object Stat {

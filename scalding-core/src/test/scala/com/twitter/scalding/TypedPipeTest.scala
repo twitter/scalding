@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import org.scalatest.{ FunSuite, Matchers, WordSpec }
 
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.TypedText
 // Use the scalacheck generators
 import org.scalacheck.Gen
@@ -117,6 +118,15 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
         .run
         .runHadoop
         .finish()
+    }
+  }
+}
+
+class TypedPipeMonoidTest extends WordSpec with Matchers {
+  "typedPipeMonoid.zero" should {
+    "be equal to TypePipe.empty" in {
+      val mon = implicitly[Monoid[TypedPipe[Int]]]
+      assert(mon.zero == TypedPipe.empty)
     }
   }
 }
@@ -224,6 +234,7 @@ class TypedPipeJoinKryoTest extends WordSpec with Matchers {
       .finish()
   }
 }
+
 class TypedPipeDistinctJob(args: Args) extends Job(args) {
   Tsv("inputFile").read.toTypedPipe[(Int, Int)](0, 1)
     .distinct
@@ -242,6 +253,31 @@ class TypedPipeDistinctTest extends WordSpec with Matchers {
         }
       }
       .run
+      .finish()
+  }
+}
+
+class TypedPipeDistinctWordsJob(args: Args) extends Job(args) {
+  TextLine("inputFile")
+    .flatMap(_.split("\\s+"))
+    .distinct
+    .write(TextLine("outputFile"))
+}
+
+class TypedPipeDistinctWordsTest extends WordSpec with Matchers {
+  import Dsl._
+  "A TypedPipeDistinctWordsJob" should {
+    var idx = 0
+    JobTest(new TypedPipeDistinctWordsJob(_))
+      .source(TextLine("inputFile"), List(1 -> "a b b c", 2 -> "c d e"))
+      .sink[String](TextLine("outputFile")){ outputBuffer =>
+        s"$idx: correctly count unique item sizes" in {
+          outputBuffer.toSet should have size 5
+        }
+        idx += 1
+      }
+      .run
+      .runHadoop
       .finish()
   }
 }
@@ -1365,7 +1401,7 @@ class TypedSketchJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)
@@ -1384,7 +1420,7 @@ class TypedSketchLeftJoinJob(args: Args) extends Job(args) {
   val zero = TypedPipe.from(TypedText.tsv[(Int, Int)]("input0"))
   val one = TypedPipe.from(TypedText.tsv[(Int, Int)]("input1"))
 
-  implicit def serialize(k: Int) = k.toString.getBytes
+  implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
 
   zero
     .sketch(args("reducers").toInt)

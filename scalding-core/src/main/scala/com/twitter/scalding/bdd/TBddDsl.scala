@@ -29,7 +29,7 @@ trait TBddDsl extends FieldConversions with TypedPipeOperationsConversions {
       jobTest.source[T](source, data)
   }
 
-  implicit def fromSimpleTypeToTypedSource[T](data: Iterable[T]) =
+  implicit def fromSimpleTypeToTypedSource[T](data: Iterable[T]): SimpleTypedTestSource[T] =
     new SimpleTypedTestSource(data)
 
   case class TestCaseGiven1[TypeIn](source: TypedTestSource[TypeIn]) {

@@ -1,9 +1,8 @@
 package com.twitter.scalding.reducer_estimation
 
+import com.twitter.scalding.estimation.{ Common, FlowStepHistory, FlowStrategyInfo }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
-
-import scala.util.{ Failure, Success }
 
 object RatioBasedEstimator {
   /**
@@ -16,10 +15,7 @@ object RatioBasedEstimator {
   def getInputRatioThreshold(conf: JobConf) = conf.getFloat(inputRatioThresholdKey, 0.10f)
 }
 
-abstract class RatioBasedEstimator extends ReducerEstimator {
-
-  def historyService: HistoryService
-
+abstract class RatioBasedEstimator extends ReducerHistoryEstimator {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -42,51 +38,43 @@ abstract class RatioBasedEstimator extends ReducerEstimator {
    * Compute the average ratio of mapper bytes to reducer bytes and use that to
    * scale the estimate produced by InputSizeReducerEstimator.
    */
-  override def estimateReducers(info: FlowStrategyInfo): Option[Int] = {
-    val conf = info.step.getConfig
-    val maxHistory = EstimatorConfig.getMaxHistory(conf)
+  override protected def estimate(
+    info: FlowStrategyInfo,
+    conf: JobConf,
+    history: Seq[FlowStepHistory]): Option[Int] = {
     val threshold = RatioBasedEstimator.getInputRatioThreshold(conf)
+    val inputBytes = Common.totalInputSize(info.step)
 
-    historyService.fetchHistory(info, maxHistory) match {
-      case Success(h) if h.isEmpty =>
-        LOG.warn("No matching history found.")
+    if (inputBytes == 0) {
+      LOG.warn("No input detected.")
+      None
+    } else {
+      val ratios = for {
+        h <- history
+        if h.mapOutputBytes > 0
+        if acceptableInputRatio(inputBytes, h.hdfsBytesRead, threshold)
+      } yield {
+        h.mapOutputBytes / h.hdfsBytesRead.toDouble
+      }
+
+      if (ratios.isEmpty) {
+        LOG.warn(s"No matching history found within input ratio threshold: $threshold")
         None
-      case Success(history) =>
-        val inputBytes = Common.totalInputSize(info.step)
+      } else {
+        val reducerRatio = ratios.sum / ratios.length
+        LOG.info("Getting base estimate from InputSizeReducerEstimator")
+        val inputSizeBasedEstimate = InputSizeReducerEstimator.estimateReducersWithoutRounding(info)
+        inputSizeBasedEstimate.map { baseEstimate =>
+          // scale reducer estimate based on the historical input ratio
+          val e = (baseEstimate * reducerRatio).ceil.toInt.max(1)
 
-        if (inputBytes == 0) {
-          LOG.warn("No input detected.")
-          None
-        } else {
-          val ratios = for {
-            h <- history
-            if h.mapOutputBytes > 0
-            if acceptableInputRatio(inputBytes, h.hdfsBytesRead, threshold)
-          } yield h.mapOutputBytes / h.hdfsBytesRead.toDouble
+          LOG.info("\nRatioBasedEstimator"
+            + "\n - past reducer ratio: " + reducerRatio
+            + "\n - reducer estimate:   " + e)
 
-          if (ratios.isEmpty) {
-            LOG.warn(s"No matching history found within input ratio threshold: $threshold")
-            None
-          } else {
-            val reducerRatio = ratios.sum / ratios.length
-            LOG.info("Getting base estimate from InputSizeReducerEstimator")
-            val inputSizeBasedEstimate = InputSizeReducerEstimator.estimateReducersWithoutRounding(info)
-            inputSizeBasedEstimate.map { baseEstimate =>
-              // scale reducer estimate based on the historical input ratio
-              val e = (baseEstimate * reducerRatio).ceil.toInt.max(1)
-
-              LOG.info("\nRatioBasedEstimator"
-                + "\n - past reducer ratio: " + reducerRatio
-                + "\n - reducer estimate:   " + e)
-
-              e
-            }
-          }
+          e
         }
-      case Failure(e) =>
-        LOG.warn("Unable to fetch history. Disabling RatioBasedEstimator.", e)
-        None
+      }
     }
   }
-
 }

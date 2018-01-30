@@ -26,8 +26,8 @@ class SourceSpec extends WordSpec with Matchers {
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
-      implicit val tz = DateOps.UTC
-      implicit val parser = DateParser.default
+      implicit val tz: java.util.TimeZone = DateOps.UTC
+      implicit val parser: DateParser = DateParser.default
 
       val d1 = RichDate("2012-02-01")
       val d2 = RichDate("2012-02-02")

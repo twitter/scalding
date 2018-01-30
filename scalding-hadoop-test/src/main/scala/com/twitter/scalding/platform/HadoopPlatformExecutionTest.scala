@@ -33,7 +33,7 @@ case class HadoopPlatformExecutionTest(
 
   override def run(): Unit = {
     System.setProperty("cascading.update.skip", "true")
-    val execution = init(cons)
+    val execution: Execution[Any] = init(cons)
     cluster.addClassSourceToClassPath(cons.getClass)
     cluster.addClassSourceToClassPath(execution.getClass)
     createSources()
@@ -45,7 +45,7 @@ case class HadoopPlatformExecutionTest(
 
   override def execute(unit: Execution[_]): Unit =
     unit.waitFor(config, cluster.mode) match {
-      case Success(s) => s
+      case Success(_) => ()
       case Failure(e) => throw e
     }
 }

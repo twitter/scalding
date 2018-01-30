@@ -66,7 +66,7 @@ object MakeJar {
   @annotation.tailrec
   private[this] def getRelativeFileBetween(
     parent: File, source: File, result: List[String] = List.empty): Option[File] =
-    Option(source) match {
+    Option(source) match { // linter:disable:UseOptionFlatMapNotPatMatch // need as is for tailrec
       case Some(src) => {
         if (parent == src) {
           result.foldLeft(None: Option[File]) { (cum, part) =>

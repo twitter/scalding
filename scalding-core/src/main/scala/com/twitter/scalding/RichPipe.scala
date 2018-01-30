@@ -114,6 +114,20 @@ object RichPipe extends java.io.Serializable {
     p
   }
 
+  /**
+   * If there is exactly one previous Pipe, get it, otherwise None
+   */
+  def getSinglePreviousPipe(p: Pipe): Option[Pipe] =
+    if (p.getPrevious != null && p.getPrevious.length == 1) p.getPrevious.headOption
+    else None
+
+  /**
+   * Is the given Pipe a source (it has no previous and is not a splice
+   */
+  def isSourcePipe(pipe: Pipe): Boolean =
+    pipe.getParent == null &&
+      (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
+      (!pipe.isInstanceOf[Splice])
 }
 
 /**

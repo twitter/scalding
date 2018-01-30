@@ -63,7 +63,7 @@ case class HadoopPlatformJobTest(
     checkSinks()
     flowCheckers.foreach { checker =>
       job.completedFlow.collect {
-        case f: Flow[JobConf] => checker(f)
+        case f: Flow[JobConf @unchecked] => checker(f)
       }
     }
   }
@@ -74,7 +74,7 @@ case class HadoopPlatformJobTest(
   override final def execute(job: Job): Unit = {
     job.run()
     job.clear()
-    job.next match {
+    job.next match { // linter:ignore:UseOptionForeachNotPatMatch
       case Some(nextJob) => execute(nextJob)
       case None => ()
     }

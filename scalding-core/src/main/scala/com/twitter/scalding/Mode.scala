@@ -15,29 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding
 
+import cascading.flow.local.{ LocalFlowConnector, LocalFlowProcess }
+import cascading.flow.{ FlowProcess, FlowConnector, FlowDef, Flow }
+import cascading.property.AppProps
+import cascading.tap.Tap
+import cascading.tuple.{ Tuple, TupleEntryIterator }
+import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import java.io.File
 import java.util.{ UUID, Properties }
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.apache.hadoop.mapred.JobConf
-
-import cascading.flow.{ FlowProcess, FlowConnector, FlowDef, Flow }
-import cascading.flow.local.LocalFlowConnector
-import cascading.flow.local.LocalFlowProcess
-import cascading.property.AppProps
-import cascading.tap.Tap
-import cascading.tuple.Tuple
-import cascading.tuple.TupleEntryIterator
-
+import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.collection.mutable.Buffer
-import scala.collection.mutable.{ Map => MMap }
-import scala.collection.mutable.{ Set => MSet }
+import scala.collection.mutable.{ Buffer, Map => MMap, Set => MSet }
 import scala.util.{ Failure, Success }
-
-import org.slf4j.LoggerFactory
 
 case class ModeException(message: String) extends RuntimeException(message)
 
@@ -105,6 +98,11 @@ object Mode {
 }
 
 trait Mode extends java.io.Serializable {
+
+  /**
+   * Make the Execution.Writer for this platform
+   */
+  def newWriter(): Execution.Writer
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
@@ -154,6 +152,9 @@ trait HadoopMode extends Mode {
     }
   }
 
+  def newWriter(): Execution.Writer =
+    new AsyncFlowDefRunner
+
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
@@ -183,6 +184,9 @@ trait CascadingLocal extends Mode {
   override def newFlowConnector(conf: Config) =
     new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava) // linter:ignore
 
+  def newWriter(): Execution.Writer =
+    new AsyncFlowDefRunner
+
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
     val props = new java.util.Properties
@@ -208,6 +212,13 @@ case class Hdfs(strict: Boolean, @transient conf: Configuration) extends HadoopM
     val path = new Path(filename)
     path.getFileSystem(jobConf).exists(path)
   }
+}
+
+object Hdfs {
+  /**
+   * Make an Hdfs instance in strict mode with new Configuration
+   */
+  def default: Hdfs = Hdfs(true, new Configuration)
 }
 
 case class HadoopTest(@transient conf: Configuration,

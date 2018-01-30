@@ -3,11 +3,9 @@ package com.twitter.scalding.reducer_estimation
 import cascading.flow.FlowException
 import com.twitter.scalding._
 import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
-import org.scalatest.{ Matchers, WordSpec }
-
-import scala.collection.JavaConverters._
-
 import java.io.FileNotFoundException
+import org.scalatest.{ Matchers, WordSpec }
+import scala.collection.JavaConverters._
 
 object HipJob {
   val InSrcFileSize = 2496L
@@ -88,8 +86,7 @@ class SimpleMemoryJob(args: Args, customConfig: Config) extends Job(args) {
 
   val inSrc = IterableSource(List(
     "Direct trade American Apparel squid umami tote bag. Lo-fi XOXO gluten-free meh literally, typewriter readymade wolf salvia whatever drinking vinegar organic. Four loko literally bicycle rights drinking vinegar Cosby sweater hella stumptown. Dreamcatcher iPhone 90's organic chambray cardigan, wolf fixie gluten-free Brooklyn four loko. Mumblecore ennui twee, 8-bit food truck sustainable tote bag Williamsburg mixtape biodiesel. Semiotics Helvetica put a bird on it, roof party fashion axe organic post-ironic readymade Wes Anderson Pinterest keffiyeh. Craft beer meggings sartorial, butcher Marfa kitsch art party mustache Brooklyn vinyl.",
-    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."
-  ))
+    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."))
 
   override def config = super.config ++ customConfig.toMap.toMap
 
@@ -159,7 +156,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (2)
-          conf.get(EstimatorConfig.originalNumReducers) should be (None)
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should be (None)
         }
         .run()
     }
@@ -176,7 +173,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (3)
-          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
         }
         .run()
     }
@@ -193,7 +190,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (3)
-          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
         }
         .run()
     }
@@ -203,7 +200,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         (Config.ReducerEstimatorOverride -> "true") +
         // 1 reducer per byte, should give us a large number
         (InputSizeReducerEstimator.BytesPerReducer -> 1.toString) +
-        (EstimatorConfig.maxEstimatedReducersKey -> 10.toString)
+        (ReducerEstimatorConfig.maxEstimatedReducersKey -> 10.toString)
 
       HadoopPlatformJobTest(new SimpleJob(_, customConfig), cluster)
         .inspectCompletedFlow { flow =>
@@ -211,8 +208,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.get(EstimatorConfig.estimatedNumReducers) should contain ("2496")
-          conf.get(EstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
+          conf.get(ReducerEstimatorConfig.estimatedNumReducers) should contain ("2496")
+          conf.get(ReducerEstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
           conf.getNumReducers should contain (10)
         }
         .run()
@@ -230,7 +227,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
 
           val conf = Config.fromHadoop(steps.head.getConfig)
           conf.getNumReducers should contain (2)
-          conf.get(EstimatorConfig.originalNumReducers) should contain ("2")
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
         }
         .run()
     }
@@ -241,8 +238,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         (Config.ReducerEstimatorOverride -> "true")
 
       HadoopPlatformJobTest(new SimpleFileNotFoundJob(_, customConfig), cluster)
-        .runExpectFailure { case error: FlowException =>
-          error.getCause.getClass should be(classOf[FileNotFoundException])
+        .runExpectFailure {
+          case error: FlowException =>
+            error.getCause.getClass should be(classOf[FileNotFoundException])
         }
     }
   }
