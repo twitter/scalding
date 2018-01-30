@@ -106,7 +106,7 @@ object CascadingBackend {
         op(ts, keyF)
     }
 
-   private case class CascadingPipe[+T](pipe: Pipe,
+  private case class CascadingPipe[+T](pipe: Pipe,
     fields: Fields,
     @transient localFlowDef: FlowDef, // not serializable.
     converter: TupleConverter[_ <: T]) {
@@ -255,6 +255,7 @@ object CascadingBackend {
                 // node at all if there is no fan out since groupBy and cogroupby
                 // can accept multiple inputs
                 CascadingPipe.single[T](merged, flowDef)
+            }
           case (SourcePipe(typedSrc), _) =>
             val fd = new FlowDef
             val pipe = typedSrc.read(fd, mode)
