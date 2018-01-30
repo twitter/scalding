@@ -651,7 +651,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         .sink(output2) { _.toSet == outputData.toSet }
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps should have size 3
+          assert(steps.size <= 4)
         }
         .run()
     }
