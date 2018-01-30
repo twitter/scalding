@@ -55,7 +55,7 @@ private[scalding] class ConfPropertiesHfsTap(
  * Changes here however will not show up in the hadoop UI
  */
 trait HfsConfPropertySetter extends HfsTapProvider {
-  @deprecated("Tap config is deprecated, use sourceConfig or sinkConfig directly. In cascading configs applied to sinks can leak to sources in the step writing to the sink.")
+  @deprecated("Tap config is deprecated, use sourceConfig or sinkConfig directly. In cascading configs applied to sinks can leak to sources in the step writing to the sink.", "0.17.0")
   def tapConfig: Config = Config.empty
 
   def sourceConfig: Config = Config.empty

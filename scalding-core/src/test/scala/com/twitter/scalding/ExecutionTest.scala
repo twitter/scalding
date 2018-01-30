@@ -357,7 +357,7 @@ class ExecutionTest extends WordSpec with Matchers {
       val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
 
       assert(files.size == 1)
-      assert(files(0).contains(tempFile))
+      assert(files.head.contains(tempFile))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
@@ -385,7 +385,7 @@ class ExecutionTest extends WordSpec with Matchers {
       val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
 
       assert(files.size == 2)
-      assert(files(0).contains(tempFileOne) || files(0).contains(tempFileTwo))
+      assert(files.head.contains(tempFileOne) || files.head.contains(tempFileTwo))
       assert(files(1).contains(tempFileOne) || files(1).contains(tempFileTwo))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
@@ -433,6 +433,34 @@ class ExecutionTest extends WordSpec with Matchers {
         e2.flatMap(Execution.from(_)).zip(e2)
       }
         .getCounters.map { case (_, c) => c("test") }
+
+      c1.shouldSucceed() should ===(100)
+      c2.shouldSucceed() should ===(100)
+    }
+    "zip does not duplicate pure counters" in {
+      val c1 = {
+        val e1 = TypedPipe.from(0 until 100)
+          .tallyAll("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e1.zip(e1)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
+
+      val c2 = {
+        val e2 = TypedPipe.from(0 until 100)
+          .tallyAll("scalding", "test")
+          .writeExecution(source.NullSink)
+
+        e2.flatMap(Execution.from(_)).zip(e2)
+          .getCounters.map { case (_, c) =>
+            println(c.toMap)
+            c(("test", "scalding"))
+          }
+      }
 
       c1.shouldSucceed() should ===(100)
       c2.shouldSucceed() should ===(100)

@@ -214,6 +214,13 @@ case class Hdfs(strict: Boolean, @transient conf: Configuration) extends HadoopM
   }
 }
 
+object Hdfs {
+  /**
+   * Make an Hdfs instance in strict mode with new Configuration
+   */
+  def default: Hdfs = Hdfs(true, new Configuration)
+}
+
 case class HadoopTest(@transient conf: Configuration,
   @transient buffers: Source => Option[Buffer[Tuple]])
   extends HadoopMode with TestMode {

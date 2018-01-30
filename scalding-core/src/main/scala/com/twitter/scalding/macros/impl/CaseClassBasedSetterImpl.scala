@@ -39,7 +39,7 @@ object CaseClassBasedSetterImpl {
        */
       def setTree(value: Tree, offset: Int): Tree
     }
-    case class PrimitiveSetter(tpe: Type) extends SetterBuilder {
+    final case class PrimitiveSetter(tpe: Type) extends SetterBuilder {
       def columns = 1
       def setTree(value: Tree, offset: Int) = fsetter.from(c)(tpe, offset, container, value) match {
         case Success(tree) => tree
@@ -51,7 +51,7 @@ object CaseClassBasedSetterImpl {
       def columns = 1
       def setTree(value: Tree, offset: Int) = fsetter.default(c)(offset, container, value)
     }
-    case class OptionSetter(inner: SetterBuilder) extends SetterBuilder {
+    final case class OptionSetter(inner: SetterBuilder) extends SetterBuilder {
       def columns = inner.columns
       def setTree(value: Tree, offset: Int) = {
         val someVal = newTermName(c.fresh("someVal"))
@@ -64,7 +64,7 @@ object CaseClassBasedSetterImpl {
         }"""
       }
     }
-    case class CaseClassSetter(members: Vector[(Tree => Tree, SetterBuilder)]) extends SetterBuilder {
+    final case class CaseClassSetter(members: Vector[(Tree => Tree, SetterBuilder)]) extends SetterBuilder {
       val columns = members.map(_._2.columns).sum
       def setTree(value: Tree, offset: Int) = {
         val setters = members.scanLeft((offset, Option.empty[Tree])) {

@@ -28,11 +28,9 @@ object DateTypeHandler {
       _ <- nextHelper.validateFinished
     } yield (dateAnno)
 
-    extracted.flatMap { t =>
-      t match {
-        case WithDate => Success(List(ColumnFormat(c)(accessorTree, "DATE", None)))
-        case WithoutDate => Success(List(ColumnFormat(c)(accessorTree, "DATETIME", None)))
-      }
+    extracted.flatMap {
+      case WithDate => Success(List(ColumnFormat(c)(accessorTree, "DATE", None)))
+      case WithoutDate => Success(List(ColumnFormat(c)(accessorTree, "DATETIME", None)))
     }
   }
 }

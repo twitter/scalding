@@ -107,7 +107,7 @@ object ColumnDefinitionProviderImpl {
         .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { m =>
-          val fieldName = m.name.toTermName.toString.trim
+          val fieldName = m.name.toString.trim
           val defaultVal = defaultArgs.get(fieldName)
 
           val annotationInfo: List[(Type, Option[Int])] = annotationData.getOrElse(m.name.toString.trim, Nil)
@@ -116,11 +116,8 @@ object ColumnDefinitionProviderImpl {
               case (tpe, _) if tpe =:= typeOf[com.twitter.scalding.db.macros.size] => c.abort(c.enclosingPosition, "Hit a size macro where we couldn't parse the value. Probably not a literal constant. Only literal constants are supported.")
               case (tpe, _) if tpe <:< typeOf[com.twitter.scalding.db.macros.ScaldingDBAnnotation] => (tpe, None)
             }
-          (m, fieldName, defaultVal, annotationInfo)
-        }
-        .map {
-          case (accessorMethod, fieldName, defaultVal, annotationInfo) =>
-            matchField(outerAccessorTree :+ accessorMethod, accessorMethod.returnType, FieldName(fieldName), defaultVal, annotationInfo, false)
+
+          matchField(outerAccessorTree :+ m, m.returnType, FieldName(fieldName), defaultVal, annotationInfo, false)
         }
         .toList
         // This algorithm returns the error from the first exception we run into.

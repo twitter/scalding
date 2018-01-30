@@ -19,7 +19,7 @@ import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.JavaStreamEnrichments
 import java.io.InputStream
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 
@@ -37,6 +37,7 @@ object CommonCompareBinary {
    * check if they are byte-for-byte identical, which is a cheap way to avoid doing
    * potentially complex logic in binary comparators
    */
+  @SuppressWarnings(Array("org.wartremover.warts.Return"))
   final def earlyEqual(inputStreamA: InputStream,
     lenA: Int,
     inputStreamB: InputStream,
@@ -59,8 +60,8 @@ object CommonCompareBinary {
             // yeah, return sucks, but trying to optimize here
             return false
           }
+          else if (a < 0) return JavaStreamEnrichments.eof
           // a == b, but may be eof
-          if (a < 0) return JavaStreamEnrichments.eof
         }
         // we consumed all the bytes, and they were all equal
         true
@@ -70,7 +71,7 @@ object TreeOrderedBuf {
   import CompileTimeLengthTypes._
   def toOrderedSerialization[T](c: Context)(t: TreeOrderedBuf[c.type])(implicit T: t.ctx.WeakTypeTag[T]): t.ctx.Expr[OrderedSerialization[T]] = {
     import t.ctx.universe._
-    def freshT(id: String) = newTermName(c.fresh(s"fresh_$id"))
+    def freshT(id: String) = TermName(c.freshName(s"fresh_$id"))
     val outputLength = freshT("outputLength")
 
     val innerLengthFn: Tree = {
@@ -213,7 +214,7 @@ object TreeOrderedBuf {
 
     val lazyVariables = t.lazyOuterVariables.map {
       case (n, t) =>
-        val termName = newTermName(n)
+        val termName = TermName(n)
         q"""lazy val $termName = $t"""
     }
 
@@ -258,7 +259,7 @@ object TreeOrderedBuf {
           }
 
         override def hash(passedInObjectToHash: $T): Int = {
-          ${t.hash(newTermName("passedInObjectToHash"))}
+          ${t.hash(TermName("passedInObjectToHash"))}
         }
 
         private[this] def failedLengthCalc(): Unit = {
@@ -282,8 +283,8 @@ object TreeOrderedBuf {
 
         override def read(from: _root_.java.io.InputStream): _root_.scala.util.Try[$T] = {
           try {
-              ${discardLength(newTermName("from"))}
-             _root_.scala.util.Success(${t.get(newTermName("from"))})
+              ${discardLength(TermName("from"))}
+             _root_.scala.util.Success(${t.get(TermName("from"))})
           } catch { case _root_.scala.util.control.NonFatal(e) =>
             _root_.scala.util.Failure(e)
           }
@@ -291,7 +292,7 @@ object TreeOrderedBuf {
 
         override def write(into: _root_.java.io.OutputStream, e: $T): _root_.scala.util.Try[Unit] = {
           try {
-              ${putFnGen(newTermName("into"), newTermName("e"))}
+              ${putFnGen(TermName("into"), TermName("e"))}
               _root_.com.twitter.scalding.serialization.Serialization.successUnit
           } catch { case _root_.scala.util.control.NonFatal(e) =>
             _root_.scala.util.Failure(e)
@@ -299,7 +300,7 @@ object TreeOrderedBuf {
         }
 
         override def compare(x: $T, y: $T): Int = {
-          ${t.compare(newTermName("x"), newTermName("y"))}
+          ${t.compare(TermName("x"), TermName("y"))}
         }
       }
     """)

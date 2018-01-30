@@ -114,7 +114,8 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
           val cwd = System.getProperty("user.dir")
 
           ScaldingILoop.findAllUpPath(cwd)(".scalding_repl").reverse.foreach { f =>
-            s.loadfiles.appendToValue(f.toString)
+            val fs = s.loadfiles.value
+            s.loadfiles.value = fs ::: List(f.toString)
           }
         case _ => ()
       }

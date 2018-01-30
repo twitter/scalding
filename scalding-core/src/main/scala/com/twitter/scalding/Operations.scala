@@ -316,7 +316,7 @@ package com.twitter.scalding {
     }
   }
 
-  class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
+  final class SummingMapsideCache[K, V](flowProcess: FlowProcess[_], summingCache: SummingWithHitsCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -349,7 +349,7 @@ package com.twitter.scalding {
     }
   }
 
-  class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
+  final class AdaptiveMapsideCache[K, V](flowProcess: FlowProcess[_], adaptiveCache: AdaptiveCache[K, V])
     extends MapsideCache[K, V] {
     private[this] val misses = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "misses"))
     private[this] val hits = CounterImpl(flowProcess, StatKey(MapsideReduce.COUNTER_GROUP, "hits"))
@@ -696,6 +696,27 @@ package com.twitter.scalding {
         tup.set(0, resIter.next)
         oc.add(tup)
       }
+    }
+  }
+
+  /**
+   * This gets a pair out of a tuple, incruments the counters with the left, and passes the value
+   * on
+   */
+  class IncrementCounters[A](pass: Fields, conv: TupleConverter[(A, Iterable[((String, String), Long)])])
+    extends BaseOperation[Any](pass)
+    with Function[Any] {
+
+    override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]): Unit = {
+      val (a, inc) = conv(functionCall.getArguments)
+      val iter = inc.iterator
+      while (iter.hasNext) {
+        val ((k1, k2), amt) = iter.next
+        flowProcess.increment(k1, k2, amt)
+      }
+      val tup = Tuple.size(1)
+      tup.set(0, a)
+      functionCall.getOutputCollector.add(tup)
     }
   }
 }

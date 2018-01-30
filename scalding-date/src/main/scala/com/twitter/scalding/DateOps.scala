@@ -67,7 +67,7 @@ object DateOps extends java.io.Serializable {
    * Return the guessed format for this datestring
    */
   private[scalding] def getFormatObject(s: String): Option[Format] = {
-    val formats: List[Format] = List(
+    val formats: List[Format] = List[Format](
       Format.DATE_WITH_DASH,
       Format.DATEHOUR_WITH_DASH,
       Format.DATETIME_WITH_DASH,

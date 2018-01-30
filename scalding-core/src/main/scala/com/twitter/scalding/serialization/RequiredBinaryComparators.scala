@@ -26,9 +26,9 @@ object RequiredBinaryComparators {
  */
 trait RequiredBinaryComparatorsExecutionApp extends ExecutionApp {
   implicit def ordSer[T]: OrderedSerialization[T] = macro com.twitter.scalding.serialization.macros.impl.OrderedSerializationProviderImpl[T]
-
+  def requireOrderedSerializationMode: RequireOrderedSerializationMode = RequireOrderedSerializationMode.Fail
   override def config(inputArgs: Array[String]): (Config, Mode) = {
     val (conf, m) = super.config(inputArgs)
-    (conf.setRequireOrderedSerialization(true), m)
+    (conf.setRequireOrderedSerializationMode(Some(requireOrderedSerializationMode)), m)
   }
 }

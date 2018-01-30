@@ -16,18 +16,24 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.twitter.scalding._
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ CompileTimeLengthTypes, ProductLike, TreeOrderedBuf }
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  CompileTimeLengthTypes,
+  ProductLike,
+  TreeOrderedBuf
+}
 import CompileTimeLengthTypes._
 import java.nio.ByteBuffer
 import com.twitter.scalding.serialization.OrderedSerialization
 
 object ProductOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])
+    : PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
-    val validTypes: List[Type] = List(typeOf[Product1[Any]],
+    val validTypes: List[Type] = List(
+      typeOf[Product1[Any]],
       typeOf[Product2[Any, Any]],
       typeOf[Product3[Any, Any, Any]],
       typeOf[Product4[Any, Any, Any, Any]],
@@ -42,46 +48,173 @@ object ProductOrderedBuf {
       typeOf[Product13[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Product14[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Product15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Product22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
+      typeOf[
+        Product16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
+      typeOf[
+        Product17[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]],
+      typeOf[
+        Product18[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]],
+      typeOf[
+        Product19[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]],
+      typeOf[
+        Product20[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]],
+      typeOf[
+        Product21[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]],
+      typeOf[
+        Product22[Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any,
+                  Any]]
+    )
 
     def validType(curType: Type): Boolean =
-      validTypes.exists { t => curType <:< t }
+      validTypes.exists { t =>
+        curType <:< t
+      }
 
     // The `_.get` is safe since it's always preceded by a matching
     // `_.isDefined` check in `validType`
     @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
     def symbolFor(subType: Type): Type = {
-      val superType = validTypes.find{ t => subType.erasure <:< t }.get
+      val superType = validTypes.find { t =>
+        subType.erasure <:< t
+      }.get
       subType.baseType(superType.typeSymbol)
     }
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if validType(tpe.erasure) => ProductOrderedBuf(c)(buildDispatcher, tpe, symbolFor(tpe))
+      case tpe if validType(tpe.erasure) =>
+        ProductOrderedBuf(c)(buildDispatcher, tpe, symbolFor(tpe))
     }
     pf
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], originalType: c.Type, outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+                        originalType: c.Type,
+                        outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
-    def freshT(id: String) = newTermName(c.fresh(id))
+    def freshT(id: String) = TermName(c.freshName(id))
 
     val dispatcher = buildDispatcher
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType
-        .declarations
+      outerType.decls
         .collect { case m: MethodSymbol => m }
-        .filter(m => m.name.toTermName.toString.startsWith("_"))
+        .filter(m => m.name.toString.startsWith("_"))
         .map { accessorMethod =>
-          val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
+          val fieldType =
+            accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
-          (fieldType, accessorMethod.name.toTermName, b)
-        }.toList
+          (fieldType, accessorMethod.name, b)
+        }
+        .toList
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -89,7 +222,8 @@ object ProductOrderedBuf {
       override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
         ProductLike.compareBinary(c)(inputStreamA, inputStreamB)(elementData)
 
-      override def hash(element: ctx.TermName): ctx.Tree = ProductLike.hash(c)(element)(elementData)
+      override def hash(element: ctx.TermName): ctx.Tree =
+        ProductLike.hash(c)(element)(elementData)
 
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         ProductLike.put(c)(inputStream, element)(elementData)
@@ -122,4 +256,3 @@ object ProductOrderedBuf {
     }
   }
 }
-

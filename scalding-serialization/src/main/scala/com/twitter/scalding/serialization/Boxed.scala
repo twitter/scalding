@@ -833,7 +833,7 @@ object Boxed {
   private[scalding] def nextCached[K](cacheKey: Option[AnyRef]): (K => Boxed[K], Class[Boxed[K]]) =
     cacheKey match {
       case Some(cls) =>
-        val untypedRes = Option(boxedCache.get(cls)) match {
+        val untypedRes = Option(boxedCache.get(cls)) match { // linter:ignore
           case Some(r) => r
           case None =>
             val r = next[Any]()

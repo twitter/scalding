@@ -34,11 +34,12 @@ import java.net.URI
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
+import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
 /**
  * This is a wrapper class on top of Map[String, String]
  */
-trait Config extends Serializable {
+abstract class Config extends Serializable {
 
   import Config._ // get the constants
   def toMap: Map[String, String]
@@ -101,14 +102,17 @@ trait Config extends Serializable {
    * is used to create the Class.forName
    */
   def getCascadingAppJar: Option[Try[Class[_]]] =
-    get(AppProps.APP_JAR_CLASS).map { str =>
-      // The Class[_] messes up using Try(Class.forName(str)) on scala 2.9.3
+    getClassForKey(AppProps.APP_JAR_CLASS)
+
+  def getClassForKey(k: String): Option[Try[Class[_]]] =
+    get(k).map { str =>
       try {
         Success(
           // Make sure we are using the class-loader for the current thread
           Class.forName(str, true, Thread.currentThread().getContextClassLoader))
       } catch { case err: Throwable => Failure(err) }
     }
+
 
   /*
    * Used in joins to determine how much of the "right hand side" of
@@ -135,17 +139,30 @@ trait Config extends Serializable {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateByProps.AGGREGATE_BY_CAPACITY -> count.toString)
 
+  @deprecated("Use setRequireOrderedSerializationMode", "12/14/17")
+  def setRequireOrderedSerialization(b: Boolean): Config =
+    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+
+  @deprecated("Use getRequireOrderedSerializationMode", "12/14/17")
+  def getRequireOrderedSerialization: Boolean =
+    getRequireOrderedSerializationMode == Some(RequireOrderedSerializationMode.Fail)
+
   /**
    * Set this configuration option to require all grouping/cogrouping
    * to use OrderedSerialization
    */
-  def setRequireOrderedSerialization(b: Boolean): Config =
-    this + (ScaldingRequireOrderedSerialization -> (b.toString))
+  def setRequireOrderedSerializationMode(r: Option[RequireOrderedSerializationMode]): Config =
+    r.map {
+      v => this + (ScaldingRequireOrderedSerialization -> (v.toString))
+    }.getOrElse(this)
 
-  def getRequireOrderedSerialization: Boolean =
+  def getRequireOrderedSerializationMode: Option[RequireOrderedSerializationMode] =
     get(ScaldingRequireOrderedSerialization)
-      .map(_.toBoolean)
-      .getOrElse(false)
+      .map(_.toLowerCase()).collect {
+        case "true" => RequireOrderedSerializationMode.Fail // backwards compatibility
+        case "fail" => RequireOrderedSerializationMode.Fail
+        case "log" => RequireOrderedSerializationMode.Log
+      }
 
   def getCascadingSerializationTokens: Map[Int, String] =
     get(Config.CascadingSerializationTokens)
@@ -238,6 +255,19 @@ trait Config extends Serializable {
 
   def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
     this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
+
+  def getOptimizationPhases: Option[Try[typed.OptimizationPhases]] =
+    getClassForKey(Config.OptimizationPhases).map { tryClass =>
+      tryClass.flatMap { clazz =>
+        Try(clazz.newInstance().asInstanceOf[typed.OptimizationPhases])
+      }
+    }
+
+  def setOptimizationPhases(clazz: Class[_ <: typed.OptimizationPhases]): Config =
+    setOptimizationPhasesFromName(clazz.getName)
+
+  def setOptimizationPhasesFromName(className: String): Config =
+    this + (Config.OptimizationPhases -> className)
 
   def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
   def setScaldingVersion: Config =
@@ -402,6 +432,19 @@ trait Config extends Serializable {
   def setVerboseFileSourceLogging(b: Boolean): Config =
     this + (VerboseFileSourceLoggingKey -> b.toString)
 
+  def getSkipNullCounters: Boolean =
+    get(SkipNullCounters)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
+  /**
+   * If this is true, on hadoop, when we get a null Counter
+   * for a given name, we just ignore the counter instead
+   * of NPE
+   */
+  def setSkipNullCounters(boolean: Boolean): Config =
+    this + (SkipNullCounters -> boolean.toString)
+
   override def hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
     case thatConf: Config => toMap == thatConf.toMap
@@ -424,12 +467,14 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
   val FlowListeners: String = "scalding.observability.flowlisteners"
   val FlowStepListeners: String = "scalding.observability.flowsteplisteners"
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
-  val VerboseFileSourceLoggingKey = "scalding.filesource.verbose.logging"
+  val VerboseFileSourceLoggingKey: String = "scalding.filesource.verbose.logging"
+  val OptimizationPhases: String = "scalding.optimization.phases"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -553,7 +598,7 @@ object Config {
    * Either union these two, or return the keys that overlap
    */
   def disjointUnion[K >: String, V >: String](m: Map[K, V], conf: Config): Either[Set[String], Map[K, V]] = {
-    val asMap = conf.toMap.toMap[K, V] // linter:ignore we are upcasting K, V
+    val asMap = conf.toMap.toMap[K, V] // linter:disable:TypeToType // we are upcasting K, V
     val duplicateKeys = (m.keySet & asMap.keySet)
     if (duplicateKeys.isEmpty) Right(m ++ asMap)
     else Left(conf.toMap.keySet.filter(duplicateKeys(_))) // make sure to return Set[String], and not cast
@@ -562,7 +607,7 @@ object Config {
    * This overwrites any keys in m that exist in config.
    */
   def overwrite[K >: String, V >: String](m: Map[K, V], conf: Config): Map[K, V] =
-    m ++ (conf.toMap.toMap[K, V]) // linter:ignore we are upcasting K, V
+    m ++ (conf.toMap.toMap[K, V]) // linter:disable:TypeToType // we are upcasting K, V
 
   /*
    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is

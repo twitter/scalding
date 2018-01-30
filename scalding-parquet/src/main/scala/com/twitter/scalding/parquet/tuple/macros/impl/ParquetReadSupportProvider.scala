@@ -106,20 +106,20 @@ class ParquetReadSupportProvider(schemaProvider: ParquetSchemaProvider) {
       }
 
       def matchPrimitiveField(converterType: Type): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val innerConverter: Tree = q"new $converterType()"
         val converter: Tree = fieldConverter(converterName, innerConverter, isPrimitive = true)
         createFieldMatchResult(converterName, converter)
       }
 
       def matchCaseClassField(groupConverter: Tree): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val converter: Tree = fieldConverter(converterName, groupConverter)
         createFieldMatchResult(converterName, converter)
       }
 
       def matchMapField(K: Type, V: Type, keyConverter: Tree, valueConverter: Tree): (Tree, Tree, Tree, Tree) = {
-        val converterName = newTermName(ctx.fresh(s"fieldConverter"))
+        val converterName = newTermName(ctx.fresh("fieldConverter"))
         val mapConverter = createMapFieldConverter(converterName, K, V, keyConverter, valueConverter)
         createFieldMatchResult(converterName, mapConverter)
       }
