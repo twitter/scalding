@@ -57,7 +57,7 @@ object CascadingBinaryComparator {
       it.find(_.isFailure).getOrElse(Success(()))
 
     def failure(s: String): Try[Unit] = {
-      val message = 
+      val message =
         s"Cannot verify OrderedSerialization: $s. Add `import com.twitter.scalding.serialization.RequiredBinaryComparators._`"
       mode match {
         case RequireOrderedSerializationMode.Fail =>

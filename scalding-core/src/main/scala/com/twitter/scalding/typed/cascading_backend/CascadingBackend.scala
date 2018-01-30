@@ -10,7 +10,7 @@ import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
   CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowStateMap, GroupBuilder,
-  HadoopMode, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
+  HadoopMode, IncrementCounters, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
 import com.twitter.scalding.typed._
@@ -155,6 +155,14 @@ object CascadingBackend {
     Memoize.functionK[TypedPipe, CascadingPipe](
       new Memoize.RecursiveK[TypedPipe, CascadingPipe] {
         def toFunction[T] = {
+          case (cp@CounterPipe(_), rec) =>
+            def go[A](cp: CounterPipe[A]): CascadingPipe[A] = {
+              val CascadingPipe(pipe0, initF, fd, conv) = rec(cp.pipe)
+              val cpipe = RichPipe(pipe0)
+                .eachTo(initF -> f0)(new IncrementCounters[A](_, TupleConverter.asSuperConverter(conv)))
+              CascadingPipe.single[A](cpipe, fd)
+            }
+            go(cp)
           case (cp@CrossPipe(_, _), rec) =>
             rec(cp.viaHashJoin)
           case (cv@CrossValue(_, _), rec) =>

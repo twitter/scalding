@@ -22,7 +22,7 @@ import cascading.tuple.Fields
 import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.singleConverter
 import com.twitter.scalding._
-import com.twitter.scalding.typed.functions.{ AsLeft, AsRight, Constant, DropValue1, Identity, MakeKey, GetKey, GetValue, RandomFilter, RandomNextInt, Swap, TuplizeFunction, WithConstant, PartialFunctionToFilter, SubTypes }
+import com.twitter.scalding.typed.functions.{ AsLeft, AsRight, Constant, DropValue1, EqTypes, Identity, MakeKey, GetKey, GetValue, RandomFilter, RandomNextInt, Swap, TuplizeFunction, WithConstant, PartialFunctionToFilter, SubTypes }
 import com.twitter.scalding.serialization.{ OrderedSerialization, UnitOrderedSerialization }
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
@@ -139,6 +139,7 @@ object TypedPipe extends Serializable {
   }
 
    final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
+   final case class CounterPipe[A](pipe: TypedPipe[(A, Iterable[((String, String), Long)])]) extends TypedPipe[A]
    final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values
@@ -182,6 +183,30 @@ object TypedPipe extends Serializable {
       def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
         TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withLine
    }
+
+
+  private case class TallyByFn[A](group: String, fn: A => String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
+    def apply(a: A) = (a, (((group, fn(a)), 1L)) :: Nil)
+  }
+  private case class TallyFn[A](group: String, counter: String) extends Function1[A, (A, Iterable[((String, String), Long)])] {
+    private[this] val inc = ((group, counter), 1L) :: Nil
+    def apply(a: A) = (a, inc)
+  }
+  private case class TallyLeft[A, B](group: String, fn: A => Either[String, B]) extends Function1[A, (List[B], Iterable[((String, String), Long)])] {
+    def apply(a: A) = fn(a) match {
+      case Right(b) => (b :: Nil, Nil)
+      case Left(cnt) => (Nil, ((group, cnt), 1L) :: Nil)
+    }
+  }
+
+  implicit class TallyEnrichment[A, B <: Iterable[((String, String), Long)]](val pipe: TypedPipe[(A, B)]) extends AnyVal {
+    /**
+     * Increment hadoop counters with a (group, counter) by the amount in the second
+     * part of the tuple, and remove that second part
+     */
+    def tally: TypedPipe[A] =
+      CounterPipe(pipe)
+  }
 }
 
 /**
@@ -200,6 +225,31 @@ sealed abstract class TypedPipe[+T] extends Serializable {
       case Some(desc) =>
         TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
     }
+
+  /**
+   * Increment diagnostic counters by 1 for each item in the pipe.
+   * The counter group will be the same for each item, the counter name
+   * is determined by the result of the `fn` passed in.
+   */
+  def tallyBy(group: String)(fn: T => String): TypedPipe[T] =
+    map(TypedPipe.TallyByFn(group, fn)).tally
+
+  /**
+   * Increment a specific diagnostic counter by 1 for each item in the pipe.
+   *
+   * this is the same as tallyBy(group)(_ => counter)
+   */
+  def tallyAll(group: String, counter: String): TypedPipe[T] =
+    map(TypedPipe.TallyFn(group, counter)).tally
+
+  /**
+   * Increment a diagnostic counter for each failure. This is like map,
+   * where the `fn` should return a `Right[U]` for each successful transformation
+   * and a `Left[String]` for each failure, with the String describing the failure.
+   * Each failure will be counted, and the result is just the successes.
+   */
+  def tallyLeft[B](group: String)(fn: T => Either[String, B]): TypedPipe[B] =
+    map(TypedPipe.TallyLeft(group, fn)).tally.flatten
 
   /**
    * Implements a cross product.  The right side should be tiny
