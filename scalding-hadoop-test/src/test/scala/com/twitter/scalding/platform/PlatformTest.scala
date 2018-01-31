@@ -738,7 +738,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         }
         .inspectCompletedFlow { flow =>
           val steps = flow.getFlowSteps.asScala
-          steps should have size 2
+          steps should have size 3 // TODO: this used to be 2, but we seem to be taking 3 steps on this now due to forcing hashJoins to disk
           // two steps given we auto checkpoint before the merge
           // user supplied forceToDisk should not add a third step
         }
