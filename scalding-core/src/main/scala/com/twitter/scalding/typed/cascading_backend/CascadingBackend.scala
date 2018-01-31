@@ -343,7 +343,7 @@ object CascadingBackend {
           OptimizationRules.simplifyEmpty,
           // add any explicit forces to the optimized graph
           Rule.orElse(List(
-            forceHash,
+            forceHash, // do this only on the maximally optimized graph
             OptimizationRules.RemoveDuplicateForceFork)
           )))
 

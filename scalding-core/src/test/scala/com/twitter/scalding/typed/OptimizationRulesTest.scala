@@ -1,12 +1,14 @@
 package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
+import cascading.flow.planner.FlowPlanner
 import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
-import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
+import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource, TupleConverter }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import org.scalactic.anyvals.PosInt
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
@@ -193,6 +195,10 @@ class ConstantOptimizer extends OptimizationPhases {
   })
 }
 
+class JustHashJoinForce extends OptimizationPhases {
+  def phases = List(OptimizationRules.ForceToDiskBeforeHashJoin)
+}
+
 // we need to extend PropertyChecks, it seems, to control the number of successful runs
 // for optimization rules, we want to do many tests
 class OptimizationRulesTest extends FunSuite with PropertyChecks {
@@ -215,38 +221,110 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     assert(optimized == optimized2)
 
     // We don't want any further optimization on this job
-    val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
+    //val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
+    // cascading3 needs this
+    val conf = Config.empty.setOptimizationPhases(classOf[JustHashJoinForce])
     assert(TypedPipeDiff.diff(t, optimized)
       .toIterableExecution
       .waitFor(conf, Local(true)).get.isEmpty)
   }
 
+  // How many steps would this be in Hadoop on Cascading
+  def steps[T](p0: TypedPipe[T]): Int = {
+    val mode = Hdfs.default
+    val fd = new FlowDef
+    // cascading3 requires this rule
+    val p = Dag.applyRule(p0, toLiteral, OptimizationRules.ForceToDiskBeforeHashJoin)
+    val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
+    NullSink.writeFrom(pipe)(fd, mode)
+    val conf = Config.defaultFrom(mode) ++
+      Map.empty[String, String]
+    // turn on tracing with this, but you probably want to comment out almost all the tests
+    // Map(FlowPlanner.TRACE_PLAN_PATH -> "/tmp/scalding/cascading/trace/plan/",
+    //     FlowPlanner.TRACE_PLAN_TRANSFORM_PATH -> "/tmp/scalding/cascading/trace/plan/",
+    //     FlowPlanner.TRACE_STATS_PATH -> "/tmp/scalding/cascading/trace/plan/")
+    val ec = ExecutionContext.newContext(conf)(fd, mode)
+    val flow = ec.buildFlow.get
+    flow.getFlowSteps.size
+  }
+
   def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
     val optimized = Dag.applyRule(init, toLiteral, rule)
-
-    // How many steps would this be in Hadoop on Cascading
-    def steps(p: TypedPipe[T]): Int = {
-      val mode = Hdfs.default
-      val fd = new FlowDef
-      val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
-      NullSink.writeFrom(pipe)(fd, mode)
-      val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
-      val flow = ec.buildFlow.get
-      flow.getFlowSteps.size
-    }
-
     assert(steps(init) >= steps(optimized))
   }
 
+  test("test planning of some example graphs that have given us trouble in cascading3") {
+    /**
+     * This is a self hashJoin
+     */
+    val p = TypedPipe.from(List(1, 2, 3)).map { k => (k.toString, k) }
+    val pSelfJoin = p.hashJoin(p)
+
+    assert(steps(pSelfJoin) <= 2)
+    assert(steps(pSelfJoin.hashJoin(pSelfJoin)) <= 3)
+
+    def intOrder: Ordering[Int] = implicitly[Ordering[Int]]
+
+    {
+      import TypedPipe._
+      import CoGrouped._
+
+      val fn11: Int => Int = { x => x }
+      val fn11s: Int => List[Int] = List(_)
+      val fn12s: Int => List[(Int, Int)] = { x => List((x, 1)) }
+      val fn21: ((Int, Int)) => Int = { case (a, b) => a * b }
+      val mg: (Int, Iterator[Int]) => Iterator[Int] = { (_, b) => b }
+      val mg21: (Int, Iterator[(Int, Int)]) => Iterator[Int] = { (_, b) => b.map(_._1) }
+
+      val arg0 = WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(MapValues(CoGroupedPipe(MapGroup(Pair(IdentityReduce(intOrder,
+        WithDescriptionTypedPipe(WithDescriptionTypedPipe(FlatMapped[Int, (Int, Int)](EmptyTypedPipe, fn12s), "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true),
+          "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), None, List()),
+        IdentityReduce(intOrder,
+          WithDescriptionTypedPipe(CoGroupedPipe(MapGroup(Pair(IdentityReduce(intOrder,
+            WithDescriptionTypedPipe(WithDescriptionTypedPipe(FlatMapped(WithDescriptionTypedPipe[Int](EmptyTypedPipe, "tvo3aakgrh9jrzxoyeuqnfawbmjnxhaixoNgomuxeg41zfcpu", false),
+              fn12s), "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true),
+              "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), None, List()),
+            IdentityReduce(intOrder, WithDescriptionTypedPipe(WithDescriptionTypedPipe(FlatMapped(WithDescriptionTypedPipe(MergedTypedPipe(WithDescriptionTypedPipe(
+              WithDescriptionTypedPipe(WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(CrossPipe(WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(CrossValue(WithDescriptionTypedPipe(
+                TrappedPipe[Int](EmptyTypedPipe, TypedText.tsv[Int]("m8x5mxgwljgg4zWaq"), TupleConverter.singleConverter),
+                "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), LiteralValue(2)),
+                "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), fn21),
+                "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), EmptyTypedPipe), "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), fn21),
+                "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), "pqbttw", false), "rzeykwyetbqpay9k7kmyfqrihXolLbo1gkqhq", false),
+              EmptyTypedPipe),
+              "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), fn12s), "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true),
+              "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), None, List()), Joiner.inner2[Int, Int, Int]), mg21)),
+            "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), None, List()), Joiner.inner2[Int, Int, Int]), mg21)),
+        fn11 /*<function1>*/ ),
+        "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true), fn21 /*<function1>*/ ),
+        "org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)
+
+      val arg1 = OptimizationRules.EmptyIsOftenNoOp
+        .orElse(OptimizationRules.ComposeMap)
+        .orElse(OptimizationRules.ComposeFilter)
+        .orElse(OptimizationRules.EmptyIterableIsEmpty)
+        .orElse(OptimizationRules.RemoveDuplicateForceFork)
+        .orElse(OptimizationRules.IgnoreNoOpGroup)
+        .orElse(OptimizationRules.ComposeFilterMap)
+        .orElse(OptimizationRules.FilterKeysEarly)
+
+      // this is just a test that we can plan, which we can't
+      assert(steps(arg0) < 10)
+    }
+
+  }
+
+  val TrialCount = PosInt(200)
+
   test("all optimization rules don't change results") {
     import TypedPipeGen.{ genWithIterableSources, genRule }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = TrialCount)
     forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
   }
 
   test("all optimization rules do not increase steps") {
     import TypedPipeGen.{ allRules, genWithIterableSources, genRuleFrom }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = TrialCount)
 
     val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
       Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values

@@ -422,7 +422,7 @@ abstract class Config extends Serializable {
   def getHashJoinAutoForceRight: Boolean =
     get(HashJoinAutoForceRight)
       .map(_.toBoolean)
-      .getOrElse(false)
+      .getOrElse(true) // cascading3 seems to currently require this
 
   /**
    * Set to true to enable very verbose logging during FileSource's validation and planning.
@@ -512,9 +512,12 @@ object Config {
 
   /**
    * Parameter that can be used to determine behavior on the rhs of a hashJoin.
-   * If true, we try to guess when to auto force to disk before a hashJoin
-   * else (the default) we don't try to infer this and the behavior can be dictated by the user manually
+   * If true (the default), we try to guess when to auto force to disk before a hashJoin
+   * else we don't try to infer this and the behavior can be dictated by the user manually
    * calling forceToDisk on the rhs or not as they wish.
+   *
+   * Note, cascading3 seems to currently require this behavior, so disable at your own
+   * risk
    */
   val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
 

@@ -904,8 +904,11 @@ object OptimizationRules {
     // checkpointed
     final def maybeForce[T](t: TypedPipe[T]): TypedPipe[T] =
       t match {
+        case ReduceStepPipe(IdentityReduce(_, input, None, _)) =>
+          // this is a no-op reduce that will be removed, so we may need to add a force
+          maybeForce(input)
         case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
-        case WithOnComplete(pipe, fn) =>
+        case WithOnComplete(pipe, fn) => // TODO it is not clear this is safe
           WithOnComplete(maybeForce(pipe), fn)
         case WithDescriptionTypedPipe(pipe, desc, dedup) =>
           WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
@@ -924,9 +927,13 @@ object OptimizationRules {
         }
         if (newRight != right) Some(HashCoGroup(left, newRight, joiner))
         else None
+      case (cp@CrossPipe(_, _)) => Some(cp.viaHashJoin)
+      case (cv@CrossValue(_, _)) => Some(cv.viaHashJoin)
       case _ => None
     }
   }
+
+  // TODO: write a rule to convert HashCoGroup to CoGroupedPipe to side-step cascading3 planning
 
   ///////
   // These are composed rules that are related
