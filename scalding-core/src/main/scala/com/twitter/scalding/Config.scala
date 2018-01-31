@@ -424,6 +424,18 @@ abstract class Config extends Serializable {
       .map(_.toBoolean)
       .getOrElse(true) // cascading3 seems to currently require this
 
+  def setConvertHashJoinToShuffleJoin(b: Boolean): Config =
+    this + (Config.HashToShuffleJoin -> (b.toString))
+
+  /**
+   * Cascading 3 has in the past had issues with hashJoins.
+   * If your plan fails, you may try with this option set.
+   */
+  def getConvertHashJoinToShuffleJoin: Boolean =
+    get(Config.HashToShuffleJoin)
+      .map(_.toBoolean)
+      .getOrElse(false)
+
   /**
    * Set to true to enable very verbose logging during FileSource's validation and planning.
    * This can help record what files were present / missing at runtime. Should only be enabled
@@ -520,6 +532,8 @@ object Config {
    * risk
    */
   val HashJoinAutoForceRight: String = "scalding.hashjoin.autoforceright"
+
+  val HashToShuffleJoin: String = "scalding.hashjoin.convertshuffle"
 
   val empty: Config = Config(Map.empty)
 

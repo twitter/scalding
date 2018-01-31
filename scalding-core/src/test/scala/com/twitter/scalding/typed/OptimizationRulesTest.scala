@@ -165,6 +165,7 @@ object TypedPipeGen {
     FilterLocally,
     EmptyIsOftenNoOp,
     EmptyIterableIsEmpty,
+    HashToShuffleCoGroup,
     ForceToDiskBeforeHashJoin)
 
   def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
@@ -328,7 +329,8 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
 
     val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
       Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
-        OptimizationRules.ForceToDiskBeforeHashJoin // adding a forceToDisk can increase the number of steps
+        OptimizationRules.ForceToDiskBeforeHashJoin, // adding a forceToDisk can increase the number of steps
+        OptimizationRules.HashToShuffleCoGroup // obviously changing a hashjoin to a cogroup can increase steps
         )
 
     val gen = genRuleFrom(allRules.filterNot(possiblyIncreasesSteps))
