@@ -148,7 +148,7 @@ object RichPipe extends java.io.Serializable {
         // and fails to match any others (think of it as a sealed trait)
         // So we handle all special types before checking for the assignName case
         case other @ (hj: HashJoin) =>
-          getJoinedPipeSet(hj) + other
+          getJoinedPipeSet(hj) ++ collect
         case other @ (_: Checkpoint | _: Operator | _: Splice /* except HashJoin*/ | _: SubAssembly) =>
           (other :: collect).toSet
         case renamedPipe: Pipe =>
