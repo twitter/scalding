@@ -904,8 +904,11 @@ object OptimizationRules {
     // checkpointed
     final def maybeForce[T](t: TypedPipe[T]): TypedPipe[T] =
       t match {
+        case ReduceStepPipe(IdentityReduce(_, input, None, _)) =>
+          // this is a no-op reduce that will be removed, so we may need to add a force
+          maybeForce(input)
         case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
-        case WithOnComplete(pipe, fn) =>
+        case WithOnComplete(pipe, fn) => // TODO it is not clear this is safe in cascading 3, since oncomplete is an each
           WithOnComplete(maybeForce(pipe), fn)
         case WithDescriptionTypedPipe(pipe, desc, dedup) =>
           WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
@@ -924,6 +927,23 @@ object OptimizationRules {
         }
         if (newRight != right) Some(HashCoGroup(left, newRight, joiner))
         else None
+      case (cp@CrossPipe(_, _)) => Some(cp.viaHashJoin)
+      case (cv@CrossValue(_, _)) => Some(cv.viaHashJoin)
+      case _ => None
+    }
+  }
+
+  /**
+   * Convert all HashCoGroup to CoGroupedPipe
+   */
+  object HashToShuffleCoGroup extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case HashCoGroup(left, right: HashJoinable[a, b], joiner) =>
+        val leftg = Grouped(left)(right.keyOrdering)
+        val joiner2 = Joiner.toCogroupJoiner2(joiner)
+        Some(CoGroupedPipe(CoGrouped.Pair(leftg, right, joiner2)))
+      case (cp@CrossPipe(_, _)) => Some(cp.viaHashJoin)
+      case (cv@CrossValue(_, _)) => Some(cv.viaHashJoin)
       case _ => None
     }
   }
