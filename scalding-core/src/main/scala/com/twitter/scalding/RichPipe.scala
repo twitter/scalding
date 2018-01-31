@@ -136,38 +136,38 @@ object RichPipe extends java.io.Serializable {
   def isHashJoinedWithPipe(hashJoinPipe: Pipe, hashJoinOperandPipe: Pipe): Boolean = {
     // collects all Eachs ending with a non-Each
     @annotation.tailrec
-    def getChainOfEachs(p: Pipe, collect: List[Pipe] = Nil): List[Pipe] =
+    def getChainOfEachs(p: Pipe, collect: List[Pipe]): Set[Pipe] =
       p match {
         case p if isSourcePipe(p) =>
-          collect :+ p
+          (p :: collect).toSet
         case each: Each =>
-          getChainOfEachs(each.getPrevious.head, collect :+ each)
+          getChainOfEachs(each.getPrevious.head, each :: collect)
         // we don't use a special Pipe subtype for the assignName method
         // and we can't. all Pipe types need to be defined in cascading
         // because cascading assumes it knows all the Pipe subtypes
         // and fails to match any others (think of it as a sealed trait)
         // So we handle all special types before checking for the assignName case
         case other @ (hj: HashJoin) =>
-          collect ++ getJoinedPipeSet(hj)
+          getJoinedPipeSet(hj) ++ collect
         case other @ (_: Checkpoint | _: Operator | _: Splice /* except HashJoin*/ | _: SubAssembly) =>
-          collect :+ other
+          (other :: collect).toSet
         case renamedPipe: Pipe =>
           // this is the assignName case
-          getChainOfEachs(renamedPipe.getPrevious.head, collect :+ renamedPipe)
+          getChainOfEachs(renamedPipe.getPrevious.head, renamedPipe :: collect)
       }
 
     def getJoinedPipeSet(p: HashJoin): Set[Pipe] =
       p.getPrevious match {
         case a @ Array(_, _) =>
           // collect nodes up the left and right sides
-          a.flatMap { p => getChainOfEachs(p) }.toSet
+          a.flatMap { p => getChainOfEachs(p, Nil) }.toSet
         case other =>
           throw new IllegalStateException(s"More than two sides found in cascading's HashJoin pipe: $other")
       }
 
     hashJoinPipe match {
       case hj: HashJoin =>
-        getJoinedPipeSet(hj).intersect(getChainOfEachs(hashJoinOperandPipe).toSet).nonEmpty
+        getJoinedPipeSet(hj).intersect(getChainOfEachs(hashJoinOperandPipe, Nil)).nonEmpty
       case m: Merge =>
         m.getPrevious // gets all merged pipes
           .exists { p => isHashJoinedWithPipe(p, hashJoinOperandPipe) }
