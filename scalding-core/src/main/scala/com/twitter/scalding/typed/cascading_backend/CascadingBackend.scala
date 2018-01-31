@@ -343,7 +343,7 @@ object CascadingBackend {
           OptimizationRules.simplifyEmpty,
           // add any explicit forces to the optimized graph
           Rule.orElse(List(
-            forceHash,
+            forceHash, // do this only on the maximally optimized graph
             OptimizationRules.RemoveDuplicateForceFork)
           )))
 
@@ -353,7 +353,10 @@ object CascadingBackend {
         val force =
           if (config.getHashJoinAutoForceRight) OptimizationRules.ForceToDiskBeforeHashJoin
           else Rule.empty[TypedPipe]
-        std(force)
+        val hashToCogroup =
+          if (config.getConvertHashJoinToShuffleJoin) OptimizationRules.HashToShuffleCoGroup
+          else Rule.empty[TypedPipe]
+        std(force.orElse(hashToCogroup))
     }
   }
 
