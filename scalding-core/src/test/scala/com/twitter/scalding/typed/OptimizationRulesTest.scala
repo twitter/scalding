@@ -313,6 +313,44 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       assert(steps(arg0) < 10)
     }
 
+    {
+      import TypedPipe._
+      import CoGrouped._
+
+      val fn1b: Int => Boolean = (_ > 0)
+      val fn11: Int => Int = { x => x }
+      val fn11s: Int => List[Int] = List(_)
+      val fn12s: Int => List[(Int, Int)] = { x => List((x, 1)) }
+      val fn21: ((Int, Int)) => Int = { case (a, b) => a * b }
+      val mg: (Int, Iterator[Int]) => Iterator[Int] = { (_, b) => b }
+      val mg21: (Int, Iterator[(Int, Int)]) => Iterator[Int] = { (_, b) => b.map(_._1) }
+
+      val arg0 = WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(CrossValue(WithDescriptionTypedPipe(MergedTypedPipe(
+        IterablePipe(List(-2147483648, -642344067)), WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(CrossValue(
+          WithDescriptionTypedPipe(MergedTypedPipe(WithDescriptionTypedPipe(WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(
+            CrossPipe(WithDescriptionTypedPipe(TrappedPipe(IterablePipe(List(312548152, 458345207)),
+              TypedText.tsv[Int]("ked"),
+              TupleConverter.singleConverter[Int]), "org.scalacheck.Gen$R.map(Gen.scala:237)", true),
+              IterablePipe(List(-2147483648, 0))), "org.scalacheck.Gen$R.map(Gen.scala:237)", true), null /*<function1>*/ ),
+            "org.scalacheck.Gen$R.map(Gen.scala:237)", true), "cpq6jceulrzEgHkvjvnEpxngbsenkccrAzZiu2eanNk", false),
+            WithDescriptionTypedPipe(WithDescriptionTypedPipe(Filter(WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(
+              CrossPipe(IterablePipe(List(-151163257, -2147483648)), IterablePipe(List(-1992242190, -1163143704))),
+              "org.scalacheck.Gen$R.map(Gen.scala:237)", true), fn21 /*<function1>*/ ),
+              "org.scalacheck.Gen$R.map(Gen.scala:237)", true), fn1b /*org.scalacheck.GenArities$$Lambda$441/1771876489@56f9ef3e*/ ),
+              "org.scalacheck.Gen$R.map(Gen.scala:237)", true),
+              "hy0zwcjzomxTl7Prkmgcs1Chmsmcxtfyfgfpiothasorzoz0hxiygwznwia", false)),
+            "org.scalacheck.Gen$R.map(Gen.scala:237)", true), LiteralValue(2)),
+          "org.scalacheck.Gen$R.map(Gen.scala:237)", true), fn21 /*<function1>*/ ),
+          "org.scalacheck.Gen$R.map(Gen.scala:237)", true)),
+        "org.scalacheck.Gen$R.map(Gen.scala:237)", true), LiteralValue(2)),
+        "org.scalacheck.Gen$R.map(Gen.scala:237)", true), fn21 /*<function1>*/ ),
+        "org.scalacheck.Gen$R.map(Gen.scala:237)", true)
+      val arg1 = OptimizationRules.EmptyIterableIsEmpty
+
+      // this is just a test that we can plan, which we can't
+      assert(steps(arg0) < 10)
+    }
+
   }
 
   val TrialCount = PosInt(200)
