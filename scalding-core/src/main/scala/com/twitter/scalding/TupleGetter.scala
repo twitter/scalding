@@ -29,12 +29,13 @@ trait TupleGetter[@specialized(Int, Long, Float, Double) T] extends java.io.Seri
 }
 
 trait LowPriorityTupleGetter extends java.io.Serializable {
-  implicit def castingGetter[T]: TupleGetter[T] = new TupleGetter[T] {
-    def get(tup: CTuple, i: Int) = tup.getObject(i).asInstanceOf[T]
-  }
+  implicit def castingGetter[T]: TupleGetter[T] = TupleGetter.Casting()
 }
 
 object TupleGetter extends LowPriorityTupleGetter {
+  case class Casting[A]() extends TupleGetter[A] {
+    def get(tup: CTuple, i: Int) = tup.getObject(i).asInstanceOf[A]
+  }
 
   def get[T](tup: CTuple, i: Int)(implicit tg: TupleGetter[T]): T = tg.get(tup, i)
   def of[T](implicit tg: TupleGetter[T]): TupleGetter[T] = tg

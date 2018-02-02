@@ -37,21 +37,30 @@ import scala.collection.breakOut
  */
 trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.Serializable with TupleArity { self =>
   def apply(te: TupleEntry): T
-  def andThen[U](fn: T => U): TupleConverter[U] = new TupleConverter[U] {
-    def apply(te: TupleEntry) = fn(self(te))
-    def arity = self.arity
-  }
+  def andThen[U](fn: T => U): TupleConverter[U] =
+    TupleConverter.AndThen(this, fn)
 }
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
   implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit g: TupleGetter[A]): TupleConverter[A] =
-    new TupleConverter[A] {
-      def apply(tup: TupleEntry) = g.get(tup.getTuple, 0)
-      def arity = 1
-    }
+    TupleConverter.Single[A](g)
 }
 
 object TupleConverter extends GeneratedTupleConverters {
+  final case class Single[@specialized(Int, Long, Float, Double) A](getter: TupleGetter[A]) extends TupleConverter[A] {
+    def apply(tup: TupleEntry) = getter.get(tup.getTuple, 0)
+    def arity = 1
+  }
+
+  final case class AndThen[A, B](first: TupleConverter[A], fn: A => B) extends TupleConverter[B] {
+    def apply(te: TupleEntry) = fn(first(te))
+    def arity = first.arity
+  }
+
+  final case class FromFn[A](fn: TupleEntry => A, arity: Int) extends TupleConverter[A] {
+    def apply(te: TupleEntry) = fn(te)
+  }
+
   /**
    * Treat this TupleConverter as one for a superclass
    * We do this because we want to use implicit resolution invariantly,
@@ -59,10 +68,7 @@ object TupleConverter extends GeneratedTupleConverters {
    */
   def asSuperConverter[T, U >: T](tc: TupleConverter[T]): TupleConverter[U] = tc.asInstanceOf[TupleConverter[U]]
 
-  def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] = new TupleConverter[T] {
-    def apply(te: TupleEntry) = fn(te)
-    def arity = thisArity
-  }
+  def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] = FromFn(fn, thisArity)
   def fromTupleEntry[T](t: TupleEntry)(implicit tc: TupleConverter[T]): T = tc(t)
   def arity[T](implicit tc: TupleConverter[T]): Int = tc.arity
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc

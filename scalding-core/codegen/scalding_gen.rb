@@ -10,17 +10,20 @@ def make_tuple_conv(cnt)
               #"  g#{n} : TupleGetter[#{n}]"
               "  g#{n} : TupleGetter[#{n}]"
             }.join(",\n#{$indent}")
+  gvalues = type_names.map { |n| "g#{n}" }.join(", ")
   typed_args = type_names.zip(indices).map { |n,ni|
                  "g#{n}.get(tup, #{ni})"
                }.join(",\n#{$indent}       ")
-  %Q|\n#{$indent}implicit def tuple#{cnt}Converter[#{comma_tn}](implicit
-#{$indent}#{getters}): TupleConverter[Tuple#{cnt}[#{comma_tn}]] = new TupleConverter[Tuple#{cnt}[#{comma_tn}]]{
+
+  %Q|\n#{$indent}case class TupleConverter#{cnt}[#{comma_tn}](#{getters}) extends TupleConverter[Tuple#{cnt}[#{comma_tn}]] {
 #{$indent}    def apply(te : TupleEntry) = {
 #{$indent}      val tup = te.getTuple
 #{$indent}      Tuple#{cnt}(#{typed_args})
 #{$indent}    }
 #{$indent}    def arity = #{cnt}
 #{$indent}}
+#{$indent}implicit def tuple#{cnt}Converter[#{comma_tn}](implicit
+#{$indent}#{getters}): TupleConverter[Tuple#{cnt}[#{comma_tn}]] = TupleConverter#{cnt}(#{gvalues})
 |
 end
 
@@ -28,7 +31,7 @@ def make_setter(cnt)
   underscores = (["_"]*cnt).join(",")
   type_names = ('A'..'Y').to_a[0...cnt]
   comma_tn = type_names.join(",")
-  head = %Q|\n#{$indent}implicit def tup#{cnt}Setter[Z <: Tuple#{cnt}[#{underscores}]]: TupleSetter[Z] = new TupleSetter[Z] {
+  head = %Q|\n#{$indent}case class TupleSetter#{cnt}[Z <: Tuple#{cnt}[#{underscores}]]() extends TupleSetter[Z] {
 #{$indent}  override def apply(arg: Z) = {
 #{$indent}    val tup = Tuple.size(#{cnt})
 #{$indent}    |
@@ -36,9 +39,9 @@ def make_setter(cnt)
   tail = %Q|
 #{$indent}    tup
 #{$indent}  }
-
 #{$indent}  override def arity = #{cnt}
-#{$indent}}|
+#{$indent}}
+#{$indent}implicit def tup#{cnt}Setter[Z <: Tuple#{cnt}[#{underscores}]]: TupleSetter[Z] = TupleSetter#{cnt}[Z]()|
   head + middle + tail
 end
 
