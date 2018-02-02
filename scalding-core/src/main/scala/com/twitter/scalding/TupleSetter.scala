@@ -30,10 +30,7 @@ trait TupleSetter[T] extends java.io.Serializable with TupleArity { self =>
   def apply(arg: T): CTuple
 
   def contraMap[U](fn: U => T): TupleSetter[U] =
-    new TupleSetter[U] {
-      def apply(arg: U) = self.apply(fn(arg))
-      def arity = self.arity
-    }
+    TupleSetter.ContraMap(this, fn)
 }
 
 trait LowPriorityTupleSetters extends java.io.Serializable {
@@ -42,7 +39,17 @@ trait LowPriorityTupleSetters extends java.io.Serializable {
    * we just assume it is a single entry in the tuple
    * For some reason, putting a val TupleSetter[Any] here messes up implicit resolution
    */
-  implicit def singleSetter[A]: TupleSetter[A] = new TupleSetter[A] {
+  implicit def singleSetter[A]: TupleSetter[A] = TupleSetter.Single[A]()
+}
+
+object TupleSetter extends GeneratedTupleSetters {
+
+  case class ContraMap[A, B](second: TupleSetter[B], fn: A => B) extends TupleSetter[A] {
+    def apply(arg: A) = second.apply(fn(arg))
+    def arity = second.arity
+  }
+
+  case class Single[A]() extends TupleSetter[A] {
     override def apply(arg: A) = {
       val tup = CTuple.size(1)
       tup.set(0, arg)
@@ -50,9 +57,6 @@ trait LowPriorityTupleSetters extends java.io.Serializable {
     }
     override def arity = 1
   }
-}
-
-object TupleSetter extends GeneratedTupleSetters {
 
   /**
    * Treat this TupleSetter as one for a subclass

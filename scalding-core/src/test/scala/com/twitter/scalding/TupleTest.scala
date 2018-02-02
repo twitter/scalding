@@ -86,5 +86,31 @@ class TupleTest extends WordSpec with Matchers {
       arityConvMatches[(AnyRef, AnyRef)](("hey", "you"), 2) shouldBe true
       aritySetMatches[(AnyRef, AnyRef)](("hey", "you"), 2) shouldBe true
     }
+
+    "TupleConverter/Setters have good equality" in {
+      assert(TupleConverter.singleConverter[Int] == TupleConverter.singleConverter[Int])
+      assert(TupleConverter.singleConverter[String] == TupleConverter.singleConverter[String])
+      assert(TupleConverter.singleConverter[(Int, String)] == TupleConverter.singleConverter[(Int, String)])
+
+      assert(TupleConverter.tuple2Converter[Int, Int] == TupleConverter.tuple2Converter[Int, Int])
+      assert(TupleConverter.tuple2Converter[Int, String] == TupleConverter.tuple2Converter[Int, String])
+      assert(TupleConverter.tuple2Converter[Int, (Int, String)] == TupleConverter.tuple2Converter[Int, (Int, String)])
+
+      assert(TupleSetter.singleSetter[Int] == TupleSetter.singleSetter[Int])
+      assert(TupleSetter.singleSetter[String] == TupleSetter.singleSetter[String])
+      assert(TupleSetter.singleSetter[(Int, String)] == TupleSetter.singleSetter[(Int, String)])
+
+      assert(TupleSetter.tup2Setter[(Int, Int)] == TupleSetter.tup2Setter[(Int, Int)])
+      assert(TupleSetter.tup2Setter[(String, Int)] == TupleSetter.tup2Setter[(String, Int)])
+      assert(TupleSetter.tup2Setter[((Int, String), String)] == TupleSetter.tup2Setter[((Int, String), String)])
+    }
+
+    "CascadingBackend can tell Converter/Setter inverses" in {
+      import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+
+      assert(CascadingBackend.areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.singleSetter[Any]))
+      assert(!CascadingBackend.areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.tup2Setter[(Any, Any)]))
+      assert(CascadingBackend.areDefiniteInverse(TupleConverter.tuple2Converter[Any, Any], TupleSetter.tup2Setter[(Any, Any)]))
+    }
   }
 }

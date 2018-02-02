@@ -27,6 +27,16 @@ import java.util.WeakHashMap
 import scala.collection.mutable.{ Map => MMap }
 
 object CascadingBackend {
+
+  def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
+    (t, s) match {
+      case (TupleConverter.Single(TupleGetter.Casting()), TupleSetter.Single()) => true
+      case (TupleConverter.TupleConverter1(TupleGetter.Casting()), TupleSetter.TupleSetter1()) => true
+      case (TupleConverter.TupleConverter2(TupleGetter.Casting(), TupleGetter.Casting()), TupleSetter.TupleSetter2()) => true
+      // TODO we could add more, but we only use single and 2 actually
+      case _ => false
+    }
+
   import TypedPipe._
 
   private val valueField: Fields = new Fields("value")
@@ -104,6 +114,10 @@ object CascadingBackend {
         op(ts, keyF)
     }
 
+  // TODO we could probably optimize this further by just composing
+  // the toPipe function directly, so we don't actually create the pipe until
+  // the TupleSetter comes in. With this, we can make sure to use the right
+  // TupleSetter on the final pipe
    private case class CascadingPipe[+T](pipe: Pipe,
     fields: Fields,
     @transient localFlowDef: FlowDef, // not serializable.
@@ -114,11 +128,16 @@ object CascadingBackend {
      * have the structure defined by setter
      */
     def toPipe[U >: T](f: Fields, fd: FlowDef, setter: TupleSetter[U]): Pipe = {
-      // TODO, this may be identity if the setter is the inverse of the
-      // converter. If we can identify this we will save allocations
       val resFd = new RichFlowDef(fd)
       resFd.mergeFrom(localFlowDef)
-      RichPipe(pipe).mapTo[T, U](fields -> f)(t => t)(TupleConverter.asSuperConverter(converter), setter)
+      if (areDefiniteInverse(converter, setter) && (fields == f)) {
+        // we are already in the right format
+        pipe
+      }
+      else {
+        // we need to convert
+        RichPipe(pipe).mapTo[T, U](fields -> f)(t => t)(TupleConverter.asSuperConverter(converter), setter)
+      }
     }
   }
 
