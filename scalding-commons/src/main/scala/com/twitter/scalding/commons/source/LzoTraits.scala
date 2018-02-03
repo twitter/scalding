@@ -43,7 +43,8 @@ trait LzoCodec[T] extends FileSource with SingleMappable[T] with TypedSink[T] wi
 
   override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
-    mode.openForRead(config, tap)
+    CascadingMode.cast(mode)
+      .openForRead(config, tap)
       .asScala
       .flatMap { te =>
         fromBytes(te.selectTuple(sourceFields).getObject(0).asInstanceOf[Array[Byte]])

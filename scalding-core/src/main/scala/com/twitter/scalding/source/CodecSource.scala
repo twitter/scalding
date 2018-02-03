@@ -71,7 +71,8 @@ class CodecSource[T] private (val hdfsPaths: Seq[String], val maxFailures: Int =
 
   override def toIterator(implicit config: Config, mode: Mode): Iterator[T] = {
     val tap = createTap(Read)(mode)
-    mode.openForRead(config, tap)
+    CascadingMode.cast(mode)
+      .openForRead(config, tap)
       .asScala
       .flatMap { te =>
         checkedInversion(te.selectTuple(sourceFields).getObject(0).asInstanceOf[BytesWritable])

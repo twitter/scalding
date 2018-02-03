@@ -212,7 +212,10 @@ abstract class Source extends java.io.Serializable {
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
     validateTaps(mode)
     val tap = createTap(Read)(mode)
-    mode.openForRead(Config.defaultFrom(mode), tap).asScala.map { conv(_) }.toStream
+    CascadingMode.cast(mode)
+      .openForRead(Config.defaultFrom(mode), tap)
+      .asScala.map(conv(_))
+      .toStream
   }
 }
 
@@ -248,7 +251,9 @@ trait Mappable[+T] extends Source with TypedSource[T] {
     validateTaps(mode)
     val tap = createTap(Read)(mode)
     val conv = converter
-    mode.openForRead(config, tap).asScala.map { te => conv(te.selectEntry(sourceFields)) }
+    CascadingMode.cast(mode)
+      .openForRead(config, tap)
+      .asScala.map { te => conv(te.selectEntry(sourceFields)) }
   }
 
   /**
