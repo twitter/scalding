@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import com.twitter.algebird.Semigroup
 import com.twitter.algebird.mutable.PriorityQueueMonoid
-import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard, EqTypes }
+import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard, EqTypes, FilterGroup, MapValueStream, MapGroupMapValues, SumAll }
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
 
@@ -27,6 +27,50 @@ object CoGroupable {
    */
   def castingJoinFunction[V]: (Any, Iterator[Any], Seq[Iterable[Any]]) => Iterator[V] =
     Joiner.CastingWideJoin[V]()
+
+  /**
+   * Return true if there is a sum occurring at the end the mapGroup transformations
+   * If we know this is finally summed, we can make some different optimization choices
+   *
+   * If this is true, we know we have at most one value for each key
+   */
+  final def atMostOneValue[A, B](cg: CoGroupable[A, B]): Boolean = {
+    import CoGrouped._
+    cg match {
+      case Pair(left, right, joinf) =>
+        atMostOneValue(left) && atMostOneValue(right) && (
+          joinf match {
+            case Joiner.InnerJoin() => true
+            case Joiner.OuterJoin() => true
+            case Joiner.LeftJoin() => true
+            case Joiner.RightJoin() => true
+            case _ => false
+          })
+      case WithReducers(on, _) => atMostOneValue(on)
+      case WithDescription(on, _) => atMostOneValue(on)
+      case FilterKeys(on, _) => atMostOneValue(on)
+      case MapGroup(_, fn) => atMostOneFn(fn)
+      case IdentityReduce(_, _, _, _, _) => false
+      case UnsortedIdentityReduce(_, _, _, _, _) => false
+      case IteratorMappedReduce(_, _, fn, _, _) => atMostOneFn(fn)
+    }
+  }
+
+  /**
+   * Returns true if the group mapping function definitely returns 0 or 1
+   * element.
+   *
+   * in 2.12 this can be tailrec, but the types change on recursion, so 2.11 forbids
+   */
+  final def atMostOneFn[A, B, C](fn: (A, Iterator[B]) => Iterator[C]): Boolean =
+    fn match {
+      case ComposedMapGroup(first, MapGroupMapValues(_)) => atMostOneFn(first)
+      case ComposedMapGroup(first, FilterGroup(_)) => atMostOneFn(first)
+      case ComposedMapGroup(_, fn) => atMostOneFn(fn)
+      case MapValueStream(SumAll(_)) => true
+      case EmptyGuard(fn) => atMostOneFn(fn)
+      case _ => false
+    }
 }
 
 /**
@@ -108,6 +152,12 @@ object CoGrouped {
       val jf = larger.joinFunction // avoid capturing `this` in the closure below
       val smallerJf = smaller.joinFunction
 
+      /**
+       * if there is at most one value on the smaller side definitely
+       * cache the result to avoid repeatedly computing it
+       */
+      val smallerIsAtMostOne = CoGroupable.atMostOneValue(smaller)
+
       { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
         val (leftSeq, rightSeq) = joins.splitAt(leftSeqCount)
         val joinedLeft = jf(k, leftMost, leftSeq)
@@ -115,13 +165,21 @@ object CoGrouped {
         // Only do this once, for all calls to iterator below
         val smallerHead = rightSeq.head // linter:disable:UndesirableTypeInference
         val smallerTail = rightSeq.tail
-        // TODO: it might make sense to cache this in memory as an IndexedSeq and not
-        // recompute it on every value for the left if the smallerJf is non-trivial
-        // we could see how long it is, and possible switch to a cached version the
-        // second time through if it is small enough
-        val joinedRight = new Iterable[B] {
-          def iterator = smallerJf(k, smallerHead.iterator, smallerTail)
-        }
+
+        val joinedRight =
+          if (smallerIsAtMostOne) {
+            // we should materialize the final right one time:
+            smallerJf(k, smallerHead.iterator, smallerTail).toList
+          } else {
+            // TODO: it might make sense to cache this in memory as an IndexedSeq and not
+            // recompute it on every value for the left if the smallerJf is non-trivial
+            // we could see how long it is, and possible switch to a cached version the
+            // second time through if it is small enough
+            new Iterable[B] {
+              def iterator =
+                smallerJf(k, smallerHead.iterator, smallerTail)
+            }
+          }
 
         fn(k, joinedLeft, joinedRight)
       }

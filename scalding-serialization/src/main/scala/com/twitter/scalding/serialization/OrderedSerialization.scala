@@ -215,7 +215,7 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
   final override def dynamicSize(t: T) = serialization.dynamicSize(t)
 }
 
-object UnitOrderedSerialization extends OrderedSerialization[Unit] with EquivSerialization[Unit] {
+case object UnitOrderedSerialization extends OrderedSerialization[Unit] with EquivSerialization[Unit] {
   private[this] val same = OrderedSerialization.Equal
   private[this] val someZero = Some(0)
 
