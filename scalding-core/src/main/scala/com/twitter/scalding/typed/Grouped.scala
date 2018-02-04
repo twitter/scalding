@@ -335,7 +335,7 @@ final case class IdentityReduce[K, V1, V2](
     toUIR.bufferedTake(n)
 
   override def withSortOrdering[U >: V2](so: Ordering[U]): IdentityValueSortedReduce[K, V2, V2] =
-    IdentityValueSortedReduce[K, V2, V2](keyOrdering, mappedV2, so, reducers, descriptions, implicitly)
+    IdentityValueSortedReduce[K, V2, V2](keyOrdering, mappedV2, TypedPipe.narrowOrdering(so), reducers, descriptions, implicitly)
 
   override def withReducers(red: Int): IdentityReduce[K, V1, V2] =
     copy(reducers = Some(red))
@@ -444,7 +444,7 @@ final case class UnsortedIdentityReduce[K, V1, V2](
 final case class IdentityValueSortedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
-  valueSort: Ordering[_ >: V1],
+  valueSort: Ordering[V1],
   override val reducers: Option[Int],
   override val descriptions: Seq[String],
   evidence: EqTypes[V1, V2]) extends ReduceStep[K, V1, V2]
@@ -469,8 +469,7 @@ final case class IdentityValueSortedReduce[K, V1, V2](
     // Only pass non-Empty iterators to subsequent functions
     val gfn = Grouped.addEmptyGuard(fn)
     type TK[V] = TypedPipe[(K, V)]
-    type O[V] = Ordering[_ >: V]
-    ValueSortedReduce[K, V2, V3](keyOrdering, evidence.subst[TK](mapped), evidence.subst[O](valueSort), gfn, reducers, descriptions)
+    ValueSortedReduce[K, V2, V3](keyOrdering, evidence.subst[TK](mapped), evidence.subst[Ordering](valueSort), gfn, reducers, descriptions)
   }
 
   /**
@@ -483,7 +482,7 @@ final case class IdentityValueSortedReduce[K, V1, V2](
       // This means don't take anything, which is legal, but strange
       filterKeys(Constant(false))
     } else {
-      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(TypedPipe.narrowOrdering(valueSort))
+      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(valueSort)
       // Do the heap-sort on the mappers:
       val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
         .sumByLocalKeys
@@ -508,7 +507,7 @@ final case class IdentityValueSortedReduce[K, V1, V2](
 final case class ValueSortedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
-  valueSort: Ordering[_ >: V1],
+  valueSort: Ordering[V1],
   reduceFn: (K, Iterator[V1]) => Iterator[V2],
   override val reducers: Option[Int],
   override val descriptions: Seq[String])

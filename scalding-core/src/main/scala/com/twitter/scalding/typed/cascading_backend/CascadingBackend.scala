@@ -52,7 +52,7 @@ object CascadingBackend {
       case _ => tuple2Converter[K, V]
     }
 
-  private def valueConverter[V](optOrd: Option[Ordering[_ >: V]]): TupleConverter[V] =
+  private def valueConverter[V](optOrd: Option[Ordering[V]]): TupleConverter[V] =
     optOrd.map {
       case _: OrderedSerialization[_] =>
         TupleConverter.singleConverter[Boxed[V]].andThen(_.get)
@@ -565,7 +565,7 @@ object CascadingBackend {
     def groupOp(gb: GroupBuilder => GroupBuilder): CascadingPipe[_ <: (K, V2)] =
       groupOpWithValueSort(None)(gb)
 
-    def groupOpWithValueSort(valueSort: Option[Ordering[_ >: V1]])(gb: GroupBuilder => GroupBuilder): CascadingPipe[_ <: (K, V2)] = {
+    def groupOpWithValueSort(valueSort: Option[Ordering[V1]])(gb: GroupBuilder => GroupBuilder): CascadingPipe[_ <: (K, V2)] = {
       val flowDef = new FlowDef
       val pipe = maybeBox[K, V1](rs.keyOrdering, flowDef) { (tupleSetter, fields) =>
         val (sortOpt, ts) = valueSort.map {

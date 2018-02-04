@@ -189,7 +189,7 @@ object MemoryPlanner {
     final case class Reduce[K, V1, V2](
       input: Op[(K, V1)],
       fn: (K, Iterator[V1]) => Iterator[V2],
-      ord: Option[Ordering[_ >: V1]]
+      ord: Option[Ordering[V1]]
       ) extends Op[(K, V2)] {
 
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[(K, V2)]] =
@@ -470,7 +470,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           }
           go(uir)
         case ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)) =>
-          def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[_ >: V]) = {
+          def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[V]) = {
             val (m1, op) = plan(m, p)
             (m1, Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord)))
           }
