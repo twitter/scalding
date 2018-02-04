@@ -54,14 +54,14 @@ class GroupBuilder(val groupFields: Fields) extends FoldOperations[GroupBuilder]
   private def getNextMiddlefield: String = {
     val out = "__middlefield__" + maxMF.toString
     maxMF += 1
-    return out
+    out
   }
 
   private def tryAggregateBy(ab: AggregateBy, ev: Pipe => Every): Boolean = {
     // Concat if there if not none
     reds = reds.map(rl => ab :: rl)
     evs = ev :: evs
-    return !reds.isEmpty
+    reds.nonEmpty
   }
 
   /**

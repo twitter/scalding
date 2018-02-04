@@ -194,7 +194,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
       .setScaldingFlowClass(getClass)
       .setArgs(args)
       .maybeSetSubmittedTimestamp()._2
-      .toMap.toMap[AnyRef, AnyRef] // linter:ignore the second one is to lift from String -> AnyRef
+      .toMap.toMap[AnyRef, AnyRef] // linter:disable:TypeToType // the second one is to lift from String -> AnyRef
   }
 
   private def reflectedClasses: Set[Class[_]] =
@@ -271,8 +271,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     }
     // Print custom counters unless --scalding.nocounters is used or there are no custom stats
     if (!args.boolean("scalding.nocounters")) {
-      implicit val statProvider = statsData
-      val jobStats = Stats.getAllCustomCounters
+      val jobStats = Stats.getAllCustomCounters()(statsData)
       if (!jobStats.isEmpty) {
         println("Dumping custom counters:")
         jobStats.foreach {

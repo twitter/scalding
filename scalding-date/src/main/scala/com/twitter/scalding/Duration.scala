@@ -26,10 +26,11 @@ import scala.annotation.tailrec
  */
 object Duration extends java.io.Serializable {
   // TODO: remove this in 0.9.0
-  val SEC_IN_MS = 1000
-  val MIN_IN_MS = 60 * SEC_IN_MS
-  val HOUR_IN_MS = 60 * MIN_IN_MS
-  val UTC_UNITS = List((Hours, HOUR_IN_MS), (Minutes, MIN_IN_MS), (Seconds, SEC_IN_MS), (Millisecs, 1))
+  val SEC_IN_MS: Int = 1000
+  val MIN_IN_MS: Int = 60 * SEC_IN_MS
+  val HOUR_IN_MS: Int = 60 * MIN_IN_MS
+  val UTC_UNITS: List[(Int => AbsoluteDuration, Int)] =
+    List[(Int => AbsoluteDuration, Int)]((Hours, HOUR_IN_MS), (Minutes, MIN_IN_MS), (Seconds, SEC_IN_MS), (Millisecs, 1))
 }
 
 abstract class Duration(val calField: Int, val count: Int, val tz: TimeZone)

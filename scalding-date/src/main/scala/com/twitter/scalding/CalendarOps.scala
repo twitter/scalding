@@ -13,12 +13,12 @@ object CalendarOps {
       if (currentField > field) {
         currentField match {
           case Calendar.DAY_OF_MONTH => cal.set(currentField, 1)
-          case Calendar.DAY_OF_WEEK_IN_MONTH => () // Skip
-          case Calendar.DAY_OF_WEEK => () // Skip
-          case Calendar.DAY_OF_YEAR => () // Skip
-          case Calendar.WEEK_OF_MONTH => () // Skip
-          case Calendar.WEEK_OF_YEAR => () // Skip
-          case Calendar.HOUR_OF_DAY => () // Skip
+          case Calendar.DAY_OF_WEEK_IN_MONTH |
+            Calendar.DAY_OF_WEEK |
+            Calendar.DAY_OF_YEAR |
+            Calendar.WEEK_OF_MONTH |
+            Calendar.WEEK_OF_YEAR |
+            Calendar.HOUR_OF_DAY => () // Skip
           case _ => cal.set(currentField, 0)
         }
 

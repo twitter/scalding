@@ -35,7 +35,7 @@ sealed abstract class SkewReplication {
 /**
  * See https://github.com/twitter/scalding/pull/229#issuecomment-10773810
  */
-case class SkewReplicationA(replicationFactor: Int = 1) extends SkewReplication {
+final case class SkewReplicationA(replicationFactor: Int = 1) extends SkewReplication {
 
   override def getReplications(leftCount: Int, rightCount: Int, reducers: Int) = {
     val numReducers = if (reducers <= 0) DEFAULT_NUM_REDUCERS else reducers
@@ -52,7 +52,7 @@ case class SkewReplicationA(replicationFactor: Int = 1) extends SkewReplication 
 /**
  * See https://github.com/twitter/scalding/pull/229#issuecomment-10792296
  */
-case class SkewReplicationB(maxKeysInMemory: Int = 1E6.toInt, maxReducerOutput: Int = 1E7.toInt)
+final case class SkewReplicationB(maxKeysInMemory: Int = 1E6.toInt, maxReducerOutput: Int = 1E7.toInt)
   extends SkewReplication {
 
   override def getReplications(leftCount: Int, rightCount: Int, reducers: Int) = {

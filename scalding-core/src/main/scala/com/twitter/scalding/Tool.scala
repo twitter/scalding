@@ -124,7 +124,8 @@ class Tool extends Configured with HTool {
       j.clear()
       //When we get here, the job is finished
       if (successful) {
-        j.next match {
+        // we need to use match not foreach to get tail recursion
+        j.next match { // linter:disable:UseOptionForeachNotPatMatch
           case Some(nextj) => start(nextj, cnt + 1)
           case None => ()
         }

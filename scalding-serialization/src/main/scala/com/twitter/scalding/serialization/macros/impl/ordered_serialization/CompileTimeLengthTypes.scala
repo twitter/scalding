@@ -16,7 +16,7 @@
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 sealed trait CompileTimeLengthTypes[C <: Context] {
   val ctx: C
@@ -33,7 +33,7 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait FastLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait FastLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
 
   object MaybeLengthCalculation {
     def apply(c: Context)(tree: c.Tree): MaybeLengthCalculation[c.type] =
@@ -43,7 +43,7 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait MaybeLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait MaybeLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C]
 
   object ConstantLengthCalculation {
     def apply(c: Context)(intArg: Int): ConstantLengthCalculation[c.type] =
@@ -57,12 +57,12 @@ object CompileTimeLengthTypes {
       }
   }
 
-  trait ConstantLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C] {
+  sealed trait ConstantLengthCalculation[C <: Context] extends CompileTimeLengthTypes[C] {
     def toInt: Int
   }
 
   object NoLengthCalculationAvailable {
-    def apply(c: Context): NoLengthCalculationAvailable[c.type] = {
+    def apply(c: Context): NoLengthCalculationAvailable[c.type] =
       new NoLengthCalculationAvailable[c.type] {
         override val ctx: c.type = c
         override def t = {
@@ -70,8 +70,7 @@ object CompileTimeLengthTypes {
           q"""_root_.scala.sys.error("no length available")"""
         }
       }
-    }
   }
 
-  trait NoLengthCalculationAvailable[C <: Context] extends CompileTimeLengthTypes[C]
+  sealed trait NoLengthCalculationAvailable[C <: Context] extends CompileTimeLengthTypes[C]
 }

@@ -197,7 +197,7 @@ trait HRavenHistoryService extends HistoryService {
   override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
     fetchPastJobDetails(info.step, maxHistory).map { history =>
       for {
-        step <- history
+        step <- history // linter:disable:MergeMaps
         keys = FlowStepKeys(step.getJobName, step.getUser, step.getPriority, step.getStatus, step.getVersion, "")
         // update HRavenHistoryService.TaskDetailFields when consuming additional task fields from hraven below
         tasks = step.getTasks.asScala.flatMap { taskDetails =>

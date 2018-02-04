@@ -19,7 +19,7 @@ import org.apache.parquet.hadoop.mapred.{ Container, DeprecatedParquetOutputForm
 import org.apache.parquet.hadoop.{ ParquetInputFormat, ParquetOutputFormat }
 import org.apache.parquet.schema._
 
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Parquet tuple materializer permits to create user defined type record from parquet tuple values
@@ -58,7 +58,7 @@ class ReadSupportInstanceProxy[T] extends ReadSupport[T] {
   def getDelegateInstance(conf: Configuration): ReadSupport[T] = {
     val readSupport = conf.get(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE)
     require(readSupport != null && !readSupport.isEmpty, "no read support instance is configured")
-    val readSupportInstance = ParquetInputOutputFormat.injection.invert(readSupport)
+    val readSupportInstance: Try[Any] = ParquetInputOutputFormat.injection.invert(readSupport)
 
     readSupportInstance match {
       case Success(obj) => obj.asInstanceOf[ReadSupport[T]]
@@ -111,7 +111,7 @@ class ParquetOutputFormatFromWriteSupportInstance[T] extends ParquetOutputFormat
   override def getWriteSupport(conf: Configuration): WriteSupport[T] = {
     val writeSupport = conf.get(ParquetInputOutputFormat.WRITE_SUPPORT_INSTANCE)
     require(writeSupport != null && !writeSupport.isEmpty, "no write support instance is configured")
-    val writeSupportInstance = ParquetInputOutputFormat.injection.invert(writeSupport)
+    val writeSupportInstance: Try[Any] = ParquetInputOutputFormat.injection.invert(writeSupport)
     writeSupportInstance match {
       case Success(obj) => obj.asInstanceOf[WriteSupport[T]]
       case Failure(e) => throw e

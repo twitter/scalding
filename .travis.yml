@@ -27,63 +27,63 @@ addons:
 matrix:
   include:
 #BASE TESTS
-    - scala: 2.11.8
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+    - scala: 2.11.11
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-quotation"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
-      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple"
+    - scala: 2.12.3
+      env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-quotation"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-cascading scalding-parquet-scrooge scalding-parquet-scrooge-cascading"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-cascading scalding-parquet-scrooge scalding-parquet-scrooge-cascading"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-hadoop-test"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-estimators-test"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-estimators-test"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="base" TEST_TARGET="scalding-thrift-macros"
       script: "scripts/run_test.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="base" TEST_TARGET="scalding-thrift-macros"
       script: "scripts/run_test.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
       - "scripts/run_test.sh"
@@ -92,7 +92,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_matrix_tutorials.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
       script:
       - "scripts/run_test.sh"
@@ -101,7 +101,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh scalding-assembly"
       - "scripts/test_matrix_tutorials.sh"
 
-    - scala: 2.11.8
+    - scala: 2.11.11
       env: BUILD="test repl and typed tutorials and microsite"
       script:
       - ./sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite
@@ -112,7 +112,7 @@ matrix:
       - "scripts/build_assembly_no_test.sh execution-tutorial"
       - "scripts/test_execution_tutorial.sh"
 
-    - scala: 2.12.1
+    - scala: 2.12.3
       env: BUILD="test repl and typed tutorials"
       script:
       - "scripts/build_assembly_no_test.sh scalding-repl"

@@ -125,7 +125,7 @@ object MemoryPlanner {
     def source[I](i: Iterable[I]): Op[I] = Source(_ => Future.successful(i))
     def empty[I]: Op[I] = source(Nil)
 
-    case class Source[I](input: ConcurrentExecutionContext => Future[Iterable[I]]) extends Op[I] {
+    final case class Source[I](input: ConcurrentExecutionContext => Future[Iterable[I]]) extends Op[I] {
       private[this] val promise: Promise[ArrayBuffer[I]] = Promise()
 
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[I]] = {
@@ -140,7 +140,7 @@ object MemoryPlanner {
       }
     }
 
-    case class Materialize[O](op: Op[O]) extends Op[O] {
+    final case class Materialize[O](op: Op[O]) extends Op[O] {
       private[this] val promise: Promise[ArrayBuffer[_ <: O]] = Promise()
 
       def result(implicit cec: ConcurrentExecutionContext) = {
@@ -152,7 +152,7 @@ object MemoryPlanner {
       }
     }
 
-    case class Concat[O](left: Op[O], right: Op[O]) extends Op[O] {
+    final case class Concat[O](left: Op[O], right: Op[O]) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext) = {
         val f1 = left.result
         val f2 = right.result
@@ -160,7 +160,7 @@ object MemoryPlanner {
       }
     }
 
-    case class Map[I, O](input: Op[I], fn: I => TraversableOnce[O]) extends Op[O] {
+    final case class Map[I, O](input: Op[I], fn: I => TraversableOnce[O]) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[O]] =
         input.result.map { array =>
           val res = ArrayBuffer[O]()
@@ -173,7 +173,7 @@ object MemoryPlanner {
         }
     }
 
-    case class OnComplete[O](of: Op[O], fn: () => Unit) extends Op[O] {
+    final case class OnComplete[O](of: Op[O], fn: () => Unit) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext) = {
         val res = of.result
         res.onComplete(_ => fn())
@@ -181,12 +181,12 @@ object MemoryPlanner {
       }
     }
 
-    case class Transform[I, O](input: Op[I], fn: IndexedSeq[I] => ArrayBuffer[O]) extends Op[O] {
+    final case class Transform[I, O](input: Op[I], fn: IndexedSeq[I] => ArrayBuffer[O]) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext) =
         input.result.map(fn)
     }
 
-    case class Reduce[K, V1, V2](
+    final case class Reduce[K, V1, V2](
       input: Op[(K, V1)],
       fn: (K, Iterator[V1]) => Iterator[V2],
       ord: Option[Ordering[_ >: V1]]
@@ -217,7 +217,7 @@ object MemoryPlanner {
       }
     }
 
-    case class Join[A, B, C](
+    final case class Join[A, B, C](
       opA: Op[A],
       opB: Op[B],
       fn: (IndexedSeq[A], IndexedSeq[B]) => ArrayBuffer[C]) extends Op[C] {
@@ -302,12 +302,15 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
   def plan[T](m: Memo, tp: TypedPipe[T]): (Memo, Op[T]) =
     m.plan(tp) {
       tp match {
+        case CounterPipe(pipe) =>
+          // TODO: counters not yet supported, but can be with an concurrent hashmap
+          plan(m, pipe.map(_._1))
         case cp@CrossPipe(_, _) =>
           plan(m, cp.viaHashJoin)
 
         case CrossValue(left, EmptyValue) => (m, Op.empty)
         case CrossValue(left, LiteralValue(v)) =>
-          val (m1, op) = plan(m, left)
+          val (m1, op) = plan(m, left) // linter:disable:UndesirableTypeInference
           (m1, op.concatMap { a => Iterator.single((a, v)) })
         case CrossValue(left, ComputedValue(right)) =>
           plan(m, CrossPipe(left, right))
@@ -346,7 +349,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           go(f)
 
         case FlatMapped(prev, fn) =>
-          val (m1, op) = plan(m, prev)
+          val (m1, op) = plan(m, prev) // linter:disable:UndesirableTypeInference
           (m1, op.concatMap(fn))
 
         case ForceToDisk(pipe) =>
@@ -370,7 +373,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           go(f)
 
         case Mapped(input, fn) =>
-          val (m1, op) = plan(m, input)
+          val (m1, op) = plan(m, input) // linter:disable:UndesirableTypeInference
           (m1, op.map(fn))
 
         case MergedTypedPipe(left, right) =>
@@ -545,7 +548,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
                 (st, a :: acts)
             }
           case ((oldState, acts), ToWrite.SimpleWrite(pipe, sink)) =>
-            val (nextM, op) = plan(oldState.memo, pipe)
+            val (nextM, op) = plan(oldState.memo, pipe) // linter:disable:UndesirableTypeInference
             val action = () => {
               val arrayBufferF = op.result
               arrayBufferF.foreach { mem.writeSink(sink, _) }

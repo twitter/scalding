@@ -54,7 +54,7 @@ class WriteSupportProvider(schemaProvider: ParquetSchemaProvider) {
         case tpe if tpe =:= typeOf[Byte] =>
           writePrimitiveField(q"rc.addInteger($fValue.toInt)")
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
-          val cacheName = newTermName(ctx.fresh(s"optionIndex"))
+          val cacheName = newTermName(ctx.fresh("optionIndex"))
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           val (_, subTree) = matchField(idx, innerType, q"$cacheName", groupName)
           (idx + 1, q"""if($fValue.isDefined) {

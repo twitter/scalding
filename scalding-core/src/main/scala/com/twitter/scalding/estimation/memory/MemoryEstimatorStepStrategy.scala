@@ -14,7 +14,8 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  implicit val estimatorMonoid = new FallbackEstimatorMonoid[MemoryEstimate]
+  implicit val estimatorMonoid: Monoid[Estimator[MemoryEstimate]] =
+    new FallbackEstimatorMonoid[MemoryEstimate]
 
   /**
    * Make memory estimate, possibly overriding explicitly-set memory settings,

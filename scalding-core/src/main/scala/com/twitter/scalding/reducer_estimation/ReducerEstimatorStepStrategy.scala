@@ -13,7 +13,8 @@ object ReducerEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  implicit val estimatorMonoid = new FallbackEstimatorMonoid[Int]
+  implicit val estimatorMonoid: Monoid[Estimator[Int]] =
+    new FallbackEstimatorMonoid[Int]
 
   /**
    * Make reducer estimate, possibly overriding explicitly-set numReducers,

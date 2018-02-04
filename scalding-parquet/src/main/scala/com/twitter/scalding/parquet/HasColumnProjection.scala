@@ -63,5 +63,5 @@ sealed trait ColumnProjectionString {
   def globStrings: Set[String]
   def asSemicolonString: String = globStrings.mkString(";")
 }
-case class DeprecatedColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
-case class StrictColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
+final case class DeprecatedColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
+final case class StrictColumnProjectionString(globStrings: Set[String]) extends ColumnProjectionString
