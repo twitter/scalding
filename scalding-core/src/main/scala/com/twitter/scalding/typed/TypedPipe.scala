@@ -207,6 +207,22 @@ object TypedPipe extends Serializable {
     def tally: TypedPipe[A] =
       CounterPipe(pipe)
   }
+
+  /**
+   * This is an unsafe function in general, but safe as we use it here.
+   * Ordering is invariant because it has functions like max and min which
+   * accept and return items of the same type. If we had a proof that such
+   * functions had the law: max(a, b) eq a || max(a, b) eq b, which is true
+   * in almost any implementation, then this method is safe to cast the Ordering.
+   *
+   * since we don't actually use max/min directly on Ordering, but only
+   * use the contravariant methods, this is safe as a cast.
+   */
+  private[scalding] def narrowOrdering[A, B <: A](ordA: Ordering[A]): Ordering[B] =
+    // this compiles, but is potentially slower
+    // ordA.on { a: B => (a: A) }
+    // cast because Ordering is not contravariant, but should be (and this cast is safe)
+    ordA.asInstanceOf[Ordering[B]]
 }
 
 /**
@@ -357,15 +373,14 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    */
   @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
   def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
-    asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
+    asKeys[T](TypedPipe.narrowOrdering(ord)).sum.keys
 
   /**
    * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.")
   def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U]): TypedPipe[T] = {
-    // cast because Ordering is not contravariant, but should be (and this cast is safe)
-    implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
+    implicit val ordT: Ordering[U] = TypedPipe.narrowOrdering(ord)
 
     val op = groupBy(fn).head
     val reduced = numReducers match {

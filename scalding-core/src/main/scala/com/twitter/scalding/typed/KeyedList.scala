@@ -213,8 +213,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
    * to fit in memory.
    */
   def sortedTake(k: Int)(implicit ord: Ordering[_ >: T]): This[K, Seq[T]] = {
-    // cast because Ordering is not contravariant, but could be (and this cast is safe)
-    val ordT: Ordering[T] = ord.asInstanceOf[Ordering[T]]
+    val ordT: Ordering[T] = TypedPipe.narrowOrdering(ord)
     val mon = new PriorityQueueMonoid[T](k)(ordT)
     mapValues(mon.build(_))
       .sum(mon) // results in a PriorityQueue

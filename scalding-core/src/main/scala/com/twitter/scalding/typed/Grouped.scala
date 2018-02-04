@@ -264,6 +264,7 @@ object Grouped {
 
   def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] =
     EmptyGuard(fn)
+
 }
 
 /**
@@ -482,7 +483,7 @@ final case class IdentityValueSortedReduce[K, V1, V2](
       // This means don't take anything, which is legal, but strange
       filterKeys(Constant(false))
     } else {
-      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(valueSort.asInstanceOf[Ordering[V1]])
+      implicit val mon: PriorityQueueMonoid[V1] = new PriorityQueueMonoid[V1](n)(TypedPipe.narrowOrdering(valueSort))
       // Do the heap-sort on the mappers:
       val pretake: TypedPipe[(K, V1)] = mapped.mapValues { v: V1 => mon.build(v) }
         .sumByLocalKeys
