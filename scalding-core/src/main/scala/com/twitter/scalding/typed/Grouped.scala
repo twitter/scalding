@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import com.twitter.algebird.Semigroup
 import com.twitter.algebird.mutable.PriorityQueueMonoid
-import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard }
+import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard, EqTypes }
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
 
@@ -260,7 +260,7 @@ sealed trait UnsortedGrouped[K, +V]
 
 object Grouped {
   def apply[K, V](pipe: TypedPipe[(K, V)])(implicit ordering: Ordering[K]): Grouped[K, V] =
-    IdentityReduce(ordering, pipe, None, Nil)
+    IdentityReduce[K, V, V](ordering, pipe, None, Nil, implicitly)
 
   def addEmptyGuard[K, V1, V2](fn: (K, Iterator[V1]) => Iterator[V2]): (K, Iterator[V1]) => Iterator[V2] =
     EmptyGuard(fn)
@@ -304,20 +304,26 @@ sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
   def toTypedPipe: TypedPipe[(K, V2)] = TypedPipe.ReduceStepPipe(this)
 }
 
-final case class IdentityReduce[K, V1](
+final case class IdentityReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int],
-  override val descriptions: Seq[String])
-  extends ReduceStep[K, V1, V1]
-  with Grouped[K, V1] {
+  override val descriptions: Seq[String],
+  evidence: EqTypes[V1, V2])
+  extends ReduceStep[K, V1, V2]
+  with Grouped[K, V2] {
 
   /*
    * Because after mapValues, take, filter, we can no-longer sort,
    * we commonly convert to UnsortedIdentityReduce first, then
    * call the method there to reduce code duplication
    */
-  private def toUIR = UnsortedIdentityReduce(keyOrdering, mapped, reducers, descriptions)
+  private def toUIR = UnsortedIdentityReduce[K, V1, V2](keyOrdering, mapped, reducers, descriptions, evidence)
+
+  private[this] def mappedV2: TypedPipe[(K, V2)] = {
+    type TK[V] = TypedPipe[(K, V)]
+    evidence.subst[TK](mapped)
+  }
 
   /**
    * This does the partial heap sort followed by take in memory on the mappers
@@ -327,48 +333,49 @@ final case class IdentityReduce[K, V1](
   override def bufferedTake(n: Int) =
     toUIR.bufferedTake(n)
 
-  override def withSortOrdering[U >: V1](so: Ordering[U]): IdentityValueSortedReduce[K, V1] =
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, so, reducers, descriptions)
+  override def withSortOrdering[U >: V2](so: Ordering[U]): IdentityValueSortedReduce[K, V2, V2] =
+    IdentityValueSortedReduce[K, V2, V2](keyOrdering, mappedV2, so, reducers, descriptions, implicitly)
 
-  override def withReducers(red: Int): IdentityReduce[K, V1] =
+  override def withReducers(red: Int): IdentityReduce[K, V1, V2] =
     copy(reducers = Some(red))
 
-  override def withDescription(description: String): IdentityReduce[K, V1] =
+  override def withDescription(description: String): IdentityReduce[K, V1, V2] =
     copy(descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
     toUIR.filterKeys(fn)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
+  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // Only pass non-Empty iterators to subsequent functions
-    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers, descriptions)
+    IteratorMappedReduce(keyOrdering, mappedV2, Grouped.addEmptyGuard(fn), reducers, descriptions)
   }
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
+  override def mapValues[V3](fn: V2 => V3) =
     toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
   //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V2](implicit sg: Semigroup[U]) = {
     // there is no sort, mapValueStream or force to reducers:
-    val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
-    UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
+    val upipe: TypedPipe[(K, U)] = mappedV2 // use covariance to set the type
+    UnsortedIdentityReduce[K, U, U](keyOrdering, upipe.sumByLocalKeys, reducers, descriptions, implicitly).sumLeft
   }
 
-  /** This is just an identity that casts the result to V1 */
-  override def joinFunction = CoGroupable.castingJoinFunction[V1]
+  /** This is just an identity that casts the result to V2 */
+  override def joinFunction = CoGroupable.castingJoinFunction[V2]
 }
 
-final case class UnsortedIdentityReduce[K, V1](
+final case class UnsortedIdentityReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   override val reducers: Option[Int],
-  override val descriptions: Seq[String])
-  extends ReduceStep[K, V1, V1]
-  with UnsortedGrouped[K, V1] {
+  override val descriptions: Seq[String],
+  evidence: EqTypes[V1, V2])
+  extends ReduceStep[K, V1, V2]
+  with UnsortedGrouped[K, V2] {
 
   /**
    * This does the partial heap sort followed by take in memory on the mappers
@@ -395,73 +402,82 @@ final case class UnsortedIdentityReduce[K, V1](
         .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
       // We have removed the priority queues, so serialization is not greater
       // Now finish on the reducers
-      UnsortedIdentityReduce[K, V1](keyOrdering, pretake, reducers, descriptions)
+      UnsortedIdentityReduce[K, V1, V2](keyOrdering, pretake, reducers, descriptions, evidence)
         .forceToReducers // jump to ValueSortedReduce
         .take(n)
     }
 
-  override def withReducers(red: Int): UnsortedIdentityReduce[K, V1] =
+  override def withReducers(red: Int): UnsortedIdentityReduce[K, V1, V2] =
     copy(reducers = Some(red))
 
-  override def withDescription(description: String): UnsortedIdentityReduce[K, V1] =
+  override def withDescription(description: String): UnsortedIdentityReduce[K, V1, V2] =
     copy(descriptions = descriptions :+ description)
 
   override def filterKeys(fn: K => Boolean) =
-    UnsortedIdentityReduce(keyOrdering, mapped.filterKeys(fn), reducers, descriptions)
+    UnsortedIdentityReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), reducers, descriptions, evidence)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) = {
-    // Only pass non-Empty iterators to subsequent functions
-    IteratorMappedReduce(keyOrdering, mapped, Grouped.addEmptyGuard(fn), reducers, descriptions)
+  private[this] def mappedV2 = {
+    type TK[V] = TypedPipe[(K, V)]
+    evidence.subst[TK](mapped)
   }
+
+  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) =
+    // Only pass non-Empty iterators to subsequent functions
+    IteratorMappedReduce[K, V2, V3](keyOrdering, mappedV2, Grouped.addEmptyGuard(fn), reducers, descriptions)
 
   // It would be nice to return IdentityReduce here, but
   // the type constraints prevent it currently
-  override def mapValues[V2](fn: V1 => V2) =
-    UnsortedIdentityReduce(keyOrdering, mapped.mapValues(fn), reducers, descriptions)
+  override def mapValues[V3](fn: V2 => V3) =
+    UnsortedIdentityReduce[K, V3, V3](keyOrdering, mappedV2.mapValues(fn), reducers, descriptions, implicitly)
 
-  override def sum[U >: V1](implicit sg: Semigroup[U]) = {
+  override def sum[U >: V2](implicit sg: Semigroup[U]) = {
     // there is no sort, mapValueStream or force to reducers:
-    val upipe: TypedPipe[(K, U)] = mapped // use covariance to set the type
-    UnsortedIdentityReduce(keyOrdering, upipe.sumByLocalKeys, reducers, descriptions).sumLeft
+    val upipe: TypedPipe[(K, U)] = mappedV2 // use covariance to set the type
+    UnsortedIdentityReduce[K, U, U](keyOrdering, upipe.sumByLocalKeys, reducers, descriptions, implicitly).sumLeft
   }
 
-  /** This is just an identity that casts the result to V1 */
-  override def joinFunction = CoGroupable.castingJoinFunction[V1]
+  /** This is just an identity that casts the result to V2 */
+  override def joinFunction = CoGroupable.castingJoinFunction[V2]
 }
 
-final case class IdentityValueSortedReduce[K, V1](
+final case class IdentityValueSortedReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
   valueSort: Ordering[_ >: V1],
   override val reducers: Option[Int],
-  override val descriptions: Seq[String]) extends ReduceStep[K, V1, V1]
-  with SortedGrouped[K, V1]
-  with Reversable[IdentityValueSortedReduce[K, V1]] {
+  override val descriptions: Seq[String],
+  evidence: EqTypes[V1, V2]) extends ReduceStep[K, V1, V2]
+  with SortedGrouped[K, V2]
+  with Reversable[IdentityValueSortedReduce[K, V1, V2]] {
 
-  override def reverse: IdentityValueSortedReduce[K, V1] =
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort.reverse, reducers, descriptions)
+  override def reverse: IdentityValueSortedReduce[K, V1, V2] =
+    IdentityValueSortedReduce[K, V1, V2](keyOrdering, mapped, valueSort.reverse, reducers, descriptions, evidence)
 
-  override def withReducers(red: Int): IdentityValueSortedReduce[K, V1] =
+  override def withReducers(red: Int): IdentityValueSortedReduce[K, V1, V2] =
     // copy fails to get the types right, :/
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers = Some(red), descriptions)
+    IdentityValueSortedReduce[K, V1, V2](keyOrdering, mapped, valueSort, reducers = Some(red), descriptions, evidence)
 
-  override def withDescription(description: String): IdentityValueSortedReduce[K, V1] =
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped, valueSort, reducers, descriptions = descriptions :+ description)
+  override def withDescription(description: String): IdentityValueSortedReduce[K, V1, V2] =
+    IdentityValueSortedReduce[K, V1, V2](keyOrdering, mapped, valueSort, reducers, descriptions = descriptions :+ description, evidence)
 
   override def filterKeys(fn: K => Boolean) =
     // copy fails to get the types right, :/
-    IdentityValueSortedReduce[K, V1](keyOrdering, mapped.filterKeys(fn), valueSort, reducers, descriptions)
+    IdentityValueSortedReduce[K, V1, V2](keyOrdering, mapped.filterKeys(fn), valueSort, reducers, descriptions, evidence)
 
-  override def mapGroup[V3](fn: (K, Iterator[V1]) => Iterator[V3]) =
+  override def mapGroup[V3](fn: (K, Iterator[V2]) => Iterator[V3]) = {
     // Only pass non-Empty iterators to subsequent functions
-    ValueSortedReduce[K, V1, V3](keyOrdering, mapped, valueSort, Grouped.addEmptyGuard(fn), reducers, descriptions)
+    val gfn = Grouped.addEmptyGuard(fn)
+    type TK[V] = TypedPipe[(K, V)]
+    type O[V] = Ordering[_ >: V]
+    ValueSortedReduce[K, V2, V3](keyOrdering, evidence.subst[TK](mapped), evidence.subst[O](valueSort), gfn, reducers, descriptions)
+  }
 
   /**
    * This does the partial heap sort followed by take in memory on the mappers
    * before sending to the reducers. This is a big help if there are relatively
    * few keys and n is relatively small.
    */
-  override def bufferedTake(n: Int): SortedGrouped[K, V1] =
+  override def bufferedTake(n: Int): SortedGrouped[K, V2] =
     if (n <= 0) {
       // This means don't take anything, which is legal, but strange
       filterKeys(Constant(false))
@@ -472,7 +488,7 @@ final case class IdentityValueSortedReduce[K, V1](
         .sumByLocalKeys
         .flatMap { case (k, vs) => vs.iterator.asScala.map((k, _)) }
       // Now finish on the reducers
-      IdentityValueSortedReduce[K, V1](keyOrdering, pretake, valueSort, reducers, descriptions)
+      IdentityValueSortedReduce[K, V1, V2](keyOrdering, pretake, valueSort, reducers, descriptions, evidence)
         .forceToReducers // jump to ValueSortedReduce
         .take(n)
     }

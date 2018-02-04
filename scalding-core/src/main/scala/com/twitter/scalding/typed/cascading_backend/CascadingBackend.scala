@@ -597,20 +597,21 @@ object CascadingBackend {
     }
 
     rs match {
-      case IdentityReduce(_, _, None, descriptions) =>
+      case ir@IdentityReduce(_, _, None, descriptions, _) =>
+        type CP[V] = CascadingPipe[_ <: (K, V)]
         // Not doing anything
-        mapped.copy(pipe = RichPipe.setPipeDescriptions(mapped.pipe, descriptions)).asInstanceOf[CascadingPipe[_ <: (K, V2)]]
-      case UnsortedIdentityReduce(_, _, None, descriptions) =>
+        ir.evidence.subst[CP](mapped.copy(pipe = RichPipe.setPipeDescriptions(mapped.pipe, descriptions)))
+      case uir@UnsortedIdentityReduce(_, _, None, descriptions, _) =>
+        type CP[V] = CascadingPipe[_ <: (K, V)]
         // Not doing anything
-        mapped.copy(pipe = RichPipe.setPipeDescriptions(mapped.pipe, descriptions)).asInstanceOf[CascadingPipe[_ <: (K, V2)]]
-      case IdentityReduce(_, _, Some(reds), descriptions) =>
+        uir.evidence.subst[CP](mapped.copy(pipe = RichPipe.setPipeDescriptions(mapped.pipe, descriptions)))
+      case IdentityReduce(_, _, Some(reds), descriptions, _) =>
         groupOp { _.reducers(reds).setDescriptions(descriptions) }
-      case UnsortedIdentityReduce(_, _, Some(reds), descriptions) =>
+      case UnsortedIdentityReduce(_, _, Some(reds), descriptions, _) =>
         // This is weird, but it is sometimes used to force a partition
         groupOp { _.reducers(reds).setDescriptions(descriptions) }
-      case ivsr@IdentityValueSortedReduce(_, _, _, _, _) =>
-        // in this case we know that V1 =:= V2
-        groupOpWithValueSort(Some(ivsr.valueSort.asInstanceOf[Ordering[_ >: V1]])) { gb =>
+      case ivsr@IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        groupOpWithValueSort(Some(ivsr.valueSort)) { gb =>
           // If its an ordered serialization we need to unbox
           val mappedGB =
             if (ivsr.valueSort.isInstanceOf[OrderedSerialization[_]])

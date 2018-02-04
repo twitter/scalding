@@ -460,11 +460,21 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           }
           go(cg)
 
-        case ReduceStepPipe(IdentityReduce(_, pipe, _, descriptions)) =>
-          plan(m, pipe)
-        case ReduceStepPipe(UnsortedIdentityReduce(_, pipe, _, descriptions)) =>
-          plan(m, pipe)
-        case ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _)) =>
+        case ReduceStepPipe(ir@IdentityReduce(_, _, _, descriptions, _)) =>
+          def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): (Memo, Op[(K, V2)]) = {
+            type OpT[V] = Op[(K, V)]
+            val (m1, op) = plan(m, ir.mapped)
+            (m1, ir.evidence.subst[OpT](op))
+          }
+          go(ir)
+        case ReduceStepPipe(uir@UnsortedIdentityReduce(_, _, _, descriptions, _)) =>
+          def go[K, V1, V2](uir: UnsortedIdentityReduce[K, V1, V2]): (Memo, Op[(K, V2)]) = {
+            type OpT[V] = Op[(K, V)]
+            val (m1, op) = plan(m, uir.mapped)
+            (m1, uir.evidence.subst[OpT](op))
+          }
+          go(uir)
+        case ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)) =>
           def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[_ >: V]) = {
             val (m1, op) = plan(m, p)
             (m1, Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord)))
@@ -480,8 +490,14 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     }
 
   def planHashJoinable[K, V](m: Memo, hk: HashJoinable[K, V]): (Memo, Op[(K, V)]) = hk match {
-    case IdentityReduce(_, pipe, _, _) => plan(m, pipe)
-    case UnsortedIdentityReduce(_, pipe, _, _) => plan(m, pipe)
+    case ir@IdentityReduce(_, _, _, _, _) =>
+      type OpT[V] = Op[(K, V)]
+      val (m1, op) = plan(m, ir.mapped)
+      (m1, ir.evidence.subst[OpT](op))
+    case uir@UnsortedIdentityReduce(_, _, _, _, _) =>
+      type OpT[V] = Op[(K, V)]
+      val (m1, op) = plan(m, uir.mapped)
+      (m1, uir.evidence.subst[OpT](op))
     case imr@IteratorMappedReduce(_, _, _, _, _) =>
       def go[K, U, V](imr: IteratorMappedReduce[K, U, V]) = {
         val IteratorMappedReduce(_, pipe, fn, _, _) = imr
