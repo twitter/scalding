@@ -5,7 +5,7 @@ import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
-import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
+import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource, TupleConverter }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
@@ -243,6 +243,13 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     import TypedPipeGen.{ genWithIterableSources, genRule }
     implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 200)
     forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
+  }
+
+  test("some past failures of the optimizationLaw") {
+    import TypedPipe._
+
+    val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar")).addTrap(TypedText.tsv[Int]("foo"))
+    optimizationLaw(arg01, Rule.empty)
   }
 
   test("all optimization rules do not increase steps") {

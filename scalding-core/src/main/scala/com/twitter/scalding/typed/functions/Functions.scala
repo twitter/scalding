@@ -66,6 +66,10 @@ case class SumAll[T](sg: Semigroup[T]) extends Function1[TraversableOnce[T], Ite
   def apply(ts: TraversableOnce[T]) = sg.sumOption(ts).iterator
 }
 
+case class Fill[A](size: Int) extends Function1[A, Iterator[A]] {
+  def apply(a: A) = Iterator.fill(size)(a)
+}
+
 case class AggPrepare[A, B, C](agg: Aggregator[A, B, C]) extends Function1[A, B] {
   def apply(a: A) = agg.prepare(a)
 }

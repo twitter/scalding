@@ -257,9 +257,6 @@ object CascadingBackend {
                 // TODO: a better optimization is to not materialize this
                 // node at all if there is no fan out since groupBy and cogroupby
                 // can accept multiple inputs
-                //
-                // (a ++ a) == a.flatMap { x => List(x, x) } is an optimization we used to
-                // have
 
                 val flowDef = new FlowDef
                 // if all of the converters are the same, we could skip some work
@@ -390,10 +387,20 @@ object CascadingBackend {
    * cases where you want more direct control of the TypedPipe than
    * the default method gives you.
    */
-  final def toPipeUnoptimized[U](p: TypedPipe[U],
+  final def toPipeUnoptimized[U](input: TypedPipe[U],
     fieldNames: Fields)(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe = {
 
     val compiler = cache.get(flowDef, mode)
+
+    /**
+     * These rules are not optimizations, but actually required for Cascading to not
+     * throw. Cascading requires certain shapes of the graphs
+     */
+    val p = OptimizationRules(input,
+      OptimizationRules.DescribeLater
+        .orElse(OptimizationRules.DeferMerge)
+        .orElse(OptimizationRules.DiamondToFlatMap))
+
     val cp: CascadingPipe[U] = compiler(p)
 
     RichPipe(cp.toPipe(fieldNames, flowDef, TupleSetter.asSubSetter(setter)))

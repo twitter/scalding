@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, Fill }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -367,6 +367,11 @@ object OptimizationRules {
             case Nil => acc.reverse
             case h :: tail => loop(h, tail, acc)
           }
+        case IterablePipe(as) if as.isEmpty =>
+          todo match {
+            case Nil => acc.reverse
+            case h :: tail => loop(h, tail, acc)
+          }
         case notMerge =>
           val acc1 = notMerge :: acc
           todo match {
@@ -377,6 +382,25 @@ object OptimizationRules {
 
     loop(t, Nil, Nil)
   }
+
+  /**
+   * Make sure each returned item is unique. Any duplicates
+   * are merged using flatMap(Iterator.fill(size)(_))
+   *
+   * TODO: this could be more precise by combining more
+   * complex mapping operations into one large flatMap
+   */
+  def dedupMerge[A](as: List[TypedPipe[A]]): List[TypedPipe[A]] =
+    as.groupBy { tp => tp }
+      .iterator
+      .map {
+        case (p, Nil) => sys.error(s"unreachable: $p has no values")
+        case (p, _ :: Nil) => p // just once
+        case (p, repeated) =>
+          val rsize = repeated.size
+          FlatMapped(p, Fill[A](rsize))
+      }
+      .toList
 
   /////////////////////////////
   //
@@ -704,6 +728,10 @@ object OptimizationRules {
         go(f)
       case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
         WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
+      case MergedTypedPipe(WithDescriptionTypedPipe(left, desc, dedup), right) =>
+        WithDescriptionTypedPipe(MergedTypedPipe(left, right), desc, dedup)
+      case MergedTypedPipe(left, WithDescriptionTypedPipe(right, desc, dedup)) =>
+        WithDescriptionTypedPipe(MergedTypedPipe(left, right), desc, dedup)
     }
   }
 
@@ -714,17 +742,7 @@ object OptimizationRules {
     def apply[T](on: Dag[TypedPipe]) = {
       case m@MergedTypedPipe(_, _) =>
         val pipes = unrollMerge(m)
-        val flatMapped =
-          pipes.groupBy { tp => tp: TypedPipe[T] }
-            .iterator
-            .map {
-              case (p, Nil) => sys.error(s"unreachable: $p has no values")
-              case (p, _ :: Nil) => p // just once
-              case (p, repeated) =>
-                val rsize = repeated.size
-                p.flatMap(Iterator.fill(rsize)(_))
-            }
-            .toVector
+        val flatMapped = dedupMerge(pipes)
 
         if (pipes.size == flatMapped.size) None // we didn't reduce the number of merges
         else Some(TypedPipe.typedPipeMonoid.sum(flatMapped))
@@ -1055,4 +1073,10 @@ object OptimizationRules {
       composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap),
       // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
+
+  /**
+   * a Convenience function to avoid needing to pass toLiteral
+   */
+  def apply[A](t: TypedPipe[A], r: Rule[TypedPipe]): TypedPipe[A] =
+    Dag.applyRule(t, toLiteral, r)
 }
