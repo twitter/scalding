@@ -103,6 +103,12 @@ trait Mode extends java.io.Serializable {
    * Make the Execution.Writer for this platform
    */
   def newWriter(): Execution.Writer
+}
+
+/**
+ * Any Mode running on cascading extends CascadingMode
+ */
+trait CascadingMode extends Mode {
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator
@@ -119,7 +125,15 @@ trait Mode extends java.io.Serializable {
   def newFlowConnector(props: Config): FlowConnector
 }
 
-trait HadoopMode extends Mode {
+object CascadingMode {
+  def cast(m: Mode): CascadingMode =
+    m match {
+      case cm: CascadingMode => cm
+      case other => throw new ModeException(s"mode: $other is not a CascadingMode")
+    }
+}
+
+trait HadoopMode extends CascadingMode {
   def jobConf: Configuration
 
   override def newFlowConnector(conf: Config) = {
@@ -180,7 +194,7 @@ trait HadoopMode extends Mode {
   }
 }
 
-trait CascadingLocal extends Mode {
+trait CascadingLocal extends CascadingMode {
   override def newFlowConnector(conf: Config) =
     new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava) // linter:ignore
 
@@ -200,7 +214,7 @@ trait CascadingLocal extends Mode {
 
 // Mix-in trait for test modes; overrides fileExists to allow the registration
 // of mock filenames for testing.
-trait TestMode extends Mode {
+trait TestMode extends CascadingMode {
   private var fileSet = Set[String]()
   def registerTestFiles(files: Set[String]) = fileSet = files
   override def fileExists(filename: String): Boolean = fileSet.contains(filename)

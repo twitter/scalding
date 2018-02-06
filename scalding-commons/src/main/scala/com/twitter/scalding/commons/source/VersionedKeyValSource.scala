@@ -176,7 +176,8 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
 
   override def toIterator(implicit config: Config, mode: Mode): Iterator[(K, V)] = {
     val tap = createTap(Read)(mode)
-    mode.openForRead(config, tap)
+    CascadingMode.cast(mode)
+      .openForRead(config, tap)
       .asScala
       .flatMap { te =>
         val item = te.selectTuple(fields)

@@ -36,7 +36,7 @@ import scala.util.{ Failure, Success, Try }
 trait ExecutionContext {
   def config: Config
   def flowDef: FlowDef
-  def mode: Mode
+  def mode: CascadingMode
 
   import ExecutionContext._
 
@@ -168,7 +168,7 @@ object ExecutionContext {
     new ExecutionContext {
       def config = conf
       def flowDef = fd
-      def mode = m
+      def mode = CascadingMode.cast(m)
     }
 
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode

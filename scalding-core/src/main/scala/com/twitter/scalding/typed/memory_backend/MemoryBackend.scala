@@ -4,64 +4,27 @@ import cascading.flow.{ FlowDef, FlowConnector }
 import cascading.pipe.Pipe
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntryIterator }
+import com.stripe.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.{ Config, Execution, ExecutionCounters, Mode }
-import java.util.concurrent.atomic.AtomicReference
 import java.util.{ ArrayList, Collections, UUID }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.collection.mutable.{ ArrayBuffer, Map => MMap }
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 import Execution.{ ToWrite, Writer }
 
-class AtomicBox[T <: AnyRef](init: T) {
-  private[this] val ref = new AtomicReference[T](init)
-
-  def lazySet(t: T): Unit =
-    ref.lazySet(t)
-
-  /**
-   * use a pure function to update the state.
-   * fn may be called more than once
-   */
-  def update[R](fn: T => (T, R)): R = {
-
-    @annotation.tailrec
-    def loop(): R = {
-      val init = ref.get
-      val (next, res) = fn(init)
-      if (ref.compareAndSet(init, next)) res
-      else loop()
-    }
-
-    loop()
-  }
-
-  def get(): T = ref.get
-}
-
-final class MemoryMode private (srcs: Map[TypedSource[_], Iterable[_]], sinks: Map[TypedSink[_], AtomicBox[Option[Iterable[_]]]]) extends Mode {
+final class MemoryMode private (srcs: HMap[TypedSource, Iterable], sinks: HMap[TypedSink, ({type A[T]=AtomicBox[Option[Iterable[T]]]})#A]) extends Mode {
 
   def newWriter(): Writer =
     new MemoryWriter(this)
-
-  /**
-   * note that ??? in scala is the same as not implemented
-   *
-   * These methods are not needed for use with the Execution API, and indeed
-   * don't make sense outside of cascading, but backwards compatibility
-   * currently requires them on Mode. Ideally we will find another solution
-   * to this in the future
-   */
-  def openForRead(config: Config, tap: Tap[_, _, _]): TupleEntryIterator = ???
-  def fileExists(filename: String): Boolean = ???
-  def newFlowConnector(props: Config): FlowConnector = ???
 
   def addSource[T](src: TypedSource[T], ts: Iterable[T]): MemoryMode =
     new MemoryMode(srcs + (src -> ts), sinks)
 
   def addSink[T](sink: TypedSink[T]): MemoryMode =
-    new MemoryMode(srcs, sinks + (sink -> new AtomicBox[Option[Iterable[_]]](None)))
+    new MemoryMode(srcs, sinks + (sink -> new AtomicBox[Option[Iterable[T]]](None)))
 
   /**
    * This has a side effect of mutating this MemoryMode
@@ -70,17 +33,18 @@ final class MemoryMode private (srcs: Map[TypedSource[_], Iterable[_]], sinks: M
     sinks(t).lazySet(Some(iter))
 
   def readSink[T](t: TypedSink[T]): Option[Iterable[T]] =
-    sinks.get(t).flatMap(_.get).asInstanceOf[Option[Iterable[T]]]
+    sinks.get(t).flatMap(_.get)
 
   def readSource[T](t: TypedSource[T]): Option[Iterable[T]] =
-    srcs.get(t).asInstanceOf[Option[Iterable[T]]]
+    srcs.get(t)
 }
 
 object MemoryMode {
-  def empty: MemoryMode = new MemoryMode(Map.empty, Map.empty)
+  def empty: MemoryMode = new MemoryMode(HMap.empty, HMap.empty[TypedSink, ({type A[T]=AtomicBox[Option[Iterable[T]]]})#A])
 }
 
 object MemoryPlanner {
+
 
   sealed trait Op[+O] {
     def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[_ <: O]]
@@ -97,58 +61,50 @@ object MemoryPlanner {
       }
 
     def map[O1](fn: O => O1): Op[O1] =
-      transform { in: IndexedSeq[O] =>
-        val res = new ArrayBuffer[O1](in.size)
-        val it = in.iterator
-        while(it.hasNext) {
-          res += fn(it.next)
-        }
-        res
-      }
+      Op.MapOp(this, fn)
 
     def filter(fn: O => Boolean): Op[O] =
-      transform { in: IndexedSeq[O] =>
-        // we can't increase in size, just assume the worst
-        val res = new ArrayBuffer[O](in.size)
-        val it = in.iterator
-        while(it.hasNext) {
-          val o = it.next
-          if (fn(o)) res += o
-        }
-        res
-      }
+      Op.Filter(this, fn)
 
     def transform[O1 >: O, O2](fn: IndexedSeq[O1] => ArrayBuffer[O2]): Op[O2] =
       Op.Transform[O1, O2](this, fn)
+
+    def materialize: Op[O] =
+      Op.Materialize(this)
   }
   object Op {
-    def source[I](i: Iterable[I]): Op[I] = Source(_ => Future.successful(i))
+    def source[I](i: Iterable[I]): Op[I] = Source(Try(i))
     def empty[I]: Op[I] = source(Nil)
 
-    final case class Source[I](input: ConcurrentExecutionContext => Future[Iterable[I]]) extends Op[I] {
-      private[this] val promise: Promise[ArrayBuffer[I]] = Promise()
+    final case class Source[I](input: Try[Iterable[I]]) extends Op[I] {
 
-      def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[I]] = {
-        if (!promise.isCompleted) {
-          promise.tryCompleteWith {
-            val iter = input(cec)
-            iter.map { i => ArrayBuffer.concat(i) }
-          }
-        }
-
-        promise.future
-      }
+      def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[I]] =
+        Future.fromTry(input).map(ArrayBuffer.concat(_))
     }
 
+    // Here we need to make a copy on each result
     final case class Materialize[O](op: Op[O]) extends Op[O] {
-      private[this] val promise: Promise[ArrayBuffer[_ <: O]] = Promise()
+      private[this] val promiseBox: AtomicBox[Option[Promise[ArrayBuffer[_ <: O]]]] = new AtomicBox(None)
 
       def result(implicit cec: ConcurrentExecutionContext) = {
-        if (!promise.isCompleted) {
-          promise.tryCompleteWith(op.result)
+        val either = promiseBox.update {
+          case None =>
+            val promise = Promise[ArrayBuffer[_ <: O]]()
+            (Some(promise), Right(promise))
+          case s@Some(promise) =>
+            (s, Left(promise))
         }
 
-        promise.future
+        val fut = either match {
+          case Right(promise) =>
+            // This is the one case where we call the op
+            promise.completeWith(op.result)
+            promise.future
+          case Left(promise) =>
+            // we already started the previous work
+            promise.future
+        }
+        fut.map(ArrayBuffer.concat(_))
       }
     }
 
@@ -156,20 +112,44 @@ object MemoryPlanner {
       def result(implicit cec: ConcurrentExecutionContext) = {
         val f1 = left.result
         val f2 = right.result
-        f1.zip(f2).map { case (l, r) => ArrayBuffer.concat(l, r) }
+        f1.zip(f2).map { case (l, r) =>
+          if (l.size > r.size) l.asInstanceOf[ArrayBuffer[O]] ++= r
+          else r.asInstanceOf[ArrayBuffer[O]] ++= l
+        }
       }
     }
 
-    final case class Map[I, O](input: Op[I], fn: I => TraversableOnce[O]) extends Op[O] {
+    // We reuse the input on map
+    final case class MapOp[I, O](input: Op[I], fn: I => O) extends Op[O] {
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[O]] =
         input.result.map { array =>
-          val res = ArrayBuffer[O]()
-          val it = array.iterator
-          while(it.hasNext) {
-            val i = it.next
-            fn(i).foreach(res += _)
+          val res: ArrayBuffer[O] = array.asInstanceOf[ArrayBuffer[O]]
+          var pos = 0
+          while(pos < array.length) {
+            res.update(pos, fn(array(pos)))
+            pos = pos + 1
           }
           res
+        }
+    }
+    // We reuse the input on filter
+    final case class Filter[I](input: Op[I], fn: I => Boolean) extends Op[I] {
+      def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[I]] =
+        input.result.map { array0 =>
+          val array = array0.asInstanceOf[ArrayBuffer[I]]
+          var pos = 0
+          var writePos = 0
+          while(pos < array.length) {
+            val item = array(pos)
+            if (fn(item)) {
+              array(writePos) = item
+              writePos = writePos + 1
+            }
+            pos = pos + 1
+          }
+          // trim the tail off
+          array.remove(writePos, array.length - writePos)
+          array
         }
     }
 
@@ -229,19 +209,43 @@ object MemoryPlanner {
         f1.zip(f2).map { case (a, b) => fn(a, b) }
       }
     }
+
+    final case class BulkJoin[K, A](ops: List[Op[(K, Any)]], joinF: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[A]) extends Op[(K, A)] {
+      def result(implicit cec: ConcurrentExecutionContext) =
+        Future.traverse(ops)(_.result)
+          .map { items =>
+            // TODO this is not by any means optimal.
+            // we could copy into arrays then sort by key and iterate
+            // each through in K sorted order
+            val maps: List[Map[K, Iterable[(K, Any)]]] = items.map { kvs =>
+              val kvMap: Map[K, Iterable[(K, Any)]] = kvs.groupBy(_._1)
+              kvMap
+            }
+
+            val allKeys = maps.iterator.flatMap(_.keys.iterator).toSet
+            val result = ArrayBuffer[(K, A)]()
+            allKeys.foreach { k =>
+              maps.map(_.getOrElse(k, Nil)) match {
+                case h :: tail =>
+                  joinF(k, h.iterator.map(_._2), tail.map(_.map(_._2))).foreach { a =>
+                    result += ((k, a))
+                  }
+                case other => sys.error(s"unreachable: $other, $k")
+              }
+            }
+
+            result
+          }
+    }
   }
 
   /**
    * Memoize previously planned TypedPipes so we don't replan too much
-   *
-   * ideally we would look at a series of writes and first look for all
-   * the fan-outs and only memoize at the spots where we have to force
-   * materializations, but this is just a demo for now
    */
-  case class Memo(planned: Map[TypedPipe[_], Op[_]]) {
+  case class Memo(planned: HMap[TypedPipe, Op]) {
     def plan[T](t: TypedPipe[T])(op: => (Memo, Op[T])): (Memo, Op[T]) =
       planned.get(t) match {
-        case Some(op) => (this, op.asInstanceOf[Op[T]])
+        case Some(op) => (this, op)
         case None =>
           val (m1, newOp) = op
           (m1.copy(planned = m1.planned.updated(t, newOp)), newOp)
@@ -249,7 +253,7 @@ object MemoryPlanner {
   }
 
   object Memo {
-    def empty: Memo = Memo(Map.empty)
+    def empty: Memo = Memo(HMap.empty)
   }
 
 }
@@ -288,6 +292,10 @@ case class SinkT[T](indent: String) extends TypedSink[T] {
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = ???
 }
 
+/**
+ * This is the state of a single outer Execution execution running
+ * in memory mode
+ */
 class MemoryWriter(mem: MemoryMode) extends Writer {
 
   import MemoryPlanner.{ Memo, Op }
@@ -334,7 +342,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
         case f@Filter(_, _) =>
           def go[T](f: Filter[T]): (Memo, Op[T]) = {
             val Filter(p, fn) = f
-            val (m1, op) = plan(m, f)
+            val (m1, op) = plan(m, p)
             (m1, op.filter(fn))
           }
           go(f)
@@ -354,11 +362,11 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
 
         case ForceToDisk(pipe) =>
           val (m1, op) = plan(m, pipe)
-          (m1, Op.Materialize(op))
+          (m1, op.materialize)
 
         case Fork(pipe) =>
           val (m1, op) = plan(m, pipe)
-          (m1, Op.Materialize(op))
+          (m1, op.materialize)
 
         case IterablePipe(iterable) =>
           (m, Op.source(iterable))
@@ -382,12 +390,12 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           (m2, Op.Concat(op1, op2))
 
         case SourcePipe(src) =>
-          (m, Op.Source({ cec =>
+          (m, Op.Source(
             mem.readSource(src) match {
-              case Some(iter) => Future.successful(iter)
-              case None => Future.failed(new Exception(s"Source: $src not wired. Please provide an input with MemoryMode.addSource"))
+              case Some(iter) => Success(iter)
+              case None => Failure(new Exception(s"Source: $src not wired. Please provide an input with MemoryMode.addSource"))
             }
-          }))
+          ))
 
         case slk@SumByLocalKeys(_, _) =>
           def sum[K, V](sblk: SumByLocalKeys[K, V]) = {
@@ -411,10 +419,11 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           }
           sum(slk)
 
-        case tp@TrappedPipe(_, _, _) => ???
+        case tp@TrappedPipe(input, _, _) => plan(m, input)
           // this can be interpretted as catching any exception
           // on the map-phase until the next partition, so it can
-          // be made to work, but skipping for now
+          // be made to work by changing Op to return all
+          // the values that fail on error
 
         case WithDescriptionTypedPipe(pipe, description, dedup) =>
           plan(m, pipe)
@@ -443,15 +452,11 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           def go[K, V](cg: CoGrouped[K, V]) = {
             val inputs = cg.inputs
             val joinf = cg.joinFunction
-            /**
-             * we need to expand the Op type to deal
-             * with multi-way or we need to keep
-             * the decomposed series of joins
-             *
-             * TODO
-             * implement cogroups on the memory platform
-             */
-            ???
+            val (m2, opsRev) = inputs.foldLeft((m, List.empty[Op[(K, Any)]])) { case ((oldM, ops), pipe) =>
+              val (m1, op) = plan(oldM, pipe)
+              (m1, op :: ops)
+            }
+            (m2, Op.BulkJoin(opsRev.reverse, joinf))
           }
           go(cg)
 
@@ -515,10 +520,14 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
   private[this] case class State(
     id: Long,
     memo: MemoryPlanner.Memo,
-    forced: Map[TypedPipe[_], Future[TypedPipe[_]]]
-    )
+    forced: HMap[TypedPipe, ({type F[T]=Future[Iterable[T]]})#F]
+    ) {
 
-  private[this] val state = new AtomicBox[State](State(0, MemoryPlanner.Memo.empty, Map.empty))
+    def simplifiedForce[A](t: TypedPipe[A], it: Future[Iterable[A]]): State =
+      copy(forced = forced.updated(t, it))
+  }
+
+  private[this] val state = new AtomicBox[State](State(0, MemoryPlanner.Memo.empty, HMap.empty[TypedPipe, ({type F[T]=Future[Iterable[T]]})#F]))
 
   /**
    * do a batch of writes, possibly optimizing, and return a new unique
@@ -532,45 +541,75 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
       type Action = () => Future[Unit]
+      import Execution.ToWrite._
 
-      def force[T](p: TypedPipe[T], oldState: State): (State, Action) = {
+      val phases: Seq[Rule[TypedPipe]] =
+        OptimizationRules.standardMapReduceRules // probably want to tweak this
+
+      val toOptimized = ToWrite.optimizeWriteBatch(writes, phases)
+
+      def force[T](p: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
         val (nextM, op) = plan(oldState.memo, p)
-        val pipePromise = Promise[TypedPipe[Any]]()
+        val pipePromise = Promise[Iterable[T]]()
         val action = () => {
           val arrayBufferF = op.result
-          pipePromise.completeWith(arrayBufferF.map(TypedPipe.from(_)))
+          pipePromise.completeWith(arrayBufferF)
 
           arrayBufferF.map(_ => ())
         }
-        (oldState.copy(memo = nextM, forced = oldState.forced.updated(p, pipePromise.future)), action)
+        (oldState.copy(memo = nextM, forced = oldState.forced.updated(keyPipe, pipePromise.future)), action)
       }
 
+      /**
+       * TODO
+       * If we have a typed pipe rooted twice, it is not clear it has fanout. If it does not
+       * we will not materialize it, so both branches can't own it. Since we only emit Iterable
+       * out, this may be okay because no external readers can modify, but worth thinking of
+       */
       val (id, acts) = state.update { s =>
-        val (nextState, acts) = writes.foldLeft((s, List.empty[Action])) {
-          case (noop, ToWrite.Force(pipe)) if noop._1.forced.contains(pipe) =>
-            // we have already forced this pipe
-            noop
-          case ((oldState, acts), ToWrite.Force(pipe)) =>
-            val (st, a) = force(pipe, oldState)
-            (st, a :: acts)
-          case (old@(oldState, acts), ToWrite.ToIterable(pipe)) =>
-            pipe match {
-              case TypedPipe.EmptyTypedPipe => old
-              case TypedPipe.IterablePipe(_) => old
-              case TypedPipe.SourcePipe(_) => old
-              case other if oldState.forced.contains(other) => old
-              case other =>
-                val (st, a) = force(other, oldState)
+        val (nextState, acts) = writes.foldLeft((s, List.empty[Action])) { case (old@(state, acts), write) =>
+          write match {
+            case Force(pipe) =>
+              val opt = toOptimized(pipe)
+              if (state.forced.contains(opt)) old
+              else {
+                val (st, a) = force(opt, pipe, state)
                 (st, a :: acts)
-            }
-          case ((oldState, acts), ToWrite.SimpleWrite(pipe, sink)) =>
-            val (nextM, op) = plan(oldState.memo, pipe) // linter:disable:UndesirableTypeInference
-            val action = () => {
-              val arrayBufferF = op.result
-              arrayBufferF.foreach { mem.writeSink(sink, _) }
-              arrayBufferF.map(_ => ())
-            }
-            (oldState.copy(memo = nextM), action :: acts)
+              }
+            case ToIterable(pipe) =>
+              val opt = toOptimized(pipe)
+              opt match {
+                case TypedPipe.EmptyTypedPipe =>
+                  (state.simplifiedForce(pipe, Future.successful(Nil)), acts)
+                case TypedPipe.IterablePipe(i) =>
+                  (state.simplifiedForce(pipe, Future.successful(i)), acts)
+                case TypedPipe.SourcePipe(src) =>
+                  val fut = getSource(src)
+                  (state.simplifiedForce(pipe, fut), acts)
+                case other if state.forced.contains(opt) => old
+                case other =>
+                  val (st, a) = force(opt, pipe, state)
+                  (st, a :: acts)
+              }
+            case ToWrite.SimpleWrite(pipe, sink) =>
+              val opt = toOptimized(pipe)
+              state.forced.get(opt) match {
+                case Some(iterf) =>
+                  val action = () => {
+                    iterf.foreach(mem.writeSink(sink, _))
+                    iterf.map(_ => ())
+                  }
+                  (state, action :: acts)
+                case None =>
+                  val (nextM, op) = plan(state.memo, opt) // linter:disable:UndesirableTypeInference
+                  val action = () => {
+                    val arrayBufferF = op.result
+                    arrayBufferF.foreach { mem.writeSink(sink, _) }
+                    arrayBufferF.map(_ => ())
+                  }
+                  (state.copy(memo = nextM), action :: acts)
+              }
+          }
         }
         (nextState.copy(id = nextState.id + 1) , (nextState.id, acts))
       }
@@ -588,8 +627,14 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     )(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] =
       state.get.forced.get(initial) match {
         case None => Future.failed(new Exception(s"$initial not forced"))
-        case Some(f) => f.asInstanceOf[Future[TypedPipe[T]]]
+        case Some(f) => f.map(TypedPipe.from(_))
       }
+
+  def getSource[A](src: TypedSource[A]): Future[Iterable[A]] =
+    mem.readSource(src) match {
+      case Some(iter) => Future.successful(iter)
+      case None => Future.failed(new Exception(s"Source: $src not connected"))
+    }
 
   /**
    * This should only be called after a call to execute
@@ -601,10 +646,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
   )(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]] = initial match {
     case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
     case TypedPipe.IterablePipe(iter) => Future.successful(iter)
-    case TypedPipe.SourcePipe(src) => mem.readSource(src) match {
-      case Some(iter) => Future.successful(iter)
-      case None => Future.failed(new Exception(s"Source: $src not connected"))
-    }
+    case TypedPipe.SourcePipe(src) => getSource(src)
     case other => getForced(conf, mode, other).flatMap(getIterable(conf, mode, _))
   }
 }

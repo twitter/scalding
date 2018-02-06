@@ -174,6 +174,6 @@ object Checkpoint {
 
   // Returns true if the given checkpoint file exists and should be read.
   private def hasInput(checkpointName: String, filename: String)(implicit args: Args, mode: Mode): Boolean = {
-    !CheckpointArg(checkpointName, "clobber").isTrue && mode.fileExists(filename)
+    !CheckpointArg(checkpointName, "clobber").isTrue && CascadingMode.cast(mode).fileExists(filename)
   }
 }
