@@ -49,7 +49,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.11",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.3"),
+  // crossScalaVersions := Seq(scalaVersion.value, "2.12.3"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -148,7 +148,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   publishTo := Some(
       if (version.value.trim.endsWith("SNAPSHOT"))
         Opts.resolver.sonatypeSnapshots
-      else Opts.resolver.sonatypeStaging
+      else "twttr" at "https://artifactory.twitter.biz/libs-releases-local"
     ),
 
   // Janino includes a broken signature, and is not needed:
