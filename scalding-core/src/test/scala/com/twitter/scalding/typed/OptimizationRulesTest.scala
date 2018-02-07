@@ -424,4 +424,31 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       eqCheck(tp.distinctBy(fn0)(ordInt))
     }
   }
+
+  test("Dagon relies on fast hashCodes. Test some example ones to make sure they are not exponential") {
+
+    @annotation.tailrec
+    def fib[A](t0: TypedPipe[A], t1: TypedPipe[A], n: Int)(fn: (TypedPipe[A], TypedPipe[A]) => TypedPipe[A]): TypedPipe[A] =
+      if (n <= 0) t0
+      else if (n == 1) t1
+      else {
+        val t2 = fn(t0, t1)
+        fib(t1, t2, n - 1)(fn)
+      }
+
+    def testFib(fn: (TypedPipe[Int], TypedPipe[Int]) => TypedPipe[Int]) = {
+      val start = System.currentTimeMillis
+      fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45)(fn).hashCode
+      val end = System.currentTimeMillis
+      // for exponential complexity this will fail
+      assert(end - start < 1000)
+    }
+
+    // Test the ways we can combine pipes
+    testFib(_ ++ _)
+    testFib(_.cross(_).map { case (a, b) => a * b })
+    testFib { (left, right) =>
+      left.asKeys.join(right.asKeys).keys
+    }
+  }
 }

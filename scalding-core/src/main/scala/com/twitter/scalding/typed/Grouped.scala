@@ -20,6 +20,7 @@ import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard, EqTypes, FilterGroup, MapValueStream, MapGroupMapValues, SumAll }
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
+import scala.util.hashing.MurmurHash3
 
 object CoGroupable {
   /*
@@ -137,6 +138,16 @@ object CoGrouped {
     larger: CoGroupable[K, A],
     smaller: CoGroupable[K, B],
     fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends CoGrouped[K, C] {
+
+    // case classes that merge more than one TypedPipe need to memoize the result or
+    // it can be exponential in complexity
+    override val hashCode = MurmurHash3.productHash(this)
+    override def equals(that: Any) =
+      that match {
+        case thatRef: AnyRef if this eq thatRef => true
+        case Pair(l, s, f) => (fn == f) && (l == larger) && (s == smaller)
+        case _ => false
+      }
 
     def inputs = larger.inputs ++ smaller.inputs
     def reducers = (larger.reducers.iterator ++ smaller.reducers.iterator).reduceOption(_ max _)
