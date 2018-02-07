@@ -29,6 +29,7 @@ import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 
 import scala.util.Try
+import scala.util.hashing.MurmurHash3
 
 /**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding.
@@ -138,11 +139,34 @@ object TypedPipe extends Serializable {
     }
   }
 
-   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
+   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)] {
+     //
+     // Very long chains of maps are uncommon. There are generally
+     // periodic reduces or joins. we cache hashCode and optimize equality
+     // here to improve using TypedPipe in hash tables
+     //
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case CoGroupedPipe(cg) => cg == cogrouped
+         case _ => false
+       }
+   }
    final case class CounterPipe[A](pipe: TypedPipe[(A, Iterable[((String, String), Long)])]) extends TypedPipe[A]
    final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values
+
+     // case classes that merge more than one TypedPipe need to memoize the result or
+     // it can be exponential in complexity
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case CrossPipe(l, r) => (l == left) && (r == right)
+         case _ => false
+       }
    }
    final case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
@@ -154,6 +178,15 @@ object TypedPipe extends Serializable {
           case ComputedValue(pipe) =>
             CrossPipe(left, pipe)
         }
+     // case classes that merge more than one TypedPipe need to memoize the result or
+     // it can be exponential in complexity
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case CrossValue(l, r) => (l == left) && (r == right)
+         case _ => false
+       }
    }
    final case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
    final case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
@@ -162,12 +195,45 @@ object TypedPipe extends Serializable {
    final case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
    final case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
    final case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
-   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
+   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)] {
+     // case classes that merge more than one TypedPipe need to memoize the result or
+     // it can be exponential in complexity
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case HashCoGroup(l, r, j) => (j == joiner) && (l == left) && (r == right)
+         case _ => false
+       }
+   }
    final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
    final case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
    final case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
-   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
-   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
+   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
+     // case classes that merge more than one TypedPipe need to memoize the result or
+     // it can be exponential in complexity
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case MergedTypedPipe(l, r) => (l == left) && (r == right)
+         case _ => false
+       }
+   }
+   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]{
+     //
+     // Very long chains of maps are uncommon. There are generally
+     // periodic reduces or joins. we cache hashCode and optimize equality
+     // here to improve using TypedPipe in hash tables
+     //
+     override val hashCode = MurmurHash3.productHash(this)
+     override def equals(that: Any) =
+       that match {
+         case thatRef: AnyRef if this eq thatRef => true
+         case ReduceStepPipe(r) => r == reduce
+         case _ => false
+       }
+   }
    final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
    final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
    final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
