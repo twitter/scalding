@@ -22,6 +22,7 @@ import cascading.pipe.Pipe
 import com.twitter.scalding.estimation.memory.MemoryEstimatorStepStrategy
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
+import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
@@ -70,6 +71,8 @@ trait ExecutionContext {
 
       name.foreach(flowDef.setName)
 
+      // Do the optimization of the typed pipes, and register them
+      CascadingBackend.planTypedWrites(flowDef, mode)
       // identify the flowDef
       val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
       val flow = mode.newFlowConnector(configWithId).connect(flowDef)

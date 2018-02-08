@@ -700,9 +700,10 @@ sealed abstract class TypedPipe[+T] extends Serializable {
    * @return a pipe equivalent to the current pipe.
    */
   def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    dest.writeFrom(toPipe[T](dest.sinkFields)(flowDef, mode, dest.setter))
-    // We want to fork after this point
-    fork
+    FlowStateMap.mutate(flowDef) { fs =>
+      (fs.addTypedWrite(this, dest, mode), ())
+    }
+    this
   }
 
   /**

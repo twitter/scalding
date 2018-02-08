@@ -301,7 +301,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
         case Success(pipe) =>
           FlowStateMap.get(fd) match {
             case None => fail("expected a flow state")
-            case Some(FlowState(m, _)) =>
+            case Some(FlowState(m, _, _)) =>
               assert(m.size == 1)
               m.head._2 match {
                 case it: IterableSource[_] =>
@@ -425,16 +425,16 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     }
   }
 
-  test("Dagon relies on fast hashCodes. Test some example ones to make sure they are not exponential") {
+  @annotation.tailrec
+  final def fib[A](t0: A, t1: A, n: Int)(fn: (A, A) => A): A =
+    if (n <= 0) t0
+    else if (n == 1) t1
+    else {
+      val t2 = fn(t0, t1)
+      fib(t1, t2, n - 1)(fn)
+    }
 
-    @annotation.tailrec
-    def fib[A](t0: TypedPipe[A], t1: TypedPipe[A], n: Int)(fn: (TypedPipe[A], TypedPipe[A]) => TypedPipe[A]): TypedPipe[A] =
-      if (n <= 0) t0
-      else if (n == 1) t1
-      else {
-        val t2 = fn(t0, t1)
-        fib(t1, t2, n - 1)(fn)
-      }
+  test("Dagon relies on fast hashCodes. Test some example ones to make sure they are not exponential") {
 
     def testFib(fn: (TypedPipe[Int], TypedPipe[Int]) => TypedPipe[Int]) = {
       val start = System.currentTimeMillis
@@ -450,5 +450,17 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     testFib { (left, right) =>
       left.asKeys.join(right.asKeys).keys
     }
+  }
+
+  test("write should be fast for large graphs") {
+    val fd = new FlowDef
+    val start = System.currentTimeMillis
+    // for non-linear complexity this will fail
+    fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45) { (a, b) =>
+      // write should be fast too
+      a.write(NullSink)(fd, Local(true)) ++ b
+    }
+    val end = System.currentTimeMillis
+    assert(end - start < 1000)
   }
 }
