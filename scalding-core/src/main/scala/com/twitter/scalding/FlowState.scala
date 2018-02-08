@@ -21,7 +21,10 @@ import java.util.WeakHashMap
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
-case class FlowState(sourceMap: Map[String, Source] = Map.empty, flowConfigUpdates: Set[(String, String)] = Set()) {
+case class FlowState(
+  sourceMap: Map[String, Source] = Map.empty,
+  flowConfigUpdates: Set[(String, String)] = Set(),
+  pendingTypedWrites: List[FlowStateMap.TypedWrite[_]] = Nil) {
   def addSource(id: String, s: Source): FlowState =
     copy(sourceMap = sourceMap + (id -> s))
 
@@ -34,6 +37,9 @@ case class FlowState(sourceMap: Map[String, Source] = Map.empty, flowConfigUpdat
   def validateSources(mode: Mode): Unit =
     // This can throw a InvalidSourceException
     sourceMap.values.toSet[Source].foreach(_.validateTaps(mode))
+
+  def addTypedWrite[A](p: TypedPipe[A], s: TypedSink[A], m: Mode): FlowState =
+    copy(pendingTypedWrites = FlowStateMap.TypedWrite(p, s, m) :: pendingTypedWrites)
 }
 
 /**
@@ -48,6 +54,7 @@ object FlowStateMap {
   // Make sure we don't hold FlowState after the FlowDef is gone
   @transient private val flowMap = new WeakHashMap[FlowDef, FlowState]()
 
+  case class TypedWrite[T](pipe: TypedPipe[T], sink: TypedSink[T], mode: Mode)
   /**
    * Function to update a state.
    */

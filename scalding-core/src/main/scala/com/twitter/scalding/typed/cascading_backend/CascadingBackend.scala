@@ -1,11 +1,10 @@
 package com.twitter.scalding.typed.cascading_backend
 
-
 import cascading.flow.FlowDef
 import cascading.operation.{ Debug, Operation }
 import cascading.pipe.{ CoGroup, Each, Pipe, HashJoin }
 import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import com.stripe.dagon.{ FunctionK, HCache, Memoize, Rule, Dag }
+import com.stripe.dagon.{ FunctionK, HCache, Id, Memoize, Rule, Dag }
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
@@ -380,6 +379,43 @@ object CascadingBackend {
     // Now that we have an optimized pipe, convert it to a Pipe
     toPipeUnoptimized(p1, fieldNames)
   }
+
+  /**
+   * This needs to be called, to plan any writes from the
+   * TypedPipe API. This is here to globally optimize the entire
+   * flow, and not optimize on a write-by-write basis.
+   *
+   * This uses the FlowStateMap this method is idempotent.
+   *
+   * It is called by default in ExecutionContext at the last
+   * step before building the Flow. Job also needs to call this
+   * method in validate to make sure validation works.
+   */
+  def planTypedWrites(fd: FlowDef, mode: Mode): Unit =
+    FlowStateMap.mutate(fd) { st =>
+      val writes = st.pendingTypedWrites
+      val empty = Dag.empty(OptimizationRules.toLiteral)
+      type ToDo[A] = (Id[A], TypedSink[A])
+      val (rootedDag, todos) = writes.foldLeft((empty, List.empty[ToDo[_]])) { case ((dag, items), tw) =>
+        val (nextDag, id) = dag.addRoot(tw.pipe)
+        require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
+        (nextDag, (id, tw.sink) :: items)
+      }
+      val phases = defaultOptimizationRules(
+        mode match {
+          case h: HadoopMode => Config.fromHadoop(h.jobConf)
+          case _ => Config.empty
+        })
+      val optDag = rootedDag.applySeq(phases)
+      def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
+        val optPipe = optDag.evaluate(pair._1)
+        val dest = pair._2
+        val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
+        dest.writeFrom(cpipe)(fd, mode)
+      }
+      todos.foreach(doWrite(_))
+      (st.copy(pendingTypedWrites = Nil), ())
+    }
 
   /**
    * This converts the TypedPipe to a cascading Pipe doing the most direct
