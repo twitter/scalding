@@ -79,7 +79,7 @@ object OptimizationRules {
           case (p: TrappedPipe[a], f) =>
             Unary(f(p.input), TrappedPipe[a](_: TypedPipe[a], p.sink, p.conv))
           case (p: WithDescriptionTypedPipe[a], f) =>
-            Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.description, p.deduplicate))
+            Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.descriptions))
           case (p: WithOnComplete[a], f) =>
             Unary(f(p.input), WithOnComplete(_: TypedPipe[a], p.fn))
           case (EmptyTypedPipe, _) =>
@@ -569,7 +569,7 @@ object OptimizationRules {
         go(t)
       case CoGroupedPipe(cgp) => forkCoGroup(on, cgp).map(CoGroupedPipe(_))
       case WithOnComplete(p, fn) => maybeFork(on, p).map(WithOnComplete(_, fn))
-      case WithDescriptionTypedPipe(p, d1, d2) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, d1, d2))
+      case WithDescriptionTypedPipe(p, ds) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, ds))
       case _ => None
     }
   }
@@ -710,28 +710,35 @@ object OptimizationRules {
    */
   object DescribeLater extends PartialRule[TypedPipe] {
     def applyWhere[T](on: Dag[TypedPipe]) = {
-      case Mapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(Mapped(in, fn), desc, dedup)
-      case MapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(MapValues(in, fn), desc, dedup)
-      case FlatMapped(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FlatMapped(in, fn), desc, dedup)
-      case FlatMapValues(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FlatMapValues(in, fn), desc, dedup)
-      case f@Filter(WithDescriptionTypedPipe(_, _, _), _) =>
+      case Mapped(WithDescriptionTypedPipe(in, descs), fn) =>
+        WithDescriptionTypedPipe(Mapped(in, fn), descs)
+      case MapValues(WithDescriptionTypedPipe(in, descs), fn) =>
+        WithDescriptionTypedPipe(MapValues(in, fn), descs)
+      case FlatMapped(WithDescriptionTypedPipe(in, descs), fn) =>
+        WithDescriptionTypedPipe(FlatMapped(in, fn), descs)
+      case FlatMapValues(WithDescriptionTypedPipe(in, descs), fn) =>
+        WithDescriptionTypedPipe(FlatMapValues(in, fn), descs)
+      case f@Filter(WithDescriptionTypedPipe(_, _), _) =>
         def go[A](f: Filter[A]): TypedPipe[A] =
           f match {
-            case Filter(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-              WithDescriptionTypedPipe(Filter(in, fn), desc, dedup)
+            case Filter(WithDescriptionTypedPipe(in, descs), fn) =>
+              WithDescriptionTypedPipe(Filter(in, fn), descs)
             case unreachable => unreachable
           }
         go(f)
-      case FilterKeys(WithDescriptionTypedPipe(in, desc, dedup), fn) =>
-        WithDescriptionTypedPipe(FilterKeys(in, fn), desc, dedup)
-      case MergedTypedPipe(WithDescriptionTypedPipe(left, desc, dedup), right) =>
-        WithDescriptionTypedPipe(MergedTypedPipe(left, right), desc, dedup)
-      case MergedTypedPipe(left, WithDescriptionTypedPipe(right, desc, dedup)) =>
-        WithDescriptionTypedPipe(MergedTypedPipe(left, right), desc, dedup)
+      case FilterKeys(WithDescriptionTypedPipe(in, descs), fn) =>
+        WithDescriptionTypedPipe(FilterKeys(in, fn), descs)
+      case MergedTypedPipe(WithDescriptionTypedPipe(left, descs), right) =>
+        WithDescriptionTypedPipe(MergedTypedPipe(left, right), descs)
+      case MergedTypedPipe(left, WithDescriptionTypedPipe(right, descs)) =>
+        WithDescriptionTypedPipe(MergedTypedPipe(left, right), descs)
+      case WithDescriptionTypedPipe(WithDescriptionTypedPipe(input, descs1), descs2) =>
+        // This rule is important in that it allows us to reduce
+        // the number of nodes in the graph, which is helpful to speed up rule application
+        WithDescriptionTypedPipe(input, descs1 ::: descs2)
+      case Fork(WithDescriptionTypedPipe(input, descs)) =>
+        // descriptions are cheap, we can apply them on both sides of a fork
+        WithDescriptionTypedPipe(Fork(input), descs)
     }
   }
 
@@ -927,7 +934,7 @@ object OptimizationRules {
       case TrappedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp) => EmptyTypedPipe
       case WithOnComplete(EmptyTypedPipe, _) => EmptyTypedPipe // there is nothing to do, so we never have workers complete
-      case WithDescriptionTypedPipe(EmptyTypedPipe, _, _) => EmptyTypedPipe // descriptions apply to tasks, but empty has no tasks
+      case WithDescriptionTypedPipe(EmptyTypedPipe, _) => EmptyTypedPipe // descriptions apply to tasks, but empty has no tasks
     }
   }
 
@@ -986,8 +993,8 @@ object OptimizationRules {
         case SourcePipe(_) | IterablePipe(_) | CoGroupedPipe(_) | ReduceStepPipe(_) | ForceToDisk(_) => t
         case WithOnComplete(pipe, fn) => // TODO it is not clear this is safe in cascading 3, since oncomplete is an each
           WithOnComplete(maybeForce(pipe), fn)
-        case WithDescriptionTypedPipe(pipe, desc, dedup) =>
-          WithDescriptionTypedPipe(maybeForce(pipe), desc, dedup)
+        case WithDescriptionTypedPipe(pipe, descs) =>
+          WithDescriptionTypedPipe(maybeForce(pipe), descs)
         case pipe => ForceToDisk(pipe)
       }
 

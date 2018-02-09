@@ -294,19 +294,19 @@ object CascadingBackend {
             val pipe = RichPipe.assignName(pp)
             fd.addTrap(pipe, sink.createTap(Write)(mode))
             CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
-          case (WithDescriptionTypedPipe(input, descr, dedup), rec) =>
+          case (WithDescriptionTypedPipe(input, descs), rec) =>
 
             @annotation.tailrec
             def loop[A](t: TypedPipe[A], acc: List[(String, Boolean)]): (TypedPipe[A], List[(String, Boolean)]) =
               t match {
-                case WithDescriptionTypedPipe(i, desc, ded) =>
-                  loop(i, (desc, ded) :: acc)
+                case WithDescriptionTypedPipe(i, descs) =>
+                  loop(i, descs ::: acc)
                 case notDescr => (notDescr, acc)
               }
 
-            val (root, descrs) = loop(input, (descr, dedup) :: Nil)
+            val (root, allDesc) = loop(input, descs)
             val cp = rec(root)
-            cp.copy(pipe = applyDescriptions(cp.pipe, descrs))
+            cp.copy(pipe = applyDescriptions(cp.pipe, allDesc))
 
           case (WithOnComplete(input, fn), rec) =>
             val cp = rec(input)

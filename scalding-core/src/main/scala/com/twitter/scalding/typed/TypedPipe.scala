@@ -216,7 +216,8 @@ object TypedPipe extends Serializable {
      override def equals(that: Any) =
        that match {
          case thatRef: AnyRef if this eq thatRef => true
-         case MergedTypedPipe(l, r) => (l == left) && (r == right)
+         case m@MergedTypedPipe(l, r) =>
+           (hashCode == m.hashCode) && ((l eq left) || (l == left)) && ((r eq right) || (r == right))
          case _ => false
        }
    }
@@ -237,7 +238,11 @@ object TypedPipe extends Serializable {
    final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
    final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
    final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
-   final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], description: String, deduplicate: Boolean) extends TypedPipe[T]
+   /**
+    * descriptions carry a boolean that is true if we should deduplicate the message.
+    * This is used for line numbers which are otherwise often duplicated
+    */
+   final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], descriptions: List[(String, Boolean)]) extends TypedPipe[T]
    final case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
 
    case object EmptyTypedPipe extends TypedPipe[Nothing]
@@ -305,7 +310,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
       case None =>
         this
       case Some(desc) =>
-        TypedPipe.WithDescriptionTypedPipe(this, desc, true) // deduplicate line numbers
+        TypedPipe.WithDescriptionTypedPipe(this, (desc, true) :: Nil) // deduplicate line numbers
     }
 
   /**
@@ -421,7 +426,7 @@ sealed abstract class TypedPipe[+T] extends Serializable {
 
   /** adds a description to the pipe */
   def withDescription(description: String): TypedPipe[T] =
-    TypedPipe.WithDescriptionTypedPipe[T](this, description, false)
+    TypedPipe.WithDescriptionTypedPipe[T](this, (description, false) :: Nil)
 
   /**
    * Returns the set of distinct elements in the TypedPipe
