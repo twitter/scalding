@@ -95,6 +95,25 @@ object Mode {
     } else
       throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none")
   }
+
+  @deprecated("Use CascadingMode.cast(mode) or pattern match directly on known CascadingModes (e.g. Hdfs, Local)", "0.18.0")
+  implicit class DeprecatedCascadingModeMethods(val mode: Mode) extends AnyVal {
+    private def cmode: CascadingMode = CascadingMode.cast(mode)
+
+    def openForRead(config: Config, tap: Tap[_, _, _]): TupleEntryIterator =
+      cmode.openForRead(config, tap)
+
+    def openForRead(tap: Tap[_, _, _]): TupleEntryIterator =
+      openForRead(Config.defaultFrom(mode), tap)
+
+    // Returns true if the file exists on the current filesystem.
+    def fileExists(filename: String): Boolean =
+      cmode.fileExists(filename)
+
+    /** Create a new FlowConnector for this cascading planner */
+    def newFlowConnector(props: Config): FlowConnector =
+      cmode.newFlowConnector(props)
+  }
 }
 
 trait Mode extends java.io.Serializable {
