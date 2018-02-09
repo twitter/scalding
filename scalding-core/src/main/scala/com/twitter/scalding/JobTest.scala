@@ -21,7 +21,7 @@ import scala.annotation.tailrec
 import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import cascading.stats.CascadingStats
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.conf.Configuration
 
 import scala.util.Try
 
@@ -164,25 +164,30 @@ class JobTest(cons: (Args) => Job) {
     this
   }
 
-  def runHadoopWithConf(conf: JobConf) = {
+  def runHadoopWithConf(conf: Configuration) = {
     runJob(initJob(true, Some(conf)), true)
     this
   }
 
-  // This SITS is unfortunately needed to get around Specs
-  def finish(): Unit = { () }
+  // This is just syntax to end the "builder" pattern to satify some test frameworks
+  def finish(): Unit = ()
 
   def validate(v: Boolean) = {
     validateJob = v
     this
   }
 
-  // Registers test files, initializes the global mode, and creates a job.
-  private[scalding] def initJob(useHadoop: Boolean, job: Option[JobConf] = None): Job = {
+  def getArgs: Args =
+    new Args(argsMap)
+
+  /**
+   * This method does not mutate the JobTest instance
+   */
+  def getTestMode(useHadoop: Boolean, optConfig: Option[Configuration] = None): TestMode = {
     // Create a global mode to use for testing.
     val testMode: TestMode =
       if (useHadoop) {
-        val conf = job.getOrElse(new JobConf)
+        val conf = optConfig.getOrElse(new Configuration)
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
         conf.set("cascading.flow.job.pollinginterval", "5")
@@ -193,10 +198,34 @@ class JobTest(cons: (Args) => Job) {
         Test(sourceMap)
       }
     testMode.registerTestFiles(fileSet)
-    val args = new Args(argsMap)
+    testMode
+  }
 
+  /**
+   * Run the clean ups and checks after a job
+   * has executed
+   */
+  def postRunChecks(mode: Mode): Unit = {
+    mode match {
+      case hadoopTest @ HadoopTest(_, _) => {
+        /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
+         * "keys" in the `sourceMap`.  Do not change the following line unless
+         * you also modify the `finalize` function accordingly.
+         */
+        // The sinks are written to disk, we need to clean them up:
+        sinkSet.foreach{ hadoopTest.finalize(_) }
+      }
+      case _ => ()
+    }
+    // Now it is time to check the test conditions:
+    callbacks.foreach { cb => cb() }
+  }
+
+  // Registers test files, initializes the global mode, and creates a job.
+  private[scalding] def initJob(useHadoop: Boolean, job: Option[Configuration] = None): Job = {
+    val testMode = getTestMode(useHadoop, job)
     // Construct a job.
-    cons(Mode.putMode(testMode, args))
+    cons(Mode.putMode(testMode, getArgs))
   }
 
   @tailrec
@@ -222,22 +251,9 @@ class JobTest(cons: (Args) => Job) {
     val next: Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
-      case None => {
-        job.mode match {
-          case hadoopTest @ HadoopTest(_, _) => {
-            /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
-             * "keys" in the `sourceMap`.  Do not change the following line unless
-             * you also modify the `finalize` function accordingly.
-             */
-            // The sinks are written to disk, we need to clean them up:
-            sinkSet.foreach{ hadoopTest.finalize(_) }
-          }
-          case _ => ()
-        }
-        // Now it is time to check the test conditions:
-        callbacks.foreach { cb => cb() }
+      case None =>
+        postRunChecks(job.mode)
         statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }
-      }
     }
   }
 }

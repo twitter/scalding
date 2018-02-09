@@ -46,6 +46,86 @@ object Job {
       .newInstance(args)
       .asInstanceOf[Job]
   }
+
+  /**
+   * Make a job reflectively from the given class
+   * and the Args contained in the Config.
+   */
+  def makeJob[J <: Job](cls: Class[J]): Execution[J] =
+    Execution.getConfigMode.flatMap { case (conf, mode) =>
+      // Now we need to allocate the job
+      Execution.from {
+        val argsWithMode = Mode.putMode(mode, conf.getArgs)
+        cls.getConstructor(classOf[Args])
+          .newInstance(argsWithMode)
+      }
+    }
+
+  /**
+   * Create a job reflectively from a class, which handles threading
+   * through the Args and Mode correctly in the way Job subclasses expect
+   */
+  def toExecutionFromClass[J <: Job](cls: Class[J], onEmpty: Execution[Unit]): Execution[Unit] =
+    makeJob(cls).flatMap(toExecution(_, onEmpty))
+
+  /**
+   * Convert Jobs that only use the TypedPipe API to an Execution
+   *
+   * This can fail for some exotic jobs, but for standard subclasses
+   * of Job (that don't override existing methods in Job except config)
+   * it should work
+   *
+   * onEmpty is the execution to run if you have an empty job. Common
+   * values might be Execution.unit or
+   * Execution.failed(new Exeception("unexpected empty execution"))
+   */
+  def toExecution(job: Job, onEmpty: Execution[Unit]): Execution[Unit] =
+    job match {
+      case (exJob: ExecutionJob[_]) => exJob.execution.unit
+      case _ =>
+        val fd = job.flowDef
+        val rfd = new RichFlowDef(fd)
+
+        val ex = if (rfd.isEmpty) {
+          // TypedPipe jobs should not have modified
+          // the FlowDef yet, only the FlowState should
+          // be updated
+          FlowStateMap.get(fd) match { // Note, we want this to be a pure function so we don't mutate the FlowStateMap
+            case Some(FlowState(srcs, confs, writes)) if srcs.isEmpty && confs.isEmpty =>
+              writes match {
+                case Nil => onEmpty
+                case nonEmpty =>
+                  def write[A](f: FlowStateMap.TypedWrite[A]): Execution[Unit] =
+                    f.pipe.writeExecution(f.sink)
+
+                  Execution.sequence(nonEmpty.map(write(_))).unit
+              }
+            case Some(fs) =>
+              // we can't handle if there have been anything other than TypedPipe.write on the
+              // TypedPipe
+              Execution.failed(new Exception(s"expected empty FlowState other than TypedWrites, found: $fs"))
+            case None => onEmpty
+          }
+        }
+        else {
+          // We only support
+          Execution.failed(new Exception(s"We can only convert Typed-API Jobs to Execution. Found non-empty FlowDef"))
+        }
+
+        // next may have a side effect so we
+        // evaluate this *after* the current Execution
+        val nextJobEx: Execution[Unit] =
+          Execution.from(job.next).flatMap { // putting inside Execution.from memoizes this call
+            case None => Execution.unit
+            case Some(nextJob) => toExecution(nextJob, onEmpty)
+          }
+
+        for {
+          conf <- Execution.fromTry(Config.tryFrom(job.config))
+          _ <- Execution.withConfig(ex)(_ => conf)
+          _ <- nextJobEx
+        } yield ()
+      }
 }
 
 /**
