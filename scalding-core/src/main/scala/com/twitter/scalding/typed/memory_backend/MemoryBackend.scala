@@ -425,7 +425,9 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           // be made to work by changing Op to return all
           // the values that fail on error
 
-        case WithDescriptionTypedPipe(pipe, description, dedup) =>
+        case WithDescriptionTypedPipe(pipe, descriptions) =>
+          // TODO we could optionally print out the descriptions
+          // after the future completes
           plan(m, pipe)
 
         case WithOnComplete(pipe, fn) =>
