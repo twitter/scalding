@@ -93,53 +93,14 @@ object OptimizationRules {
         }
       })
 
-    private def handleReduceStep[K, V1, V2](rs: ReduceStep[K, V1, V2], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V2)] =
-      rs match {
-        case step@IdentityReduce(_, _, _, _, _) =>
-          type TK[V] = TypedPipe[(K, V)]
-          val mappedV2 = step.evidence.subst[TK](step.mapped)
-          Unary(widen[(K, V2)](recurse(mappedV2)), { (tp: TypedPipe[(K, V2)]) =>
-            ReduceStepPipe(IdentityReduce[K, V2, V2](step.keyOrdering, tp, step.reducers, step.descriptions, implicitly))
-          })
-        case step@UnsortedIdentityReduce(_, _, _, _, _) =>
-          type TK[V] = TypedPipe[(K, V)]
-          val mappedV2 = step.evidence.subst[TK](step.mapped)
-          Unary(widen[(K, V2)](recurse(mappedV2)), { (tp: TypedPipe[(K, V2)]) =>
-            ReduceStepPipe(UnsortedIdentityReduce[K, V2, V2](step.keyOrdering, tp, step.reducers, step.descriptions, implicitly))
-          })
-        case step@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-          def go[A, B, C](ivsr0: IdentityValueSortedReduce[A, B, C]): LiteralPipe[(A, C)] = {
-            type IVSR[T] = IdentityValueSortedReduce[A, T, C]
-            val ivsr = ivsr0.evidence.subst[IVSR](ivsr0)
-            Unary(widen[(A, C)](recurse(ivsr.mapped)), { (tp: TypedPipe[(A, C)]) =>
-              ReduceStepPipe[A, C, C](IdentityValueSortedReduce[A, C, C](
-                ivsr.keyOrdering,
-                tp,
-                ivsr.valueSort,
-                ivsr.reducers,
-                ivsr.descriptions,
-                implicitly))
-            })
-          }
-          widen[(K, V2)](go(step))
-        case step@ValueSortedReduce(_, _, _, _, _, _) =>
-          def go[A, B, C](vsr: ValueSortedReduce[A, B, C]): LiteralPipe[(A, C)] =
-            Unary(recurse(vsr.mapped), { (tp: TypedPipe[(A, B)]) =>
-              ReduceStepPipe[A, B, C](ValueSortedReduce[A, B, C](
-                vsr.keyOrdering,
-                tp,
-                vsr.valueSort,
-                vsr.reduceFn,
-                vsr.reducers,
-                vsr.descriptions))
-            })
-          go(step)
-        case step@IteratorMappedReduce(_, _, _, _, _) =>
-          def go[A, B, C](imr: IteratorMappedReduce[A, B, C]): LiteralPipe[(A, C)] =
-            Unary(recurse(imr.mapped), { (tp: TypedPipe[(A, B)]) => ReduceStepPipe[A, B, C](imr.copy(mapped = tp)) })
+    private def handleReduceStep[K, V1, V2](rs: ReduceStep[K, V1, V2], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V2)] = {
+      // zero out the input so we can potentially GC it
+      val emptyRs = ReduceStep.setInput[K, V1, V2](rs, TypedPipe.empty)
 
-          go(step)
-      }
+      Unary(widen[(K, V1)](recurse(rs.mapped)), { (tp: TypedPipe[(K, V1)]) =>
+        ReduceStepPipe(ReduceStep.setInput[K, V1, V2](emptyRs, tp))
+      })
+    }
 
     private def handleCoGrouped[K, V](cg: CoGroupable[K, V], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V)] = {
       import CoGrouped._
@@ -176,7 +137,7 @@ object OptimizationRules {
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(wr.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
                 case ReduceStepPipe(rs) =>
-                  withReducers(rs, reds)
+                  ReduceStepPipe(ReduceStep.withReducers(rs, reds))
                 case CoGroupedPipe(cg) =>
                   CoGroupedPipe(WithReducers(cg, reds))
                 case kvPipe =>
@@ -222,7 +183,7 @@ object OptimizationRules {
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(mg.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
                 case ReduceStepPipe(rs) =>
-                  mapGroup(rs, fn)
+                  ReduceStepPipe(ReduceStep.mapGroup(rs)(fn))
                 case CoGroupedPipe(cg) =>
                   CoGroupedPipe(MapGroup(cg, fn))
                 case kvPipe =>
@@ -241,24 +202,6 @@ object OptimizationRules {
           widen(handleReduceStep(step, recurse))
       }
     }
-
-    /**
-     * This can't really usefully be on ReduceStep since users never want to use it
-     * as an ADT, as the planner does.
-     */
-    private def withReducers[K, V1, V2](rs: ReduceStep[K, V1, V2], reds: Int): TypedPipe[(K, V2)] =
-      rs match {
-        case step@IdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withReducers(reds))
-        case step@UnsortedIdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withReducers(reds))
-        case step@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.withReducers(reds))
-        case step@ValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.withReducers(reds))
-        case step@IteratorMappedReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withReducers(reds))
-      }
 
     private def withDescription[K, V1, V2](rs: ReduceStep[K, V1, V2], descr: String): TypedPipe[(K, V2)] =
       rs match {
@@ -297,20 +240,6 @@ object OptimizationRules {
             ReduceStepPipe(IteratorMappedReduce[K, V1, V2](ord, FilterKeys(p, fn), redfn, r, d))
           }
           go(imr)
-      }
-
-    private def mapGroup[K, V1, V2, V3](rs: ReduceStep[K, V1, V2], fn: (K, Iterator[V2]) => Iterator[V3]): TypedPipe[(K, V3)] =
-      rs match {
-        case step@IdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.mapGroup(fn))
-        case step@UnsortedIdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.mapGroup(fn))
-        case step@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.mapGroup(fn))
-        case step@ValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.mapGroup(fn))
-        case step@IteratorMappedReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.mapGroup(fn))
       }
 
     private def handleHashCoGroup[K, V, V2, R](hj: HashCoGroup[K, V, V2, R], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, R)] = {
@@ -472,59 +401,8 @@ object OptimizationRules {
      * We can fix it by changing the types on the identity reduces to use EqTypes[V1, V2]
      * in case class and leaving the V2 parameter.
      */
-    private def forkReduceStep[A, B, C](on: Dag[TypedPipe], rs: ReduceStep[A, B, C]): Option[ReduceStep[A, B, C]] = rs match {
-      case step0@IdentityReduce(_, _, _, _, _) =>
-        type IR[V] = IdentityReduce[A, V, C]
-        val step = step0.evidence.subst[IR](step0)
-        type Res[V] = Option[ReduceStep[A, V, C]]
-        val res = maybeFork(on, step.mapped).map { p =>
-          IdentityReduce[A, C, C](step.keyOrdering,
-            p,
-            step.reducers,
-            step.descriptions,
-            implicitly)
-        }
-        // Put the type back to what scala expects Option[ReduceStep[A, B, C]]
-        step0.evidence.reverse.subst[Res](res)
-      case step0@UnsortedIdentityReduce(_, _, _, _, _) =>
-        type IR[V] = UnsortedIdentityReduce[A, V, C]
-        val step = step0.evidence.subst[IR](step0)
-        type Res[V] = Option[ReduceStep[A, V, C]]
-        val res = maybeFork(on, step.mapped).map { p =>
-          UnsortedIdentityReduce[A, C, C](step.keyOrdering,
-            p,
-            step.reducers,
-            step.descriptions,
-            implicitly)
-        }
-        // Put the type back to what scala expects Option[ReduceStep[A, B, C]]
-        step0.evidence.reverse.subst[Res](res)
-      case step0@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-        type IVSR[V] = IdentityValueSortedReduce[A, V, C]
-        val step = step0.evidence.subst[IVSR](step0)
-        type Res[V] = Option[ReduceStep[A, V, C]]
-        val res = maybeFork(on, step.mapped).map { p =>
-          IdentityValueSortedReduce[A, C, C](step.keyOrdering,
-            p,
-            step.valueSort,
-            step.reducers,
-            step.descriptions,
-            implicitly)
-        }
-        // Put the type back to what scala expects Option[ReduceStep[A, B, C]]
-        step0.evidence.reverse.subst[Res](res)
-      case step@ValueSortedReduce(_, _, _, _, _, _) =>
-        def go(vsr: ValueSortedReduce[A, B, C]): Option[ValueSortedReduce[A, B, C]] =
-          maybeFork(on, step.mapped).map { p =>
-            ValueSortedReduce[A, B, C](vsr.keyOrdering,
-              p, vsr.valueSort, vsr.reduceFn, vsr.reducers, vsr.descriptions)
-          }
-        go(step)
-      case step@IteratorMappedReduce(_, _, _, _, _) =>
-        def go(imr: IteratorMappedReduce[A, B, C]): Option[IteratorMappedReduce[A, B, C]] =
-          maybeFork(on, step.mapped).map { p => imr.copy(mapped = p) }
-        go(step)
-    }
+    private def forkReduceStep[A, B, C](on: Dag[TypedPipe], rs: ReduceStep[A, B, C]): Option[ReduceStep[A, B, C]] =
+      maybeFork(on, rs.mapped).map(ReduceStep.setInput(rs, _))
 
     private def forkHashJoinable[K, V](on: Dag[TypedPipe], hj: HashJoinable[K, V]): Option[HashJoinable[K, V]] =
       hj match {

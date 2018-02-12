@@ -434,15 +434,19 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       fib(t1, t2, n - 1)(fn)
     }
 
-  test("Dagon relies on fast hashCodes. Test some example ones to make sure they are not exponential") {
+  def isFasterThan[A](millis: Int)(a: => A) = {
+    val start = System.nanoTime()
+    val res = a
+    val end = System.nanoTime()
+    assert((end - start) / (1000L * 1000L) < millis)
+  }
 
-    def testFib(fn: (TypedPipe[Int], TypedPipe[Int]) => TypedPipe[Int]) = {
-      val start = System.currentTimeMillis
-      fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45)(fn).hashCode
-      val end = System.currentTimeMillis
-      // for exponential complexity this will fail
-      assert(end - start < 1000)
-    }
+  test("Dagon relies on fast hashCodes and fast equality. Test some example ones to make sure they are not exponential") {
+
+    def testFib(fn: (TypedPipe[Int], TypedPipe[Int]) => TypedPipe[Int]) =
+      isFasterThan(1000){
+        fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45)(fn).hashCode
+      }
 
     // Test the ways we can combine pipes
     testFib(_ ++ _)
@@ -450,17 +454,25 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     testFib { (left, right) =>
       left.asKeys.join(right.asKeys).keys
     }
+
+    assert(TypedPipe.empty == TypedPipe.empty)
+    // now test equality on a fib merge
+    // without linear time equality, this fails when fib count is 35, at 50
+    // it would take a huge amount of time
+    isFasterThan(1000) {
+      assert(fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _) ==
+        fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _))
+    }
   }
 
   test("write should be fast for large graphs") {
     val fd = new FlowDef
-    val start = System.currentTimeMillis
-    // for non-linear complexity this will fail
-    fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45) { (a, b) =>
-      // write should be fast too
-      a.write(NullSink)(fd, Local(true)) ++ b
+    isFasterThan(1000) {
+      // for non-linear complexity this will fail
+      fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45) { (a, b) =>
+        // write should be fast too
+        a.write(NullSink)(fd, Local(true)) ++ b
+      }
     }
-    val end = System.currentTimeMillis
-    assert(end - start < 1000)
   }
 }
