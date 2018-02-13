@@ -231,6 +231,7 @@ object CoGrouped {
     def keyOrdering = on.keyOrdering
     def joinFunction = {
       val joinF = on.joinFunction // don't capture on inside the closure
+      val guardedFn = Grouped.addEmptyGuard(fn)
 
       { (k: K, leftMost: Iterator[Any], joins: Seq[Iterable[Any]]) =>
         val joined = joinF(k, leftMost, joins)
@@ -240,7 +241,7 @@ object CoGrouped {
          *
          * a.join(b).toTypedPipe.group.mapGroup(fn) == a.join(b).mapGroup(fn)
          */
-        Grouped.addEmptyGuard(fn)(k, joined)
+        guardedFn(k, joined)
       }
     }
   }
