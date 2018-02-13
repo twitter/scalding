@@ -27,6 +27,7 @@ import com.twitter.scalding.serialization.{ OrderedSerialization, UnitOrderedSer
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
+import com.stripe.dagon.{FunctionK, Memoize, RefPair}
 
 import scala.util.Try
 import scala.util.hashing.MurmurHash3
@@ -139,34 +140,11 @@ object TypedPipe extends Serializable {
     }
   }
 
-   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)] {
-     //
-     // Very long chains of maps are uncommon. There are generally
-     // periodic reduces or joins. we cache hashCode and optimize equality
-     // here to improve using TypedPipe in hash tables
-     //
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case CoGroupedPipe(cg) => cg == cogrouped
-         case _ => false
-       }
-   }
+   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
    final case class CounterPipe[A](pipe: TypedPipe[(A, Iterable[((String, String), Long)])]) extends TypedPipe[A]
    final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
        left.groupAll.hashJoin(right.groupAll).values
-
-     // case classes that merge more than one TypedPipe need to memoize the result or
-     // it can be exponential in complexity
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case CrossPipe(l, r) => (l == left) && (r == right)
-         case _ => false
-       }
    }
    final case class CrossValue[T, U](left: TypedPipe[T], right: ValuePipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
@@ -178,15 +156,6 @@ object TypedPipe extends Serializable {
           case ComputedValue(pipe) =>
             CrossPipe(left, pipe)
         }
-     // case classes that merge more than one TypedPipe need to memoize the result or
-     // it can be exponential in complexity
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case CrossValue(l, r) => (l == left) && (r == right)
-         case _ => false
-       }
    }
    final case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
    final case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
@@ -195,46 +164,12 @@ object TypedPipe extends Serializable {
    final case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
    final case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
    final case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
-   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)] {
-     // case classes that merge more than one TypedPipe need to memoize the result or
-     // it can be exponential in complexity
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case HashCoGroup(l, r, j) => (j == joiner) && (l == left) && (r == right)
-         case _ => false
-       }
-   }
+   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
    final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
    final case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
    final case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
-   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T] {
-     // case classes that merge more than one TypedPipe need to memoize the result or
-     // it can be exponential in complexity
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case m@MergedTypedPipe(l, r) =>
-           (hashCode == m.hashCode) && ((l eq left) || (l == left)) && ((r eq right) || (r == right))
-         case _ => false
-       }
-   }
-   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]{
-     //
-     // Very long chains of maps are uncommon. There are generally
-     // periodic reduces or joins. we cache hashCode and optimize equality
-     // here to improve using TypedPipe in hash tables
-     //
-     override val hashCode = MurmurHash3.productHash(this)
-     override def equals(that: Any) =
-       that match {
-         case thatRef: AnyRef if this eq thatRef => true
-         case ReduceStepPipe(r) => r == reduce
-         case _ => false
-       }
-   }
+   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
+   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
    final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
    final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
    final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
@@ -245,7 +180,14 @@ object TypedPipe extends Serializable {
    final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], descriptions: List[(String, Boolean)]) extends TypedPipe[T]
    final case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
 
-   case object EmptyTypedPipe extends TypedPipe[Nothing]
+   case object EmptyTypedPipe extends TypedPipe[Nothing] {
+     // we can't let the default TypedPipe == go here, it will stack overflow on a pattern match
+     override def equals(that: Any): Boolean =
+       that match {
+         case e: EmptyTypedPipe.type => true
+         case _ => false
+       }
+   }
 
    implicit class InvariantTypedPipe[T](val pipe: TypedPipe[T]) extends AnyVal {
       /**
@@ -294,6 +236,106 @@ object TypedPipe extends Serializable {
     // ordA.on { a: B => (a: A) }
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
     ordA.asInstanceOf[Ordering[B]]
+
+  /**
+   * This is a def because it allocates a new memo on each call. This is
+   * important to avoid growing a memo indefinitely
+   */
+  private def eqFn: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean = {
+
+    def eqCoGroupable(left: CoGroupable[_, _], right: CoGroupable[_, _], rec: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean): Boolean = {
+      import CoGrouped._
+      (left, right) match {
+        case (Pair(la, lb, lfn), Pair(ra, rb, rfn)) =>
+          (lfn == rfn) && eqCoGroupable(la, ra, rec) && eqCoGroupable(lb, rb, rec)
+        case (WithReducers(left, leftRed), WithReducers(right, rightRed)) =>
+          (leftRed == rightRed) && eqCoGroupable(left, right, rec)
+        case (WithDescription(left, leftDesc), WithDescription(right, rightDesc)) =>
+          (leftDesc == rightDesc) && eqCoGroupable(left, right, rec)
+        case (CoGrouped.FilterKeys(left, lfn), CoGrouped.FilterKeys(right, rfn)) =>
+          (lfn == rfn) && eqCoGroupable(left, right, rec)
+        case (MapGroup(left, lfn), MapGroup(right, rfn)) =>
+          (lfn == rfn) && eqCoGroupable(left, right, rec)
+        case (left: ReduceStep[_, _, _], right: ReduceStep[_, _, _]) =>
+          eqReduceStep(left, right, rec)
+        case (_, _) => false
+      }
+    }
+
+    def eqHashJoinable(left: HashJoinable[_, _], right: HashJoinable[_, _], rec: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean): Boolean =
+      (left, right) match {
+        case (lrs: ReduceStep[_, _, _], rrs: ReduceStep[_, _, _]) =>
+          eqReduceStep(lrs, rrs, rec)
+      }
+
+    def eqReduceStep(left: ReduceStep[_, _, _], right: ReduceStep[_, _, _], rec: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean): Boolean = {
+      val zeroLeft = ReduceStep.setInput(left, EmptyTypedPipe)
+      val zeroRight = ReduceStep.setInput(right, EmptyTypedPipe)
+
+      (zeroLeft == zeroRight) && rec(RefPair(left.mapped, right.mapped))
+    }
+
+    Memoize.function[RefPair[TypedPipe[_], TypedPipe[_]], Boolean] {
+      case (pair, _) if pair.itemsEq => true
+      case (RefPair(CoGroupedPipe(left), CoGroupedPipe(right)), rec) =>
+        eqCoGroupable(left, right, rec)
+      case (RefPair(CounterPipe(left), CounterPipe(right)), rec) =>
+        rec(RefPair(left, right))
+      case (RefPair(CrossPipe(leftA, rightA), CrossPipe(leftB, rightB)), rec) =>
+        rec(RefPair(leftA, leftB)) && rec(RefPair(rightA, rightB))
+      case (RefPair(CrossValue(pipeA, valueA), CrossValue(pipeB, valueB)), rec) =>
+        // have to deconstruct values
+        val valEq = (valueA, valueB) match {
+          case (ComputedValue(pA), ComputedValue(pB)) => rec(RefPair(pA, pB))
+          case (l, r) => l == r
+        }
+        valEq && rec(RefPair(pipeA, pipeB))
+      case (RefPair(DebugPipe(left), DebugPipe(right)), rec) =>
+        rec(RefPair(left, right))
+      case (RefPair(FilterKeys(leftIn, leftF), FilterKeys(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(Filter(leftIn, leftF), Filter(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(FlatMapValues(leftIn, leftF), FlatMapValues(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(FlatMapped(leftIn, leftF), FlatMapped(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(ForceToDisk(left), ForceToDisk(right)), rec) =>
+        rec(RefPair(left, right))
+      case (RefPair(Fork(left), Fork(right)), rec) =>
+        rec(RefPair(left, right))
+      case (RefPair(HashCoGroup(leftA, rightA, fnA), HashCoGroup(leftB, rightB, fnB)), rec) =>
+        (fnA == fnB) && rec(RefPair(leftA, leftB)) && eqHashJoinable(rightA, rightB, rec)
+      case (RefPair(IterablePipe(itA), IterablePipe(itB)), _) => itA == itB
+      case (RefPair(MapValues(leftIn, leftF), MapValues(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(Mapped(leftIn, leftF), Mapped(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(MergedTypedPipe(leftA, rightA), MergedTypedPipe(leftB, rightB)), rec) =>
+        rec(RefPair(leftA, leftB)) && rec(RefPair(rightA, rightB))
+      case (RefPair(ReduceStepPipe(left), ReduceStepPipe(right)), rec) =>
+        eqReduceStep(left, right, rec)
+      case (RefPair(SourcePipe(srcA), SourcePipe(srcB)), _) => srcA == srcB
+      case (RefPair(SumByLocalKeys(leftIn, leftSg), SumByLocalKeys(rightIn, rightSg)), rec) =>
+        (leftSg == rightSg) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(TrappedPipe(inA, sinkA, convA), TrappedPipe(inB, sinkB, convB)), rec) =>
+        (sinkA == sinkB) && (convA == convB) && rec(RefPair(inA, inB))
+      case (RefPair(WithDescriptionTypedPipe(leftIn, leftDesc), WithDescriptionTypedPipe(rightIn, rightDesc)), rec) =>
+        // check the non-pipes first:
+        (leftDesc == rightDesc) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(WithOnComplete(leftIn, leftF), WithOnComplete(rightIn, rightF)), rec) =>
+        // check the non-pipes first:
+        (leftF == rightF) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(EmptyTypedPipe, EmptyTypedPipe), _) => true
+      case _ => false // we don't match on which subtype we are
+    }
+  }
 }
 
 /**
@@ -303,7 +345,16 @@ object TypedPipe extends Serializable {
  * Represents a phase in a distributed computation on an input data source
  * Wraps a cascading Pipe object, and holds the transformation done up until that point
  */
-sealed abstract class TypedPipe[+T] extends Serializable {
+sealed abstract class TypedPipe[+T] extends Serializable with Product {
+
+  override val hashCode: Int = MurmurHash3.productHash(this)
+  override def equals(that: Any): Boolean = that match {
+    case thatTP: TypedPipe[_] if thatTP eq this => true
+    case thatTP: TypedPipe[_] =>
+      val fn = TypedPipe.eqFn
+      fn(RefPair(this, thatTP))
+    case _ => false
+  }
 
   protected def withLine: TypedPipe[T] =
     LineNumber.tryNonScaldingCaller.map(_.toString) match {

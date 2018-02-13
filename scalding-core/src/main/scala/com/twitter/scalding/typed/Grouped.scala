@@ -374,6 +374,91 @@ sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
   def toTypedPipe: TypedPipe[(K, V2)] = TypedPipe.ReduceStepPipe(this)
 }
 
+object ReduceStep {
+  def setInput[A, B, C](rs: ReduceStep[A, B, C], input: TypedPipe[(A, B)]): ReduceStep[A, B, C] = {
+    type Res[V] = ReduceStep[A, V, C]
+    type In[V] = TypedPipe[(A, V)]
+
+    rs match {
+      case step0 @ IdentityReduce(_, _, _, _, _) =>
+        type IR[V] = IdentityReduce[A, V, C]
+        val step = step0.evidence.subst[IR](step0)
+        val revEv = step0.evidence.reverse
+        val res =
+          IdentityReduce[A, C, C](step.keyOrdering,
+            step0.evidence.subst[In](input),
+            step.reducers,
+            step.descriptions,
+            implicitly)
+        // Put the type back to what scala expects ReduceStep[A, B, C]
+        revEv.subst[Res](res)
+      case step0 @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        type IR[V] = UnsortedIdentityReduce[A, V, C]
+        val step = step0.evidence.subst[IR](step0)
+        val revEv = step0.evidence.reverse
+        val res =
+          UnsortedIdentityReduce[A, C, C](step.keyOrdering,
+            step0.evidence.subst[In](input),
+            step.reducers,
+            step.descriptions,
+            implicitly)
+        // Put the type back to what scala expects ReduceStep[A, B, C]
+        revEv.subst[Res](res)
+      case step0 @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        type IVSR[V] = IdentityValueSortedReduce[A, V, C]
+        val step = step0.evidence.subst[IVSR](step0)
+        val revEv = step0.evidence.reverse
+        val res =
+          IdentityValueSortedReduce[A, C, C](step.keyOrdering,
+            step0.evidence.subst[In](input),
+            step.valueSort,
+            step.reducers,
+            step.descriptions,
+            implicitly)
+        // Put the type back to what scala expects ReduceStep[A, B, C]
+        revEv.subst[Res](res)
+      case step @ ValueSortedReduce(_, _, _, _, _, _) =>
+        ValueSortedReduce[A, B, C](step.keyOrdering,
+          input, step.valueSort, step.reduceFn, step.reducers, step.descriptions)
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        def go(imr: IteratorMappedReduce[A, B, C]): IteratorMappedReduce[A, B, C] =
+          imr.copy(mapped = input)
+        go(step)
+    }
+  }
+
+  def mapGroup[A, B, C, D](rs: ReduceStep[A, B, C])(fn: (A, Iterator[C]) => Iterator[D]): ReduceStep[A, B, D] =
+    rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
+      case step @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
+      case step @ ValueSortedReduce(_, _, _, _, _, _) =>
+        step.mapGroup(fn)
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        step.mapGroup(fn)
+    }
+
+  def withReducers[A, B, C](rs: ReduceStep[A, B, C], reds: Int): ReduceStep[A, B, C] =
+    rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        step.withReducers(reds)
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        step.withReducers(reds)
+      case step @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        step.withReducers(reds)
+      case step @ ValueSortedReduce(_, _, _, _, _, _) =>
+        step.withReducers(reds)
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        step.withReducers(reds)
+    }
+}
+
 final case class IdentityReduce[K, V1, V2](
   override val keyOrdering: Ordering[K],
   override val mapped: TypedPipe[(K, V1)],
