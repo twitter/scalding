@@ -349,10 +349,20 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
 
   override val hashCode: Int = MurmurHash3.productHash(this)
   override def equals(that: Any): Boolean = that match {
-    case thatTP: TypedPipe[_] if thatTP eq this => true
     case thatTP: TypedPipe[_] =>
-      val fn = TypedPipe.eqFn
-      fn(RefPair(this, thatTP))
+      if (thatTP eq this) true
+      else if (thatTP.hashCode != hashCode) false // since we have a cached hashCode, use it
+      else {
+        // we only check this in the case of true equality without reference
+        // equality or rarely due to hash collisions. So we can expect to
+        // walk the entire graph in most cases where we get here.
+        // Without the memoization below, that graph walking can
+        // be exponentially slow. With the memoization, it becomes O(N)
+        // where N is the size of the reachable graph distinct by reference
+        // equality
+        val fn = TypedPipe.eqFn
+        fn(RefPair(this, thatTP))
+      }
     case _ => false
   }
 
