@@ -70,6 +70,13 @@ class RichFlowDef(val fd: FlowDef) {
       .foreach(left.add)
   }
 
+  def isEmpty: Boolean = {
+    fd.getTraps.isEmpty &&
+      fd.getCheckpoints.isEmpty &&
+      fd.getSources.isEmpty &&
+      fd.getSinks.isEmpty &&
+      fd.getTails.isEmpty
+  }
   /**
    * Mutate current flow def to add all sources/sinks/etc from given FlowDef
    */

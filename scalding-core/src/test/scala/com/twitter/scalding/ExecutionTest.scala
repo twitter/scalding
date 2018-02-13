@@ -95,6 +95,13 @@ class ZippedExecutionWithTempFiles(args: Args, tempFileOne: String, tempFileTwo:
 
 case class MyCustomType(s: String)
 
+class NormalJobToExecutionTestJob(args: Args) extends Job(args) {
+  TypedPipe.from(0 to 100)
+    .groupBy(_ % 3)
+    .sum
+    .write(source.NullSink)
+}
+
 class ExecutionTest extends WordSpec with Matchers {
   implicit class ExecutionTestHelper[T](ex: Execution[T]) {
     def shouldSucceed(): T = {
@@ -810,6 +817,34 @@ class ExecutionTest extends WordSpec with Matchers {
       "Execution.sequence" in {
         mutableLaws(SequenceMutable(), Some({ x: Int => Seq(x, x * 3) }))
       }
+    }
+  }
+
+  "Simple jobs" should {
+    "convert to Execution and run" in {
+      val ex = Job.toExecutionFromClass(classOf[NormalJobToExecutionTestJob], Execution.failed(new Exception("couldn't run")))
+      val res = ex.waitFor(Config.empty, Local(true))
+      assert(res.isSuccess)
+    }
+    "convert ExecutionJob to Execution" in {
+      val test = JobTest(new WordCountEc(_))
+        .arg("input", "in")
+        .arg("output", "out")
+        .source(TextLine("in"), List((0, "hello world"), (1, "goodbye world")))
+        .typedSink(TypedTsv[(String, Long)]("out")) { outBuf =>
+          outBuf.toMap shouldBe Map("hello" -> 1L, "world" -> 2L, "goodbye" -> 1L)
+        }
+      val ex = Job.toExecutionFromClass(classOf[WordCountEc], Execution.failed(new Exception("oh no")))
+      val check =
+        for {
+          _ <- ex
+          mode <- Execution.getMode
+          _ = test.postRunChecks(mode)
+        } yield ()
+
+      val conf = Config.empty.setArgs(test.getArgs)
+      val mode = test.getTestMode(useHadoop = false)
+      assert(check.waitFor(conf, mode).isSuccess)
     }
   }
 }
