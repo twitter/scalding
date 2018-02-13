@@ -427,14 +427,17 @@ object ReduceStep {
     }
   }
 
-  def mapGroup[A, B, C, D](rs: ReduceStep[A, B, C])(fn: (A, Iterator[C]) => Iterator[D]): ReduceStep[A, _, D] =
+  def mapGroup[A, B, C, D](rs: ReduceStep[A, B, C])(fn: (A, Iterator[C]) => Iterator[D]): ReduceStep[A, B, D] =
     rs match {
       case step @ IdentityReduce(_, _, _, _, _) =>
-        step.mapGroup(fn)
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
       case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
-        step.mapGroup(fn)
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
       case step @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
-        step.mapGroup(fn)
+        type Res[T] = ReduceStep[A, T, D]
+        step.evidence.reverse.subst[Res](step.mapGroup(fn))
       case step @ ValueSortedReduce(_, _, _, _, _, _) =>
         step.mapGroup(fn)
       case step @ IteratorMappedReduce(_, _, _, _, _) =>
