@@ -1,8 +1,9 @@
 package com.twitter.scalding.typed
 
-import com.twitter.scalding.Config
+import com.twitter.scalding.{ Config, Execution, Local }
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import com.twitter.scalding.typed.functions.EqTypes
 import com.stripe.dagon.Dag
 import org.scalatest.FunSuite
 import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
@@ -80,5 +81,30 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
     }
 
     forAll(TypedPipeGen.genWithFakeSources)(afterPartitioningEachStepIsSize1(_))
+  }
+
+  test("breaking things up does not change the results") {
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
+
+    def partitioningDoesNotChange[T: Ordering](init: TypedPipe[T]) = {
+      val phases = CascadingBackend.defaultOptimizationRules(Config.empty)
+
+      type Const[A] = EqTypes[A, T]
+      implicit val matEx: WritePartitioner.Materializer[Execution] =
+        WritePartitioner.Materializer.executionMaterializer
+
+      val writes = WritePartitioner.materialize1[Execution, Const](phases, List((init, EqTypes.reflexive[T])))(matEx)
+      assert(writes.size == 1)
+
+      def fix[F[_], A](t: WritePartitioner.PairK[F, Const, A]): F[T] =
+        t._2.subst[F](t._1)
+
+      // We don't want any further optimization on this job
+      val ex: Execution[TypedPipe[T]] = fix(writes.head)
+      assert(ex.flatMap(TypedPipeDiff.diff[T](init, _).toIterableExecution)
+        .waitFor(Config.empty, Local(true)).get.isEmpty)
+    }
+
+    forAll(TypedPipeGen.genWithIterableSources)(partitioningDoesNotChange(_))
   }
 }

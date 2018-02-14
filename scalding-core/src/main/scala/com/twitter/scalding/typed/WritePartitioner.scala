@@ -57,10 +57,17 @@ object WritePartitioner {
   }
 
   def materialize[M[+_]](phases: Seq[Rule[TypedPipe]], ws: List[PairK[TypedPipe, TypedSink, _]])(implicit mat: Materializer[M]): M[Unit] = {
+    val writes = materialize1[M, TypedSink](phases, ws)(mat)
+    val toSeq = writes.map { case (mt, sink) => mat.write(mt, sink) }
+    mat.sequence_(toSeq)
+  }
+
+  def materialize1[M[+_], S[_]](phases: Seq[Rule[TypedPipe]],
+    ws: List[PairK[TypedPipe, S, _]])(implicit mat: Materializer[M]): List[PairK[mat.TP, S, _]] = {
     val e = Dag.empty(OptimizationRules.toLiteral)
 
     logger.info(s"converting ${ws.size} writes into several parts")
-    val (finalDag, writeIds) = ws.foldLeft((e, List.empty[PairK[Id, TypedSink, _]])) {
+    val (finalDag, writeIds) = ws.foldLeft((e, List.empty[PairK[Id, S, _]])) {
       case ((dag, writes), pair) =>
         val (dag1, id) = dag.addRoot(pair._1)
         (dag1, (id, pair._2) :: writes)
@@ -280,11 +287,11 @@ object WritePartitioner {
         }
       })
 
-    def write[A](p: PairK[Id, TypedSink, A]): M[Unit] = {
+    def write[A](p: PairK[Id, S, A]): (M[TypedPipe[A]], S[A]) = {
       val materialized: M[TypedPipe[A]] = fn(optDag.evaluate(p._1))
-      mat.write(materialized, p._2)
+      (materialized, p._2)
     }
 
-    mat.sequence_(writeIds.map(write(_)))
+    writeIds.map(write(_))
   }
 }
