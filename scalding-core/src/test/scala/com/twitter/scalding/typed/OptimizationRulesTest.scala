@@ -173,6 +173,17 @@ object TypedPipeGen {
     } yield rs.reduce(_.orElse(_))
 
   val genRule: Gen[Rule[TypedPipe]] = genRuleFrom(allRules)
+
+  // How many steps would this be in Hadoop on Cascading
+  def steps[A](p: TypedPipe[A]): Int = {
+    val mode = Hdfs.default
+    val fd = new FlowDef
+    val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
+    NullSink.writeFrom(pipe)(fd, mode)
+    val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
+    val flow = ec.buildFlow.get
+    flow.getFlowSteps.size
+  }
 }
 
 /**
@@ -225,18 +236,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
     val optimized = Dag.applyRule(init, toLiteral, rule)
 
-    // How many steps would this be in Hadoop on Cascading
-    def steps(p: TypedPipe[T]): Int = {
-      val mode = Hdfs.default
-      val fd = new FlowDef
-      val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
-      NullSink.writeFrom(pipe)(fd, mode)
-      val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
-      val flow = ec.buildFlow.get
-      flow.getFlowSteps.size
-    }
-
-    assert(steps(init) >= steps(optimized))
+    assert(TypedPipeGen.steps(init) >= TypedPipeGen.steps(optimized))
   }
 
   test("all optimization rules don't change results") {

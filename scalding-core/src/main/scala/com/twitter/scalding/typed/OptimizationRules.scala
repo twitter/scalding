@@ -153,7 +153,7 @@ object OptimizationRules {
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(wd.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
                 case ReduceStepPipe(rs) =>
-                  withDescription(rs, desc)
+                  ReduceStepPipe(ReduceStep.withDescription(rs, desc))
                 case CoGroupedPipe(cg) =>
                   CoGroupedPipe(WithDescription(cg, desc))
                 case kvPipe =>
@@ -168,7 +168,9 @@ object OptimizationRules {
             Unary[TypedPipe, (K, V1), (K, V)](handleCoGrouped(fk.on, recurse), { (tp: TypedPipe[(K, V1)]) =>
               tp match {
                 case ReduceStepPipe(rs) =>
-                  filterKeys(rs, fn)
+                  val mapped = rs.mapped
+                  val mappedF = TypedPipe.FilterKeys(mapped, fn)
+                  ReduceStepPipe(ReduceStep.setInput(rs, mappedF))
                 case CoGroupedPipe(cg) =>
                   CoGroupedPipe(FilterKeys(cg, fn))
                 case kvPipe =>
@@ -202,45 +204,6 @@ object OptimizationRules {
           widen(handleReduceStep(step, recurse))
       }
     }
-
-    private def withDescription[K, V1, V2](rs: ReduceStep[K, V1, V2], descr: String): TypedPipe[(K, V2)] =
-      rs match {
-        case step@IdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withDescription(descr))
-        case step@UnsortedIdentityReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withDescription(descr))
-        case step@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.withDescription(descr))
-        case step@ValueSortedReduce(_, _, _, _, _, _) =>
-          ReduceStepPipe(step.withDescription(descr))
-        case step@IteratorMappedReduce(_, _, _, _, _) =>
-          ReduceStepPipe(step.withDescription(descr))
-      }
-
-    private def filterKeys[K, V1, V2](rs: ReduceStep[K, V1, V2], fn: K => Boolean): TypedPipe[(K, V2)] =
-      rs match {
-        case IdentityReduce(ord, p, r, d, ev) =>
-          ReduceStepPipe(IdentityReduce(ord, FilterKeys(p, fn), r, d, ev))
-        case UnsortedIdentityReduce(ord, p, r, d, ev) =>
-          ReduceStepPipe(UnsortedIdentityReduce(ord, FilterKeys(p, fn), r, d, ev))
-        case ivsr0@IdentityValueSortedReduce(_, _, _, _, _, _) =>
-          type IVSR[V] = IdentityValueSortedReduce[K, V, V2]
-          val ivsr = ivsr0.evidence.subst[IVSR](ivsr0)
-          val IdentityValueSortedReduce(ord, p, v, r, d, ev) = ivsr
-          ReduceStepPipe(IdentityValueSortedReduce[K, V2, V2](ord, FilterKeys(p, fn), v, r, d, ev))
-        case vsr@ValueSortedReduce(_, _, _, _, _, _) =>
-          def go(vsr: ValueSortedReduce[K, V1, V2]): TypedPipe[(K, V2)] = {
-            val ValueSortedReduce(ord, p, v, redfn, r, d) = vsr
-            ReduceStepPipe(ValueSortedReduce[K, V1, V2](ord, FilterKeys(p, fn), v, redfn, r, d))
-          }
-          go(vsr)
-        case imr@IteratorMappedReduce(_, _, _, _, _) =>
-          def go(imr: IteratorMappedReduce[K, V1, V2]): TypedPipe[(K, V2)] = {
-            val IteratorMappedReduce(ord, p, redfn, r, d) = imr
-            ReduceStepPipe(IteratorMappedReduce[K, V1, V2](ord, FilterKeys(p, fn), redfn, r, d))
-          }
-          go(imr)
-      }
 
     private def handleHashCoGroup[K, V, V2, R](hj: HashCoGroup[K, V, V2, R], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, R)] = {
       val rightLit: LiteralPipe[(K, V2)] = hj.right match {
@@ -582,6 +545,15 @@ object OptimizationRules {
     }
   }
 
+  object ComposeDescriptions extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case WithDescriptionTypedPipe(WithDescriptionTypedPipe(input, descs1), descs2) =>
+        // This rule is important in that it allows us to reduce
+        // the number of nodes in the graph, which is helpful to speed up rule application
+        WithDescriptionTypedPipe(input, descs1 ::: descs2)
+    }
+  }
+
   /**
    * In scalding 0.17 and earlier, descriptions were automatically pushdown below
    * merges and flatMaps/map/etc..
@@ -630,7 +602,13 @@ object OptimizationRules {
         val flatMapped = dedupMerge(pipes)
 
         if (pipes.size == flatMapped.size) None // we didn't reduce the number of merges
-        else Some(TypedPipe.typedPipeMonoid.sum(flatMapped))
+        else {
+          Some(flatMapped match {
+            case Nil => EmptyTypedPipe
+            case h :: tail =>
+              tail.foldLeft(h)(MergedTypedPipe(_, _))
+          })
+        }
       case _ => None
     }
   }
@@ -955,7 +933,7 @@ object OptimizationRules {
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
       composeSame.orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
-      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap),
+      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap).orElse(ComposeDescriptions),
       // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 
