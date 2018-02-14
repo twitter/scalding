@@ -83,6 +83,28 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
     forAll(TypedPipeGen.genWithFakeSources)(afterPartitioningEachStepIsSize1(_))
   }
 
+  test("the total number of steps is not more than cascading") {
+    def notMoreSteps[T](t: TypedPipe[T]) = {
+      val phases = CascadingBackend.defaultOptimizationRules(Config.empty)
+
+      val writes = WritePartitioner.materialize[State](phases, List((t, NullSink))).writes
+
+      val writeSteps = writes.writes.map {
+        case (tp, _) => TypedPipeGen.steps(tp)
+      }.sum
+      val matSteps = writes.materializations.map {
+        case (tp, _) => TypedPipeGen.steps(tp)
+      }.sum
+      val (dag, id) = Dag(t, OptimizationRules.toLiteral)
+      val optDag = dag.applySeq(phases)
+      val optT = optDag.evaluate(id)
+      assert(writeSteps + matSteps <= TypedPipeGen.steps(optT) + 1)
+    }
+
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
+    forAll(TypedPipeGen.genWithFakeSources)(notMoreSteps(_))
+  }
+
   test("breaking things up does not change the results") {
     implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
 
