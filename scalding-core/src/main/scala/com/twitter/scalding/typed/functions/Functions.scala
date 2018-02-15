@@ -7,6 +7,10 @@ case class Constant[T](result: T) extends Function1[Any, T] {
   def apply(a: Any) = result
 }
 
+case class ConstantKey[K, V](key: K) extends Function1[V, (K, V)] {
+  def apply(v: V) = (key, v)
+}
+
 case class WithConstant[A, B](constant: B) extends Function1[A, (A, B)] {
   def apply(a: A) = (a, constant)
 }
