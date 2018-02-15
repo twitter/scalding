@@ -458,6 +458,20 @@ object ReduceStep {
       case step @ IteratorMappedReduce(_, _, _, _, _) =>
         step.withReducers(reds)
     }
+
+  def withDescription[A, B, C](rs: ReduceStep[A, B, C], descr: String): ReduceStep[A, B, C] =
+    rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        step.withDescription(descr)
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        step.withDescription(descr)
+      case step @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        step.withDescription(descr)
+      case step @ ValueSortedReduce(_, _, _, _, _, _) =>
+        step.withDescription(descr)
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        step.withDescription(descr)
+    }
 }
 
 final case class IdentityReduce[K, V1, V2](
