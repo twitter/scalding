@@ -344,7 +344,6 @@ object CascadingBackend {
   def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
 
     def std(forceHash: Rule[TypedPipe]) =
-      OptimizationRules.IgnoreNoOpGroup ::
       (OptimizationRules.standardMapReduceRules :::
         List(
           OptimizationRules.FilterLocally, // after filtering, we may have filtered to nothing, lets see
