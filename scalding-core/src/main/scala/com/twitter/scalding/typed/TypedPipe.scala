@@ -27,7 +27,7 @@ import com.twitter.scalding.serialization.{ OrderedSerialization, UnitOrderedSer
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
-import com.stripe.dagon.{FunctionK, Memoize, RefPair}
+import com.stripe.dagon.{Memoize, RefPair}
 
 import scala.util.Try
 import scala.util.hashing.MurmurHash3
@@ -369,7 +369,7 @@ object TypedPipe extends Serializable {
    * This is a def because it allocates a new memo on each call. This is
    * important to avoid growing a memo indefinitely
    */
-  private def eqFn: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean = {
+  private def eqFn: RefPair[TypedPipe[Any], TypedPipe[Any]] => Boolean = {
 
     def eqCoGroupable(left: CoGroupable[_, _], right: CoGroupable[_, _], rec: RefPair[TypedPipe[_], TypedPipe[_]] => Boolean): Boolean = {
       import CoGrouped._
@@ -403,7 +403,7 @@ object TypedPipe extends Serializable {
       (zeroLeft == zeroRight) && rec(RefPair(left.mapped, right.mapped))
     }
 
-    Memoize.function[RefPair[TypedPipe[_], TypedPipe[_]], Boolean] {
+    Memoize.function[RefPair[TypedPipe[Any], TypedPipe[Any]], Boolean] {
       case (pair, _) if pair.itemsEq => true
       case (RefPair(CoGroupedPipe(left), CoGroupedPipe(right)), rec) =>
         eqCoGroupable(left, right, rec)
