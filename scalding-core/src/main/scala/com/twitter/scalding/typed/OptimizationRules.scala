@@ -534,7 +534,6 @@ object OptimizationRules {
   object ComposeDescriptions extends PartialRule[TypedPipe] {
     def combine(descs1: List[(String, Boolean)], descs2: List[(String, Boolean)]): List[(String, Boolean)] = {
       val combined = descs1 ::: descs2
-      val unordered = combined.collect { case (d, true) => d }.toSet
 
       combined.foldLeft((Set.empty[String], List.empty[(String, Boolean)])) {
         case (state@(s, acc), item@(m, true)) =>
