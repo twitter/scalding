@@ -57,7 +57,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
       }
   }
 
-  test("When we break at forks we have at most 1 + hashJoin steps") {
+  test("When we break at forks we have at most 2 + hashJoin steps") {
     implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 100)
 
     def afterPartitioningEachStepIsSize1[T](init: TypedPipe[T]) = {
@@ -69,15 +69,15 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
         case (tp, _) =>
           val (dag, _) = Dag(tp, OptimizationRules.toLiteral)
           val hcg = dag.allNodes.collect { case h: TypedPipe.HashCoGroup[_, _, _, _] => 1 }.sum
-          // we can have at most 1 + hcg jobs
-          assert(TypedPipeGen.steps(tp) <= 1 + hcg, s"optimized: ${tp.toString}")
+          // we can have at most 2 + hcg jobs
+          assert(TypedPipeGen.steps(tp) <= 2 + hcg, s"optimized: ${tp.toString}")
       }
       writes.materializations.foreach {
         case (tp, _) =>
           val (dag, _) = Dag(tp, OptimizationRules.toLiteral)
           val hcg = dag.allNodes.collect { case h: TypedPipe.HashCoGroup[_, _, _, _] => 1 }.sum
           // we can have at most 1 + hcg jobs
-          assert(TypedPipeGen.steps(tp) <= 1 + hcg, s"optimized: ${tp.toString}")
+          assert(TypedPipeGen.steps(tp) <= 2 + hcg, s"optimized: ${tp.toString}")
       }
     }
 
@@ -129,25 +129,25 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
           WithDescriptionTypedPipe(WithDescriptionTypedPipe(
             Mapped(WithDescriptionTypedPipe(MergedTypedPipe(WithDescriptionTypedPipe(
               Mapped(WithDescriptionTypedPipe(CrossValue(
-                SourcePipe(TypedText.tsv[Int]("yumwd")), LiteralValue(2)),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-              WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(FilterKeys(
-                WithDescriptionTypedPipe(SumByLocalKeys(
-                  WithDescriptionTypedPipe(FlatMapped(
-                    IterablePipe(List(943704575)), null /*<function1>*/ ),
-                    List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-                  implicitly[Monoid[Int]]),
-                  List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))),
-              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-          implicitly[Ordering[Int]], null /*<function2>*/ , None, List())),
-        null /*<function1>*/ ),
-        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))),
-        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))
+                SourcePipe(TypedText.tsv[Int]("yumwd")),LiteralValue(2)),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+            WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(FilterKeys(
+              WithDescriptionTypedPipe(SumByLocalKeys(
+                WithDescriptionTypedPipe(FlatMapped(
+                  IterablePipe(List(943704575)),null/*<function1>*/),
+                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              implicitly[Monoid[Int]]),
+            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),null /*<function1>*/),
+            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),null /*<function1>*/),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),null /*<function1>*/),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+          implicitly[Ordering[Int]], null /*<function2>*/,None,List())),
+          null /*<function1>*/),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))),
+        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))
 
       notMoreSteps(pipe)
     }
@@ -157,27 +157,27 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
 
       val pipe = WithDescriptionTypedPipe(
         Fork(WithDescriptionTypedPipe(Mapped(WithDescriptionTypedPipe(CrossValue(
-          WithDescriptionTypedPipe(TrappedPipe(WithDescriptionTypedPipe(ForceToDisk(WithDescriptionTypedPipe(
-            Mapped(ReduceStepPipe(ValueSortedReduce[Int, Int, Int](implicitly[Ordering[Int]],
-              WithDescriptionTypedPipe(WithDescriptionTypedPipe(FilterKeys(WithDescriptionTypedPipe(FlatMapValues(
-                WithDescriptionTypedPipe(Mapped(IterablePipe(List(1533743286, 0, -1, 0, 1637692751)),
-                  null /*<function1>*/ ),
-                  List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))), null /*<function1>*/ ),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-                List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-              implicitly[Ordering[Int]], null /*<function2>*/ , Some(2), List())),
-              null /*<function1>*/ ),
-            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))),
-            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-            TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac"),
-            TupleConverter.Single(implicitly[TupleGetter[Int]])),
-            List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-          LiteralValue(2)),
-          List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))),
-          null /*<function1>*/ ),
-          List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))),
-        List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true)))
+        WithDescriptionTypedPipe(TrappedPipe(WithDescriptionTypedPipe(ForceToDisk(WithDescriptionTypedPipe(
+          Mapped(ReduceStepPipe(ValueSortedReduce[Int, Int, Int](implicitly[Ordering[Int]],
+            WithDescriptionTypedPipe(WithDescriptionTypedPipe(FilterKeys(WithDescriptionTypedPipe(FlatMapValues(
+              WithDescriptionTypedPipe(Mapped(IterablePipe(List(1533743286, 0, -1, 0, 1637692751)),
+                null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))), null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))), null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              implicitly[Ordering[Int]], null /*<function2>*/,Some(2), List())),
+              null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac"),
+              TupleConverter.Single(implicitly[TupleGetter[Int]])),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              LiteralValue(2)),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true))),
+              null /*<function1>*/),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))),
+              List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)",true)))
 
       notMoreSteps(pipe)
     }

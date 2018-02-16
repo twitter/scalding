@@ -216,8 +216,9 @@ object WritePartitioner {
     }
 
     /**
-     * If cascading would conside the current pipe as a Logical reduce
-     * we can avoid some forces below
+     * If cascading would consider the current pipe as a Logical reduce
+     * we can avoid some forces below. This method returns true
+     * if the pipe is ending on a reduce (not potentially a map-only job)
      */
     @annotation.tailrec
     def isLogicalReduce(tp: TypedPipe[Any]): Boolean = {
@@ -248,9 +249,12 @@ object WritePartitioner {
     }
 
     /**
-     * This is a lattice value that tracks
-     * what we have seen below a given TypedPipe as
-     * we recurse up.
+     * We use this state to track where we are as we recurse up the graph.
+     * Since we know at the very end we will write, we can avoid, for instance
+     * forcing a reduce operation that is followed only by a map and a write.
+     *
+     * Coupled with the isLogicalReduce above, we can emulate the behavior
+     * of the cascading planner as we recurse up.
      */
     sealed abstract class BelowState {
       def |(that: BelowState): BelowState =
@@ -267,7 +271,11 @@ object WritePartitioner {
       case object Materialized extends BelowState
     }
     type P[a] = (TypedPipe[a], BelowState)
-    // Now we convert
+    /**
+     * Given a pipe, and the state below it, return the materialized
+     * version of that pipe. This should cause no more materializations
+     * than cascading would do, and indeed we test for this property
+     */
     val fn = Memoize.functionK[P, mat.TP](
       new Memoize.RecursiveK[P, mat.TP] {
         import TypedPipe._
@@ -275,7 +283,7 @@ object WritePartitioner {
 
         def toFunction[A] = {
           case ((cp: CounterPipe[a], bs), rec) =>
-            mat.map(rec((cp.pipe, bs | Write)))(CounterPipe(_: TypedPipe[(a, Iterable[((String, String), Long)])]))
+            mat.map(rec((cp.pipe, bs)))(CounterPipe(_: TypedPipe[(a, Iterable[((String, String), Long)])]))
           case ((c: CrossPipe[a, b], bs), rec) =>
             rec((c.viaHashJoin, bs))
           case ((cv@CrossValue(_, _), bs), rec) =>
