@@ -81,7 +81,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
       }
     }
 
-    //forAll(TypedPipeGen.genWithFakeSources)(afterPartitioningEachStepIsSize1(_))
+    forAll(TypedPipeGen.genWithFakeSources)(afterPartitioningEachStepIsSize1(_))
   }
 
   test("the total number of steps is not more than cascading") {
@@ -207,6 +207,6 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
         .waitFor(Config.empty, Local(true)).get.isEmpty)
     }
 
-    //forAll(TypedPipeGen.genWithIterableSources)(partitioningDoesNotChange(_))
+    forAll(TypedPipeGen.genWithIterableSources)(partitioningDoesNotChange(_))
   }
 }
