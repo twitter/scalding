@@ -217,7 +217,7 @@ object CoGrouped {
   }
 
   final case class FilterKeys[K, V](on: CoGrouped[K, V], fn: K => Boolean) extends CoGrouped[K, V] {
-    val inputs = on.inputs.map(_.filterKeys(fn))
+    val inputs = on.inputs.map(TypedPipe.FilterKeys(_, fn))
     def reducers = on.reducers
     def keyOrdering = on.keyOrdering
     def joinFunction = on.joinFunction
@@ -287,6 +287,25 @@ sealed trait CoGrouped[K, +R] extends KeyedListLike[K, R, CoGrouped]
 sealed trait HashJoinable[K, +V] extends CoGroupable[K, V] with KeyedPipe[K] {
   /** A HashJoinable has a single input into to the cogroup */
   override def inputs = List(mapped)
+}
+
+object HashJoinable {
+  def toReduceStep[A, B](hj: HashJoinable[A, B]): ReduceStep[A, _, _ <: B] =
+    hj match {
+      case step@IdentityReduce(_, _, _, _, _) => step
+      case step@UnsortedIdentityReduce(_, _, _, _, _) => step
+      case step@IteratorMappedReduce(_, _, _, _, _) => step
+    }
+
+  def filterKeys[A, B](hj: HashJoinable[A, B], fn: A => Boolean): HashJoinable[A, B] =
+    hj match {
+      case step@IdentityReduce(_, _, _, _, _) =>
+        step.copy(mapped = TypedPipe.FilterKeys(step.mapped, fn))
+      case step@UnsortedIdentityReduce(_, _, _, _, _) =>
+        step.copy(mapped = TypedPipe.FilterKeys(step.mapped, fn))
+      case step@IteratorMappedReduce(_, _, _, _, _) =>
+        step.copy(mapped = TypedPipe.FilterKeys(step.mapped, fn))
+    }
 }
 /**
  * This encodes the rules that
@@ -443,6 +462,20 @@ object ReduceStep {
         step.mapGroup(fn)
       case step @ IteratorMappedReduce(_, _, _, _, _) =>
         step.mapGroup(fn)
+    }
+
+  def toHashJoinable[A, B, C](rs: ReduceStep[A, B, C]): Option[HashJoinable[A, C]] =
+    rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        Some(step)
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        Some(step)
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        Some(step)
+      case step @ IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        None
+      case step @ ValueSortedReduce(_, _, _, _, _, _) =>
+        None
     }
 
   def withReducers[A, B, C](rs: ReduceStep[A, B, C], reds: Int): ReduceStep[A, B, C] =
