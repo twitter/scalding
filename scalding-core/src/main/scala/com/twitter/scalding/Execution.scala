@@ -23,11 +23,13 @@ import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
 import com.twitter.scalding.typed.functions.{ ConsList, ReverseList }
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
+import com.stripe.dagon.{Memoize, RefPair}
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.runtime.ScalaRunTime
 import scala.util.{ Failure, Success, Try }
+import scala.util.hashing.MurmurHash3
 
 /**
  * Execution[T] represents and computation that can be run and
@@ -198,12 +200,59 @@ sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
   def zip[U](that: Execution[U]): Execution[(T, U)] =
     Zipped(this, that)
 
-  override val hashCode: Int = ScalaRunTime._hashCode(self)
+  override val hashCode: Int = MurmurHash3.productHash(self)
 
+  /**
+   * since executions, particularly Zips can cause two executions to merge
+   * we can have exponential cost to computing equals if we are not careful
+   */
   override def equals(other: Any): Boolean = {
     other match {
-      case p: Product if self.productArity == p.productArity =>
-        self.hashCode == p.hashCode && (self.productIterator sameElements p.productIterator)
+      case otherEx: Execution[_] =>
+        if (otherEx eq this) true
+        else if (otherEx.hashCode != hashCode) false
+        else {
+          // If we get here, we have two executions that either
+          // collide in hashcode, or they are truely equal. Since
+          // collisions are rare, most of these will be true equality
+          // so we will fully walk the graph. If we don't remember
+          // the branches we go down, Zipped will be very expensize
+          import Execution._
+          val fn = Memoize.function[RefPair[Execution[Any], Execution[Any]], Boolean] {
+            case (RefPair(a, b), _) if a eq b => true
+            case (RefPair(FlatMapped(ex0, fn0), FlatMapped(ex1, fn1)), rec) =>
+              (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(FlowDefExecution(fn0), FlowDefExecution(fn1)), rec) =>
+              fn0 == fn1
+            case (RefPair(FutureConst(fn0), FutureConst(fn1)), rec) =>
+              fn0 == fn1
+            case (RefPair(GetCounters(ex0), GetCounters(ex1)), rec) =>
+              rec(RefPair(ex0, ex1))
+            case (RefPair(Mapped(ex0, fn0), Mapped(ex1, fn1)), rec) =>
+              (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(OnComplete(ex0, fn0), OnComplete(ex1, fn1)), rec) =>
+              (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(ReaderExecution, ReaderExecution), _) => true
+            case (RefPair(RecoverWith(ex0, fn0), RecoverWith(ex1, fn1)), rec) =>
+              (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(ResetCounters(ex0), ResetCounters(ex1)), rec) =>
+              rec(RefPair(ex0, ex1))
+            case (RefPair(TransformedConfig(ex0, fn0), TransformedConfig(ex1, fn1)), rec) =>
+              (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(UniqueIdExecution(fn0), UniqueIdExecution(fn1)), _) =>
+              fn0 == fn1
+            case (RefPair(WithNewCache(ex0), WithNewCache(ex1)), rec) =>
+              rec(RefPair(ex0, ex1))
+            case (RefPair(WriteExecution(h0, t0, f0), WriteExecution(h1, t1, f1)), _) =>
+              (f0 == f1) && ((h0 :: t0) == (h1 :: t1))
+            case (RefPair(Zipped(a0, b0), Zipped(a1, b1)), rec) =>
+              rec(RefPair(a0, a1)) && rec(RefPair(b0, b1))
+            case (rp, _) =>
+              require(rp._1.getClass != rp._2.getClass)
+              false // the executions are not of the same type
+          }
+          fn(RefPair(this, otherEx))
+        }
       case _ => false
     }
   }
@@ -335,6 +384,7 @@ object Execution {
       res: => Future[(T, Counters)]): Future[(T, Counters)] =
       getOrElseInsertWithFeedback(cfg, ex, res)._2
   }
+
 
   private final case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
@@ -730,6 +780,13 @@ object Execution {
   private case object ReaderExecution extends Execution[(Config, Mode)] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline(Future.successful(((conf, mode), Map.empty)))
+
+    override def equals(that: Any): Boolean =
+      that match {
+        // this has to be here or we get an infinite loop in the default equals
+        case _: ReaderExecution.type => true
+        case _ => false
+      }
   }
 
   private def toFuture[R](t: Try[R]): Future[R] =
