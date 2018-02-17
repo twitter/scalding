@@ -122,7 +122,8 @@ object Job {
 
         for {
           conf <- Execution.fromTry(Config.tryFrom(job.config))
-          _ <- Execution.withConfig(ex)(_ => conf)
+          // since we are doing an Execution[Unit], it is always safe to cleanup temp on finish
+          _ <- Execution.withConfig(ex)(_ => conf.setExecutionCleanupOnFinish(true))
           _ <- nextJobEx
         } yield ()
       }

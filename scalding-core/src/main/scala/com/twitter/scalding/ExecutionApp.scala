@@ -98,7 +98,11 @@ trait ExecutionApp extends java.io.Serializable {
     new GenericOptionsParser(hconf, hadoopArgs.toArray)
     val args = Args(nonHadoop.toArray)
     val mode = Mode(args, hconf)
-    val config = Config.hadoopWithDefaults(hconf).setArgs(args)
+    val config =
+      Config
+        .hadoopWithDefaults(hconf)
+        .setArgs(args)
+        .setExecutionCleanupOnFinish(true) // since ExecutionApp returns Execution[Unit], temp paths can't escape
     /*
      * Make sure the hadoop config is set in sync with the config
      * which should not matter for execution, but especially legacy
