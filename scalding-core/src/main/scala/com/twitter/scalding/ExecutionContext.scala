@@ -65,9 +65,17 @@ trait ExecutionContext {
     // [error]       (resultT, Try(mode.newFlowConnector(finalConf).connect(newFlowDef)))
     try {
       // Set the name:
+      def withCounterSuffix(name: String): String =
+        config.getScaldingFlowCounterValue match {
+          case None => name
+          case Some(counter) =>
+            s"$name (execution-step $counter)"
+        }
+
       val name: Option[String] = Option(flowDef.getName)
         .orElse(config.getCascadingAppName)
         .orElse(config.getScaldingExecutionId)
+        .map(withCounterSuffix(_))
 
       name.foreach(flowDef.setName)
 

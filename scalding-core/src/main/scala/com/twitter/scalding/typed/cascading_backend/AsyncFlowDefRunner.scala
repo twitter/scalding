@@ -168,7 +168,7 @@ class AsyncFlowDefRunner extends Writer { self =>
               // These is nothing to do:
               promise.success((id, JobStats.empty))
             } else {
-              val ctx = ExecutionContext.newContext(conf)(fd, mode)
+              val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
               ctx.buildFlow match {
                 case Success(flow) =>
                   val future = FlowListenerPromise

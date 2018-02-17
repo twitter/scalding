@@ -326,6 +326,12 @@ abstract class Config extends Serializable {
   def setScaldingFlowClass(clazz: Class[_]): Config =
     this.+(ScaldingFlowClassName -> clazz.getName).+(ScaldingFlowClassSignature -> Config.md5Identifier(clazz))
 
+  def setScaldingFlowCounterValue(value: Long): Config =
+    this + (ScaldingFlowCounterValue -> value.toString)
+
+  def getScaldingFlowCounterValue: Option[Long] =
+    get(ScaldingFlowCounterValue).map(_.toLong)
+
   def getSubmittedTimestamp: Option[RichDate] =
     get(ScaldingFlowSubmittedTimestamp).map { ts => RichDate(ts.toLong) }
   /*
@@ -464,6 +470,10 @@ object Config {
   val IoSerializationsKey: String = "io.serializations"
   val ScaldingFlowClassName: String = "scalding.flow.class.name"
   val ScaldingFlowClassSignature: String = "scalding.flow.class.signature"
+  /**
+   * This is incremented every time a cascading flow is run as an Execution
+   */
+  val ScaldingFlowCounterValue: String = "scalding.flow.counter.value"
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingJobArgs: String = "scalding.job.args"
