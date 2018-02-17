@@ -615,10 +615,28 @@ object OptimizationRules {
   object RemoveDuplicateForceFork extends PartialRule[TypedPipe] {
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case ForceToDisk(ForceToDisk(t)) => ForceToDisk(t)
+      case ForceToDisk(WithDescriptionTypedPipe(ForceToDisk(t), desc)) =>
+        // we might as well only do one force to disk in this case
+        WithDescriptionTypedPipe(ForceToDisk(t), desc)
       case ForceToDisk(Fork(t)) => ForceToDisk(t)
       case Fork(Fork(t)) => Fork(t)
       case Fork(ForceToDisk(t)) => ForceToDisk(t)
       case Fork(t) if on.contains(ForceToDisk(t)) => ForceToDisk(t)
+    }
+  }
+
+  /**
+   * If a fork has no fan-out when planned, it serves no purpose
+   * and is safe to remove. Likewise, there is no reason
+   * to put a forceToDisk immediatle after a source
+   */
+  object RemoveUselessFork extends PartialRule[TypedPipe] {
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case fork@Fork(t) if on.hasSingleDependent(fork) => t
+      case Fork(src@SourcePipe(_)) => src
+      case Fork(iter@IterablePipe(_)) => iter
+      case ForceToDisk(src@SourcePipe(_)) => src
+      case ForceToDisk(iter@IterablePipe(_)) => iter
     }
   }
 
@@ -915,6 +933,7 @@ object OptimizationRules {
     List(
       // phase 0, add explicit forks to not duplicate pipes on fanout below
       AddExplicitForks,
+      RemoveUselessFork,
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
       IgnoreNoOpGroup.orElse(composeSame).orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
