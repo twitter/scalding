@@ -445,9 +445,14 @@ abstract class Config extends Serializable {
   def setSkipNullCounters(boolean: Boolean): Config =
     this + (SkipNullCounters -> boolean.toString)
 
-  override def hashCode = toMap.hashCode
+  // we use Config as a key in Execution caches so we
+  // want to avoid recomputing it repeatedly
+  override lazy val hashCode = toMap.hashCode
   override def equals(that: Any) = that match {
-    case thatConf: Config => toMap == thatConf.toMap
+    case thatConf: Config =>
+      if (this eq thatConf) true
+      else if (hashCode != thatConf.hashCode) false
+      else toMap == thatConf.toMap
     case _ => false
   }
 }
