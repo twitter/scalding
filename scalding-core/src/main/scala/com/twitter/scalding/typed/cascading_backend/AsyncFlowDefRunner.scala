@@ -242,9 +242,7 @@ class AsyncFlowDefRunner extends Writer { self =>
         if (filesToRm.onFinish.nonEmpty) {
           val cleanUpThread = TempFileCleanup(filesToRm.onFinish.toList, mode)
           // run it that the outer most execution is complete
-          // note: we are not using the thread in an async way here, we
-          // are synchronously running the method
-          cleanUpThread.run()
+          cleanUpThread.start()
         }
     }
   }
