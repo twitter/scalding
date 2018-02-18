@@ -9,8 +9,9 @@ import java.io.Serializable
  * map
  * flatMap
  */
-sealed abstract class FlatMapping[-A, +B] extends java.io.Serializable
-object FlatMapping {
+sealed abstract class FlatMapping[-A, +B] extends Serializable
+
+object FlatMapping extends Serializable {
   def filter[A](fn: A => Boolean): FlatMapping[A, A] =
     Filter[A, A](fn, implicitly)
 
