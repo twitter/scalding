@@ -166,7 +166,8 @@ object TypedPipeGen {
     //Have to be careful about the order it is applied
     EmptyIterableIsEmpty,
     HashToShuffleCoGroup,
-    ForceToDiskBeforeHashJoin)
+    ForceToDiskBeforeHashJoin,
+    MapValuesInReducers)
 
   def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
     for {
