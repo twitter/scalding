@@ -896,23 +896,26 @@ object OptimizationRules {
    * so we can avoid some boxing in-and-out of cascading
    */
   object MapValuesInReducers extends PartialRule[TypedPipe] {
+
+    def handleFilter[A](f: Filter[A]): Option[TypedPipe[A]] =
+      f.input match {
+        case ReduceStepPipe(rs) =>
+          Some(ReduceStepPipe(ReduceStep.mapGroup(rs)(FilterGroup(f.fn))))
+        case CoGroupedPipe(cg) =>
+          Some(CoGroupedPipe(CoGrouped.MapGroup(cg, FilterGroup(f.fn))))
+        case _ => None
+      }
+
     def applyWhere[T](on: Dag[TypedPipe]) = {
       case MapValues(ReduceStepPipe(rs), fn) =>
         ReduceStepPipe(ReduceStep.mapGroup(rs)(MapGroupMapValues(fn)))
       case FlatMapValues(ReduceStepPipe(rs), fn) =>
         ReduceStepPipe(ReduceStep.mapGroup(rs)(MapGroupFlatMapValues(fn)))
-      // TODO: we need a EqTypes or SubTypes to prove
-      // this is safe
-      // case Filter(ReduceStepPipe(rs), fn) =>
-      //   ReduceStepPipe(ReduceStep.mapGroup(rs)(FilterGroup(fn)))
       case MapValues(CoGroupedPipe(cg), fn) =>
         CoGroupedPipe(CoGrouped.MapGroup(cg, MapGroupMapValues(fn)))
       case FlatMapValues(CoGroupedPipe(cg), fn) =>
         CoGroupedPipe(CoGrouped.MapGroup(cg, MapGroupFlatMapValues(fn)))
-      // TODO: we need a EqTypes or SubTypes to prove
-      // this is safe
-      // case Filter(CoGroupedPipe(cg), fn) =>
-      //   CoGroupedPipe(CoGrouped.MapGroup(cg, FilterGroup(fn)))
+      case f@Filter(_, _) if handleFilter(f).isDefined => handleFilter(f).getOrElse(sys.error("unreachable: already checked isDefined"))
     }
   }
 
