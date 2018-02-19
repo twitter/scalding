@@ -15,32 +15,104 @@ import scala.util.{Failure, Success, Try}
 
 import Execution.{ ToWrite, Writer }
 
-final class MemoryMode private (srcs: HMap[TypedSource, Iterable], sinks: HMap[TypedSink, ({type A[T]=AtomicBox[Option[Iterable[T]]]})#A]) extends Mode {
+final class MemoryMode private (srcs: HMap[TypedSource, MemorySource], sinks: HMap[TypedSink, MemorySink]) extends Mode {
 
   def newWriter(): Writer =
     new MemoryWriter(this)
 
-  def addSource[T](src: TypedSource[T], ts: Iterable[T]): MemoryMode =
+  def addSource[T](src: TypedSource[T], ts: MemorySource[T]): MemoryMode =
     new MemoryMode(srcs + (src -> ts), sinks)
 
-  def addSink[T](sink: TypedSink[T]): MemoryMode =
-    new MemoryMode(srcs, sinks + (sink -> new AtomicBox[Option[Iterable[T]]](None)))
+  def addSourceFn[T](src: TypedSource[T])(fn: ConcurrentExecutionContext => Future[Iterator[T]]): MemoryMode =
+    new MemoryMode(srcs + (src -> MemorySource.Fn(fn)), sinks)
+
+  def addSourceIterable[T](src: TypedSource[T], iter: Iterable[T]): MemoryMode =
+    new MemoryMode(srcs + (src -> MemorySource.FromIterable(iter)), sinks)
+
+  def addSink[T](sink: TypedSink[T], msink: MemorySink[T]): MemoryMode =
+    new MemoryMode(srcs, sinks + (sink -> msink))
 
   /**
    * This has a side effect of mutating this MemoryMode
    */
-  def writeSink[T](t: TypedSink[T], iter: Iterable[T]): Unit =
-    sinks(t).lazySet(Some(iter))
+  def writeSink[T](t: TypedSink[T], iter: Iterable[T])(implicit ec: ConcurrentExecutionContext): Future[Unit] =
+    sinks.get(t) match {
+      case Some(sink) => sink.write(iter)
+      case None => Future.failed(new Exception(s"missing sink for $t, with first 10 values to write: ${iter.take(10).toList.toString}..."))
+    }
 
-  def readSink[T](t: TypedSink[T]): Option[Iterable[T]] =
-    sinks.get(t).flatMap(_.get)
-
-  def readSource[T](t: TypedSource[T]): Option[Iterable[T]] =
-    srcs.get(t)
+  def readSource[T](t: TypedSource[T])(implicit ec: ConcurrentExecutionContext): Future[Iterator[T]] =
+    srcs.get(t) match {
+      case Some(src) => src.read()
+      case None => Future.failed(new Exception(s"Source: $t not wired. Please provide an input with MemoryMode.addSource"))
+    }
 }
 
 object MemoryMode {
-  def empty: MemoryMode = new MemoryMode(HMap.empty, HMap.empty[TypedSink, ({type A[T]=AtomicBox[Option[Iterable[T]]]})#A])
+  def empty: MemoryMode = new MemoryMode(HMap.empty, HMap.empty)
+}
+
+trait MemorySource[A] {
+  def read()(implicit ec: ConcurrentExecutionContext): Future[Iterator[A]]
+}
+
+object MemorySource {
+  case class FromIterable[A](iter: Iterable[A]) extends MemorySource[A] {
+    def read()(implicit ec: ConcurrentExecutionContext) = Future.successful(iter.iterator)
+  }
+  case class Fn[A](toFn: ConcurrentExecutionContext => Future[Iterator[A]]) extends MemorySource[A] {
+    def read()(implicit ec: ConcurrentExecutionContext) = toFn(ec)
+  }
+}
+
+trait MemorySink[A] {
+  def write(data: Iterable[A])(implicit ec: ConcurrentExecutionContext): Future[Unit]
+}
+
+object MemorySink {
+  /**
+   * This is a sink that writes into local memory which you can read out
+   * by a future
+   *
+   * this needs to be reset between each write (so it only works for a single
+   * write per Execution)
+   */
+  class LocalVar[A] extends MemorySink[A] {
+    private[this] val box: AtomicBox[Promise[Iterable[A]]] = new AtomicBox(Promise[Iterable[A]]())
+
+    /**
+     * This is a future that completes when a write comes. If no write
+     * happens before a reset, the future fails
+     */
+    def read(): Future[Iterable[A]] = box.get().future
+
+    /**
+     * This takes the current future and resets the promise
+     * making it safe for another write.
+     */
+    def reset(): Option[Iterable[A]] = {
+      val current = box.swap(Promise[Iterable[A]]())
+      // if the promise is not set, it never will be, so
+      // go ahead and poll now
+      //
+      // also note we never set this future to failed
+      current.future.value match {
+        case Some(Success(res)) =>
+          Some(res)
+        case Some(Failure(err)) =>
+          throw new IllegalStateException("We should never reach this because, we only complete with failure below", err)
+        case None =>
+          // make sure we complete the original future so readers don't block forever
+          current.failure(new Exception(s"sink never written to before reset() called $this"))
+          None
+      }
+    }
+
+    def write(data: Iterable[A])(implicit ec: ConcurrentExecutionContext): Future[Unit] =
+      Future {
+        box.update { p => (p.success(data), ()) }
+      }
+  }
 }
 
 object MemoryPlanner {
@@ -73,13 +145,13 @@ object MemoryPlanner {
       Op.Materialize(this)
   }
   object Op {
-    def source[I](i: Iterable[I]): Op[I] = Source(Try(i))
+    def source[I](i: Iterable[I]): Op[I] = Source(_ => Future.successful(i.iterator))
     def empty[I]: Op[I] = source(Nil)
 
-    final case class Source[I](input: Try[Iterable[I]]) extends Op[I] {
+    final case class Source[I](input: ConcurrentExecutionContext => Future[Iterator[I]]) extends Op[I] {
 
       def result(implicit cec: ConcurrentExecutionContext): Future[ArrayBuffer[I]] =
-        Future.fromTry(input).map(ArrayBuffer.concat(_))
+        input(cec).map(ArrayBuffer.empty[I] ++= _)
     }
 
     // Here we need to make a copy on each result
@@ -253,7 +325,7 @@ object MemoryPlanner {
   }
 
   object Memo {
-    def empty: Memo = Memo(HMap.empty)
+    val empty: Memo = Memo(HMap.empty)
   }
 
 }
@@ -390,12 +462,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
           (m2, Op.Concat(op1, op2))
 
         case SourcePipe(src) =>
-          (m, Op.Source(
-            mem.readSource(src) match {
-              case Some(iter) => Success(iter)
-              case None => Failure(new Exception(s"Source: $src not wired. Please provide an input with MemoryMode.addSource"))
-            }
-          ))
+          (m, Op.Source({ cec => mem.readSource(src)(cec) }))
 
         case slk@SumByLocalKeys(_, _) =>
           def sum[K, V](sblk: SumByLocalKeys[K, V]) = {
@@ -598,16 +665,14 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
               state.forced.get(opt) match {
                 case Some(iterf) =>
                   val action = () => {
-                    iterf.foreach(mem.writeSink(sink, _))
-                    iterf.map(_ => ())
+                    iterf.flatMap(mem.writeSink(sink, _))
                   }
                   (state, action :: acts)
                 case None =>
                   val (nextM, op) = plan(state.memo, opt) // linter:disable:UndesirableTypeInference
                   val action = () => {
                     val arrayBufferF = op.result
-                    arrayBufferF.foreach { mem.writeSink(sink, _) }
-                    arrayBufferF.map(_ => ())
+                    arrayBufferF.flatMap(mem.writeSink(sink, _))
                   }
                   (state.copy(memo = nextM), action :: acts)
               }
@@ -632,11 +697,8 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
         case Some(f) => f.map(TypedPipe.from(_))
       }
 
-  def getSource[A](src: TypedSource[A]): Future[Iterable[A]] =
-    mem.readSource(src) match {
-      case Some(iter) => Future.successful(iter)
-      case None => Future.failed(new Exception(s"Source: $src not connected"))
-    }
+  private def getSource[A](src: TypedSource[A])(implicit cec: ConcurrentExecutionContext): Future[Iterable[A]] =
+    mem.readSource(src).map(_.toList)
 
   /**
    * This should only be called after a call to execute
