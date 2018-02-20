@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, Fill }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, FilterGroup, Fill, MapGroupMapValues, MapGroupFlatMapValues }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -890,6 +890,35 @@ object OptimizationRules {
     }
   }
 
+
+  /**
+   * Prefer to do mapValues/flatMapValues in a Reduce/Join
+   * so we can avoid some boxing in-and-out of cascading
+   */
+  object MapValuesInReducers extends PartialRule[TypedPipe] {
+
+    def handleFilter[A](f: Filter[A]): Option[TypedPipe[A]] =
+      f.input match {
+        case ReduceStepPipe(rs) =>
+          Some(ReduceStepPipe(ReduceStep.mapGroup(rs)(FilterGroup(f.fn))))
+        case CoGroupedPipe(cg) =>
+          Some(CoGroupedPipe(CoGrouped.MapGroup(cg, FilterGroup(f.fn))))
+        case _ => None
+      }
+
+    def applyWhere[T](on: Dag[TypedPipe]) = {
+      case MapValues(ReduceStepPipe(rs), fn) =>
+        ReduceStepPipe(ReduceStep.mapGroup(rs)(MapGroupMapValues(fn)))
+      case FlatMapValues(ReduceStepPipe(rs), fn) =>
+        ReduceStepPipe(ReduceStep.mapGroup(rs)(MapGroupFlatMapValues(fn)))
+      case MapValues(CoGroupedPipe(cg), fn) =>
+        CoGroupedPipe(CoGrouped.MapGroup(cg, MapGroupMapValues(fn)))
+      case FlatMapValues(CoGroupedPipe(cg), fn) =>
+        CoGroupedPipe(CoGrouped.MapGroup(cg, MapGroupFlatMapValues(fn)))
+      case f@Filter(_, _) if handleFilter(f).isDefined => handleFilter(f).getOrElse(sys.error("unreachable: already checked isDefined"))
+    }
+  }
+
   ///////
   // These are composed rules that are related
   //////
@@ -937,7 +966,7 @@ object OptimizationRules {
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
       IgnoreNoOpGroup.orElse(composeSame).orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
-      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap).orElse(ComposeDescriptions),
+      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap).orElse(ComposeDescriptions).orElse(MapValuesInReducers),
       // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 
