@@ -22,7 +22,7 @@ import java.io.Serializable
  *
  * For some reason, this fails in scala 2.12 if this is an abstract class
  */
-sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io.Serializable {
+sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with Serializable {
   import FlatMappedFn._
 
   final def runAfter[Z](fn: FlatMapping[Z, A]): FlatMappedFn[Z, B] = this match {
@@ -95,7 +95,7 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with java.io
   def apply(a: A): TraversableOnce[B] = toFn(a)
 }
 
-object FlatMappedFn {
+object FlatMappedFn extends Serializable {
 
   def asId[A, B](f: FlatMappedFn[A, B]): Option[EqTypes[_ >: A, _ <: B]] = f match {
     case Single(FlatMapping.Identity(ev)) => Some(ev)

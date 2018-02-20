@@ -46,8 +46,7 @@ trait KeyedList[K, +T] extends KeyedListLike[K, T, KeyedList]
  * mapValueStream: further transforms all values, in order, one at a time,
  *  with a function from Iterator to another Iterator
  */
-trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]]
-  extends java.io.Serializable {
+trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Serializable {
 
   /**
    * End of the operations on values. From this point on the keyed structure
