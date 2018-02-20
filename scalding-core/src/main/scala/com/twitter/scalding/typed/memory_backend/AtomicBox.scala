@@ -8,6 +8,12 @@ class AtomicBox[T <: AnyRef](init: T) {
   def lazySet(t: T): Unit =
     ref.lazySet(t)
 
+  def set(t: T): Unit =
+    ref.set(t)
+
+  def swap(t: T): T =
+    ref.getAndSet(t)
+
   /**
    * use a pure function to update the state.
    * fn may be called more than once
