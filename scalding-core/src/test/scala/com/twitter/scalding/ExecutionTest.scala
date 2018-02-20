@@ -19,6 +19,7 @@ import com.twitter.algebird.monad.Reader
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.nio.file.{FileSystems, Files, Path}
+import java.io.File
 import java.util
 
 import org.scalatest.{Matchers, WordSpec}
@@ -368,6 +369,26 @@ class ExecutionTest extends WordSpec with Matchers {
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
+    }
+
+    "clean up temporary files on finish" in {
+      val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testData = List("a", "b", "c")
+
+      val ex = ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
+      val onFinish = Execution.withConfig(ex)(_.setExecutionCleanupOnFinish(true))
+      onFinish.shouldSucceedHadoop()
+
+      // This is hacky, but there's a small chance that the cleanup thread has not finished
+      // running by the time we check below
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+      val f = new File(tempFile)
+      def allChildren(f: File): List[File] =
+        if (f.isDirectory) f.listFiles().toList.flatMap(allChildren(_))
+        else List(f)
+
+      assert(allChildren(f).isEmpty, f.toString)
     }
 
     "clean up temporary files on exit with a zip" in {

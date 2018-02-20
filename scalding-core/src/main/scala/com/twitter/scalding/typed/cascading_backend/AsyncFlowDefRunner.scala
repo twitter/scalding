@@ -48,7 +48,7 @@ object AsyncFlowDefRunner {
    *
    * If the job is aborted the shutdown hook may not run and the temporary files will not get cleaned up
    */
-  case class TempFileCleanup(filesToCleanup: List[String], mode: Mode) extends Thread {
+  final case class TempFileCleanup(filesToCleanup: List[String], mode: Mode) extends Thread {
 
     val LOG = LoggerFactory.getLogger(this.getClass)
 
@@ -88,6 +88,14 @@ class AsyncFlowDefRunner extends Writer { self =>
   type StateKey[T] = (Config, Mode, TypedPipe[T])
   type WorkVal[T] = Future[TypedPipe[T]]
 
+  private case class FilesToCleanUp(onFinish: Set[String], onShutdown: Set[String]) {
+    def addFile(conf: Config, m: Mode, s: String): FilesToCleanUp =
+      if (conf.getExecutionCleanupOnFinish) copy(onFinish = onFinish + s)
+      else copy(onShutdown = onShutdown + s)
+  }
+  private object FilesToCleanUp {
+    def empty: FilesToCleanUp = FilesToCleanUp(Set.empty, Set.empty)
+  }
   /**
    * @param filesToCleanup temporary files created by forceToDiskExecution
    * @param initToOpt this is the mapping between user's TypedPipes and their optimized versions
@@ -96,15 +104,16 @@ class AsyncFlowDefRunner extends Writer { self =>
    * SourcePipes or IterablePipes. These are for both toIterableExecution and forceToDiskExecution
    */
   private case class State(
-    filesToCleanup: Map[Mode, Set[String]],
+    filesToCleanup: Map[Mode, FilesToCleanUp],
     initToOpt: HMap[TypedPipe, TypedPipe],
     forcedPipes: HMap[StateKey, WorkVal]) {
 
-    def addFilesToCleanup(m: Mode, s: Option[String]): State =
+    def addFilesToCleanup(conf: Config, m: Mode, s: Option[String]): State =
       s match {
         case Some(path) =>
-          val newFs = filesToCleanup.getOrElse(m, Set.empty[String]) + path
-          copy(filesToCleanup = filesToCleanup + (m -> newFs))
+          val ftc0 = filesToCleanup.getOrElse(m, FilesToCleanUp.empty)
+          val ftc1 = ftc0.addFile(conf, m, path)
+          copy(filesToCleanup = filesToCleanup + (m -> ftc1))
         case None => this
       }
 
@@ -227,7 +236,14 @@ class AsyncFlowDefRunner extends Writer { self =>
     val cleanUp = getState.filesToCleanup
     cleanUp.foreach {
       case (mode, filesToRm) =>
-        Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.toList, mode))
+        if (filesToRm.onShutdown.nonEmpty) {
+          Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.onShutdown.toList, mode))
+        }
+        if (filesToRm.onFinish.nonEmpty) {
+          val cleanUpThread = TempFileCleanup(filesToRm.onFinish.toList, mode)
+          // run it that the outer most execution is complete
+          cleanUpThread.start()
+        }
     }
   }
 
@@ -277,7 +293,7 @@ class AsyncFlowDefRunner extends Writer { self =>
           if (added) {
             val uuid = UUID.randomUUID
             val (sink, forcedPipe, clean) = forceToDisk(uuid, c, m, opt)
-            (nextState.addFilesToCleanup(m, clean), Some((sink, forcedPipe)))
+            (nextState.addFilesToCleanup(conf, m, clean), Some((sink, forcedPipe)))
           } else {
             (nextState, None)
           }

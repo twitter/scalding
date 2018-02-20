@@ -54,6 +54,9 @@ abstract class Config extends Serializable {
       case (None, r) => (r, this - k)
     }
 
+  def getBoolean(key: String, orElse: => Boolean): Boolean =
+    get(key).map(_.toBoolean).getOrElse(orElse)
+
   /**
    * Add files to be localized to the config. Intended to be used by user code.
    * @param cachedFiles CachedFiles to be added
@@ -426,9 +429,7 @@ abstract class Config extends Serializable {
     this + (HashJoinAutoForceRight -> (b.toString))
 
   def getHashJoinAutoForceRight: Boolean =
-    get(HashJoinAutoForceRight)
-      .map(_.toBoolean)
-      .getOrElse(false)
+    getBoolean(HashJoinAutoForceRight, false)
 
   /**
    * Set to true to enable very verbose logging during FileSource's validation and planning.
@@ -439,9 +440,7 @@ abstract class Config extends Serializable {
     this + (VerboseFileSourceLoggingKey -> b.toString)
 
   def getSkipNullCounters: Boolean =
-    get(SkipNullCounters)
-      .map(_.toBoolean)
-      .getOrElse(false)
+    getBoolean(SkipNullCounters, false)
 
   /**
    * If this is true, on hadoop, when we get a null Counter
@@ -450,6 +449,34 @@ abstract class Config extends Serializable {
    */
   def setSkipNullCounters(boolean: Boolean): Config =
     this + (SkipNullCounters -> boolean.toString)
+
+  /**
+   * When this value is true, all temporary output is removed
+   * when the outer-most execution completes, not on JVM shutdown.
+   *
+   * When you do .forceToDiskExecution or .toIterableExecution
+   * we need to materialize the data somewhere. We can't be sure
+   * that when the outer most execution is complete that all reads
+   * have been done, since they could escape the value of
+   * the Execution. If you know no such reference escapes, it
+   * is safe to set to true.
+   *
+   * Note, this is *always* safe for Execution[Unit], a common
+   * value.
+   */
+  def setExecutionCleanupOnFinish(boolean: Boolean): Config =
+    this + (ScaldingExecutionCleanupOnFinish -> boolean.toString)
+
+  /**
+   * should we cleanup temporary files when
+   * the outer most Execution is run.
+   *
+   * Not safe if the outer-most execution returns
+   * a TypedPipe or Iterable derived from a forceToDiskExecution
+   * or a toIterableExecution
+   */
+  def getExecutionCleanupOnFinish: Boolean =
+    getBoolean(ScaldingExecutionCleanupOnFinish, false)
 
   // we use Config as a key in Execution caches so we
   // want to avoid recomputing it repeatedly
@@ -476,6 +503,7 @@ object Config {
   val ScaldingFlowCounterValue: String = "scalding.flow.counter.value"
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
+  val ScaldingExecutionCleanupOnFinish: String = "scalding.execution.cleanup.onfinish"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
