@@ -410,10 +410,15 @@ object CascadingBackend {
         val optPipe = optDag.evaluate(pair._1)
         val dest = pair._2
         val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
+        // Note this changes the FlowState, so we need to re-read it at the bottom
         dest.writeFrom(cpipe)(fd, mode)
       }
       todos.foreach(doWrite(_))
       (st.copy(pendingTypedWrites = Nil), ())
+      val finalFS = FlowStateMap(fd)
+      require(finalFS.pendingTypedWrites == st.pendingTypedWrites,
+        s"pending writes changed from ${st.pendingTypedWrites} to ${finalFS.pendingTypedWrites}")
+      (finalFS.copy(pendingTypedWrites = Nil), ())
     }
 
   /**

@@ -91,9 +91,7 @@ class RichFlowDef(val fd: FlowDef) {
       .foreach { oFS =>
         FlowStateMap.mutate(fd) { current =>
           // overwrite the items from o with current
-          (current.copy(sourceMap = oFS.sourceMap ++ current.sourceMap,
-            flowConfigUpdates = oFS.flowConfigUpdates ++ current.flowConfigUpdates,
-            pendingTypedWrites = oFS.pendingTypedWrites ::: current.pendingTypedWrites), ())
+          (oFS.merge(current), ())
         }
       }
   }

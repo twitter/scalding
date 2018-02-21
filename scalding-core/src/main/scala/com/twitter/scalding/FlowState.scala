@@ -22,9 +22,9 @@ import java.util.WeakHashMap
  * Immutable state that we attach to the Flow using the FlowStateMap
  */
 case class FlowState(
-  sourceMap: Map[String, Source] = Map.empty,
-  flowConfigUpdates: Set[(String, String)] = Set(),
-  pendingTypedWrites: List[FlowStateMap.TypedWrite[_]] = Nil) {
+  sourceMap: Map[String, Source],
+  flowConfigUpdates: Set[(String, String)],
+  pendingTypedWrites: List[FlowStateMap.TypedWrite[_]]) {
   def addSource(id: String, s: Source): FlowState =
     copy(sourceMap = sourceMap + (id -> s))
 
@@ -40,6 +40,15 @@ case class FlowState(
 
   def addTypedWrite[A](p: TypedPipe[A], s: TypedSink[A], m: Mode): FlowState =
     copy(pendingTypedWrites = FlowStateMap.TypedWrite(p, s, m) :: pendingTypedWrites)
+
+  def merge(that: FlowState): FlowState =
+    FlowState(sourceMap = sourceMap ++ that.sourceMap,
+      flowConfigUpdates = flowConfigUpdates ++ that.flowConfigUpdates,
+      pendingTypedWrites = pendingTypedWrites ::: that.pendingTypedWrites)
+}
+
+object FlowState {
+  val empty: FlowState = FlowState(Map.empty, Set.empty, Nil)
 }
 
 /**
@@ -57,15 +66,26 @@ object FlowStateMap {
   case class TypedWrite[T](pipe: TypedPipe[T], sink: TypedSink[T], mode: Mode)
   /**
    * Function to update a state.
+   *
+   * note if fn mutates the FlowStateMap, this can easily
+   * be incorrect (you can lose a write), any mutation
+   * that itself mutates the FlowState is responsible
+   * for returning the correct value from fn.
    */
   def mutate[T](fd: FlowDef)(fn: FlowState => (FlowState, T)): T = {
     flowMap.synchronized {
-      val oldState = Option(flowMap.get(fd)).getOrElse(FlowState())
-      val (newState, t) = fn(oldState)
+      val (newState, t) = fn(apply(fd))
       flowMap.put(fd, newState)
       t
     }
   }
+
+  /**
+   * Get the FlowState or return FlowState.empty
+   */
+  def apply(fd: FlowDef): FlowState =
+    get(fd).getOrElse(FlowState.empty)
+
   def get(fd: FlowDef): Option[FlowState] =
     flowMap.synchronized { Option(flowMap.get(fd)) }
 
