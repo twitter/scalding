@@ -12,7 +12,7 @@ class FlowStateMapTest extends FunSuite {
     implicit val m = Local(false)
     val t = TypedPipe.from(TypedText.tsv[String]("")).write(NullSink)
     CascadingBackend.planTypedWrites(fd, m)
-    val state = FlowStateMap.get(fd).get
+    val state = FlowStateMap(fd)
     assert(state.sourceMap.nonEmpty)
   }
 }

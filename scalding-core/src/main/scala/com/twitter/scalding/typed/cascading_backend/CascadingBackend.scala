@@ -8,7 +8,7 @@ import com.stripe.dagon.{ FunctionK, HCache, Id, Memoize, Rule, Dag }
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
-  CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowStateMap, GroupBuilder,
+  CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowState, FlowStateMap, GroupBuilder,
   HadoopMode, IncrementCounters, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
@@ -86,10 +86,7 @@ object CascadingBackend {
     WrappedSerialization.rawSetBinary(List((cls, boxordSer)),
       {
         case (k: String, v: String) =>
-          FlowStateMap.mutate(flowDef) { st =>
-            val newSt = st.addConfigSetting(k + cls, v)
-            (newSt, ())
-          }
+          FlowStateMap.merge(flowDef, FlowState.withConfigSetting(k + cls, v))
       })
     (boxfn, boxordSer)
   }
@@ -390,36 +387,30 @@ object CascadingBackend {
    * step before building the Flow. Job also needs to call this
    * method in validate to make sure validation works.
    */
-  def planTypedWrites(fd: FlowDef, mode: Mode): Unit =
-    FlowStateMap.mutate(fd) { st =>
-      val writes = st.pendingTypedWrites
-      val empty = Dag.empty(OptimizationRules.toLiteral)
-      type ToDo[A] = (Id[A], TypedSink[A])
-      val (rootedDag, todos) = writes.foldLeft((empty, List.empty[ToDo[_]])) { case ((dag, items), tw) =>
-        val (nextDag, id) = dag.addRoot(tw.pipe)
-        require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
-        (nextDag, (id, tw.sink) :: items)
-      }
-      val phases = defaultOptimizationRules(
-        mode match {
-          case h: HadoopMode => Config.fromHadoop(h.jobConf)
-          case _ => Config.empty
-        })
-      val optDag = rootedDag.applySeq(phases)
-      def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
-        val optPipe = optDag.evaluate(pair._1)
-        val dest = pair._2
-        val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
-        // Note this changes the FlowState, so we need to re-read it at the bottom
-        dest.writeFrom(cpipe)(fd, mode)
-      }
-      todos.foreach(doWrite(_))
-
-      val finalFS = FlowStateMap(fd)
-      require(finalFS.pendingTypedWrites == st.pendingTypedWrites,
-        s"pending writes changed from ${st.pendingTypedWrites} to ${finalFS.pendingTypedWrites}")
-      (finalFS.copy(pendingTypedWrites = Nil), ())
+  def planTypedWrites(fd: FlowDef, mode: Mode): Unit = {
+    val writes = FlowStateMap.removeWrites(fd).pendingTypedWrites
+    val empty = Dag.empty(OptimizationRules.toLiteral)
+    type ToDo[A] = (Id[A], TypedSink[A])
+    val (rootedDag, todos) = writes.foldLeft((empty, List.empty[ToDo[_]])) { case ((dag, items), tw) =>
+      val (nextDag, id) = dag.addRoot(tw.pipe)
+      require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
+      (nextDag, (id, tw.sink) :: items)
     }
+    val phases = defaultOptimizationRules(
+      mode match {
+        case h: HadoopMode => Config.fromHadoop(h.jobConf)
+        case _ => Config.empty
+      })
+    val optDag = rootedDag.applySeq(phases)
+    def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
+      val optPipe = optDag.evaluate(pair._1)
+      val dest = pair._2
+      val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
+      // Note this changes the FlowState, so we need to re-read it at the bottom
+      dest.writeFrom(cpipe)(fd, mode)
+    }
+    todos.foreach(doWrite(_))
+  }
 
   /**
    * This converts the TypedPipe to a cascading Pipe doing the most direct

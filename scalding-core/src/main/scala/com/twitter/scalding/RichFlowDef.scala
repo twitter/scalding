@@ -17,7 +17,7 @@ package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
-
+import com.twitter.algebird.Monoid
 import java.util.{ Map => JMap, List => JList }
 
 /**
@@ -87,13 +87,8 @@ class RichFlowDef(val fd: FlowDef) {
 
     fd.mergeMiscFrom(o)
     // Merge the FlowState
-    FlowStateMap.get(o)
-      .foreach { oFS =>
-        FlowStateMap.mutate(fd) { current =>
-          // overwrite the items from o with current
-          (oFS.merge(current), ())
-        }
-      }
+    val oFS = FlowStateMap(o)
+    FlowStateMap.merge(fd, oFS)
   }
 
   /**
@@ -144,17 +139,40 @@ class RichFlowDef(val fd: FlowDef) {
     if (sinks.containsKey(pipe.getName)) {
       newFd.addTailSink(pipe, sinks.get(pipe.getName))
     }
+
     // Update the FlowState:
     FlowStateMap.get(fd)
       .foreach { thisFS =>
-        val subFlowState = thisFS.sourceMap
-          .foldLeft(Map[String, Source]()) {
-            case (newfs, kv @ (name, source)) =>
-              if (headNames(name)) newfs + kv
-              else newfs
-          }
-        FlowStateMap.mutate(newFd) { oldFS => (oldFS.copy(sourceMap = subFlowState, flowConfigUpdates = thisFS.flowConfigUpdates ++ oldFS.flowConfigUpdates), ()) }
+        /**
+         * these are all the sources that are upstream
+         * of the pipe in question
+         */
+        val subFlowState =
+          Monoid.sum(
+            thisFS
+              .sourceMap
+              .collect {
+                case (name, source) if headNames(name) =>
+                  FlowState.withSource(name, source)
+              })
+        /*
+         * We assume all the old config updates need to be
+         * done, but this may an over approximation and not
+         * be 100% correct. We have been doing it for a while
+         * however
+         */
+        val withConfig = thisFS.copy(sourceMap = Map.empty)
+
+        /*
+         * Note that newFd was just allocated, so it has no
+         * FlowState at all, we verify that here to be defensive
+         * since this is not performance critical code
+         */
+        require(FlowStateMap(newFd) == FlowState.empty, s"FlowState is not empty: ${FlowStateMap(newFd)}")
+
+        FlowStateMap.merge(newFd, Monoid.plus(subFlowState, withConfig))
       }
+
     newFd
   }
 }
