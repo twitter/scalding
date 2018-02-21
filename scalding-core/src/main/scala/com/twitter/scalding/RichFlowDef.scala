@@ -160,8 +160,14 @@ class RichFlowDef(val fd: FlowDef) {
          * done, but this may an over approximation and not
          * be 100% correct. We have been doing it for a while
          * however
+         *
+         * Note, this method is only used to convert a pipe
+         * to a TypedPipe. So, we assume there should be
+         * no pending typed writes upstream of this pipe
+         * that are relevant to this pipe when brought
+         * into the TypedAPI
          */
-        val withConfig = thisFS.copy(sourceMap = Map.empty)
+        val withConfig = thisFS.copy(sourceMap = Map.empty, pendingTypedWrites = Nil)
 
         /*
          * Note that newFd was just allocated, so it has no

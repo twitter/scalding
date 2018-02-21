@@ -22,6 +22,18 @@ import java.util.WeakHashMap
 
 /**
  * Immutable state that we attach to the Flow using the FlowStateMap
+ *
+ * There are three kinds of things we want to attach to FlowDefs:
+ *
+ * 1) which scalding Sources are being read (sourceMap), so we can
+ * call validateTaps on each of them before we run (see validateSources)
+ *
+ * 2) the configuration updates that need to be applied to the Pipe
+ * instances in the Typed API (this could be removed by better plumbing in CascadingBackend)
+ *
+ * 3) The list of TypedPipe writes that have not yet been planned. We want
+ * to defer planning as long as possible so the optimizer can see as much
+ * as possible of the graph to make the best decisions.
  */
 case class FlowState(
   sourceMap: Map[String, Source],
