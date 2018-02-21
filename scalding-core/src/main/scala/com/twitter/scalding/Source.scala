@@ -160,9 +160,9 @@ abstract class Source extends java.io.Serializable {
     val srcName = sourceId + uuid.toString
     assert(!sources.containsKey(srcName), "Source %s had collision in uuid: %s".format(this, uuid))
     sources.put(srcName, createTap(Read)(mode))
-    FlowStateMap.mutate(flowDef) { st =>
-      (st.addSource(srcName, this), ())
-    }
+
+    FlowStateMap.merge(flowDef, FlowState.withSource(srcName, this))
+
     (mode, transformInTest) match {
       case (test: TestMode, false) => new Pipe(srcName)
       case _ => transformForRead(new Pipe(srcName))
