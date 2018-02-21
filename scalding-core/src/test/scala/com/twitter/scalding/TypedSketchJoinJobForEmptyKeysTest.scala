@@ -8,9 +8,15 @@ class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
   val rightTypedPipe = TypedPipe.from(List((3, 3333), (4, 4444)))
 
   implicit def serialize(k: Int): Array[Byte] = k.toString.getBytes
-  leftTypedPipe
+
+  val sketched = leftTypedPipe
     .sketch(1)
     .leftJoin(rightTypedPipe)
+
+  // this is test that a TypedPipe.Keyed method works:
+  sketched.values
+
+  sketched
     .map {
       case (a, (b, c)) =>
         (a, b, c.getOrElse(-1))

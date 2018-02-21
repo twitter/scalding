@@ -33,21 +33,23 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   numReducers: Int,
   delta: Double,
   eps: Double,
-  seed: Int)(implicit serialization: K => Array[Byte],
+  seed: Int)(implicit val serialization: K => Array[Byte],
     ordering: Ordering[K])
   extends MustHaveReducers {
 
-  def serialize(k: K): Array[Byte] = serialization(k)
-
   def reducers = Some(numReducers)
 
-  private lazy implicit val cms: CMSMonoid[Bytes] = CMS.monoid[Bytes](eps, delta, seed)
   lazy val sketch: TypedPipe[CMS[Bytes]] = {
+    // don't close over Sketched
+    val localSer = serialization
+    val (leps, ldelta, lseed) = (eps, delta, seed)
+    lazy implicit val cms: CMSMonoid[Bytes] = CMS.monoid[Bytes](leps, ldelta, lseed)
+
     // every 10k items, compact into a CMS to prevent very slow mappers
     lazy implicit val batchedSG: com.twitter.algebird.Semigroup[Batched[CMS[Bytes]]] = Batched.compactingSemigroup[CMS[Bytes]](10000)
 
     pipe
-      .map { case (k, _) => ((), Batched(cms.create(Bytes(serialize(k))))) }
+      .map { case (k, _) => ((), Batched(cms.create(Bytes(localSer(k))))) }
       .sumByLocalKeys
       .map {
         case (_, batched) => batched.sum
@@ -69,12 +71,14 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
    * Does a logical inner join but replicates the heavy keys of the left hand side
    * across the reducers
    */
-  def join[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashInner2)
+  def join[V2](right: TypedPipe[(K, V2)]): SketchJoined[K, V, V2, (V, V2)] =
+    cogroup(right)(Joiner.hashInner2)
   /**
    * Does a logical left join but replicates the heavy keys of the left hand side
    * across the reducers
    */
-  def leftJoin[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashLeft2)
+  def leftJoin[V2](right: TypedPipe[(K, V2)]): SketchJoined[K, V, V2, (V, Option[V2])] =
+    cogroup(right)(Joiner.hashLeft2)
 }
 
 case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
@@ -87,20 +91,26 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
   //the most of any one reducer we want to try to take up with a single key
   private val maxReducerFraction = 0.1
 
-  private def flatMapWithReplicas[W](pipe: TypedPipe[(K, W)])(fn: Int => Iterable[Int]) =
+  private def flatMapWithReplicas[W](pipe: TypedPipe[(K, W)])(fn: Int => Iterable[Int]) = {
+    // don't close over Sketched
+    val localSer = left.serialization
+    val localNumReducers = numReducers
+    val localMaxReducerFraction = maxReducerFraction
+
     pipe.cross(left.sketch).flatMap{
       case ((k, w), cms) =>
-        val maxPerReducer = ((cms.totalCount * maxReducerFraction) / numReducers) + 1
-        val maxReplicas = (cms.frequency(Bytes(left.serialize(k))).estimate.toDouble / maxPerReducer)
+        val maxPerReducer = ((cms.totalCount * localMaxReducerFraction) / localNumReducers) + 1
+        val maxReplicas = (cms.frequency(Bytes(localSer(k))).estimate.toDouble / maxPerReducer)
         //if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
         //if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it
-        val replicas = fn(maxReplicas.ceil.toInt.min(numReducers))
+        val replicas = fn(maxReplicas.ceil.toInt.min(localNumReducers))
         replicas.map{ i => (i, k) -> w }
     }
+  }
 
-  lazy val toTypedPipe: TypedPipe[(K, R)] = {
+  val toTypedPipe: TypedPipe[(K, R)] = {
     lazy val rand = new scala.util.Random(left.seed)
-    val lhs = flatMapWithReplicas(left.pipe){ n => Some(rand.nextInt(n) + 1) }
+    val lhs = flatMapWithReplicas(left.pipe){ n => (rand.nextInt(n) + 1) :: Nil }
     val rhs = flatMapWithReplicas(right){ n => 1.to(n) }
 
     lhs
@@ -123,4 +133,6 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
 
 object SketchJoined {
   implicit def toTypedPipe[K, V, V2, R](joined: SketchJoined[K, V, V2, R]): TypedPipe[(K, R)] = joined.toTypedPipe
+  implicit def toTypedPipeKeyed[K, V, V2, R](joined: SketchJoined[K, V, V2, R]): TypedPipe.Keyed[K, R] =
+    new TypedPipe.Keyed(joined.toTypedPipe)
 }
