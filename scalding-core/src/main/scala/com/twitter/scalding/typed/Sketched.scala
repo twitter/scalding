@@ -39,13 +39,15 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
 
   def reducers = Some(numReducers)
 
-  private lazy implicit val cms: CMSMonoid[Bytes] = CMS.monoid[Bytes](eps, delta, seed)
   lazy val sketch: TypedPipe[CMS[Bytes]] = {
+    // don't close over Sketched
+    val localSer = serialization
+    val (leps, ldelta, lseed) = (eps, delta, seed)
+    lazy implicit val cms: CMSMonoid[Bytes] = CMS.monoid[Bytes](leps, ldelta, lseed)
+
     // every 10k items, compact into a CMS to prevent very slow mappers
     lazy implicit val batchedSG: com.twitter.algebird.Semigroup[Batched[CMS[Bytes]]] = Batched.compactingSemigroup[CMS[Bytes]](10000)
 
-    // don't close over Sketched
-    val localSer = serialization
     pipe
       .map { case (k, _) => ((), Batched(cms.create(Bytes(localSer(k))))) }
       .sumByLocalKeys
