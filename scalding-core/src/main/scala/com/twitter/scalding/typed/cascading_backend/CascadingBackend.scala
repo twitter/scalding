@@ -414,7 +414,7 @@ object CascadingBackend {
         dest.writeFrom(cpipe)(fd, mode)
       }
       todos.foreach(doWrite(_))
-      (st.copy(pendingTypedWrites = Nil), ())
+
       val finalFS = FlowStateMap(fd)
       require(finalFS.pendingTypedWrites == st.pendingTypedWrites,
         s"pending writes changed from ${st.pendingTypedWrites} to ${finalFS.pendingTypedWrites}")
