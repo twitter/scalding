@@ -1,7 +1,8 @@
 package com.twitter.scalding.typed
 
-import com.twitter.scalding.Execution
 import com.stripe.dagon.{ Dag, Id, Rule, Memoize, FunctionK }
+import com.twitter.scalding.Execution
+import com.twitter.scalding.typed.functions.EqTypes
 import org.slf4j.LoggerFactory
 import scala.language.higherKinds
 
@@ -19,6 +20,25 @@ object WritePartitioner {
       OptimizationRules.AddExplicitForks,
       OptimizationRules.RemoveDuplicateForceFork)
     materialize[M](rules, ws)
+  }
+
+  /**
+   * Partition a single TypedPipe.
+   *
+   * This is really only useful for jobs with single final outputs since you want
+   * to partition the entire job, not a portion of it.
+   */
+  def partitionSingle[A](phases: Seq[Rule[TypedPipe]], pipe: TypedPipe[A]): Execution[TypedPipe[A]] = {
+    type Const[B] = EqTypes[B, A]
+
+    val writes = materialize1[Execution, Const](phases, List((pipe, EqTypes.reflexive[A])))
+    require(writes.size == 1)
+
+    def fix[F[_], B](t: WritePartitioner.PairK[F, Const, B]): F[A] =
+      t._2.subst[F](t._1)
+
+    // We don't want any further optimization on this job
+    fix(writes.head)
   }
 
   /**
