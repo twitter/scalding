@@ -8,7 +8,7 @@ import com.stripe.dagon.{ FunctionK, HCache, Id, Memoize, Rule, Dag }
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
-  CleanupIdentityFunction, Config, Dsl, Field, FlatMapFunction, FlowState, FlowStateMap, GroupBuilder,
+  CleanupIdentityFunction, Config, Dsl, Execution, Field, FlatMapFunction, FlowState, FlowStateMap, GroupBuilder,
   HadoopMode, IncrementCounters, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
@@ -409,6 +409,54 @@ object CascadingBackend {
       dest.writeFrom(cpipe)(fd, mode)
     }
     todos.foreach(doWrite(_))
+  }
+
+  /**
+   * Convert a cascading FlowDef to an Option[Execution[Unit]]
+   *
+   * Return None if the Execution is empty. If the FlowDef includes
+   * things other than TypedPipe.writes, this will return Some
+   * failed Execution.
+   *
+   * This method is useful for people who have used the Typed-API
+   * with FlowDefs, but not Executions and want to convert to
+   * an Execution without rewriting all the code. An example
+   * of this is summingbird which constructs a single FlowDef
+   * for the entire plan it makes. For large plans from summingbird
+   * you may want to use write partitioning.
+   */
+  def flowDefToExecution(fd: FlowDef, partitionOptimizations: Option[Seq[Rule[TypedPipe]]]): Option[Execution[Unit]] = {
+    val rfd = new RichFlowDef(fd)
+    // TypedPipe jobs should not have modified
+    // the FlowDef yet, only the FlowState should
+    // be updated
+    if (rfd.isEmpty) {
+      FlowStateMap.get(fd).flatMap { // Note, we want this to be a pure function so we don't mutate the FlowStateMap
+        case FlowState(srcs, confs, writes) if srcs.isEmpty && confs.isEmpty =>
+          writes match {
+            case Nil => None
+            case nonEmpty =>
+              partitionOptimizations match {
+                case None =>
+                  def write[A](w: FlowStateMap.TypedWrite[A]): Execution[Unit] =
+                    w.pipe.writeExecution(w.sink)
+
+                  Some(Execution.sequence(nonEmpty.map(write(_))).unit)
+                case Some(rules) =>
+                  def toPair[A](f: FlowStateMap.TypedWrite[A]): WritePartitioner.PairK[TypedPipe, TypedSink, A] =
+                    (f.pipe, f.sink)
+
+                  val pairs: List[WritePartitioner.PairK[TypedPipe, TypedSink, _]] = nonEmpty.map(toPair(_))
+                  Some(WritePartitioner.materialize[Execution](rules, pairs))
+              }
+          }
+        case fs =>
+          // we can't handle if there have been anything other than TypedPipe.write on the
+          // TypedPipe
+          Some(Execution.failed(new Exception(s"expected empty FlowState other than TypedWrites, found: $fs")))
+      }
+    }
+    else Some(Execution.failed(new Exception(s"We can only convert Typed-API Jobs to Execution. Found non-empty FlowDef: $fd")))
   }
 
   /**

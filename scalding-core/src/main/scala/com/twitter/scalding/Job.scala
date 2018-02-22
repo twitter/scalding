@@ -83,34 +83,7 @@ object Job {
     job match {
       case (exJob: ExecutionJob[_]) => exJob.execution.unit
       case _ =>
-        val fd = job.flowDef
-        val rfd = new RichFlowDef(fd)
-
-        val ex = if (rfd.isEmpty) {
-          // TypedPipe jobs should not have modified
-          // the FlowDef yet, only the FlowState should
-          // be updated
-          FlowStateMap.get(fd) match { // Note, we want this to be a pure function so we don't mutate the FlowStateMap
-            case Some(FlowState(srcs, confs, writes)) if srcs.isEmpty && confs.isEmpty =>
-              writes match {
-                case Nil => onEmpty
-                case nonEmpty =>
-                  def write[A](f: FlowStateMap.TypedWrite[A]): Execution[Unit] =
-                    f.pipe.writeExecution(f.sink)
-
-                  Execution.sequence(nonEmpty.map(write(_))).unit
-              }
-            case Some(fs) =>
-              // we can't handle if there have been anything other than TypedPipe.write on the
-              // TypedPipe
-              Execution.failed(new Exception(s"expected empty FlowState other than TypedWrites, found: $fs"))
-            case None => onEmpty
-          }
-        }
-        else {
-          // We only support
-          Execution.failed(new Exception(s"We can only convert Typed-API Jobs to Execution. Found non-empty FlowDef"))
-        }
+        val ex = CascadingBackend.flowDefToExecution(job.flowDef, None).getOrElse(onEmpty)
 
         // next may have a side effect so we
         // evaluate this *after* the current Execution
