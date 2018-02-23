@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 package com.twitter.scalding.typed
+import java.io.Serializable
 
 /**
  * used for types that may know how many reducers they need
@@ -38,4 +39,28 @@ trait MustHaveReducers extends HasReducers {
 trait WithReducers[+This <: WithReducers[This]] extends HasReducers {
   /** never mutates this, instead returns a new item. */
   def withReducers(reds: Int): This
+}
+
+object WithReducers extends Serializable {
+  implicit class Enrichment[W <: WithReducers[W]](val w: W) extends AnyVal {
+    def maybeWithReducers(optReducers: Option[Int]): W =
+      WithReducers.maybeWithReducers(w, optReducers)
+  }
+
+  def maybeWithReducers[W <: WithReducers[W]](w: W, reds: Option[Int]): W =
+    reds match {
+      case None => w
+      case Some(r) => w.withReducers(r)
+    }
+
+  /**
+   * Return the max of the two number of reducers
+   */
+  def maybeCombine(optR1: Option[Int], optR2: Option[Int]): Option[Int] =
+    (optR1, optR2) match {
+      case (None, other) => other
+      case (other, None) => other
+      case (Some(r1), Some(r2)) => Some(r1 max r2)
+    }
+
 }

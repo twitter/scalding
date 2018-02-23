@@ -163,6 +163,7 @@ object TypedPipeGen {
     ComposeMapFlatMap,
     ComposeFilterFlatMap,
     ComposeFilterMap,
+    ComposeReduceSteps,
     DescribeLater,
     DiamondToFlatMap,
     RemoveDuplicateForceFork,

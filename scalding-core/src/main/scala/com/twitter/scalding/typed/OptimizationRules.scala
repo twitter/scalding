@@ -452,6 +452,26 @@ object OptimizationRules {
   }
 
   /**
+   * If we assume that Orderings are coherent, which we do generally in
+   * scalding in joins for instance, we can compose two reduce steps
+   */
+  object ComposeReduceSteps extends Rule[TypedPipe] {
+    def apply[A](on: Dag[TypedPipe]) = {
+      case ReduceStepPipe(rs2) =>
+        rs2.mapped match {
+          case ReduceStepPipe(rs1) =>
+            ReduceStep.maybeCompose(rs1, rs2).map(ReduceStepPipe(_))
+          case WithDescriptionTypedPipe(ReduceStepPipe(rs1), descs) =>
+            ReduceStep.maybeCompose(rs1, rs2).map { rs3 =>
+              WithDescriptionTypedPipe(ReduceStepPipe(rs3), descs)
+            }
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+
+  /**
    * a.onComplete(f).onComplete(g) == a.onComplete { () => f(); g() }
    */
   object ComposeWithOnComplete extends PartialRule[TypedPipe] {
