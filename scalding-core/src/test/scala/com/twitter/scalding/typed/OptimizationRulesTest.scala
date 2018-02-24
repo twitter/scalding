@@ -546,8 +546,72 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
       kv("a").sumByKey.toTypedPipe.join(kv("b")).toTypedPipe.group.max
     }
+
     optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
       kv("a").join(kv("b").sumByKey.toTypedPipe).toTypedPipe.group.max
     }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.mapValues(_ * 2)).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.flatMapValues(0 to _)).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.filterKeys(_ > 2)).toTypedPipe.group.max
+    }
+  }
+
+  test("merge before reduce is one step") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      (kv("a") ++ kv("b")).sumByKey
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      (kv("a") ++ kv("b")).join(kv("c"))
+    }
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      kv("a").join(kv("b") ++ kv("c"))
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      val input = kv("a")
+      val pipe1 = input.mapValues(_ * 2)
+      val pipe2 = input.mapValues(_ * 3)
+      (pipe1 ++ pipe2).sumByKey
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      val input = kv("a")
+      val pipe1 = input.mapValues(_ * 2)
+      val pipe2 = input.mapValues(_ * 3)
+      (pipe1 ++ pipe2).mapValues(_ + 42).sumByKey
+    }
+  }
+
+  test("merge after identical reduce reduce is one step") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").join(kv("b")) ++ kv("a").join(kv("c")))
+    // }
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").join(kv("b")) ++ kv("c").join(kv("b")))
+    // }
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").sumByKey.mapValues(_ * 10) ++ kv("a").sumByKey)
+    // }
+
   }
 }
