@@ -36,6 +36,10 @@ object Externalizer {
 @DefaultSerializer(classOf[JavaSerializer])
 class Externalizer[T] extends ChillExtern[T] {
   protected override def kryo =
-    new KryoHadoop(ScalaAnyRefMapConfig(Map("scalding.kryo.setreferences" -> "true")))
+    new KryoHadoop(
+      ScalaAnyRefMapConfig(
+        Map(
+          "scalding.kryo.setreferences" -> "true",
+          "scalding.kryo.defaultserializer" -> classOf[RobustSerializer[_]].getName)))
 }
 

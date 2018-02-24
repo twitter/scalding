@@ -163,6 +163,7 @@ object CoGrouped extends Serializable {
       val leftSeqCount = larger.inputs.size - 1
       val jf = larger.joinFunction // avoid capturing `this` in the closure below
       val smallerJf = smaller.joinFunction
+      val localFn = fn
 
       /**
        * if there is at most one value on the smaller side definitely
@@ -193,7 +194,7 @@ object CoGrouped extends Serializable {
             }
           }
 
-        fn(k, joinedLeft, joinedRight)
+        localFn(k, joinedLeft, joinedRight)
       }
     }
   }

@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding.serialization
 
 import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.{ Serializer => KSerializer }
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 import com.twitter.scalding.{ Args, CascadingTokenUpdater, DateRange, RichDate, Config => ScaldingConfig }
 import com.twitter.chill.algebird._
@@ -40,6 +41,14 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
    */
   override def newKryo: Kryo = {
     val newK = (new ScalaKryoInstantiator).newKryo
+
+    Option(config.get("scalding.kryo.defaultserializer"))
+      .flatMap(getClassOpt(_))
+      .foreach { cls =>
+        val clsSer: Class[_ <: KSerializer[_]] = cls.asInstanceOf[Class[_ <: KSerializer[_]]]
+        newK.setDefaultSerializer(clsSer)
+      }
+
     // These are scalding objects:
     newK.register(classOf[RichDate], new RichDateSerializer())
     newK.register(classOf[DateRange], new DateRangeSerializer())
