@@ -196,6 +196,15 @@ object TypedPipeGen {
     val flow = ec.buildFlow.get
     flow.getFlowSteps.size
   }
+
+  // How many steps would this be in Hadoop on Cascading
+  def optimizedSteps[A](rs: List[Rule[TypedPipe]], maxSteps: Int)(pipe: TypedPipe[A]) = {
+    val (dag, id) = Dag(pipe, OptimizationRules.toLiteral)
+    val optDag = dag.applySeq(rs)
+    val optPipe = optDag.evaluate(id)
+    val s = steps(optPipe)
+    assert(s <= maxSteps, s"$s > $maxSteps. optimized: $optPipe")
+  }
 }
 
 /**
@@ -221,6 +230,7 @@ class ConstantOptimizer extends OptimizationPhases {
 // for optimization rules, we want to do many tests
 class OptimizationRulesTest extends FunSuite with PropertyChecks {
   import OptimizationRules.toLiteral
+  import TypedPipeGen.optimizedSteps
 
   def invert[T](t: TypedPipe[T]) =
     assert(toLiteral(t).evaluate == t)
@@ -234,7 +244,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   test("optimization rules are reproducible") {
     import TypedPipeGen.{ genWithFakeSources, genRule }
 
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 5000)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithFakeSources, genRule) { (t, rule) =>
       val optimized = Dag.applyRule(t, toLiteral, rule)
       val optimized2 = Dag.applyRule(t, toLiteral, rule)
@@ -245,7 +255,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   test("standard rules are reproducible") {
     import TypedPipeGen.{ genWithFakeSources, genRule }
 
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 5000)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithFakeSources) { t =>
       val (dag1, id1) = Dag(t, toLiteral)
       val opt1 = dag1.applySeq(OptimizationRules.standardMapReduceRules)
@@ -508,6 +518,36 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
         // write should be fast too
         a.write(NullSink)(fd, Local(true)) ++ b
       }
+    }
+  }
+
+  test("joins are merged") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      kv("a").join(kv("b")).join(kv("c"))
+    }
+  }
+
+  test("needless toTypedPipe is removed") {
+
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").sumByKey.toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b")).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").sumByKey.toTypedPipe.join(kv("b")).toTypedPipe.group.max
+    }
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe).toTypedPipe.group.max
     }
   }
 }

@@ -135,6 +135,34 @@ object CoGrouped extends Serializable {
     go(list)
   }
 
+  def maybeCompose[A, B, C](cg: CoGrouped[A, B], rs: ReduceStep[A, B, C]): Option[CoGrouped[A, C]] = {
+    val reds = com.twitter.scalding.typed.WithReducers.maybeCombine(cg.reducers, rs.reducers)
+
+    val optCg = rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        type Res[T] = CoGrouped[A, T]
+        Some(step.evidence.subst[Res](cg))
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        type Res[T] = CoGrouped[A, T]
+        Some(step.evidence.subst[Res](cg))
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        Some(CoGrouped.MapGroup(cg, step.reduceFn))
+      case IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        // We can't sort after a join
+        None
+      case ValueSortedReduce(_, _, _, _, _, _) =>
+        // We can't sort after a join
+        None
+    }
+
+    optCg.map { cg1 =>
+      reds match {
+        case Some(r) if cg1.reducers != reds => CoGrouped.WithReducers(cg1, r)
+        case _ => cg1
+      }
+    }
+  }
+
   final case class Pair[K, A, B, C](
     larger: CoGroupable[K, A],
     smaller: CoGroupable[K, B],
