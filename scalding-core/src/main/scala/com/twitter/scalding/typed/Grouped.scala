@@ -168,14 +168,13 @@ object CoGrouped extends Serializable {
      * all the reducers.
      */
     def joinFunction = {
-      val leftSeqCount = larger.inputs.size - 1
       /**
        * if there is at most one value on the smaller side definitely
        * cache the result to avoid repeatedly computing it
        */
       val smallerIsAtMostOne = CoGroupable.atMostOneValue(smaller)
-      if (smallerIsAtMostOne) MultiJoinFunction.PairCachedRight(leftSeqCount, larger.joinFunction, smaller.joinFunction, fn)
-      else MultiJoinFunction.Pair(leftSeqCount, larger.joinFunction, smaller.joinFunction, fn)
+      if (smallerIsAtMostOne) MultiJoinFunction.PairCachedRight(larger.joinFunction, smaller.joinFunction, fn)
+      else MultiJoinFunction.Pair(larger.joinFunction, smaller.joinFunction, fn)
     }
   }
 

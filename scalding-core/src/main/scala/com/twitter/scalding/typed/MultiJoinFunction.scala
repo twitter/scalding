@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
-import java.io.Serializable
 import com.twitter.scalding.serialization.Externalizer
+import java.io.Serializable
 
 /**
  * This is a weakly typed multi-way join function. By construction,
@@ -20,26 +20,31 @@ import com.twitter.scalding.serialization.Externalizer
  * for the entire object.
  */
 sealed abstract class MultiJoinFunction[A, +B] extends Serializable {
+  def inputSize: Int
   def apply(key: A, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[B]
 }
 
 object MultiJoinFunction extends Serializable {
   final case class Casting[A, B]() extends MultiJoinFunction[A, B] {
+    def inputSize = 1
     def apply(k: A, iter: Iterator[Any], empties: Seq[Iterable[Any]]) = {
-      assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
+      require(empties.isEmpty, "this join function should never be called with non-empty right-most")
       iter.asInstanceOf[Iterator[B]]
     }
   }
 
   final case class PairCachedRight[K, A, B, C](
-    leftSeqCount: Int,
     left: MultiJoinFunction[K, A],
     right: MultiJoinFunction[K, B],
     @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends MultiJoinFunction[K, C] {
 
     private[this] val fnEx = Externalizer(fn)
 
+    val inputSize = left.inputSize + right.inputSize
+    private[this] val leftSeqCount = left.inputSize - 1
+
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[C] = {
+      require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
 
@@ -50,14 +55,17 @@ object MultiJoinFunction extends Serializable {
   }
 
   final case class Pair[K, A, B, C](
-    leftSeqCount: Int,
     left: MultiJoinFunction[K, A],
     right: MultiJoinFunction[K, B],
     @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends MultiJoinFunction[K, C] {
 
     private[this] val fnEx = Externalizer(fn)
 
+    val inputSize = left.inputSize + right.inputSize
+    private[this] val leftSeqCount = left.inputSize - 1
+
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[C] = {
+      require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
 
@@ -86,6 +94,8 @@ object MultiJoinFunction extends Serializable {
 
     private[this] val fnEx = Externalizer(mapGroupFn)
 
+    def inputSize = input.inputSize
+
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[B] = {
       val joined = input(key, leftMost, rightStreams)
       fnEx.get(key, joined)
@@ -101,8 +111,10 @@ object MultiJoinFunction extends Serializable {
 
     private[this] val fnEx = Externalizer(mapGroupFn)
 
+    def inputSize = 1
+
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[B] = {
-      assert(rightStreams.isEmpty, "this join function should never be called with non-empty right-most")
+      require(rightStreams.isEmpty, "this join function should never be called with non-empty right-most")
       fnEx.get(key, leftMost.asInstanceOf[Iterator[A]])
     }
   }
