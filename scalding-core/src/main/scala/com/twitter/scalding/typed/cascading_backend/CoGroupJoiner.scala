@@ -5,10 +5,11 @@ import cascading.tuple.{ Tuple => CTuple }
 import com.twitter.scalding.{ TupleGetter }
 import com.twitter.scalding.serialization.Externalizer
 import scala.collection.JavaConverters._
+import com.twitter.scalding.typed.MultiJoinFunction
 
 abstract class CoGroupedJoiner[K](inputSize: Int,
   getter: TupleGetter[K],
-  @transient inJoinFunction: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[Any]) extends CJoiner {
+  @transient inJoinFunction: MultiJoinFunction[K, Any]) extends CJoiner {
 
   /**
    * We have a test that should fail if Externalizer is not used here.
