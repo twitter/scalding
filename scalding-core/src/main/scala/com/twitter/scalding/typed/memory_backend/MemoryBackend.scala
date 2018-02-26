@@ -282,7 +282,7 @@ object MemoryPlanner {
       }
     }
 
-    final case class BulkJoin[K, A](ops: List[Op[(K, Any)]], joinF: (K, Iterator[Any], Seq[Iterable[Any]]) => Iterator[A]) extends Op[(K, A)] {
+    final case class BulkJoin[K, A](ops: List[Op[(K, Any)]], joinF: MultiJoinFunction[K, A]) extends Op[(K, A)] {
       def result(implicit cec: ConcurrentExecutionContext) =
         Future.traverse(ops)(_.result)
           .map { items =>

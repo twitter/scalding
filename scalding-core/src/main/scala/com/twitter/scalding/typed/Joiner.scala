@@ -176,12 +176,5 @@ object Joiner extends java.io.Serializable {
       case FlatMappedHashJoin(jf, _) => isInnerHashJoinLike(jf)
       case _ => None
     }
-
-  final case class CastingWideJoin[A]() extends Function3[Any, Iterator[Any], Seq[Iterable[Any]], Iterator[A]] {
-    def apply(k: Any, iter: Iterator[Any], empties: Seq[Iterable[Any]]) = {
-      assert(empties.isEmpty, "this join function should never be called with non-empty right-most")
-      iter.asInstanceOf[Iterator[A]]
-    }
-  }
 }
 
