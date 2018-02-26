@@ -26,7 +26,9 @@ import scala.collection.JavaConverters._
 /**
  * Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
  */
-class HashJoiner[K, V, W, R](rightGetter: MultiJoinFunction[K, W],
+class HashJoiner[K, V, W, R](
+  rightHasSingleValue: Boolean,
+  rightGetter: MultiJoinFunction[K, W],
   joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
 
   private[this] val joinEx = Externalizer(joiner)
@@ -37,14 +39,23 @@ class HashJoiner[K, V, W, R](rightGetter: MultiJoinFunction[K, W],
     if (leftIt.isEmpty) {
       (Iterator.empty: Iterator[CTuple]).asJava // java is not covariant so we need this
     } else {
+      // In this branch there must be at least one item on the left in a hash-join
       val left = leftIt.buffered
-      // There must be at least one item on the left in a hash-join
       val key = left.head.getObject(0).asInstanceOf[K]
 
       // It is safe to iterate over the right side again and again
-      val rightIterable = new Iterable[W] {
-        def iterator = rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil)
-      }
+
+      val rightIterable =
+        if (rightHasSingleValue) {
+          // Materialize this once for all left values
+          rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil).toList
+        } else {
+          // TODO: it might still be good to count how many there are and materialize
+          // in memory without reducing again
+          new Iterable[W] {
+            def iterator = rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil)
+          }
+        }
 
       left.flatMap { kv =>
         val leftV = kv.getObject(1).asInstanceOf[V] // get just the Vs
@@ -61,5 +72,6 @@ class HashJoiner[K, V, W, R](rightGetter: MultiJoinFunction[K, W],
       }.asJava
     }
   }
+
   override val numJoins = 1
 }
