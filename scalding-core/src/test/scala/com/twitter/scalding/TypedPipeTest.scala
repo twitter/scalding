@@ -1529,3 +1529,23 @@ class TypedSketchLeftJoinJobTest extends WordSpec with Matchers {
     }
   }
 }
+
+class TypedPipeRequireTest extends FunSuite {
+  test("requireSingleValuePerKey should not cause a job to fail") {
+
+    def ex(req: Boolean) = {
+      val ex =
+        TypedPipe.from((1 to 1000))
+          .map { k => (k.toString, k) }
+          .join(TypedPipe.from((1 to 1000 by 5)).map(_.toString).asKeys)
+      val g =
+        if (req) ex.group.requireSingleValuePerKey.toTypedPipe
+        else ex.group.toTypedPipe
+
+      g.toIterableExecution
+    }
+
+    assert(ex(false).waitFor(Config.empty, Local(true)).get.toList.sorted ==
+      ex(true).waitFor(Config.empty, Local(true)).get.toList.sorted)
+  }
+}
