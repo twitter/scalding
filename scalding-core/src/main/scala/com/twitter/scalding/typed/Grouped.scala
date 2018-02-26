@@ -17,7 +17,7 @@ package com.twitter.scalding.typed
 
 import com.twitter.algebird.Semigroup
 import com.twitter.algebird.mutable.PriorityQueueMonoid
-import com.twitter.scalding.typed.functions.{ Constant, EmptyGuard, EqTypes, FilterGroup, MapValueStream, MapGroupMapValues, SumAll }
+import com.twitter.scalding.typed.functions._
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import scala.collection.JavaConverters._
 import scala.util.hashing.MurmurHash3
@@ -64,6 +64,9 @@ object CoGroupable extends Serializable {
       case ComposedMapGroup(_, fn) if atMostOneFn(fn) => true
       case ComposedMapGroup(first, second) => atMostOneFn(first) && atMostInputSizeFn(second)
       case MapValueStream(SumAll(_)) => true
+      case MapValueStream(FoldIterator(_)) => true
+      case MapValueStream(FoldLeftIterator(_, _)) => true
+      case FoldWithKeyIterator(_) => true
       case EmptyGuard(fn) => atMostOneFn(fn)
       case _ => false
     }
@@ -75,6 +78,10 @@ object CoGroupable extends Serializable {
   final def atMostInputSizeFn[A, B, C](fn: (A, Iterator[B]) => Iterator[C]): Boolean =
     fn match {
       case MapGroupMapValues(_) => true
+      case MapValueStream(Drop(_)) => true
+      case MapValueStream(DropWhile(_)) => true
+      case MapValueStream(Take(_)) => true
+      case MapValueStream(TakeWhile(_)) => true
       case FilterGroup(_) => true
       case EmptyGuard(fn) => atMostInputSizeFn(fn)
       case ComposedMapGroup(first, second) => atMostInputSizeFn(first) && atMostInputSizeFn(second)

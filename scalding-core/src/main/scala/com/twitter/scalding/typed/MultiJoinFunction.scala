@@ -44,6 +44,16 @@ object MultiJoinFunction extends Serializable {
     private[this] val leftSeqCount = left.inputSize - 1
 
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[C] = {
+      /*
+       * This require is just an extra check (which should never possibly fail unless we have a programming bug)
+       * that the number of streams we are joining matches the total joining operation we have.
+       *
+       * Since we have one stream in leftMost, the others should be in rightStreams.
+       *
+       * This check is cheap compared with the whole join, so we put this here to aid in checking
+       * correctness due to the weak types that MultiJoinFunction has (non-static size of Seq and
+       * the use of Any)
+       */
       require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
@@ -65,6 +75,16 @@ object MultiJoinFunction extends Serializable {
     private[this] val leftSeqCount = left.inputSize - 1
 
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[C] = {
+      /*
+       * This require is just an extra check (which should never possibly fail unless we have a programming bug)
+       * that the number of streams we are joining matches the total joining operation we have.
+       *
+       * Since we have one stream in leftMost, the others should be in rightStreams.
+       *
+       * This check is cheap compared with the whole join, so we put this here to aid in checking
+       * correctness due to the weak types that MultiJoinFunction has (non-static size of Seq and
+       * the use of Any)
+       */
       require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
