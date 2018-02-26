@@ -150,6 +150,34 @@ object CoGrouped extends Serializable {
     go(list)
   }
 
+  def maybeCompose[A, B, C](cg: CoGrouped[A, B], rs: ReduceStep[A, B, C]): Option[CoGrouped[A, C]] = {
+    val reds = com.twitter.scalding.typed.WithReducers.maybeCombine(cg.reducers, rs.reducers)
+
+    val optCg = rs match {
+      case step @ IdentityReduce(_, _, _, _, _) =>
+        type Res[T] = CoGrouped[A, T]
+        Some(step.evidence.subst[Res](cg))
+      case step @ UnsortedIdentityReduce(_, _, _, _, _) =>
+        type Res[T] = CoGrouped[A, T]
+        Some(step.evidence.subst[Res](cg))
+      case step @ IteratorMappedReduce(_, _, _, _, _) =>
+        Some(CoGrouped.MapGroup(cg, step.reduceFn))
+      case IdentityValueSortedReduce(_, _, _, _, _, _) =>
+        // We can't sort after a join
+        None
+      case ValueSortedReduce(_, _, _, _, _, _) =>
+        // We can't sort after a join
+        None
+    }
+
+    optCg.map { cg1 =>
+      reds match {
+        case Some(r) if cg1.reducers != reds => CoGrouped.WithReducers(cg1, r)
+        case _ => cg1
+      }
+    }
+  }
+
   final case class Pair[K, A, B, C](
     larger: CoGroupable[K, A],
     smaller: CoGroupable[K, B],
@@ -166,7 +194,7 @@ object CoGrouped extends Serializable {
       }
 
     def inputs = larger.inputs ++ smaller.inputs
-    def reducers = (larger.reducers.iterator ++ smaller.reducers.iterator).reduceOption(_ max _)
+    def reducers = com.twitter.scalding.typed.WithReducers.maybeCombine(larger.reducers, smaller.reducers)
     def descriptions: Seq[String] = larger.descriptions ++ smaller.descriptions
     def keyOrdering = smaller.keyOrdering
 
@@ -371,7 +399,7 @@ sealed trait Reversable[+R] {
  * details like where this occurs, the number of reducers, etc... are
  * left in the Grouped class
  */
-sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
+sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] with HasReducers {
   /**
    * Note, this satisfies KeyedPipe.mapped: TypedPipe[(K, Any)]
    */
@@ -381,6 +409,52 @@ sealed trait ReduceStep[K, V1, V2] extends KeyedPipe[K] {
 }
 
 object ReduceStep extends Serializable {
+
+  /**
+   * assuming coherent Orderings on the A, in some cases ReduceSteps can be combined.
+   * Note: we have always assumed coherant orderings in scalding with joins where
+   * both sides have their own Ordering, so we argue this is not different.
+   *
+   * If a user has incoherant Orderings, which are already dangerous, they can
+   * use .forceToDisk between reduce steps, however, a better strategy is to
+   * use different key types.
+   *
+   * The only case where they can't is when there are two different value sorts going
+   * on.
+   */
+  def maybeCompose[A, B, C, D](rs1: ReduceStep[A, B, C], rs2: ReduceStep[A, C, D]): Option[ReduceStep[A, B, D]] = {
+    val reds = WithReducers.maybeCombine(rs1.reducers, rs2.reducers)
+    val optRs = (rs1, rs2) match {
+      case (step @ IdentityReduce(_, _, _, _, _), step2) =>
+        type Res[T] = ReduceStep[A, T, D]
+        Some(step.evidence.reverse.subst[Res](step2))
+      case (step @ UnsortedIdentityReduce(_, _, _, _, _), step2) =>
+        type Res[T] = ReduceStep[A, T, D]
+        Some(step.evidence.reverse.subst[Res](step2))
+      case (step, step2 @ IdentityReduce(_, _, _, _, _)) =>
+        type Res[T] = ReduceStep[A, B, T]
+        Some(step2.evidence.subst[Res](step))
+      case (step, step2 @ UnsortedIdentityReduce(_, _, _, _, _)) =>
+        type Res[T] = ReduceStep[A, B, T]
+        Some(step2.evidence.subst[Res](step))
+      case (step, step2 @ IteratorMappedReduce(_, _, _, _, _)) =>
+        Some(mapGroup(step)(step2.reduceFn))
+      /*
+       * All the rest have either two sorts, or a sort after a reduce
+       */
+      case (IdentityValueSortedReduce(_, _, _, _, _, _), IdentityValueSortedReduce(_, _, _, _, _, _)) => None
+      case (IdentityValueSortedReduce(_, _, _, _, _, _), ValueSortedReduce(_, _, _, _, _, _)) => None
+      case (IteratorMappedReduce(_, _, _, _, _), IdentityValueSortedReduce(_, _, _, _, _, _)) => None
+      case (IteratorMappedReduce(_, _, _, _, _), ValueSortedReduce(_, _, _, _, _, _)) => None
+      case (ValueSortedReduce(_, _, _, _, _, _), IdentityValueSortedReduce(_, _, _, _, _, _)) => None
+      case (ValueSortedReduce(_, _, _, _, _, _), ValueSortedReduce(_, _, _, _, _, _)) => None
+    }
+
+    optRs.map { composed =>
+      reds.fold(composed)(withReducers(composed, _))
+    }
+  }
+
   def setInput[A, B, C](rs: ReduceStep[A, B, C], input: TypedPipe[(A, B)]): ReduceStep[A, B, C] = {
     type Res[V] = ReduceStep[A, V, C]
     type In[V] = TypedPipe[(A, V)]

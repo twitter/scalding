@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, FilterGroup, Fill, MapGroupMapValues, MapGroupFlatMapValues }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, FilterGroup, Fill, MapGroupMapValues, MapGroupFlatMapValues, SumAll, MapValueStream }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -105,19 +105,23 @@ object OptimizationRules {
     private def handleCoGrouped[K, V](cg: CoGroupable[K, V], recurse: FunctionK[TypedPipe, LiteralPipe]): LiteralPipe[(K, V)] = {
       import CoGrouped._
 
-      def pipeToCG[V1](t: TypedPipe[(K, V1)]): CoGroupable[K, V1] =
+      def pipeToCG[V1](t: TypedPipe[(K, V1)]): (CoGroupable[K, V1], List[(String, Boolean)]) =
         t match {
           case ReduceStepPipe(cg: CoGroupable[K @unchecked, V1 @unchecked]) =>
             // we are relying on the fact that we use Ordering[K]
             // as a contravariant type, despite it not being defined
             // that way.
-            cg
+            (cg, Nil)
           case CoGroupedPipe(cg) =>
             // we are relying on the fact that we use Ordering[K]
             // as a contravariant type, despite it not being defined
             // that way.
-            cg.asInstanceOf[CoGroupable[K, V1]]
-          case kvPipe => IdentityReduce[K, V1, V1](cg.keyOrdering, kvPipe, None, Nil, implicitly)
+            (cg.asInstanceOf[CoGroupable[K, V1]], Nil)
+          case WithDescriptionTypedPipe(pipe, descs) =>
+            val (cg, d1) = pipeToCG(pipe)
+            (cg, ComposeDescriptions.combine(d1, descs))
+          case kvPipe =>
+            (IdentityReduce[K, V1, V1](cg.keyOrdering, kvPipe, None, Nil, implicitly), Nil)
         }
 
       cg match {
@@ -127,7 +131,14 @@ object OptimizationRules {
             val rlit = handleCoGrouped(pair.smaller, recurse)
             val fn = pair.fn
             Binary(llit, rlit, { (l: TypedPipe[(K, A)], r: TypedPipe[(K, B)]) =>
-              Pair(pipeToCG(l), pipeToCG(r), fn)
+              val (left, d1) = pipeToCG(l)
+              val (right, d2) = pipeToCG(r)
+              val d3 = ComposeDescriptions.combine(d1, d2)
+              val pair = Pair(left, right, fn)
+              val withD = d3.foldLeft(pair: CoGrouped[K, C]) { case (p, (d, _)) =>
+                p.withDescription(d)
+              }
+              CoGroupedPipe(withD)
             })
           }
           widen(go(p))
@@ -452,6 +463,32 @@ object OptimizationRules {
   }
 
   /**
+   * If we assume that Orderings are coherent, which we do generally in
+   * scalding in joins for instance, we can compose two reduce steps
+   */
+  object ComposeReduceSteps extends Rule[TypedPipe] {
+    def apply[A](on: Dag[TypedPipe]) = {
+      case ReduceStepPipe(rs2) =>
+        rs2.mapped match {
+          case ReduceStepPipe(rs1) =>
+            ReduceStep.maybeCompose(rs1, rs2).map(ReduceStepPipe(_))
+          case WithDescriptionTypedPipe(ReduceStepPipe(rs1), descs) =>
+            ReduceStep.maybeCompose(rs1, rs2).map { rs3 =>
+              WithDescriptionTypedPipe(ReduceStepPipe(rs3), descs)
+            }
+          case CoGroupedPipe(cg1) =>
+            CoGrouped.maybeCompose(cg1, rs2).map(CoGroupedPipe(_))
+          case WithDescriptionTypedPipe(CoGroupedPipe(cg1), descs) =>
+            CoGrouped.maybeCompose(cg1, rs2).map { cg2 =>
+              WithDescriptionTypedPipe(CoGroupedPipe(cg2), descs)
+            }
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+
+  /**
    * a.onComplete(f).onComplete(g) == a.onComplete { () => f(); g() }
    */
   object ComposeWithOnComplete extends PartialRule[TypedPipe] {
@@ -579,6 +616,8 @@ object OptimizationRules {
         WithDescriptionTypedPipe(MergedTypedPipe(left, right), descs)
       case MergedTypedPipe(left, WithDescriptionTypedPipe(right, descs)) =>
         WithDescriptionTypedPipe(MergedTypedPipe(left, right), descs)
+      case SumByLocalKeys(WithDescriptionTypedPipe(input, descs), sg) =>
+        WithDescriptionTypedPipe(SumByLocalKeys(input, sg), descs)
       case WithDescriptionTypedPipe(WithDescriptionTypedPipe(input, descs1), descs2) =>
         // This rule is important in that it allows us to reduce
         // the number of nodes in the graph, which is helpful to speed up rule application
@@ -916,6 +955,10 @@ object OptimizationRules {
       case FlatMapValues(CoGroupedPipe(cg), fn) =>
         CoGroupedPipe(CoGrouped.MapGroup(cg, MapGroupFlatMapValues(fn)))
       case f@Filter(_, _) if handleFilter(f).isDefined => handleFilter(f).getOrElse(sys.error("unreachable: already checked isDefined"))
+      case SumByLocalKeys(ReduceStepPipe(rs), sg) =>
+        ReduceStepPipe(ReduceStep.mapGroup(rs)(MapValueStream(SumAll(sg))))
+      case SumByLocalKeys(CoGroupedPipe(cg), sg) =>
+        CoGroupedPipe(CoGrouped.MapGroup(cg, MapValueStream(SumAll(sg))))
     }
   }
 
