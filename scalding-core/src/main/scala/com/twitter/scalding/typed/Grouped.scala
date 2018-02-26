@@ -64,6 +64,7 @@ object CoGroupable extends Serializable {
       case ComposedMapGroup(_, fn) if atMostOneFn(fn) => true
       case ComposedMapGroup(first, second) => atMostOneFn(first) && atMostInputSizeFn(second)
       case MapValueStream(SumAll(_)) => true
+      case MapValueStream(ToList()) => true
       case MapValueStream(FoldIterator(_)) => true
       case MapValueStream(FoldLeftIterator(_, _)) => true
       case FoldWithKeyIterator(_) => true
