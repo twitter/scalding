@@ -326,8 +326,12 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
    * Only use this method if you are sure all the values will fit in memory.
    * You really should try to ask why you need all the values, and if you
    * want to do some custom reduction, do it in mapGroup or mapValueStream
+   *
+   * This does no map-side aggregation even though it is a Monoid because
+   * toList does not decrease the size of the data at all, so in practice
+   * it only wastes effort to try to cache.
    */
-  def toList: This[K, List[T]] = mapValues(ToList[T]()).sum
+  def toList: This[K, List[T]] = mapValueStream(ToList[T]())
   /**
    * AVOID THIS IF POSSIBLE
    * Same risks apply here as to toList: you may OOM. See toList.

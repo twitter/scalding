@@ -157,8 +157,8 @@ case class ReverseList[T]() extends Function1[List[T], List[T]] {
   def apply(results: List[T]) = results.reverse
 }
 
-case class ToList[A]() extends Function1[A, List[A]] {
-  def apply(a: A) = a :: Nil
+case class ToList[A]() extends Function1[Iterator[A], Iterator[List[A]]] {
+  def apply(as: Iterator[A]) = Iterator.single(as.toList)
 }
 
 case class ToSet[A]() extends Function1[A, Set[A]] {
