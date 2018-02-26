@@ -626,13 +626,14 @@ object CascadingBackend {
     val leftPipe = rec(left).toPipe(kvFields, fd, tup2Setter)
     val mappedPipe = rec(right.mapped).toPipe(new Fields("key1", "value1"), fd, tup2Setter)
 
+    val singleValuePerRightKey = CoGroupable.atMostOneValue(right)
     val keyOrdering = right.keyOrdering
     val hashPipe = new HashJoin(
       RichPipe.assignName(leftPipe),
       Field.singleOrdered("key")(keyOrdering),
       mappedPipe,
       Field.singleOrdered("key1")(keyOrdering),
-      WrappedJoiner(new HashJoiner(right.joinFunction, joiner)))
+      WrappedJoiner(new HashJoiner(singleValuePerRightKey, right.joinFunction, joiner)))
 
     CascadingPipe[(K, R)](
       hashPipe,
