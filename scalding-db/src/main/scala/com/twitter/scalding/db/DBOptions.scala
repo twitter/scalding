@@ -25,7 +25,9 @@ case class ConnectUrl(toStr: String) extends AnyVal
 // Username for the database
 case class UserName(toStr: String) extends AnyVal
 // Password for the database
-case class Password(toStr: String) extends AnyVal
+case class Password(toStr: String) extends AnyVal {
+  override def toString: String = super.toString
+}
 // The adapter to use
 case class Adapter(toStr: String) extends AnyVal
 // Hadoop path string. Can be absolute path or complete URI.
