@@ -140,7 +140,7 @@ object TypedPipe extends Serializable {
     }
   }
 
-   final case class CoGroupedPipe[K, V](cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
+   final case class CoGroupedPipe[K, V](@transient cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
    final case class CounterPipe[A](pipe: TypedPipe[(A, Iterable[((String, String), Long)])]) extends TypedPipe[A]
    final case class CrossPipe[T, U](left: TypedPipe[T], right: TypedPipe[U]) extends TypedPipe[(T, U)] {
      def viaHashJoin: TypedPipe[(T, U)] =
@@ -158,27 +158,27 @@ object TypedPipe extends Serializable {
         }
    }
    final case class DebugPipe[T](input: TypedPipe[T]) extends TypedPipe[T]
-   final case class FilterKeys[K, V](input: TypedPipe[(K, V)], fn: K => Boolean) extends TypedPipe[(K, V)]
-   final case class Filter[T](input: TypedPipe[T], fn: T => Boolean) extends TypedPipe[T]
-   final case class FlatMapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => TraversableOnce[U]) extends TypedPipe[(K, U)]
-   final case class FlatMapped[T, U](input: TypedPipe[T], fn: T => TraversableOnce[U]) extends TypedPipe[U]
+   final case class FilterKeys[K, V](input: TypedPipe[(K, V)], @transient fn: K => Boolean) extends TypedPipe[(K, V)]
+   final case class Filter[T](input: TypedPipe[T], @transient fn: T => Boolean) extends TypedPipe[T]
+   final case class FlatMapValues[K, V, U](input: TypedPipe[(K, V)], @transient fn: V => TraversableOnce[U]) extends TypedPipe[(K, U)]
+   final case class FlatMapped[T, U](input: TypedPipe[T], @transient fn: T => TraversableOnce[U]) extends TypedPipe[U]
    final case class ForceToDisk[T](input: TypedPipe[T]) extends TypedPipe[T]
    final case class Fork[T](input: TypedPipe[T]) extends TypedPipe[T]
-   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], right: HashJoinable[K, W], joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
+   final case class HashCoGroup[K, V, W, R](left: TypedPipe[(K, V)], @transient right: HashJoinable[K, W], @transient joiner: (K, V, Iterable[W]) => Iterator[R]) extends TypedPipe[(K, R)]
    final case class IterablePipe[T](iterable: Iterable[T]) extends TypedPipe[T]
-   final case class MapValues[K, V, U](input: TypedPipe[(K, V)], fn: V => U) extends TypedPipe[(K, U)]
-   final case class Mapped[T, U](input: TypedPipe[T], fn: T => U) extends TypedPipe[U]
+   final case class MapValues[K, V, U](input: TypedPipe[(K, V)], @transient fn: V => U) extends TypedPipe[(K, U)]
+   final case class Mapped[T, U](input: TypedPipe[T], @transient fn: T => U) extends TypedPipe[U]
    final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
-   final case class ReduceStepPipe[K, V1, V2](reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
-   final case class SourcePipe[T](source: TypedSource[T]) extends TypedPipe[T]
-   final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
-   final case class TrappedPipe[T](input: TypedPipe[T], sink: Source with TypedSink[T], conv: TupleConverter[T]) extends TypedPipe[T]
+   final case class ReduceStepPipe[K, V1, V2](@transient reduce: ReduceStep[K, V1, V2]) extends TypedPipe[(K, V2)]
+   final case class SourcePipe[T](@transient source: TypedSource[T]) extends TypedPipe[T]
+   final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], @transient semigroup: Semigroup[V]) extends TypedPipe[(K, V)]
+   final case class TrappedPipe[T](input: TypedPipe[T], @transient sink: Source with TypedSink[T], @transient conv: TupleConverter[T]) extends TypedPipe[T]
    /**
     * descriptions carry a boolean that is true if we should deduplicate the message.
     * This is used for line numbers which are otherwise often duplicated
     */
    final case class WithDescriptionTypedPipe[T](input: TypedPipe[T], descriptions: List[(String, Boolean)]) extends TypedPipe[T]
-   final case class WithOnComplete[T](input: TypedPipe[T], fn: () => Unit) extends TypedPipe[T]
+   final case class WithOnComplete[T](input: TypedPipe[T], @transient fn: () => Unit) extends TypedPipe[T]
 
    case object EmptyTypedPipe extends TypedPipe[Nothing] {
      // we can't let the default TypedPipe == go here, it will stack overflow on a pattern match
