@@ -602,6 +602,9 @@ object Execution {
   /*
    * This is here so we can call without knowing the type T
    * but with proof that pipe matches sink
+   *
+   * We capture these objects in calls of TypedPipe.toIterableExecution,
+   * but can safely ignore serializing planning objects for the same reasons mentioned in KryoHadoop.scala
    */
 
   sealed trait ToWrite extends Serializable
