@@ -36,6 +36,7 @@ val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "4.12.0"
+val sparkVersion = "2.0.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.5.0"
 val junitVersion = "4.10"
@@ -232,6 +233,7 @@ lazy val scalding = Project(
   maple,
   executionTutorial,
   scaldingSerialization,
+  scaldingSpark,
   scaldingThriftMacros
 )
 
@@ -343,6 +345,12 @@ lazy val scaldingCore = module("core").settings(
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+
+lazy val scaldingSpark = module("spark").settings(
+  libraryDependencies ++= Seq(
+    "org.apache.spark" %% "spark-core" % sparkVersion
+    )
+  ).dependsOn(scaldingCore)
 
 lazy val scaldingCommons = module("commons").settings(
   libraryDependencies ++= Seq(
