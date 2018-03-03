@@ -13,7 +13,7 @@ sealed trait Projection {
     @tailrec def loop(p: Projection): TypeReference =
       p match {
         case p @ TypeReference(_) => p
-        case Property(p, _, _)    => loop(p)
+        case Property(p, _, _) => loop(p)
       }
     loop(this)
   }
@@ -32,9 +32,9 @@ sealed trait Projection {
     this match {
       case TypeReference(tpe) =>
         base match {
-          case TypeReference(`tpe`)  => Some(base)
+          case TypeReference(`tpe`) => Some(base)
           case Property(_, _, `tpe`) => Some(base)
-          case other                 => None
+          case other => None
         }
       case Property(path, name, tpe) =>
         path.basedOn(base).map(Property(_, name, tpe))
@@ -129,7 +129,7 @@ final class Projections private (val set: Set[Projection]) extends Serializable 
   override def equals(other: Any) =
     other match {
       case other: Projections => set == other.set
-      case other              => false
+      case other => false
     }
 
   override def hashCode =

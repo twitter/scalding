@@ -24,6 +24,7 @@ import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
 import com.twitter.scalding.typed.functions.{ ConsList, ReverseList }
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import com.stripe.dagon.{Memoize, RefPair}
+import java.io.Serializable
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
@@ -50,7 +51,7 @@ import scala.util.hashing.MurmurHash3
  * in some libraries) composes two Executions is parallel. Prefer
  * zip to flatMap if you want to run two Executions in parallel.
  */
-sealed trait Execution[+T] extends java.io.Serializable { self: Product =>
+sealed trait Execution[+T] extends Serializable { self: Product =>
   import Execution.{ EvalCache, FlatMapped, GetCounters, ResetCounters, Mapped, OnComplete, RecoverWith, Zipped }
 
   /**
@@ -601,13 +602,16 @@ object Execution {
   /*
    * This is here so we can call without knowing the type T
    * but with proof that pipe matches sink
+   *
+   * We capture these objects in calls of TypedPipe.toIterableExecution,
+   * but can safely ignore serializing planning objects for the same reasons mentioned in KryoHadoop.scala
    */
 
-  sealed trait ToWrite
-  object ToWrite {
-    final case class Force[T](pipe: TypedPipe[T]) extends ToWrite
-    final case class ToIterable[T](pipe: TypedPipe[T]) extends ToWrite
-    final case class SimpleWrite[T](pipe: TypedPipe[T], sink: TypedSink[T]) extends ToWrite
+  sealed trait ToWrite extends Serializable
+  object ToWrite extends Serializable {
+    final case class Force[T](@transient pipe: TypedPipe[T]) extends ToWrite
+    final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite
+    final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T]) extends ToWrite
 
     /**
      * Optimize these writes into new writes and provide a mapping from
