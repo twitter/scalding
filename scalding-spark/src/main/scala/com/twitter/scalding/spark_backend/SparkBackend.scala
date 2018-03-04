@@ -1,6 +1,7 @@
 package com.twitter.scalding.spark_backend
 
 import com.stripe.dagon.{ FunctionK, Memoize }
+import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter, SubTypes }
 import org.apache.spark.SparkContext
@@ -85,7 +86,7 @@ object SparkPlanner {
   /**
    * Convert a TypedPipe to an RDD
    */
-  def plan(ctx: SparkContext)(implicit ec: ExecutionContext): FunctionK[TypedPipe, R] =
+  def plan(ctx: SparkContext, config: Config)(implicit ec: ExecutionContext): FunctionK[TypedPipe, R] =
     Memoize.functionK(new Memoize.RecursiveK[TypedPipe, R] {
       import TypedPipe._
 
@@ -148,7 +149,7 @@ object SparkPlanner {
           op.map(fn)
         case (m @ MergedTypedPipe(_, _), rec) =>
           def go[A](m: MergedTypedPipe[A]): R[A] = {
-            R.merge(rec(m.left), rec(m.left))
+            R.merge(rec(m.left), rec(m.right))
           }
           go(m)
         case (SourcePipe(src), rec) =>
