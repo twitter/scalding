@@ -630,16 +630,9 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     val pipe4 = (TypedPipe.from(TypedText.tsv[Int]("src1")) ++
       TypedPipe.from(TypedText.tsv[Int]("src2")).filter(_ % 17 == 0))
 
-    def brokenSrc(path: String): WritableSequenceFile[Writable, Writable] =
-      WritableSequenceFile(path, cascading.tuple.Fields.UNKNOWN)
-
-    val pipe5 = (TypedPipe.from(brokenSrc("src1")) ++
-      TypedPipe.from(brokenSrc("src2")).map(_ => null.asInstanceOf[Writable]))
-
     optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe1)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe2)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe3)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe4)
-    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe5)
   }
 }
