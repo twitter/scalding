@@ -4,7 +4,7 @@ import cascading.flow.{ FlowDef, FlowConnector }
 import cascading.pipe.Pipe
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, TupleEntryIterator }
-import com.stripe.dagon.{HMap, Rule}
+import com.stripe.dagon.{HMap, Rule, Memoize, FunctionK}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.{ Config, Execution, ExecutionCounters, Mode }
 import java.util.{ ArrayList, Collections, UUID }
@@ -327,21 +327,173 @@ object MemoryPlanner {
   }
 
   /**
-   * Memoize previously planned TypedPipes so we don't replan too much
+   * This builds an new memoizing planner
+   * that reads from the given MemoryMode.
+   *
+   * Note, this assumes all forks are made explicit
+   * in the graph, so it is up to any caller
+   * to make sure that optimization rule has first
+   * been applied
    */
-  case class Memo(planned: HMap[TypedPipe, Op]) {
-    def plan[T](t: TypedPipe[T])(op: => (Memo, Op[T])): (Memo, Op[T]) =
-      planned.get(t) match {
-        case Some(op) => (this, op)
-        case None =>
-          val (m1, newOp) = op
-          (m1.copy(planned = m1.planned.updated(t, newOp)), newOp)
-      }
-  }
+  def planner(mem: MemoryMode): FunctionK[TypedPipe, Op] =
+    Memoize.functionK(new Memoize.RecursiveK[TypedPipe, Op] {
+      import TypedPipe._
 
-  object Memo {
-    val empty: Memo = Memo(HMap.empty)
-  }
+      def toFunction[T] = {
+        case (CounterPipe(pipe), rec) =>
+          // TODO: counters not yet supported, but can be with an concurrent hashmap
+          rec(pipe.map(_._1))
+        case (cp@CrossPipe(_, _), rec) =>
+          rec(cp.viaHashJoin)
+        case (CrossValue(left, EmptyValue), _) => Op.empty
+        case (CrossValue(left, LiteralValue(v)), rec) =>
+          val op = rec(left) // linter:disable:UndesirableTypeInference
+          op.map((_, v))
+        case (CrossValue(left, ComputedValue(right)), rec) =>
+          rec(CrossPipe(left, right))
+        case (DebugPipe(p), rec) =>
+          // There is really little that can be done here but println
+          rec(p.map { t => println(t); t })
+
+        case (EmptyTypedPipe, _) =>
+          // just use an empty iterable pipe.
+          Op.empty[T]
+
+        case (fk@FilterKeys(_, _), rec) =>
+          def go[K, V](node: FilterKeys[K, V]): Op[(K, V)] = {
+            val FilterKeys(pipe, fn) = node
+            rec(pipe).concatMap { case (k, v) => if (fn(k)) { (k, v) :: Nil } else Nil }
+          }
+          go(fk)
+
+        case (f@Filter(_, _), rec) =>
+          def go[T](f: Filter[T]): Op[T] = {
+            val Filter(p, fn) = f
+            rec(p).filter(fn)
+          }
+          go(f)
+
+        case (f@FlatMapValues(_, _), rec) =>
+          def go[K, V, U](node: FlatMapValues[K, V, U]) = {
+            val fn = node.fn
+            rec(node.input).concatMap { case (k, v) => fn(v).map((k, _)) }
+          }
+
+          go(f)
+
+        case (FlatMapped(prev, fn), rec) =>
+          rec(prev).concatMap(fn) // linter:disable:UndesirableTypeInference
+
+        case (ForceToDisk(pipe), rec) =>
+          rec(pipe).materialize
+
+        case (Fork(pipe), rec) =>
+          rec(pipe).materialize
+
+        case (IterablePipe(iterable), _) =>
+          Op.source(iterable)
+
+        case (f@MapValues(_, _), rec) =>
+          def go[K, V, U](node: MapValues[K, V, U]) = {
+            val mvfn = node.fn
+            rec(node.input).map { case (k, v) => (k, mvfn(v)) }
+          }
+
+          go(f)
+
+        case (Mapped(input, fn), rec) =>
+          rec(input).map(fn) // linter:disable:UndesirableTypeInference
+
+        case (MergedTypedPipe(left, right), rec) =>
+          Op.Concat(rec(left), rec(right))
+
+        case (SourcePipe(src), _) =>
+          Op.Source({ cec => mem.readSource(src)(cec) })
+
+        case (slk@SumByLocalKeys(_, _), rec) =>
+          def sum[K, V](sblk: SumByLocalKeys[K, V]) = {
+            val SumByLocalKeys(p, sg) = sblk
+
+            rec(p).transform[(K, V), (K, V)] { kvs =>
+              val map = collection.mutable.Map.empty[K, V]
+              val iter = kvs.iterator
+              while(iter.hasNext) {
+                val (k, v) = iter.next
+                map(k) = map.get(k) match {
+                  case None => v
+                  case Some(v1) => sg.plus(v1, v)
+                }
+              }
+              val res = new ArrayBuffer[(K, V)](map.size)
+              map.foreach { res += _ }
+              res
+            }
+          }
+          sum(slk)
+
+        case (TrappedPipe(input, _, _), rec) =>
+          // this can be interpretted as catching any exception
+          // on the map-phase until the next partition, so it can
+          // be made to work by changing Op to return all
+          // the values that fail on error
+          rec(input)
+
+        case (WithDescriptionTypedPipe(pipe, descriptions), rec) =>
+          // TODO we could optionally print out the descriptions
+          // after the future completes
+          rec(pipe)
+
+        case (WithOnComplete(pipe, fn), rec) =>
+          Op.OnComplete(rec(pipe), fn)
+
+        case (hcg@HashCoGroup(_, _, _), rec) =>
+          def go[K, V1, V2, R](hcg: HashCoGroup[K, V1, V2, R]) = {
+            val leftOp = rec(hcg.left)
+            val rightOp = rec(ReduceStepPipe(HashJoinable.toReduceStep(hcg.right)))
+            Op.Join[(K, V1), (K, V2), (K, R)](leftOp, rightOp, { (v1s, v2s) =>
+              val kv2 = v2s.groupBy(_._1)
+              val result = new ArrayBuffer[(K, R)]()
+              v1s.foreach { case (k, v1) =>
+                val v2 = kv2.getOrElse(k, Nil).map(_._2)
+                result ++= hcg.joiner(k, v1, v2).map((k, _))
+              }
+              result
+            })
+          }
+          go(hcg)
+
+        case (CoGroupedPipe(cg), rec) =>
+          def go[K, V](cg: CoGrouped[K, V]) = {
+            Op.BulkJoin(cg.inputs.map(rec(_)), cg.joinFunction)
+          }
+          go(cg)
+
+        case (ReduceStepPipe(ir@IdentityReduce(_, _, _, descriptions, _)), rec) =>
+          def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): Op[(K, V2)] = {
+            type OpT[V] = Op[(K, V)]
+            val op = rec(ir.mapped)
+            ir.evidence.subst[OpT](op)
+          }
+          go(ir)
+        case (ReduceStepPipe(uir@UnsortedIdentityReduce(_, _, _, descriptions, _)), rec) =>
+          def go[K, V1, V2](uir: UnsortedIdentityReduce[K, V1, V2]): Op[(K, V2)] = {
+            type OpT[V] = Op[(K, V)]
+            val op = rec(uir.mapped)
+            uir.evidence.subst[OpT](op)
+          }
+          go(uir)
+        case (ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)), rec) =>
+          def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[V]) = {
+            val op = rec(p)
+            Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord))
+          }
+          go(pipe, ord)
+        case (ReduceStepPipe(ValueSortedReduce(_, pipe, ord, fn, _, _)), rec) =>
+          Op.Reduce(rec(pipe), fn, Some(ord))
+        case (ReduceStepPipe(IteratorMappedReduce(_, pipe, fn, _, _)), rec) =>
+          Op.Reduce(rec(pipe), fn, None)
+      }
+    })
 
 }
 
@@ -385,8 +537,7 @@ case class SinkT[T](indent: String) extends TypedSink[T] {
  */
 class MemoryWriter(mem: MemoryMode) extends Writer {
 
-  import MemoryPlanner.{ Memo, Op }
-  import TypedPipe._
+  import MemoryPlanner.Op
 
   def start(): Unit = ()
   /**
@@ -394,216 +545,8 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def finished(): Unit = ()
 
-  def plan[T](m: Memo, tp: TypedPipe[T]): (Memo, Op[T]) =
-    m.plan(tp) {
-      tp match {
-        case CounterPipe(pipe) =>
-          // TODO: counters not yet supported, but can be with an concurrent hashmap
-          plan(m, pipe.map(_._1))
-        case cp@CrossPipe(_, _) =>
-          plan(m, cp.viaHashJoin)
-
-        case CrossValue(left, EmptyValue) => (m, Op.empty)
-        case CrossValue(left, LiteralValue(v)) =>
-          val (m1, op) = plan(m, left) // linter:disable:UndesirableTypeInference
-          (m1, op.concatMap { a => Iterator.single((a, v)) })
-        case CrossValue(left, ComputedValue(right)) =>
-          plan(m, CrossPipe(left, right))
-        case DebugPipe(p) =>
-          // There is really little that can be done here but println
-          plan(m, p.map { t => println(t); t })
-
-        case EmptyTypedPipe =>
-          // just use an empty iterable pipe.
-          // Note, rest is irrelevant
-          (m, Op.empty[T])
-
-        case fk@FilterKeys(_, _) =>
-          def go[K, V](node: FilterKeys[K, V]): (Memo, Op[(K, V)]) = {
-            val FilterKeys(pipe, fn) = node
-            val (m1, op) = plan(m, pipe)
-            (m1, op.concatMap { case (k, v) => if (fn(k)) { (k, v) :: Nil } else Nil })
-          }
-          go(fk)
-
-        case f@Filter(_, _) =>
-          def go[T](f: Filter[T]): (Memo, Op[T]) = {
-            val Filter(p, fn) = f
-            val (m1, op) = plan(m, p)
-            (m1, op.filter(fn))
-          }
-          go(f)
-
-        case f@FlatMapValues(_, _) =>
-          def go[K, V, U](node: FlatMapValues[K, V, U]) = {
-            val fn = node.fn
-            val (m1, op) = plan(m, node.input)
-            (m1, op.concatMap { case (k, v) => fn(v).map((k, _)) })
-          }
-
-          go(f)
-
-        case FlatMapped(prev, fn) =>
-          val (m1, op) = plan(m, prev) // linter:disable:UndesirableTypeInference
-          (m1, op.concatMap(fn))
-
-        case ForceToDisk(pipe) =>
-          val (m1, op) = plan(m, pipe)
-          (m1, op.materialize)
-
-        case Fork(pipe) =>
-          val (m1, op) = plan(m, pipe)
-          (m1, op.materialize)
-
-        case IterablePipe(iterable) =>
-          (m, Op.source(iterable))
-
-        case f@MapValues(_, _) =>
-          def go[K, V, U](node: MapValues[K, V, U]) = {
-            val mvfn = node.fn
-            val (m1, op) = plan(m, node.input)
-            (m1, op.map { case (k, v) => (k, mvfn(v)) })
-          }
-
-          go(f)
-
-        case Mapped(input, fn) =>
-          val (m1, op) = plan(m, input) // linter:disable:UndesirableTypeInference
-          (m1, op.map(fn))
-
-        case MergedTypedPipe(left, right) =>
-          val (m1, op1) = plan(m, left)
-          val (m2, op2) = plan(m1, right)
-          (m2, Op.Concat(op1, op2))
-
-        case SourcePipe(src) =>
-          (m, Op.Source({ cec => mem.readSource(src)(cec) }))
-
-        case slk@SumByLocalKeys(_, _) =>
-          def sum[K, V](sblk: SumByLocalKeys[K, V]) = {
-            val SumByLocalKeys(p, sg) = sblk
-
-            val (m1, op) = plan(m, p)
-            (m1, op.transform[(K, V), (K, V)] { kvs =>
-              val map = collection.mutable.Map.empty[K, V]
-              val iter = kvs.iterator
-              while(iter.hasNext) {
-                val (k, v) = iter.next
-                map(k) = map.get(k) match {
-                  case None => v
-                  case Some(v1) => sg.plus(v1, v)
-                }
-              }
-              val res = new ArrayBuffer[(K, V)](map.size)
-              map.foreach { res += _ }
-              res
-            })
-          }
-          sum(slk)
-
-        case tp@TrappedPipe(input, _, _) => plan(m, input)
-          // this can be interpretted as catching any exception
-          // on the map-phase until the next partition, so it can
-          // be made to work by changing Op to return all
-          // the values that fail on error
-
-        case WithDescriptionTypedPipe(pipe, descriptions) =>
-          // TODO we could optionally print out the descriptions
-          // after the future completes
-          plan(m, pipe)
-
-        case WithOnComplete(pipe, fn) =>
-          val (m1, op) = plan(m, pipe)
-          (m1, Op.OnComplete(op, fn))
-
-        case hcg@HashCoGroup(_, _, _) =>
-          def go[K, V1, V2, R](hcg: HashCoGroup[K, V1, V2, R]) = {
-            val (m1, leftOp) = plan(m, hcg.left)
-            val (m2, rightOp) = planHashJoinable(m1, hcg.right)
-            (m2, Op.Join[(K, V1), (K, V2), (K, R)](leftOp, rightOp, { (v1s, v2s) =>
-              val kv2 = v2s.groupBy(_._1)
-              val result = new ArrayBuffer[(K, R)]()
-              v1s.foreach { case (k, v1) =>
-                val v2 = kv2.getOrElse(k, Nil).map(_._2)
-                result ++= hcg.joiner(k, v1, v2).map((k, _))
-              }
-              result
-            }))
-          }
-          go(hcg)
-
-        case CoGroupedPipe(cg) =>
-          def go[K, V](cg: CoGrouped[K, V]) = {
-            val inputs = cg.inputs
-            val joinf = cg.joinFunction
-            val (m2, opsRev) = inputs.foldLeft((m, List.empty[Op[(K, Any)]])) { case ((oldM, ops), pipe) =>
-              val (m1, op) = plan(oldM, pipe)
-              (m1, op :: ops)
-            }
-            (m2, Op.BulkJoin(opsRev.reverse, joinf))
-          }
-          go(cg)
-
-        case ReduceStepPipe(ir@IdentityReduce(_, _, _, descriptions, _)) =>
-          def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): (Memo, Op[(K, V2)]) = {
-            type OpT[V] = Op[(K, V)]
-            val (m1, op) = plan(m, ir.mapped)
-            (m1, ir.evidence.subst[OpT](op))
-          }
-          go(ir)
-        case ReduceStepPipe(uir@UnsortedIdentityReduce(_, _, _, descriptions, _)) =>
-          def go[K, V1, V2](uir: UnsortedIdentityReduce[K, V1, V2]): (Memo, Op[(K, V2)]) = {
-            type OpT[V] = Op[(K, V)]
-            val (m1, op) = plan(m, uir.mapped)
-            (m1, uir.evidence.subst[OpT](op))
-          }
-          go(uir)
-        case ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)) =>
-          def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[V]) = {
-            val (m1, op) = plan(m, p)
-            (m1, Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord)))
-          }
-          go(pipe, ord)
-        case ReduceStepPipe(ValueSortedReduce(_, pipe, ord, fn, _, _)) =>
-          val (m1, op) = plan(m, pipe)
-          (m1, Op.Reduce(op, fn, Some(ord)))
-        case ReduceStepPipe(IteratorMappedReduce(_, pipe, fn, _, _)) =>
-          val (m1, op) = plan(m, pipe)
-          (m1, Op.Reduce(op, fn, None))
-      }
-    }
-
-  def planHashJoinable[K, V](m: Memo, hk: HashJoinable[K, V]): (Memo, Op[(K, V)]) = hk match {
-    case ir@IdentityReduce(_, _, _, _, _) =>
-      type OpT[V] = Op[(K, V)]
-      val (m1, op) = plan(m, ir.mapped)
-      (m1, ir.evidence.subst[OpT](op))
-    case uir@UnsortedIdentityReduce(_, _, _, _, _) =>
-      type OpT[V] = Op[(K, V)]
-      val (m1, op) = plan(m, uir.mapped)
-      (m1, uir.evidence.subst[OpT](op))
-    case imr@IteratorMappedReduce(_, _, _, _, _) =>
-      def go[K, U, V](imr: IteratorMappedReduce[K, U, V]) = {
-        val IteratorMappedReduce(_, pipe, fn, _, _) = imr
-        val (m1, op) = plan(m, pipe)
-        (m1, op.transform[(K, U), (K, V)] { kvs =>
-          val m = kvs.groupBy(_._1).iterator
-          val res = ArrayBuffer[(K, V)]()
-          m.foreach { case (k, kus) =>
-            val us = kus.iterator.map { case (k, u) => u }
-            fn(k, us).foreach { v =>
-              res += ((k, v))
-            }
-          }
-          res
-        })
-      }
-      go(imr)
-  }
-
   private[this] case class State(
     id: Long,
-    memo: MemoryPlanner.Memo,
     forced: HMap[TypedPipe, ({type F[T]=Future[Iterable[T]]})#F]
     ) {
 
@@ -611,7 +554,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       copy(forced = forced.updated(t, it))
   }
 
-  private[this] val state = new AtomicBox[State](State(0, MemoryPlanner.Memo.empty, HMap.empty[TypedPipe, ({type F[T]=Future[Iterable[T]]})#F]))
+  private[this] val state = new AtomicBox[State](State(0, HMap.empty[TypedPipe, ({type F[T]=Future[Iterable[T]]})#F]))
 
   /**
    * do a batch of writes, possibly optimizing, and return a new unique
@@ -624,6 +567,8 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     mode: Mode,
     writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
+      val planner = MemoryPlanner.planner(mem)
+
       type Action = () => Future[Unit]
       import Execution.ToWrite._
 
@@ -633,7 +578,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       val toOptimized = ToWrite.optimizeWriteBatch(writes, phases)
 
       def force[T](p: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
-        val (nextM, op) = plan(oldState.memo, p)
+        val op = planner(p)
         val pipePromise = Promise[Iterable[T]]()
         val action = () => {
           val arrayBufferF = op.result
@@ -641,7 +586,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
 
           arrayBufferF.map(_ => ())
         }
-        (oldState.copy(memo = nextM, forced = oldState.forced.updated(keyPipe, pipePromise.future)), action)
+        (oldState.copy(forced = oldState.forced.updated(keyPipe, pipePromise.future)), action)
       }
 
       /**
@@ -684,12 +629,12 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
                   }
                   (state, action :: acts)
                 case None =>
-                  val (nextM, op) = plan(state.memo, opt) // linter:disable:UndesirableTypeInference
+                  val op = planner(opt) // linter:disable:UndesirableTypeInference
                   val action = () => {
                     val arrayBufferF = op.result
                     arrayBufferF.flatMap(mem.writeSink(sink, _))
                   }
-                  (state.copy(memo = nextM), action :: acts)
+                  (state, action :: acts)
               }
           }
         }
