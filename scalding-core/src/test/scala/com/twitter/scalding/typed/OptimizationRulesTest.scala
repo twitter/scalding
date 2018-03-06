@@ -3,8 +3,10 @@ package com.twitter.scalding.typed
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
+import com.twitter.scalding.WritableSequenceFile
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.Writable
 import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource, TupleConverter }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
@@ -474,5 +476,118 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
         a.write(NullSink)(fd, Local(true)) ++ b
       }
     }
+  }
+
+  test("joins are merged") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      kv("a").join(kv("b")).join(kv("c"))
+    }
+  }
+
+  test("needless toTypedPipe is removed") {
+
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").sumByKey.toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b")).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").sumByKey.toTypedPipe.join(kv("b")).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.mapValues(_ * 2)).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.flatMapValues(0 to _)).toTypedPipe.group.max
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+      kv("a").join(kv("b").sumByKey.toTypedPipe.filterKeys(_ > 2)).toTypedPipe.group.max
+    }
+  }
+
+  test("merge before reduce is one step") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      (kv("a") ++ kv("b")).sumByKey
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      (kv("a") ++ kv("b")).join(kv("c"))
+    }
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      kv("a").join(kv("b") ++ kv("c"))
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      val input = kv("a")
+      val pipe1 = input.mapValues(_ * 2)
+      val pipe2 = input.mapValues(_ * 3)
+      (pipe1 ++ pipe2).sumByKey
+    }
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+      val input = kv("a")
+      val pipe1 = input.mapValues(_ * 2)
+      val pipe2 = input.mapValues(_ * 3)
+      (pipe1 ++ pipe2).mapValues(_ + 42).sumByKey
+    }
+  }
+
+  test("merge after identical reduce reduce is one step") {
+    def kv(s: String) =
+      TypedPipe.from(TypedText.tsv[(Int, Int)](s))
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").join(kv("b")) ++ kv("a").join(kv("c")))
+    // }
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").join(kv("b")) ++ kv("c").join(kv("b")))
+    // }
+
+    // TODO: currently fails, this is now 3 steps.
+    // optimizedSteps(OptimizationRules.standardMapReduceRules, 1) {
+    //   (kv("a").sumByKey.mapValues(_ * 10) ++ kv("a").sumByKey)
+    // }
+
+  }
+
+  test("merging pipes does not make them unplannable") {
+    val pipe1 = (TypedPipe.from(0 to 1000).map { x => (x, x) } ++
+      (TypedPipe.from(0 to 2000).groupBy(_ % 17).sum.toTypedPipe))
+
+    val pipe2 = (TypedPipe.from(0 to 1000) ++
+      TypedPipe.from(0 to 2000).filter(_ % 17 == 0))
+
+    val pipe3 = (TypedPipe.from(TypedText.tsv[Int]("src1")).map { x => (x, x) } ++
+      (TypedPipe.from(TypedText.tsv[Int]("src2")).groupBy(_ % 17).sum.toTypedPipe))
+
+    val pipe4 = (TypedPipe.from(TypedText.tsv[Int]("src1")) ++
+      TypedPipe.from(TypedText.tsv[Int]("src2")).filter(_ % 17 == 0))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe1)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe2)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe3)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe4)
   }
 }
