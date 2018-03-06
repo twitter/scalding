@@ -3,8 +3,10 @@ package com.twitter.scalding.typed
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
+import com.twitter.scalding.WritableSequenceFile
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.Writable
 import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource, TupleConverter }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
@@ -613,5 +615,24 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     //   (kv("a").sumByKey.mapValues(_ * 10) ++ kv("a").sumByKey)
     // }
 
+  }
+
+  test("merging pipes does not make them unplannable") {
+    val pipe1 = (TypedPipe.from(0 to 1000).map { x => (x, x) } ++
+      (TypedPipe.from(0 to 2000).groupBy(_ % 17).sum.toTypedPipe))
+
+    val pipe2 = (TypedPipe.from(0 to 1000) ++
+      TypedPipe.from(0 to 2000).filter(_ % 17 == 0))
+
+    val pipe3 = (TypedPipe.from(TypedText.tsv[Int]("src1")).map { x => (x, x) } ++
+      (TypedPipe.from(TypedText.tsv[Int]("src2")).groupBy(_ % 17).sum.toTypedPipe))
+
+    val pipe4 = (TypedPipe.from(TypedText.tsv[Int]("src1")) ++
+      TypedPipe.from(TypedText.tsv[Int]("src2")).filter(_ % 17 == 0))
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe1)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe2)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe3)
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe4)
   }
 }
