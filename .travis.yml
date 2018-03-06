@@ -72,7 +72,7 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.12.3
-      env: BUILD="base" TEST_TARGET="scalding-serialization scalding-spark"
+      env: BUILD="base" TEST_TARGET="scalding-serialization"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.11
