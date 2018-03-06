@@ -680,6 +680,17 @@ object OptimizationRules {
   }
 
   /**
+   * This allows you to replace the sources according to a given Resolver
+   */
+  case class ReplaceSources(resolver: Resolver[TypedSource, TypedSource]) extends Rule[TypedPipe] {
+    def apply[T](on: Dag[TypedPipe]) = {
+      case SourcePipe(src) =>
+        resolver(src).map(SourcePipe(_))
+      case _ => None
+    }
+  }
+
+  /**
    * We ignore .group if there are is no setting of reducers
    *
    * This is arguably not a great idea, but scalding has always
