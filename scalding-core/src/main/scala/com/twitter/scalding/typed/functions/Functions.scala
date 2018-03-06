@@ -12,6 +12,13 @@ case class ConstantKey[K, V](key: K) extends Function1[V, (K, V)] {
   def apply(v: V) = (key, v)
 }
 
+case class DebugFn[A]() extends Function1[A, A] {
+  def apply(a: A) = {
+    println(a)
+    a
+  }
+}
+
 case class WithConstant[A, B](constant: B) extends Function1[A, (A, B)] {
   def apply(a: A) = (a, constant)
 }
