@@ -126,13 +126,23 @@ object CascadingBackend {
     def toPipe[U >: T](f: Fields, fd: FlowDef, setter: TupleSetter[U]): Pipe = {
       val resFd = new RichFlowDef(fd)
       resFd.mergeFrom(localFlowDef)
-      if (!RichPipe.isSourcePipe(pipe) && !RichPipe.isFilterPipe(pipe) && areDefiniteInverse(converter, setter) && (fields == f)) {
+
+      if (!RichPipe.isPassthrough(pipe) && areDefiniteInverse(converter, setter) && (fields == f)) {
         // Note that some custom scalding sources have a bug
         // that the fields on the TypedSource don't match the fields on underlying
         // scheme. To work around this, we don't do this optimization on sources.
+        //
         // We have extended this to cover filters, since we can push those down
         // and they will proxy through the previous fields which may be UNKNOWN
         //
+        // Note, cascading appears to not care if it sees UNKNOWN fields as input to
+        // a filter or map, but it does care about creating a Merge with
+        // unknown fields, since we always call toPipe before creating the Merge,
+        // as long as the chain of operations contains at least one non-filter,
+        // we should be okay
+        //
+        // in this branch, the TupleConverter is what the Setter is expecting, so we don't
+        // need to do any transform
         // we are already in the right format
         pipe
       } else {
@@ -312,7 +322,7 @@ object CascadingBackend {
 
           case (WithOnComplete(input, fn), rec) =>
             val cp = rec(input)
-            val next = new Each(cp.pipe, Fields.ALL, new CleanupIdentityFunction(fn), Fields.REPLACE)
+            val next = new Each(cp.pipe, Fields.ALL, new CleanupIdentityFunction(fn))
             cp.copy(pipe = next)
 
           case (hcg@HashCoGroup(_, _, _), rec) =>

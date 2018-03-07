@@ -129,9 +129,26 @@ object RichPipe extends java.io.Serializable {
       (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
       (!pipe.isInstanceOf[Splice])
 
-  def isFilterPipe(pipe: Pipe): Boolean = pipe match {
-    case e: Each if e.isFilter => true
-    case _ => false
+  /**
+   * This is true if a pipe passes through all
+   * input fields without explicitly remapping
+   */
+  @annotation.tailrec
+  final def isPassthrough(pipe: Pipe): Boolean = {
+    def element(p: Pipe): Boolean =
+      p match {
+        case e: Each if e.isFilter => true
+        case cp: Checkpoint => true
+        case _ => false
+      }
+
+    isSourcePipe(pipe) || {
+      element(pipe) &&
+        (getSinglePreviousPipe(pipe) match {
+          case Some(prev) => isPassthrough(prev)
+          case None => false
+        })
+    }
   }
 }
 
