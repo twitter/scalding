@@ -128,6 +128,11 @@ object RichPipe extends java.io.Serializable {
     pipe.getParent == null &&
       (pipe.getPrevious == null || pipe.getPrevious.isEmpty) &&
       (!pipe.isInstanceOf[Splice])
+
+  def isFilterPipe(pipe: Pipe): Boolean = pipe match {
+    case e: Each if e.isFilter => true
+    case _ => false
+  }
 }
 
 /**
