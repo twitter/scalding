@@ -126,15 +126,16 @@ object CascadingBackend {
     def toPipe[U >: T](f: Fields, fd: FlowDef, setter: TupleSetter[U]): Pipe = {
       val resFd = new RichFlowDef(fd)
       resFd.mergeFrom(localFlowDef)
-      if (!RichPipe.isSourcePipe(pipe) && areDefiniteInverse(converter, setter) && (fields == f)) {
+      if (!RichPipe.isSourcePipe(pipe) && !RichPipe.isFilterPipe(pipe) && areDefiniteInverse(converter, setter) && (fields == f)) {
         // Note that some custom scalding sources have a bug
         // that the fields on the TypedSource don't match the fields on underlying
-        // scheme. To work around this, we don't do this optimization on sources
+        // scheme. To work around this, we don't do this optimization on sources.
+        // We have extended this to cover filters, since we can push those down
+        // and they will proxy through the previous fields which may be UNKNOWN
         //
         // we are already in the right format
         pipe
-      }
-      else {
+      } else {
         // we need to convert
         RichPipe(pipe).mapTo[T, U](fields -> f)(t => t)(TupleConverter.asSuperConverter(converter), setter)
       }

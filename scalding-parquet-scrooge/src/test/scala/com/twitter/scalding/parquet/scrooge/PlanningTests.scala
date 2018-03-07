@@ -29,4 +29,14 @@ class PlanningTests extends FunSuite {
     assert(steps(pipe) == 1)
   }
 
+  test("merging source plus filter source works") {
+    val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
+    val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
+
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).filter(_ => true))
+
+    assert(steps(pipe) == 1)
+  }
+
 }
