@@ -74,16 +74,14 @@ package com.twitter.scalding {
   }
 
   class CleanupIdentityFunction(@transient fn: () => Unit)
-    extends BaseOperation[Any](Fields.ALL) with Function[Any] with ScaldingPrepare[Any] {
+    extends BaseOperation[Any](Fields.ALL) with Filter[Any] with ScaldingPrepare[Any] {
 
     val lockedEf = Externalizer(fn)
 
-    def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]): Unit = {
-      functionCall.getOutputCollector.add(functionCall.getArguments)
-    }
-    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[Any]): Unit = {
-      Try.apply(lockedEf.get).foreach(_())
-    }
+    def isRemove(flowProcess: FlowProcess[_], filterCall: FilterCall[Any]) = false
+
+    override def cleanup(flowProcess: FlowProcess[_], operationCall: OperationCall[Any]): Unit =
+      Try(lockedEf.get).foreach(_())
   }
 
   class CollectFunction[S, T](@transient fn: PartialFunction[S, T], fields: Fields,
