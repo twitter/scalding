@@ -587,11 +587,11 @@ object Execution {
       lazy val future = {
         cache.writer match {
           case ar: AsyncFlowDefRunner =>
-            ar.validateAndRun(conf, mode)(result).map { m => ((), Map(m)) }
+            ar.validateAndRun(conf)(result(_, mode)).map { m => ((), Map(m)) }
           case other =>
             Future.failed(
-              new Exception(
-                s"requires AsyncFlowDefRunner, found ${other.getClass}: $other"))
+              new IllegalArgumentException(
+                s"requires cascading Mode producing AsyncFlowDefRunner, found mode: $mode and writer ${other.getClass}: $other"))
         }
       }
 
@@ -663,7 +663,6 @@ object Execution {
      */
     def execute(
       conf: Config,
-      mode: Mode,
       writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)]
 
     /**
@@ -671,7 +670,6 @@ object Execution {
      */
     private[Execution] def getForced[T](
       conf: Config,
-      mode: Mode,
       initial: TypedPipe[T]
       )(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]]
 
@@ -680,7 +678,6 @@ object Execution {
      */
     private[Execution] def getIterable[T](
       conf: Config,
-      mode: Mode,
       initial: TypedPipe[T]
       )(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]]
   }
@@ -735,7 +732,7 @@ object Execution {
                 case all @ (h :: tail) =>
                   val futCounters: Future[Map[Long, ExecutionCounters]] =
                     cache.writer
-                      .execute(conf, mode, all.map(_._1))
+                      .execute(conf, all.map(_._1))
                       .map(Map(_))
 
                   // Complete all of the promises we put into the cache
@@ -842,13 +839,13 @@ object Execution {
     WriteExecution(
       ToWrite.Force(t),
       Nil,
-      { case (conf, mode, w, cec) => w.getForced(conf, mode, t)(cec) })
+      { case (conf, _, w, cec) => w.getForced(conf, t)(cec) })
 
   def toIterable[T](t: TypedPipe[T]): Execution[Iterable[T]] =
     WriteExecution(
       ToWrite.ToIterable(t),
       Nil,
-      { case (conf, mode, w, cec) => w.getIterable(conf, mode, t)(cec) })
+      { case (conf, _, w, cec) => w.getIterable(conf, t)(cec) })
 
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back

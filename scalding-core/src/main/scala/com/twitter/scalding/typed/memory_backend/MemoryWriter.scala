@@ -35,7 +35,6 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def execute(
     conf: Config,
-    mode: Mode,
     writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
     val planner = MemoryPlanner.planner(conf, mem.srcs)
@@ -121,7 +120,6 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def getForced[T](
     conf: Config,
-    mode: Mode,
     initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] =
     state.get.forced.get(initial) match {
       case None => Future.failed(new Exception(s"$initial not forced"))
@@ -136,11 +134,10 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def getIterable[T](
     conf: Config,
-    mode: Mode,
     initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]] = initial match {
     case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
     case TypedPipe.IterablePipe(iter) => Future.successful(iter)
     case TypedPipe.SourcePipe(src) => getSource(src)
-    case other => getForced(conf, mode, other).flatMap(getIterable(conf, mode, _))
+    case other => getForced(conf, other).flatMap(getIterable(conf, _))
   }
 }
