@@ -1,0 +1,17 @@
+package com.twitter.scalding.spark_backend
+
+import scala.concurrent.{ Future, ExecutionContext, Promise }
+import com.stripe.dagon.{ HMap, Rule }
+import com.twitter.scalding.typed._
+import com.twitter.scalding.{ Config, Execution, ExecutionCounters, Mode }
+
+import Execution.{ ToWrite, Writer }
+
+class SparkWriter(sparkMode: SparkMode) extends Writer {
+  def execute(conf: Config, writes: List[ToWrite])(implicit cec: ExecutionContext): Future[(Long, ExecutionCounters)] = ???
+  def finished(): Unit = ???
+
+  def getForced[T](conf: Config, initial: TypedPipe[T])(implicit cec: ExecutionContext): Future[TypedPipe[T]] = ???
+  def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit cec: ExecutionContext): Future[Iterable[T]] = ???
+  def start(): Unit = ???
+}
