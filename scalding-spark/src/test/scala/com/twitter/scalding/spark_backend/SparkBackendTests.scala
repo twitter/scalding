@@ -5,7 +5,7 @@ import org.apache.spark.{ SparkContext, SparkConf }
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ Await, ExecutionContext }
 
 class SparkBackendTests extends FunSuite with BeforeAndAfter {
 
@@ -27,9 +27,10 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) = {
     val memit = t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
 
-    val rdd = SparkPlanner.R.toRDD(SparkPlanner.plan(sc, Config.empty)(ExecutionContext.global)(t))
+    val rdd = Await.result(SparkPlanner.plan(Config.empty, Resolver.empty)(t).run(sc)(ExecutionContext.global),
+      scala.concurrent.duration.Duration.Inf)
 
-    assert(rdd.toLocalIterator.toList.sorted == memit.toList.sorted)
+    assert((rdd.toLocalIterator: Iterator[A]).toList.sorted == memit.toList.sorted)
   }
 
   test("some basic map-only operations work") {
