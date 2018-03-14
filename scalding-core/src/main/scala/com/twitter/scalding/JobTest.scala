@@ -22,6 +22,7 @@ import cascading.tuple.Tuple
 import cascading.tuple.TupleEntry
 import cascading.stats.CascadingStats
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.JobConf
 
 import scala.util.Try
 
@@ -187,7 +188,7 @@ class JobTest(cons: (Args) => Job) {
     // Create a global mode to use for testing.
     val testMode: TestMode =
       if (useHadoop) {
-        val conf = optConfig.getOrElse(new Configuration)
+        val conf = optConfig.getOrElse(new JobConf)
         // Set the polling to a lower value to speed up tests:
         conf.set("jobclient.completion.poll.interval", "100")
         conf.set("cascading.flow.job.pollinginterval", "5")
