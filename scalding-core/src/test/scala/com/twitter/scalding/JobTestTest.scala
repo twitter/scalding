@@ -35,5 +35,10 @@ class JobTestTest extends WordSpec with Matchers {
         runJobTest()
       } should have message (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(requiredSource))
     }
+    "use local mode by default" in {
+      JobTest(new SimpleTestJob(_)).getTestMode(true, None) match {
+        case m: HadoopTest => m.jobConf.get("mapreduce.framework.name") shouldBe "local"
+      }
+    }
   }
 }
