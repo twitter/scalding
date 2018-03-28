@@ -100,10 +100,10 @@ object TreeOrderedBuf {
       val tempLen = freshT("tempLen")
       val lensLen = freshT("lensLen")
       val element = freshT("element")
-      val callDynamic = (q"""override def staticSize: _root_.scala.Option[Int] = _root_.scala.None""",
+      val callDynamic = (q"""override def staticSize: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None""",
         q"""
 
-      override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = {
+      override def dynamicSize($element: $typeName): _root_.scala.Option[_root_.scala.Int] = {
         if(skipLenCalc) _root_.scala.None else {
           val $tempLen = payloadLength($element) match {
             case _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation =>
@@ -117,18 +117,18 @@ object TreeOrderedBuf {
             val innerLen = $tempLen.get
             val $lensLen = posVarIntSize(innerLen)
             _root_.scala.Some(innerLen + $lensLen)
-         } else _root_.scala.None): _root_.scala.Option[Int]
+         } else _root_.scala.None): _root_.scala.Option[_root_.scala.Int]
       }
      }
       """)
 
       t.length(q"$element") match {
         case _: NoLengthCalculationAvailable[_] => (q"""
-          override def staticSize: _root_.scala.Option[Int] = _root_.scala.None""", q"""
-          override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = _root_.scala.None""")
+          override def staticSize: _root_.scala.Option[_root_.scala.Int] = _root_.scala.None""", q"""
+          override def dynamicSize($element: $typeName): _root_.scala.Option[_root_.scala.Int] = _root_.scala.None""")
         case const: ConstantLengthCalculation[_] => (q"""
-          override val staticSize: _root_.scala.Option[Int] = _root_.scala.Some(${const.toInt})""", q"""
-          override def dynamicSize($element: $typeName): _root_.scala.Option[Int] = staticSize""")
+          override val staticSize: _root_.scala.Option[_root_.scala.Int] = _root_.scala.Some(${const.toInt})""", q"""
+          override def dynamicSize($element: $typeName): _root_.scala.Option[_root_.scala.Int] = staticSize""")
         case f: FastLengthCalculation[_] => callDynamic
         case m: MaybeLengthCalculation[_] => callDynamic
       }
@@ -230,11 +230,11 @@ object TreeOrderedBuf {
 
     t.ctx.Expr[OrderedSerialization[T]](q"""
       new _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization[$T] {
-        override val uniqueId: String = ${T.tpe.toString}
+        override val uniqueId: _root_.java.lang.String = ${T.tpe.toString}
 
-        private[this] var lengthCalculationAttempts: Long = 0L
-        private[this] var couldNotLenCalc: Long = 0L
-        private[this] var skipLenCalc: Boolean = false
+        private[this] var lengthCalculationAttempts: _root_.scala.Long = 0L
+        private[this] var couldNotLenCalc: _root_.scala.Long = 0L
+        private[this] var skipLenCalc:_root_.scala.Boolean = false
 
         import _root_.com.twitter.scalding.serialization.JavaStreamEnrichments._
         ..$lazyVariables
@@ -258,11 +258,11 @@ object TreeOrderedBuf {
               _root_.com.twitter.scalding.serialization.OrderedSerialization.CompareFailure(e)
           }
 
-        override def hash(passedInObjectToHash: $T): Int = {
+        override def hash(passedInObjectToHash: $T): _root_.scala.Int = {
           ${t.hash(TermName("passedInObjectToHash"))}
         }
 
-        private[this] def failedLengthCalc(): Unit = {
+        private[this] def failedLengthCalc(): _root_.scala.Unit = {
           couldNotLenCalc += 1L
           if(lengthCalculationAttempts > 50 && (couldNotLenCalc.toDouble / lengthCalculationAttempts) > 0.4f) {
             skipLenCalc = true
@@ -299,7 +299,7 @@ object TreeOrderedBuf {
           }
         }
 
-        override def compare(x: $T, y: $T): Int = {
+        override def compare(x: $T, y: $T): _root_.scala.Int = {
           ${t.compare(TermName("x"), TermName("y"))}
         }
       }

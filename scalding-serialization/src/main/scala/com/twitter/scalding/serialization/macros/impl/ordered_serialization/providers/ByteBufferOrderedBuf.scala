@@ -51,8 +51,8 @@ object ByteBufferOrderedBuf {
         val incr = freshT("incr")
         val state = freshT("state")
         q"""
-      val $lenA: Int = $inputStreamA.readPosVarInt
-      val $lenB: Int = $inputStreamB.readPosVarInt
+      val $lenA: _root_.scala.Int = $inputStreamA.readPosVarInt
+      val $lenB: _root_.scala.Int = $inputStreamB.readPosVarInt
 
       val $queryLength = _root_.scala.math.min($lenA, $lenB)
       var $incr = 0
@@ -80,7 +80,7 @@ object ByteBufferOrderedBuf {
         val bytes = freshT("bytes")
         q"""
       val $lenA = $inputStream.readPosVarInt
-      val $bytes = new Array[Byte]($lenA)
+      val $bytes = new _root_.scala.Array[Byte]($lenA)
       $inputStream.readFully($bytes)
       _root_.java.nio.ByteBuffer.wrap($bytes)
     """

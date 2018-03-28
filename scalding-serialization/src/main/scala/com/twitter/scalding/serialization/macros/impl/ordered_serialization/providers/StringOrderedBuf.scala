@@ -65,9 +65,9 @@ object StringOrderedBuf {
         q"""
          // Ascii is very common, so if the string is short,
          // we check if it is ascii:
-         def isShortAscii(size: Int, str: String): Boolean = (size < 65) && {
+         def isShortAscii(size: _root_.scala.Int, str: _root_.java.lang.String): _root_.scala.Boolean = (size < 65) && {
            var pos = 0
-           var ascii: Boolean = true
+           var ascii: _root_.scala.Boolean = true
            while((pos < size) && ascii) {
              ascii = (str.charAt(pos) < 128)
              pos += 1
@@ -80,7 +80,7 @@ object StringOrderedBuf {
            $inputStream.writePosVarInt(0)
          }
          else if (isShortAscii($charLen, $element)) {
-           val $bytes = new Array[Byte]($charLen)
+           val $bytes = new _root_.scala.Array[Byte]($charLen)
            // This deprecated gets ascii bytes out, but is incorrect
            // for non-ascii data.
            _root_.com.twitter.scalding.serialization.Undeprecated.getAsciiBytes($element, 0, $charLen, $bytes, 0)
@@ -106,9 +106,9 @@ object StringOrderedBuf {
         q"""
         val $len = $inputStream.readPosVarInt
         if($len > 0) {
-          val $strBytes = new Array[Byte]($len)
+          val $strBytes = new _root_.scala.Array[Byte]($len)
           $inputStream.readFully($strBytes)
-          new String($strBytes, "UTF-8")
+          new _root_.java.lang.String($strBytes, "UTF-8")
         } else {
           ""
         }
