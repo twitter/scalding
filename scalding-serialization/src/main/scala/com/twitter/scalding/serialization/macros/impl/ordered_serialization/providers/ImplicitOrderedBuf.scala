@@ -60,12 +60,12 @@ object ImplicitOrderedBuf {
       override def length(element: Tree) =
         CompileTimeLengthTypes.MaybeLengthCalculation(c)(q"""
           ($variableName.staticSize match {
-            case Some(s) => _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(s)
-            case None =>
+            case _root_.scala.Some(s) => _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.ConstLen(s)
+            case _root_.scala.None =>
               $variableName.dynamicSize($element) match {
-                case Some(s) =>
+                case _root_.scala.Some(s) =>
                 _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(s)
-                case None =>
+                case _root_.scala.None =>
                   _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.NoLengthCalculation
               }
           }): _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MaybeLength

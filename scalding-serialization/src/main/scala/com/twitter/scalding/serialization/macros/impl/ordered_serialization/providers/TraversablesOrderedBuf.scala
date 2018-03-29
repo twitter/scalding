@@ -227,7 +227,7 @@ object TraversablesOrderedBuf {
         val iter = freshT("iter")
         val extractionTree = maybeArray match {
           case IsArray =>
-            q"""val $travBuilder = new Array[..$innerTypes]($len)
+            q"""val $travBuilder = new _root_.scala.Array[..$innerTypes]($len)
             var $iter = 0
             while($iter < $len) {
               $travBuilder($iter) = ${innerBuf.get(inputStream)}
@@ -247,7 +247,7 @@ object TraversablesOrderedBuf {
             """
         }
         q"""
-        val $len: Int = $inputStream.readPosVarInt
+        val $len: _root_.scala.Int = $inputStream.readPosVarInt
         if($len > 0) {
           if($len == 1) {
             val $firstVal: $innerType = ${innerBuf.get(inputStream)}
