@@ -77,7 +77,7 @@ object FlowState {
  * with multiple sets of arguments, and their equality.
  * For this reason, we use Source.sourceId as the key in this map
  */
-private[scalding] object FlowStateMap {
+object FlowStateMap {
   // Make sure we don't hold FlowState after the FlowDef is gone
   @transient private val flowMap = new WeakHashMap[FlowDef, FlowState]()
 

@@ -25,11 +25,11 @@ trait Liftables {
   protected implicit val typeNameLiftable: Liftable[TypeName] = Liftable {
     case TypeName(name) => q"_root_.com.twitter.scalding.quotation.TypeName($name)"
   }
-  
+
   protected implicit val accessorLiftable: Liftable[Accessor] = Liftable {
     case Accessor(name) => q"_root_.com.twitter.scalding.quotation.Accessor($name)"
   }
-  
+
   protected implicit val quotedLiftable: Liftable[Quoted] = Liftable {
     case Quoted(source, call, fa) => q"_root_.com.twitter.scalding.quotation.Quoted($source, $call, $fa)"
   }
