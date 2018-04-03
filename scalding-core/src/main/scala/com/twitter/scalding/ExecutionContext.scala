@@ -128,6 +128,21 @@ trait ExecutionContext {
             case Success(fn) => flow.addStepListener(fn(mode, configWithId))
             case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
           }
+        case _: CascadingLocal =>
+          config.getFlowStepStrategies.foreach {
+            case Success(fn) => flow.setFlowStepStrategy(fn(mode, configWithId))
+            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
+          }
+
+          config.getFlowListeners.foreach {
+            case Success(fn) => flow.addListener(fn(mode, configWithId))
+            case Failure(e) => throw new Exception("Failed to decode flow listener", e)
+          }
+
+          config.getFlowStepListeners.foreach {
+            case Success(fn) => flow.addStepListener(fn(mode, configWithId))
+            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
+          }
 
         case _ => ()
       }
