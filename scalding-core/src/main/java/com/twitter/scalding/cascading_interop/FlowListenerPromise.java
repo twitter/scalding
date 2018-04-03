@@ -17,6 +17,8 @@ package com.twitter.scalding.cascading_interop;
 
 import cascading.flow.FlowListener;
 import cascading.flow.Flow;
+import cascading.stats.CascadingStats;
+
 import scala.concurrent.Promise$;
 import scala.concurrent.Promise;
 import scala.concurrent.Future;
@@ -34,17 +36,22 @@ public class FlowListenerPromise {
     final Promise<T> result = Promise$.MODULE$.<T>apply();
     flow.addListener(new FlowListener() {
       public void onStarting(Flow f) { } // ignore
-      public void onStopping(Flow f) { } // ignore
+      public void onStopping(Flow f) { // in case of runtime exception cascading call onStopping
+        result.tryFailure(new Exception("Flow was stopped"));
+      }
       public void onCompleted(Flow f) {
         // This is always called, but onThrowable is called first
         if(!result.isCompleted()) {
-          // we use the above rather than trySuccess to avoid calling fn twice
-          try {
-            T toPut = (T) fn.apply(f);
-            result.success(toPut);
-          }
-          catch(Throwable t) {
-            result.failure(t);
+          if (f.getFlowStats().isSuccessful()) {
+            // we use the above rather than trySuccess to avoid calling fn twice
+            try {
+              T toPut = (T) fn.apply(f);
+              result.success(toPut);
+            } catch (Throwable t) {
+              result.failure(t);
+            }
+          } else {
+            result.failure(new Exception("Flow was not successfully finished"));
           }
         }
       }
