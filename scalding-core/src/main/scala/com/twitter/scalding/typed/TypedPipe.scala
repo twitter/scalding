@@ -742,7 +742,7 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    * be lazy, call .iterator and use the Iterator inside instead.
    */
   def toIterableExecution: Execution[Iterable[T]] =
-    Execution.toIterable(this)
+    forceToDiskExecution.flatMap(Execution.toIterable)
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
