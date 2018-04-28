@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.{ FlowDef, Flow }
-import com.stripe.dagon.{ Dag, Id, Rule, HMap }
+import com.stripe.dagon.{ Dag, Id, Rule }
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
@@ -365,14 +365,14 @@ object Execution {
 
     type Counters = Map[Long, ExecutionCounters]
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
-    private[this] val toWriteCache = new FutureCache[(Config, ToWrite), Counters]
+    private[this] val toWriteCache = new FutureCache[(Config, ToWrite[_]), Counters]
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
     def cleanCache: EvalCache =
       new EvalCache(writer)
 
-    def getOrLock(cfg: Config, write: ToWrite): Either[Promise[Counters], Future[Counters]] =
+    def getOrLock(cfg: Config, write: ToWrite[_]): Either[Promise[Counters], Future[Counters]] =
       toWriteCache.getOrPromise((cfg, write))
 
     def getOrElseInsertWithFeedback[T](cfg: Config, ex: Execution[T],
@@ -607,35 +607,46 @@ object Execution {
    * but can safely ignore serializing planning objects for the same reasons mentioned in KryoHadoop.scala
    */
 
-  sealed trait ToWrite extends Serializable
+  sealed trait ToWrite[T] extends Serializable {
+    def pipe: TypedPipe[T]
+    def replacePipe(p: TypedPipe[T]): ToWrite[T] =
+      this match {
+        case ToWrite.Force(_) => ToWrite.Force(p)
+        case ToWrite.ToIterable(_) => ToWrite.ToIterable(p)
+        case ToWrite.SimpleWrite(_, sink) => ToWrite.SimpleWrite(p, sink)
+      }
+  }
   object ToWrite extends Serializable {
-    final case class Force[T](@transient pipe: TypedPipe[T]) extends ToWrite
-    final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite
-    final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T]) extends ToWrite
+    final case class Force[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
+    final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
+    final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T]) extends ToWrite[T]
+
+    case class OptimizedWrite[F[_], T](@transient original: F[T], toWrite: ToWrite[T])
 
     /**
      * Optimize these writes into new writes and provide a mapping from
      * the original TypedPipe to the new TypedPipe
      */
-    def optimizeWriteBatch(writes: List[ToWrite], rules: Seq[Rule[TypedPipe]]): HMap[TypedPipe, TypedPipe] = {
+    def optimizeWriteBatch(writes: List[ToWrite[_]], rules: Seq[Rule[TypedPipe]]): List[OptimizedWrite[TypedPipe, _]] = {
       val dag = Dag.empty(typed.OptimizationRules.toLiteral)
-      val (d1, ws) = writes.foldLeft((dag, List.empty[Id[_]])) {
-        case ((dag, ws), Force(p)) =>
-          val (d1, id) = dag.addRoot(p)
-          (d1, id :: ws)
-        case ((dag, ws), ToIterable(p)) =>
-          val (d1, id) = dag.addRoot(p)
-          (d1, id :: ws)
-        case ((dag, ws), SimpleWrite(p, sink)) =>
-          val (d1, id) = dag.addRoot(p)
-          (d1, id :: ws)
+      val (d1, ws) = writes.foldLeft((dag, List.empty[OptimizedWrite[Id, _]])) {
+        case ((dag, ws), toWrite) =>
+          val (d1, id) = dag.addRoot(toWrite.pipe)
+          (d1, OptimizedWrite(id, toWrite) :: ws)
       }
       // now we optimize the graph
       val d2 = d1.applySeq(rules)
       // convert back to TypedPipe:
-      ws.foldLeft(HMap.empty[TypedPipe, TypedPipe]) {
-        case (cache, id) =>
-          cache + (d1.evaluate(id) -> d2.evaluate(id))
+      ws.foldLeft(List.empty[OptimizedWrite[TypedPipe, _]]) {
+        case (tail, optWrite) =>
+          def go[A](optWriteId: OptimizedWrite[Id, A]): OptimizedWrite[TypedPipe, A] = {
+            val idA = optWriteId.original
+            val origPipe = d1.evaluate(idA)
+            val optPipe = d2.evaluate(idA)
+            OptimizedWrite(original = origPipe,
+              toWrite = optWriteId.toWrite.replacePipe(optPipe))
+          }
+          go(optWrite) :: tail
       }
     }
   }
@@ -663,7 +674,7 @@ object Execution {
      */
     def execute(
       conf: Config,
-      writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)]
+      writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)]
 
     /**
      * This should only be called after a call to execute
@@ -688,8 +699,8 @@ object Execution {
    * DAG and optimize it later (a goal, but not done yet).
    */
   private final case class WriteExecution[T](
-    head: ToWrite,
-    tail: List[ToWrite],
+    head: ToWrite[_],
+    tail: List[ToWrite[_]],
     result: ((Config, Mode, Writer, ConcurrentExecutionContext)) => Future[T]) extends Execution[T] {
 
     /**
@@ -719,7 +730,7 @@ object Execution {
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
       Trampoline(cache.getOrElseInsert(conf, this, {
-        val cacheLookup: List[(ToWrite, Either[Promise[Map[Long, ExecutionCounters]], Future[Map[Long, ExecutionCounters]]])] =
+        val cacheLookup: List[(ToWrite[_], Either[Promise[Map[Long, ExecutionCounters]], Future[Map[Long, ExecutionCounters]]])] =
           (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 

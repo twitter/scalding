@@ -257,7 +257,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
 
   def execute(
     conf: Config,
-    writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
+    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
     import Execution.ToWrite._
 
@@ -266,7 +266,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     val phases: Seq[Rule[TypedPipe]] =
       CascadingBackend.defaultOptimizationRules(conf)
 
-    val toOptimized = ToWrite.optimizeWriteBatch(writes, phases)
+    val optimizedWrites = ToWrite.optimizeWriteBatch(writes, phases)
 
     def prepareFD(c: Config): FlowDef = {
       val fd = new FlowDef
@@ -310,12 +310,11 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         updateState(_.addForce(conf, init, result, fut))
       }
 
-      writes.foreach {
-        case Force(init) =>
-          val opt = toOptimized(init)
+      optimizedWrites.foreach {
+        case OptimizedWrite(init, Force(opt)) =>
           force(init, opt)
-        case ToIterable(init) =>
-          def step[A](opt: TypedPipe[A]): Unit = {
+        case OptimizedWrite(init, ToIterable(opt)) =>
+          def step[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit = {
             opt match {
               case TypedPipe.EmptyTypedPipe => addIter(init, Left(Nil))
               case TypedPipe.IterablePipe(as) => addIter(init, Left(as))
@@ -327,10 +326,10 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
               // will be a SourcePipe of a Mappable by construction
             }
           }
-          step(toOptimized(init))
+          step(init, opt)
 
-        case SimpleWrite(pipe, sink) =>
-          write(toOptimized(pipe), sink)
+        case OptimizedWrite(_, SimpleWrite(pipe, sink)) =>
+          write(pipe, sink)
       }
 
       fd
