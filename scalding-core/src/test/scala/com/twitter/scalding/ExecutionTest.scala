@@ -891,4 +891,17 @@ class ExecutionTest extends WordSpec with Matchers {
       assert(check.waitFor(conf, mode).isSuccess)
     }
   }
+
+  "toIterableExecution" should {
+    "work in TypedSource" in {
+      val workingDir = System.getProperty("user.dir")
+      val job = TypedPipe.from(TextLine(workingDir + "/../tutorial/data/hello.txt")).toIterableExecution
+      assert(job.waitFor(Config.empty, Local(true)).get.toList == List("Hello world", "Goodbye world"))
+    }
+    "work in a mapped TypedSource" in {
+      val workingDir = System.getProperty("user.dir")
+      val job = TypedPipe.from(TextLine(workingDir + "/../tutorial/data/hello.txt")).map(_.size).toIterableExecution
+      assert(job.waitFor(Config.empty, Local(true)).get.toList == List("Hello world", "Goodbye world").map(_.size))
+    }
+  }
 }
