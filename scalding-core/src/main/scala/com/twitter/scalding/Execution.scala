@@ -621,7 +621,7 @@ object Execution {
     final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
     final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T]) extends ToWrite[T]
 
-    case class OptimizedWrite[F[_], T](@transient original: F[T], toWrite: ToWrite[T])
+    final case class OptimizedWrite[F[_], T](@transient original: F[T], toWrite: ToWrite[T])
 
     /**
      * Optimize these writes into new writes and provide a mapping from
