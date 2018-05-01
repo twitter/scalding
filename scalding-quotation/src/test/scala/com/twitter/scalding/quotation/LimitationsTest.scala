@@ -12,10 +12,10 @@ class LimitationsTest extends Test {
     test.function[Person, Option[String]](_.alternativeContact.map(_.phone))._1.projections.set mustEqual
       Set(Person.typeReference.andThen(Accessor("alternativeContact"), typeName[Option[Contact]]).andThen(Accessor("phone"), typeName[String]))
   }
-  
+
   "nested quoted function projection" in pendingUntilFixed {
     val contactFunction = Quoted.function {
-      (p: Person) => p.contact 
+      (p: Person) => p.contact
     }
     val phoneFunction = Quoted.function {
       (p: Person) => contactFunction(p).phone

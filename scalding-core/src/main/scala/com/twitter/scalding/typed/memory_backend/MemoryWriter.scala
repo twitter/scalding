@@ -35,7 +35,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def execute(
     conf: Config,
-    writes: List[ToWrite])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
+    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
 
     val planner = MemoryPlanner.planner(conf, mem.srcs)
 
@@ -45,7 +45,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     val phases: Seq[Rule[TypedPipe]] =
       OptimizationRules.standardMapReduceRules // probably want to tweak this
 
-    val toOptimized = ToWrite.optimizeWriteBatch(writes, phases)
+    val optimizedWrites = ToWrite.optimizeWriteBatch(writes, phases)
 
     def force[T](p: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
       val op = planner(p)
@@ -66,18 +66,16 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
      * out, this may be okay because no external readers can modify, but worth thinking of
      */
     val (id, acts) = state.update { s =>
-      val (nextState, acts) = writes.foldLeft((s, List.empty[Action])) {
+      val (nextState, acts) = optimizedWrites.foldLeft((s, List.empty[Action])) {
         case (old @ (state, acts), write) =>
           write match {
-            case Force(pipe) =>
-              val opt = toOptimized(pipe)
+            case OptimizedWrite(pipe, Force(opt)) =>
               if (state.forced.contains(opt)) old
               else {
                 val (st, a) = force(opt, pipe, state)
                 (st, a :: acts)
               }
-            case ToIterable(pipe) =>
-              val opt = toOptimized(pipe)
+            case OptimizedWrite(pipe, ToIterable(opt)) =>
               opt match {
                 case TypedPipe.EmptyTypedPipe =>
                   (state.simplifiedForce(pipe, Future.successful(Nil)), acts)
@@ -91,8 +89,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
                   val (st, a) = force(opt, pipe, state)
                   (st, a :: acts)
               }
-            case ToWrite.SimpleWrite(pipe, sink) =>
-              val opt = toOptimized(pipe)
+            case OptimizedWrite(pipe, ToWrite.SimpleWrite(opt, sink)) =>
               state.forced.get(opt) match {
                 case Some(iterf) =>
                   val action = () => {
