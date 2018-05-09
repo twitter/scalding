@@ -122,15 +122,6 @@ class TypedSumByKeyTest extends WordSpec with Matchers {
   }
 }
 
-class TypedPipeMonoidTest extends WordSpec with Matchers {
-  "typedPipeMonoid.zero" should {
-    "be equal to TypePipe.empty" in {
-      val mon = implicitly[Monoid[TypedPipe[Int]]]
-      assert(mon.zero == TypedPipe.empty)
-    }
-  }
-}
-
 class TypedPipeSortByJob(args: Args) extends Job(args) {
   TypedPipe.from(TypedText.tsv[(Int, Float, String)]("input"))
     .groupBy(_._1)
