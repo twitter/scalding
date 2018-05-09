@@ -3,6 +3,7 @@ package com.twitter.scalding.typed
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.WritableSequenceFile
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
@@ -634,5 +635,16 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe2)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe3)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe4)
+  }
+
+  test("we can plan an enormous list of combined typedPipes") {
+    // set this to 10,000 and use the default Monoid.plus
+    // and this fails fast, but still planning a giant graph
+    // is quadratic to apply the optimizations, so it takes
+    // a long time, but does not stack overflow.
+    val pipes = (0 to 1000).map(i => TypedPipe.from(List(i)))
+    val pipe = Monoid.sum(pipes)
+
+    optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe)
   }
 }

@@ -125,6 +125,23 @@ object TypedPipe extends Serializable {
     def zero = TypedPipe.empty
     def plus(left: TypedPipe[T], right: TypedPipe[T]): TypedPipe[T] =
       left ++ right
+    override def sumOption(pipes: TraversableOnce[TypedPipe[T]]): Option[TypedPipe[T]] =
+      if (pipes.isEmpty) None
+      else {
+        // we can't combine these but want to avoid a linear graph which can be slow
+        // to optimize
+        def combine(ps: Vector[TypedPipe[T]]): TypedPipe[T] = {
+          val sz = ps.size
+          if (sz == 0) TypedPipe.empty
+          else if (sz == 1) ps(0)
+          else {
+            val left = combine(ps.take(sz/2))
+            val right = combine(ps.drop(sz/2))
+            left ++ right
+          }
+        }
+        Some(combine(pipes.toVector))
+      }
   }
 
   private val identityOrdering: OrderedSerialization[Int] = {
