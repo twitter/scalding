@@ -17,6 +17,7 @@ limitations under the License.
 package com.twitter.scalding.commons.extensions
 
 import com.twitter.scalding._
+import com.twitter.scalding.quotation.Quoted
 import com.twitter.scalding.Dsl._
 
 import cascading.flow.FlowDef
@@ -111,7 +112,7 @@ object Checkpoint {
 
   // Wrapper for Checkpoint when using a TypedPipe
   def apply[A](checkpointName: String)(flow: => TypedPipe[A])(implicit args: Args, mode: Mode, flowDef: FlowDef,
-    conv: TupleConverter[A], setter: TupleSetter[A]): TypedPipe[A] = {
+    conv: TupleConverter[A], setter: TupleSetter[A], q: Quoted): TypedPipe[A] = {
     val rPipe = apply(checkpointName, Dsl.intFields(0 until conv.arity)) {
       flow.toPipe(Dsl.intFields(0 until conv.arity))
     }

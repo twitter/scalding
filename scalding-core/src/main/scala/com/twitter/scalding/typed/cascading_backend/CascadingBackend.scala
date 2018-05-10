@@ -24,6 +24,8 @@ import com.twitter.scalding.serialization.{
 }
 import java.util.WeakHashMap
 import scala.collection.mutable.{ Map => MMap }
+import org.apache.hadoop.mapred.JobConf
+import com.twitter.scalding.quotation.Quoted
 
 object CascadingBackend {
 
@@ -194,9 +196,9 @@ object CascadingBackend {
             }
             go(cp)
           case (cp@CrossPipe(_, _), rec) =>
-            rec(cp.viaHashJoin)
+            rec(cp.viaHashJoin(Quoted.internal))
           case (cv@CrossValue(_, _), rec) =>
-            rec(cv.viaHashJoin)
+            rec(cv.viaHashJoin(Quoted.internal))
           case (DebugPipe(p), rec) =>
             val inner = rec(p)
             inner.copy(pipe = new Each(inner.pipe, new Debug))
@@ -306,12 +308,11 @@ object CascadingBackend {
             val pipe = RichPipe.assignName(pp)
             fd.addTrap(pipe, sink.createTap(Write)(mode))
             CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
-          case (WithDescriptionTypedPipe(input, descs), rec) =>
-
+          case (WithDescriptionTypedPipe(input, descs, quoted), rec) =>
             @annotation.tailrec
             def loop[A](t: TypedPipe[A], acc: List[(String, Boolean)]): (TypedPipe[A], List[(String, Boolean)]) =
               t match {
-                case WithDescriptionTypedPipe(i, descs) =>
+                case WithDescriptionTypedPipe(i, descs, quoted) =>
                   loop(i, descs ::: acc)
                 case notDescr => (notDescr, acc)
               }

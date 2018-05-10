@@ -18,6 +18,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding.typed.{ Grouped, TypedPipe, WithReducers }
 
 import java.io.Serializable
+import com.twitter.scalding.quotation.Quoted
 
 /**
  * Implementation of DISCO and DIMSUM approximation similarity algorithm
@@ -43,7 +44,7 @@ object GraphOperations extends Serializable {
   /**
    * For each N, aggregate all the edges, and attach Edge state
    */
-  def joinAggregate[N, E, T](grouped: Grouped[N, Edge[N, E]])(agfn: Iterable[Edge[N, E]] => T): TypedPipe[Edge[N, (E, T)]] =
+  def joinAggregate[N, E, T](grouped: Grouped[N, Edge[N, E]])(agfn: Iterable[Edge[N, E]] => T)(implicit q: Quoted): TypedPipe[Edge[N, (E, T)]] =
     grouped.cogroup(grouped) {
       (to: N, left: Iterator[Edge[N, E]], right: Iterable[Edge[N, E]]) =>
         val newState = agfn(right)
@@ -52,17 +53,17 @@ object GraphOperations extends Serializable {
       .values
 
   // Returns all Vertices with non-zero in-degree
-  def withInDegree[N, E](g: TypedPipe[Edge[N, E]])(implicit ord: Ordering[N]): TypedPipe[Edge[N, (E, InDegree)]] = joinAggregate(g.groupBy { _.to }) { it =>
+  def withInDegree[N, E](g: TypedPipe[Edge[N, E]])(implicit ord: Ordering[N], q: Quoted): TypedPipe[Edge[N, (E, InDegree)]] = joinAggregate(g.groupBy { _.to }) { it =>
     InDegree(it.size)
   }
 
   // Returns all Vertices with non-zero out-degree
-  def withOutDegree[N, E](g: TypedPipe[Edge[N, E]])(implicit ord: Ordering[N]): TypedPipe[Edge[N, (E, OutDegree)]] = joinAggregate(g.groupBy { _.from }) { it =>
+  def withOutDegree[N, E](g: TypedPipe[Edge[N, E]])(implicit ord: Ordering[N], q: Quoted): TypedPipe[Edge[N, (E, OutDegree)]] = joinAggregate(g.groupBy { _.from }) { it =>
     OutDegree(it.size)
   }
 
   // Returns all Vertices with weights and non-zero norms
-  def withInNorm[N, E](g: TypedPipe[Edge[N, Weight]])(implicit ord: Ordering[N]): TypedPipe[Edge[N, (Weight, L2Norm)]] = joinAggregate(g.groupBy { _.to }) { it =>
+  def withInNorm[N, E](g: TypedPipe[Edge[N, Weight]])(implicit ord: Ordering[N], q: Quoted): TypedPipe[Edge[N, (Weight, L2Norm)]] = joinAggregate(g.groupBy { _.to }) { it =>
     val norm = scala.math.sqrt(
       it.iterator.map { a =>
         val x = a.data.weight
@@ -97,9 +98,9 @@ trait TypedSimilarity[N, E, S] extends Serializable {
    */
   def apply(g: TypedPipe[Edge[N, E]],
     smallpred: N => Boolean,
-    bigpred: N => Boolean): TypedPipe[Edge[N, S]]
+    bigpred: N => Boolean)(implicit q: Quoted): TypedPipe[Edge[N, S]]
   // Do similarity on all the nodes
-  def apply(g: TypedPipe[Edge[N, E]]): TypedPipe[Edge[N, S]] = {
+  def apply(g: TypedPipe[Edge[N, E]])(implicit q: Quoted): TypedPipe[Edge[N, S]] = {
     val always = { n: N => true }
     apply(g, always, always)
   }
@@ -116,7 +117,7 @@ object TypedSimilarity extends Serializable {
   // value: (word, documentsWithWord)
   // return: Edge of similarity between words measured by documents
   def exactSetSimilarity[N: Ordering](g: Grouped[N, (N, Int)],
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, SetSimilarity]] =
+    smallpred: N => Boolean, bigpred: N => Boolean)(implicit q: Quoted): TypedPipe[Edge[N, SetSimilarity]] =
     /* E_{ij} = 1 if document -> word exists
      * (E^T E)_ij = # of shared documents of i,j
      * = \sum_k E_ki E_kj
@@ -147,7 +148,7 @@ object TypedSimilarity extends Serializable {
    * See: http://arxiv.org/pdf/1206.2082v2.pdf
    */
   def discoCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Int)],
-    bigG: Grouped[N, (N, Int)], oversample: Double): TypedPipe[Edge[N, Double]] = {
+    bigG: Grouped[N, (N, Int)], oversample: Double)(implicit q: Quoted): TypedPipe[Edge[N, Double]] = {
     // 1) make rnd lazy due to serialization,
     // 2) fix seed so that map-reduce speculative execution does not give inconsistent results.
     lazy val rnd = new scala.util.Random(1024)
@@ -184,7 +185,7 @@ object TypedSimilarity extends Serializable {
    * See: http://stanford.edu/~rezab/papers/dimsum.pdf
    */
   def dimsumCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Double, Double)],
-    bigG: Grouped[N, (N, Double, Double)], oversample: Double): TypedPipe[Edge[N, Double]] = {
+    bigG: Grouped[N, (N, Double, Double)], oversample: Double)(implicit q: Quoted): TypedPipe[Edge[N, Double]] = {
     lazy val rnd = new scala.util.Random(1024)
     maybeWithReducers(smallG.cogroup(bigG) { (n: N, leftit: Iterator[(N, Double, Double)], rightit: Iterable[(N, Double, Double)]) =>
       // Use a co-group to ensure this happens in the reducer:
@@ -220,7 +221,7 @@ object TypedSimilarity extends Serializable {
 class ExactInCosine[N](reducers: Int = -1)(implicit override val nodeOrdering: Ordering[N]) extends TypedSimilarity[N, InDegree, Double] {
 
   def apply(graph: TypedPipe[Edge[N, InDegree]],
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
+    smallpred: N => Boolean, bigpred: N => Boolean)(implicit q: Quoted): TypedPipe[Edge[N, Double]] = {
     val groupedOnSrc = graph
       .filter { e => smallpred(e.to) || bigpred(e.to) }
       .map { e => (e.from, (e.to, e.data.degree)) }
@@ -245,7 +246,7 @@ class DiscoInCosine[N](minCos: Double, delta: Double, boundedProb: Double, reduc
   private val oversample = (-2.0 * scala.math.log(boundedProb) / (delta * delta)) / minCos
 
   def apply(graph: TypedPipe[Edge[N, InDegree]],
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
+    smallpred: N => Boolean, bigpred: N => Boolean)(implicit q: Quoted): TypedPipe[Edge[N, Double]] = {
     val bigGroupedOnSrc = graph
       .filter { e => bigpred(e.to) }
       .map { e => (e.from, (e.to, e.data.degree)) }
@@ -269,7 +270,7 @@ class DimsumInCosine[N](minCos: Double, delta: Double, boundedProb: Double, redu
   private val oversample = (-2.0 * scala.math.log(boundedProb) / (delta * delta)) / minCos
 
   def apply(graph: TypedPipe[Edge[N, (Weight, L2Norm)]],
-    smallpred: N => Boolean, bigpred: N => Boolean): TypedPipe[Edge[N, Double]] = {
+    smallpred: N => Boolean, bigpred: N => Boolean)(implicit q: Quoted): TypedPipe[Edge[N, Double]] = {
     val bigGroupedOnSrc = graph
       .filter { e => bigpred(e.to) }
       .map { e => (e.from, (e.to, e.data._1.weight, e.data._2.norm)) }

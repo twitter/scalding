@@ -15,6 +15,7 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
 import scala.util.{ Failure, Success, Try }
+import com.twitter.scalding.quotation.Quoted
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
@@ -469,7 +470,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       eqCheck(tp.hashLookup(keyed))
       eqCheck(tp.groupRandomly(100))
       val ordInt = implicitly[Ordering[Int]]
-      eqCheck(tp.distinctBy(fn0)(ordInt))
+      eqCheck(tp.distinctBy(fn0)(ordInt, implicitly[Quoted]))
     }
   }
 
