@@ -17,7 +17,6 @@
 package com.twitter.scalding.typed
 
 import java.io.Serializable
-
 import com.twitter.algebird.Semigroup
 
 /*
@@ -79,7 +78,7 @@ object LookupJoin extends Serializable {
    * much time is between the left and the right
    */
 
-  def apply[T: Ordering, K: Ordering, V, JoinedV](
+  def apply[T: Ordering, K: KeyGrouping, V, JoinedV](
     left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
     reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
@@ -90,7 +89,7 @@ object LookupJoin extends Serializable {
    * In this case, the right pipe is fed through a scanLeft doing a Semigroup.plus
    * before joined to the left
    */
-  def rightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
+  def rightSumming[T: Ordering, K: KeyGrouping, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
     reducers: Option[Int] = None): TypedPipe[(T, (K, (V, Option[JoinedV])))] =
     withWindowRightSumming(left, right, reducers)((_, _) => true)
@@ -100,7 +99,7 @@ object LookupJoin extends Serializable {
    * as the joined value.
    * Useful for bounding the time of the join to a recent window
    */
-  def withWindow[T: Ordering, K: Ordering, V, JoinedV](left: TypedPipe[(T, (K, V))],
+  def withWindow[T: Ordering, K: KeyGrouping, V, JoinedV](left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
     reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
 
@@ -113,7 +112,7 @@ object LookupJoin extends Serializable {
    * as the joined value, and sums are only done as long as they they come
    * within the gate interval as well
    */
-  def withWindowRightSumming[T: Ordering, K: Ordering, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
+  def withWindowRightSumming[T: Ordering, K: KeyGrouping, V, JoinedV: Semigroup](left: TypedPipe[(T, (K, V))],
     right: TypedPipe[(T, (K, JoinedV))],
     reducers: Option[Int] = None)(gate: (T, T) => Boolean): TypedPipe[(T, (K, (V, Option[JoinedV])))] = {
     /**

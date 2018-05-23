@@ -15,22 +15,20 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.{ OutputStream, InputStream, Serializable }
-import java.util.{ Random, UUID }
-
+import java.io.{InputStream, OutputStream, Serializable}
+import java.util.{Random, UUID}
 import cascading.flow.FlowDef
-import cascading.pipe.{ Each, Pipe }
+import cascading.pipe.{Each, Pipe}
 import cascading.tap.Tap
-import cascading.tuple.{ Fields, TupleEntry }
-import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
-import com.twitter.scalding.TupleConverter.{ TupleEntryConverter, singleConverter, tuple2Converter }
-import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
+import cascading.tuple.{Fields, TupleEntry}
+import com.twitter.algebird.{Aggregator, Batched, Monoid, Semigroup}
+import com.twitter.scalding.TupleConverter.{TupleEntryConverter, singleConverter, tuple2Converter}
+import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
 import com.twitter.scalding._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
-
 import scala.util.Try
 
 /**
@@ -204,7 +202,7 @@ trait TypedPipe[+T] extends Serializable {
    * in some sense, this is the dual of groupAll
    */
   @annotation.implicitNotFound(msg = "For asKeys method to work, the type in TypedPipe must have an Ordering.")
-  def asKeys[U >: T](implicit ord: Ordering[U]): Grouped[U, Unit] =
+  def asKeys[U >: T](implicit ord: KeyGrouping[U]): Grouped[U, Unit] =
     map((_, ())).group
 
   /**
@@ -253,16 +251,16 @@ trait TypedPipe[+T] extends Serializable {
    * The latter creates 1 map/reduce phase rather than 2
    */
   @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
-  def distinct(implicit ord: Ordering[_ >: T]): TypedPipe[T] =
-    asKeys(ord.asInstanceOf[Ordering[T]]).sum.keys
+  def distinct(implicit ord: KeyGrouping[_ >: T]): TypedPipe[T] =
+    asKeys(ord.asInstanceOf[KeyGrouping[T]]).sum.keys
 
   /**
    * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
    */
   @annotation.implicitNotFound(msg = "For distinctBy method to work, the type to distinct on in the TypedPipe must have an Ordering.")
-  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: Ordering[_ >: U]): TypedPipe[T] = {
+  def distinctBy[U](fn: T => U, numReducers: Option[Int] = None)(implicit ord: KeyGrouping[_ >: U]): TypedPipe[T] = {
     // cast because Ordering is not contravariant, but should be (and this cast is safe)
-    implicit val ordT: Ordering[U] = ord.asInstanceOf[Ordering[U]]
+    implicit val ordT: KeyGrouping[U] = ord.asInstanceOf[KeyGrouping[U]]
 
     // Semigroup to handle duplicates for a given key might have different values.
     implicit val sg: Semigroup[T] = new Semigroup[T] {
@@ -372,24 +370,24 @@ trait TypedPipe[+T] extends Serializable {
   /**
    * This is the default means of grouping all pairs with the same key. Generally this triggers 1 Map/Reduce transition
    */
-  def group[K, V](implicit ev: <:<[T, (K, V)], ord: Ordering[K]): Grouped[K, V] =
+  def group[K, V](implicit ev: <:<[T, (K, V)], ord: KeyGrouping[K]): Grouped[K, V] =
     //If the type of T is not (K,V), then at compile time, this will fail.  It uses implicits to do
     //a compile time check that one type is equivalent to another.  If T is not (K,V), we can't
     //automatically group.  We cast because it is safe to do so, and we need to convert to K,V, but
     //the ev is not needed for the cast.  In fact, you can do the cast with ev(t) and it will return
     //it as (K,V), but the problem is, ev is not serializable.  So we do the cast, which due to ev
     //being present, will always pass.
-    Grouped(raiseTo[(K, V)]).withDescription(LineNumber.tryNonScaldingCaller.map(_.toString))
+    Grouped(raiseTo[(K, V)])(ord.ord).withDescription(LineNumber.tryNonScaldingCaller.map(_.toString))
 
   /** Send all items to a single reducer */
-  def groupAll: Grouped[Unit, T] = groupBy(x => ())(ordSer[Unit]).withReducers(1)
+  def groupAll: Grouped[Unit, T] = groupBy(x => ())(KeyGrouping(ordSer[Unit])).withReducers(1)
 
   /** Given a key function, add the key, then call .group */
-  def groupBy[K](g: T => K)(implicit ord: Ordering[K]): Grouped[K, T] =
+  def groupBy[K](g: T => K)(implicit ord: KeyGrouping[K]): Grouped[K, T] =
     map { t => (g(t), t) }.group
 
   /** Group using an explicit Ordering on the key. */
-  def groupWith[K, V](ord: Ordering[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
+  def groupWith[K, V](ord: KeyGrouping[K])(implicit ev: <:<[T, (K, V)]): Grouped[K, V] = group(ev, ord)
 
   /**
    * Forces a shuffle by randomly assigning each item into one
@@ -403,7 +401,7 @@ trait TypedPipe[+T] extends Serializable {
   def groupRandomly(partitions: Int): Grouped[Int, T] = {
     // Make it lazy so all mappers get their own:
     lazy val rng = new java.util.Random(123) // seed this so it is repeatable
-    groupBy { _ => rng.nextInt(partitions) }(TypedPipe.identityOrdering)
+    groupBy { _ => rng.nextInt(partitions) }(KeyGrouping(TypedPipe.identityOrdering))
       .withReducers(partitions)
   }
 
@@ -487,7 +485,7 @@ trait TypedPipe[+T] extends Serializable {
   /**
    * Reasonably common shortcut for cases of associative/commutative reduction by Key
    */
-  def sumByKey[K, V](implicit ev: T <:< (K, V), ord: Ordering[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
+  def sumByKey[K, V](implicit ev: T <:< (K, V), ord: KeyGrouping[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
     group[K, V].sum[V]
 
   /**
@@ -734,7 +732,7 @@ trait TypedPipe[+T] extends Serializable {
     delta: Double = 0.01, //5 rows (= 5 hashes)
     seed: Int = 12345)(implicit ev: TypedPipe[T] <:< TypedPipe[(K, V)],
       serialization: K => Array[Byte],
-      ordering: Ordering[K]): Sketched[K, V] =
+      ordering: KeyGrouping[K]): Sketched[K, V] =
     Sketched(ev(this), reducers, delta, eps, seed)
 
   /**
@@ -760,7 +758,7 @@ final case object EmptyTypedPipe extends TypedPipe[Nothing] {
   // Cross product with empty is always empty.
   override def cross[U](tiny: TypedPipe[U]): TypedPipe[(Nothing, U)] = this
 
-  override def distinct(implicit ord: Ordering[_ >: Nothing]) = this
+  override def distinct(implicit ord: KeyGrouping[_ >: Nothing]) = this
 
   override def flatMap[U](f: Nothing => TraversableOnce[U]) = this
 
@@ -1145,10 +1143,10 @@ case class WithDescriptionTypedPipe[T](typedPipe: TypedPipe[T], description: Str
  * import Syntax.joinOnMappablePipe
  */
 class MappablePipeJoinEnrichment[T](pipe: TypedPipe[T]) {
-  def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
-  def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
-  def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
-  def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: Ordering[K]): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
+  def joinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: KeyGrouping[K]): CoGrouped[K, (T, U)] = pipe.groupBy(g).withReducers(reducers).join(smaller.groupBy(h))
+  def leftJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: KeyGrouping[K]): CoGrouped[K, (T, Option[U])] = pipe.groupBy(g).withReducers(reducers).leftJoin(smaller.groupBy(h))
+  def rightJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: KeyGrouping[K]): CoGrouped[K, (Option[T], U)] = pipe.groupBy(g).withReducers(reducers).rightJoin(smaller.groupBy(h))
+  def outerJoinBy[K, U](smaller: TypedPipe[U])(g: (T => K), h: (U => K), reducers: Int = -1)(implicit ord: KeyGrouping[K]): CoGrouped[K, (Option[T], Option[U])] = pipe.groupBy(g).withReducers(reducers).outerJoin(smaller.groupBy(h))
 }
 
 /**

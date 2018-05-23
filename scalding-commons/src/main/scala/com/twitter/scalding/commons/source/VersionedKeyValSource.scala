@@ -29,9 +29,8 @@ import com.twitter.scalding._
 import com.twitter.scalding.commons.scheme.KeyValueByteScheme
 import com.twitter.scalding.commons.tap.VersionedTap
 import com.twitter.scalding.commons.tap.VersionedTap.TapMode
-import com.twitter.scalding.source.{ CheckedInversion, MaxFailuresCheck }
-import com.twitter.scalding.typed.KeyedListLike
-import com.twitter.scalding.typed.TypedSink
+import com.twitter.scalding.source.{CheckedInversion, MaxFailuresCheck}
+import com.twitter.scalding.typed.{KeyGrouping, KeyedListLike, TypedSink}
 import org.apache.hadoop.mapred.JobConf
 import scala.collection.JavaConverters._
 
@@ -211,13 +210,13 @@ class VersionedKeyValSource[K, V](val path: String, val sourceVersion: Option[Lo
 
 object RichPipeEx extends java.io.Serializable {
   implicit def pipeToRichPipeEx(pipe: Pipe): RichPipeEx = new RichPipeEx(pipe)
-  implicit def typedPipeToRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]): TypedRichPipeEx[K, V] =
+  implicit def typedPipeToRichPipeEx[K: KeyGrouping, V: Monoid](pipe: TypedPipe[(K, V)]): TypedRichPipeEx[K, V] =
     new TypedRichPipeEx(pipe)
-  implicit def keyedListLikeToRichPipeEx[K: Ordering, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
+  implicit def keyedListLikeToRichPipeEx[K: KeyGrouping, V: Monoid, T[K, +V] <: KeyedListLike[K, V, T]](
     kll: KeyedListLike[K, V, T]): TypedRichPipeEx[K, V] = typedPipeToRichPipeEx(kll.toTypedPipe)
 }
 
-class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {
+class TypedRichPipeEx[K: KeyGrouping, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {
   import Dsl._
   import TDsl._
 

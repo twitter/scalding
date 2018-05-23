@@ -15,11 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits, Batched }
+import com.twitter.algebird.{ Batched, Bytes, CMS, CMSHasherImplicits }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
-import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 import com.twitter.algebird.CMSMonoid
-
 import scala.language.experimental.macros
 
 // This was a bad design choice, we should have just put these in the CMSHasher object
@@ -34,7 +32,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   delta: Double,
   eps: Double,
   seed: Int)(implicit serialization: K => Array[Byte],
-    ordering: Ordering[K])
+    ordering: KeyGrouping[K])
   extends MustHaveReducers {
 
   def serialize(k: K): Array[Byte] = serialization(k)
@@ -77,7 +75,7 @@ case class Sketched[K, V](pipe: TypedPipe[(K, V)],
   def leftJoin[V2](right: TypedPipe[(K, V2)]) = cogroup(right)(Joiner.hashLeft2)
 }
 
-case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
+case class SketchJoined[K: KeyGrouping, V, V2, R](left: Sketched[K, V],
   right: TypedPipe[(K, V2)],
   numReducers: Int)(joiner: (K, V, Iterable[V2]) => Iterator[R])
   extends MustHaveReducers {
@@ -110,15 +108,8 @@ case class SketchJoined[K: Ordering, V, V2, R](left: Sketched[K, V],
       .map{ case ((r, k), v) => (k, v) }
   }
 
-  private implicit def intKeyOrd: Ordering[(Int, K)] = {
-    val kord = implicitly[Ordering[K]]
-
-    kord match {
-      case kos: OrderedSerialization[_] => new OrderedSerialization2(ordSer[Int], kos.asInstanceOf[OrderedSerialization[K]])
-      case _ => Ordering.Tuple2[Int, K]
-    }
-  }
-
+  private implicit def intKeyOrd: KeyGrouping[(Int, K)] =
+    KeyGrouping.tuple2(KeyGrouping(ordSer[Int]), implicitly[KeyGrouping[K]])
 }
 
 object SketchJoined {

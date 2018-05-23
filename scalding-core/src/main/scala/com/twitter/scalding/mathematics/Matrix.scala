@@ -15,10 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding.mathematics
 
-import com.twitter.algebird.{ Monoid, Group, Ring, Field }
-import com.twitter.algebird.field._ // backwards compatiblity support
+import com.twitter.algebird.{Field, Group, Monoid, Ring}
+import com.twitter.algebird.field._
 import com.twitter.scalding._
-
 import cascading.pipe.assembly._
 import cascading.pipe.joiner._
 import cascading.pipe.Pipe
@@ -26,8 +25,8 @@ import cascading.tuple.Fields
 import cascading.tuple._
 import cascading.flow._
 import cascading.tap._
-
 import com.twitter.scalding.Dsl._
+import com.twitter.scalding.typed.KeyGrouping
 import scala.math.max
 import scala.annotation.tailrec
 
@@ -137,11 +136,11 @@ class MatrixMappableExtensions[T](mappable: Mappable[T])(implicit fd: FlowDef, m
     new Matrix[Row, Col, Val]('row, 'col, 'val, matPipe)
   }
 
-  def toBlockMatrix[Group, Row, Col, Val](implicit ev: <:<[T, (Group, Row, Col, Val)], ord: Ordering[(Group, Row)],
+  def toBlockMatrix[Group, Row, Col, Val](implicit ev: <:<[T, (Group, Row, Col, Val)], ord: KeyGrouping[(Group, Row)],
     setter: TupleSetter[(Group, Row, Col, Val)]): BlockMatrix[Group, Row, Col, Val] =
     mapToBlockMatrix { _.asInstanceOf[(Group, Row, Col, Val)] }
 
-  def mapToBlockMatrix[Group, Row, Col, Val](fn: (T) => (Group, Row, Col, Val))(implicit ord: Ordering[(Group, Row)]): BlockMatrix[Group, Row, Col, Val] = {
+  def mapToBlockMatrix[Group, Row, Col, Val](fn: (T) => (Group, Row, Col, Val))(implicit ord: KeyGrouping[(Group, Row)]): BlockMatrix[Group, Row, Col, Val] = {
     val matPipe = TypedPipe
       .from(mappable)
       .map(fn)
