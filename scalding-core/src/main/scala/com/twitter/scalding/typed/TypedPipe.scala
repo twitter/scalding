@@ -207,7 +207,25 @@ object TypedPipe extends Serializable {
    }
 
    implicit class InvariantTypedPipe[T](val pipe: TypedPipe[T]) extends AnyVal {
-      /**
+     /**
+      * Returns the set of distinct elements in the TypedPipe
+      * This is the same as: .map((_, ())).group.sum.keys
+      * If you want a distinct while joining, consider:
+      * instead of:
+      * {@code
+      *   a.join(b.distinct.asKeys)
+      * }
+      * manually do the distinct:
+      * {@code
+      *   a.join(b.asKeys.sum)
+      * }
+      * The latter creates 1 map/reduce phase rather than 2
+      */
+     @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
+     def distinct(implicit ord: Ordering[T]): TypedPipe[T] =
+       pipe.asKeys.sum.keys
+
+     /**
        * If any errors happen below this line, but before a groupBy, write to a TypedSink
        */
       def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
@@ -631,24 +649,6 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
   /** adds a description to the pipe */
   def withDescription(description: String): TypedPipe[T] =
     TypedPipe.WithDescriptionTypedPipe[T](this, (description, false) :: Nil)
-
-  /**
-   * Returns the set of distinct elements in the TypedPipe
-   * This is the same as: .map((_, ())).group.sum.keys
-   * If you want a distinct while joining, consider:
-   * instead of:
-   * {@code
-   *   a.join(b.distinct.asKeys)
-   * }
-   * manually do the distinct:
-   * {@code
-   *   a.join(b.asKeys.sum)
-   * }
-   * The latter creates 1 map/reduce phase rather than 2
-   */
-  @annotation.implicitNotFound(msg = "For distinct method to work, the type in TypedPipe must have an Ordering.")
-  def distinct[U >: T](implicit ord: Ordering[U]): TypedPipe[U] =
-    asKeys[U].sum.keys
 
   /**
    * Returns the set of distinct elements identified by a given lambda extractor in the TypedPipe
