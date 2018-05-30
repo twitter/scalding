@@ -205,8 +205,8 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
    * Take the largest k things according to the implicit ordering.
    * Useful for top-k without having to call ord.reverse
    */
-  def sortedReverseTake(k: Int)(implicit ord: Ordering[_ >: T]): This[K, Seq[T]] =
-    sortedTake(k)(ord.reverse)
+  def sortedReverseTake[U >: T](k: Int)(implicit ord: Ordering[U]): This[K, Seq[U]] =
+    sortedTake[U](k)(ord.reverse)
 
   /**
    * This implements bottom-k (smallest k items) on each mapper for each key, then
@@ -214,13 +214,12 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
    * than using .take if k * (number of Keys) is small enough
    * to fit in memory.
    */
-  def sortedTake(k: Int)(implicit ord: Ordering[_ >: T]): This[K, Seq[T]] = {
-    val ordT: Ordering[T] = TypedPipe.narrowOrdering(ord)
-    val mon = new PriorityQueueMonoid[T](k)(ordT)
+  def sortedTake[U >: T](k: Int)(implicit ord: Ordering[U]): This[K, Seq[U]] = {
+    val mon = new PriorityQueueMonoid[U](k)(ord)
     mapValues(mon.build(_))
       .sum(mon) // results in a PriorityQueue
       // scala can't infer the type, possibly due to the view bound on TypedPipe
-      .mapValues(_.iterator.asScala.toList.sorted(ordT))
+      .mapValues(_.iterator.asScala.toList.sorted(ord))
   }
 
   /** Like the above, but with a less than operation for the ordering */

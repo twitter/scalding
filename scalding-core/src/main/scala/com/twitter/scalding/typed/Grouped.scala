@@ -377,13 +377,13 @@ object Grouped extends Serializable {
  * of each key in memory on the reducer.
  */
 sealed trait Sortable[+T, +Sorted[+_]] {
-  def withSortOrdering[U >: T](so: Ordering[U]): Sorted[T]
+  def withSortOrdering[U >: T](so: Ordering[U]): Sorted[U]
 
   def sortBy[B: Ordering](fn: (T) => B): Sorted[T] =
     withSortOrdering(Ordering.by(fn))
 
   // Sorts the values for each key
-  def sorted[B >: T](implicit ord: Ordering[B]): Sorted[T] =
+  def sorted[B >: T](implicit ord: Ordering[B]): Sorted[B] =
     withSortOrdering(ord)
 
   def sortWith(lt: (T, T) => Boolean): Sorted[T] =
@@ -597,8 +597,8 @@ final case class IdentityReduce[K, V1, V2](
   override def bufferedTake(n: Int) =
     toUIR.bufferedTake(n)
 
-  override def withSortOrdering[U >: V2](so: Ordering[U]): IdentityValueSortedReduce[K, V2, V2] =
-    IdentityValueSortedReduce[K, V2, V2](keyOrdering, mappedV2, TypedPipe.narrowOrdering(so), reducers, descriptions, implicitly)
+  override def withSortOrdering[U >: V2](so: Ordering[U]): IdentityValueSortedReduce[K, U, U] =
+    IdentityValueSortedReduce[K, U, U](keyOrdering, mappedV2, so, reducers, descriptions, implicitly)
 
   override def withReducers(red: Int): IdentityReduce[K, V1, V2] =
     copy(reducers = Some(red))
