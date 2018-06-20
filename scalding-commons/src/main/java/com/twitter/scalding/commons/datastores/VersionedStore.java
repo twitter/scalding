@@ -152,7 +152,6 @@ public class VersionedStore {
             // have both version suffix and success flag below
             Set<Long> ret = new HashSet<Long>();
             for(Path p: listDir(getRoot())) {
-                final FileStatus status = getFileSystem().getFileStatus(p);
                 if (skipVersionSuffix) {
                     // backwards compatible if version suffix does not exist
                     if(Utils.isLong(p.getName())) {
@@ -163,9 +162,12 @@ public class VersionedStore {
                         try {
                             if (p.getName().endsWith(FINISHED_VERSION_SUFFIX)) {
                                 ret.add(validateAndGetVersion(p.toString()));
-                            } else if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
-                                // FORCE the _SUCCESS flag into the versioned store directory.
-                                ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                            } else {
+                                final FileStatus status = getFileSystem().getFileStatus(p);
+                                if (status != null && status.isDir() && getFileSystem().exists(new Path(p, HADOOP_SUCCESS_FLAG))) {
+                                    // FORCE the _SUCCESS flag into the versioned store directory.
+                                    ret.add(validateAndGetVersion(p.toString() + FINISHED_VERSION_SUFFIX));
+                                }
                             }
                         } catch (RuntimeException e) {
                             // Skip this version
