@@ -194,19 +194,20 @@ object FileSource {
         // HiddenFileFilter should better be called non-hidden but it borrows its name from the
         // private field name in hadoop FileInputFormat
         //
-        dir -> (dir,
+        dir -> (
           OrVal(SuccessFileFilter.accept(fileStatus.getPath) && fileStatus.isFile),
-          OrVal(HiddenFileFilter.accept(fileStatus.getPath)))
+          OrVal(HiddenFileFilter.accept(fileStatus.getPath))
+        )
       }
 
     // OR by key
     val uniqueUsedDirs = MapAlgebra.sumByKey(usedDirs)
-      .filter { case (_, (_, _, hasNonHidden)) => (!hiddenFilter || hasNonHidden.get) }
+      .filter { case (_, (_, hasNonHidden)) => (!hiddenFilter || hasNonHidden.get) }
 
     // there is at least one valid path, and all paths have success
     //
     uniqueUsedDirs.nonEmpty && uniqueUsedDirs.forall {
-      case (_, (_, hasSuccess, _)) => hasSuccess.get
+      case (_, (hasSuccess, _)) => hasSuccess.get
     }
   }
 }
