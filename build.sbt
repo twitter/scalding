@@ -25,7 +25,7 @@ val dagonVersion = "0.3.1"
 val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
-val hbaseVersion = "0.94.10"
+val hbaseVersion = "1.2.4"
 val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
@@ -467,6 +467,9 @@ lazy val scaldingHRaven = module("hraven").settings(
       exclude("com.twitter.common", "args")
       exclude("com.twitter.common", "application"),
     "org.apache.hbase" % "hbase" % hbaseVersion,
+    "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
+    "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
+    "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
   )
@@ -582,6 +585,9 @@ lazy val maple = Project(
   libraryDependencies ++= Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
+    "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
+    "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
+    "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "cascading" % "cascading-hadoop" % cascadingVersion
   )
 )
