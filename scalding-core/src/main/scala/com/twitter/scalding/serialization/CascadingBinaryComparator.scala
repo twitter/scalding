@@ -47,7 +47,6 @@ object CascadingBinaryComparator {
   private[scalding] def checkForOrderedSerialization[T](flow: Flow[T]): Try[Unit] = {
     import collection.JavaConverters._
     import cascading.pipe._
-    import com.twitter.scalding.RichPipe
 
     // all successes or empty returns success
     def reduce(it: TraversableOnce[Try[Unit]]): Try[Unit] =

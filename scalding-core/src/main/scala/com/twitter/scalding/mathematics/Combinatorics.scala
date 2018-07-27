@@ -2,7 +2,7 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 import cascading.flow.FlowDef
-import cascading.tuple.{ Fields, TupleEntry }
+import cascading.tuple.TupleEntry
 import cascading.pipe.Pipe
 
 /**

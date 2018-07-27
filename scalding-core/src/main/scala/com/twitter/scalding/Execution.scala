@@ -15,11 +15,10 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.{ Reader, Trampoline }
+import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{ Monoid, Monad, Semigroup }
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
-import com.twitter.scalding.Dsl.flowDefToRichFlowDef
 import java.util.concurrent.LinkedBlockingQueue
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.{ Failure, Success, Try }

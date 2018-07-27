@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
-
 import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.TupleConverter.tuple2Converter
@@ -34,12 +32,8 @@ import com.twitter.scalding.serialization.{
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
-import cascading.property.ConfigDef
 import cascading.tuple.{ Fields, Tuple => CTuple }
-import java.util.Comparator
 import scala.collection.JavaConverters._
-import scala.util.Try
-import scala.collection.immutable.Queue
 
 import Dsl._
 

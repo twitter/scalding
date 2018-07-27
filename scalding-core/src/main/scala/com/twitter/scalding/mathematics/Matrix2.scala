@@ -16,9 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import cascading.flow.FlowDef
-import cascading.pipe.Pipe
-import cascading.tuple.Fields
-import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
+import com.twitter.scalding.serialization.OrderedSerialization2
 import com.twitter.scalding._
 import com.twitter.scalding.typed.{ ValuePipe, EmptyValue, LiteralValue, ComputedValue }
 import com.twitter.algebird.{ Semigroup, Monoid, Ring, Group, Field }

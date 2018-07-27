@@ -23,8 +23,6 @@ import cascading.tuple.TupleEntry
 import cascading.stats.CascadingStats
 import org.apache.hadoop.mapred.JobConf
 
-import scala.util.Try
-
 object JobTest {
 
   @deprecated(message = "Use the non-reflection based JobTest apply methods", since = "0.16.1")

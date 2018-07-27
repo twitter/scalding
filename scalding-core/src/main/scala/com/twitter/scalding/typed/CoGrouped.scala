@@ -26,7 +26,6 @@ import scala.collection.JavaConverters._
 
 import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.TupleConverter.tuple2Converter
-import com.twitter.scalding.TupleSetter.tup2Setter
 
 object CoGrouped {
   // distinct by mapped, but don't reorder if the list is unique

@@ -1,12 +1,8 @@
 package com.twitter.scalding.bdd
 
 import com.twitter.scalding.TypedPipe
-import com.twitter.scalding.Dsl
 
 trait TypedPipeOperationsConversions {
-  import Dsl._
-  import com.twitter.scalding.typed.TDsl._
-
   trait TypedPipeOperation[TypeOut] {
     def assertPipeSize(pipes: List[TypedPipe[_]], expectedSize: Int) =
       require(pipes.size == expectedSize, "Cannot apply an operation for " + expectedSize + "pipes to " + pipes.size + " pipes. " +

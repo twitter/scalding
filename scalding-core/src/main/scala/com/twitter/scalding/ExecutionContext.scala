@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
-import cascading.flow.{ Flow, FlowDef, FlowListener, FlowStepListener, FlowStepStrategy }
+import cascading.flow.{ Flow, FlowDef, FlowStepStrategy }
 import cascading.flow.planner.BaseFlowStep
 import cascading.pipe.Pipe
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
@@ -36,8 +36,6 @@ trait ExecutionContext {
   def config: Config
   def flowDef: FlowDef
   def mode: Mode
-
-  import ExecutionContext._
 
   private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None

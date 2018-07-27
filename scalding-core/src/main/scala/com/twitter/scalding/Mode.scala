@@ -19,10 +19,10 @@ import java.io.File
 import java.util.{ UUID, Properties }
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 
-import cascading.flow.{ FlowProcess, FlowConnector, FlowDef, Flow }
+import cascading.flow.{ FlowProcess, FlowConnector }
 import cascading.flow.local.LocalFlowConnector
 import cascading.flow.local.LocalFlowProcess
 import cascading.property.AppProps

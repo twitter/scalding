@@ -16,9 +16,7 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import cascading.pipe.joiner.{ Joiner => CJoiner, JoinerClosure }
-import cascading.tuple.{ Tuple => CTuple, Fields, TupleEntry }
-
-import com.twitter.scalding._
+import cascading.tuple.{ Tuple => CTuple }
 
 import scala.collection.JavaConverters._
 

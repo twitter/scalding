@@ -15,14 +15,10 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
-import java.util.PriorityQueue
 import scala.collection.JavaConverters._
 
 import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
 import com.twitter.algebird.mutable.PriorityQueueMonoid
-
-import com.twitter.scalding._
 
 object KeyedListLike {
   /** KeyedListLike items are implicitly convertable to TypedPipe */

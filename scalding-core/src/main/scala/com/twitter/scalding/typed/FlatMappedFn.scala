@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import java.io.Serializable
-
 import com.twitter.scalding.TupleConverter
 import cascading.tuple.TupleEntry
 
