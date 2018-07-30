@@ -33,7 +33,6 @@ import com.twitter.scalding.IterableSource
  * (stronger properties are tested in ScalaCheck tests at the end)
  */
 class Matrix2OptimizationSpec extends WordSpec with Matchers {
-  import Dsl._
   import com.twitter.scalding.Test
 
   implicit val mode: Test = Test(Map())

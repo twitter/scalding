@@ -5,7 +5,6 @@ import com.twitter.algebird.Monoid
 import com.twitter.scalding.estimation.{ Estimator, FallbackEstimatorMonoid, FlowStrategyInfo }
 import com.twitter.scalding.{ Config, StringUtility }
 import java.util.{ List => JList }
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._

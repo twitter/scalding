@@ -3,7 +3,6 @@ package com.twitter.scalding.commons.source
 import com.twitter.scalding._
 
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 case class Test1(a: Int, b: Long, c: Option[Double])
 case class Test2(one: Test1, d: String)

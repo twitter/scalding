@@ -1,19 +1,19 @@
 package com.twitter.scalding.typed.cascading_backend
 
 import cascading.flow.FlowDef
-import cascading.operation.{ Debug, Operation }
+import cascading.operation.Debug
 import cascading.pipe.{ CoGroup, Each, Pipe, HashJoin }
-import cascading.tuple.{ Fields, Tuple => CTuple, TupleEntry }
-import com.stripe.dagon.{ FunctionK, HCache, Id, Memoize, Rule, Dag }
+import cascading.tuple.{ Fields, Tuple => CTuple }
+import com.stripe.dagon.{ FunctionK, Id, Memoize, Rule, Dag }
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
-  CleanupIdentityFunction, Config, Dsl, Execution, Field, FlatMapFunction, FlowState, FlowStateMap, GroupBuilder,
-  HadoopMode, IncrementCounters, LineNumber, IterableSource, MapsideReduce, Mode, RichFlowDef,
+  CleanupIdentityFunction, Config, Dsl, Execution, Field, FlowState, FlowStateMap, GroupBuilder,
+  HadoopMode, IncrementCounters, IterableSource, MapsideReduce, Mode, RichFlowDef,
   RichPipe, TupleConverter, TupleGetter, TupleSetter, TypedBufferOp, WrappedJoiner, Write
 }
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, MapValuesToMap, FlatMapValuesToFlatMap, FlatMappedFn }
+import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, MapValuesToMap, FlatMapValuesToFlatMap }
 import com.twitter.scalding.serialization.{
   Boxed,
   BoxedOrderedSerialization,
@@ -23,7 +23,6 @@ import com.twitter.scalding.serialization.{
   WrappedSerialization
 }
 import java.util.WeakHashMap
-import scala.collection.mutable.{ Map => MMap }
 
 object CascadingBackend {
 

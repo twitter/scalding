@@ -1,9 +1,5 @@
 package com.twitter.scalding.typed
 
-import java.io.{ BufferedWriter, File, FileWriter }
-
-import com.twitter.scalding.Execution
-
 import scala.reflect.ClassTag
 
 /**

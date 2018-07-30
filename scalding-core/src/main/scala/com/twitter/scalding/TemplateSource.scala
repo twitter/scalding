@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tap.hadoop.Hfs
 import cascading.tap.hadoop.{ TemplateTap => HTemplateTap }
 import cascading.tap.local.FileTap
 import cascading.tap.local.{ TemplateTap => LTemplateTap }

@@ -28,7 +28,6 @@ import java.io.Serializable
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
-import scala.runtime.ScalaRunTime
 import scala.util.{ Failure, Success, Try }
 import scala.util.hashing.MurmurHash3
 

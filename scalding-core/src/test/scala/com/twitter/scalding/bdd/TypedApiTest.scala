@@ -1,7 +1,6 @@
 package com.twitter.scalding.bdd
 
 import cascading.flow.FlowException
-import com.twitter.scalding.typed.TDsl
 import com.twitter.scalding._
 import org.scalatest.{ Matchers, WordSpec }
 import scala.math._

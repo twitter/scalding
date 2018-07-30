@@ -1,8 +1,5 @@
 package com.twitter.scalding.quotation
 
-import org.scalatest.MustMatchers
-import org.scalatest.FreeSpec
-
 class QuotedMacroTest extends Test {
 
   val test = new TestClass
@@ -28,19 +25,19 @@ class QuotedMacroTest extends Test {
   "quoted method" - {
 
     "nullary" in {
-      nullary.position.toString mustEqual "QuotedMacroTest.scala:10"
+      nullary.position.toString mustEqual "QuotedMacroTest.scala:7"
       nullary.projections.set mustEqual Set.empty
       nullary.text mustEqual Some("nullary")
     }
 
     "parametrizedNullary" in {
-      parametrizedNullary.position.toString mustEqual "QuotedMacroTest.scala:11"
+      parametrizedNullary.position.toString mustEqual "QuotedMacroTest.scala:8"
       parametrizedNullary.projections.set mustEqual Set.empty
       parametrizedNullary.text mustEqual Some("parametrizedNullary[Int]")
     }
 
     "withParam" in {
-      withParam.position.toString mustEqual "QuotedMacroTest.scala:12"
+      withParam.position.toString mustEqual "QuotedMacroTest.scala:9"
       withParam.projections.set mustEqual Set(Person.nameProjection)
       withParam.text mustEqual Some("withParam[Person, String](_.name)")
     }
@@ -49,7 +46,7 @@ class QuotedMacroTest extends Test {
   "quoted function" - {
     "simple" in {
       val q = quotedFunction.quoted
-      q.position.toString mustEqual "QuotedMacroTest.scala:15"
+      q.position.toString mustEqual "QuotedMacroTest.scala:12"
       q.projections.set mustEqual Set(Person.contactProjection)
       q.text mustEqual Some("[Person, Contact](_.contact)")
 
@@ -57,7 +54,7 @@ class QuotedMacroTest extends Test {
     }
     "nested" in {
       val q = nestedQuotedFuction.quoted
-      q.position.toString mustEqual "QuotedMacroTest.scala:18"
+      q.position.toString mustEqual "QuotedMacroTest.scala:15"
       q.projections.set mustEqual Set(Person.contactProjection)
       q.text mustEqual Some("[Person, Contact](p => quotedFunction(p))")
 

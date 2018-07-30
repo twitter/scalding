@@ -20,7 +20,6 @@ import scala.collection._
 import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding._
-import com.twitter.scalding.Dsl._
 
 import WeightedPageRankFromMatrixSpec._
 

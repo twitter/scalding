@@ -17,7 +17,6 @@ package com.twitter.scalding.typed
 
 import org.scalatest.WordSpec
 
-import com.twitter.scalding._
 import com.twitter.scalding.typed.FlattenGroup._
 
 class MultiJoinTest extends WordSpec {

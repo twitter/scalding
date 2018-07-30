@@ -1,15 +1,13 @@
 package com.twitter.scalding.db.macros
 
-import org.mockito.Mockito.{ reset, when }
+import org.mockito.Mockito.when
 import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
 
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
 
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
-import com.twitter.scalding._
-import com.twitter.scalding.db.macros._
+import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding.db._
 
 import java.sql.{ ResultSet, ResultSetMetaData }

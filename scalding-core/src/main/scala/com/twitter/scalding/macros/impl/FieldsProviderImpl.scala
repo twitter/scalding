@@ -16,13 +16,7 @@
 package com.twitter.scalding.macros.impl
 
 import scala.annotation.tailrec
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
-import scala.reflect.runtime.universe._
-
-import com.twitter.scalding._
-import com.twitter.bijection.macros.IsCaseClass
-import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
 /**
  * Naming scheme for cascading Tuple fields used by FieldsProviderImpl macro.
@@ -81,7 +75,7 @@ object FieldsProviderImpl {
   def toFieldsCommonImpl[T](c: Context, namingScheme: NamingScheme, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
-    import TypeDescriptorProviderImpl.{ optionInner, evidentColumn }
+    import TypeDescriptorProviderImpl.optionInner
 
     @tailrec
     def isNumbered(t: Type): Boolean =

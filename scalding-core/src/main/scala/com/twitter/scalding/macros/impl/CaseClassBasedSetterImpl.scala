@@ -18,10 +18,6 @@ package com.twitter.scalding.macros.impl
 import scala.reflect.macros.Context
 import scala.util.{ Failure, Success }
 
-import com.twitter.scalding._
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
-import com.twitter.bijection.macros.impl.IsCaseClassImpl
-
 /**
  * Helper class for generating setters from case class to
  * other types. E.g. cascading Tuple, jdbc PreparedStatement

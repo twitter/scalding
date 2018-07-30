@@ -15,10 +15,7 @@
  */
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
-
-import com.twitter.scalding._
 
 object ProductLike {
   def compareBinary(c: Context)(inputStreamA: c.TermName, inputStreamB: c.TermName)(

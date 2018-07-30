@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.flow.{ FlowProcess, FlowConnector }
+import cascading.flow.FlowConnector
 import cascading.tap.Tap
 import cascading.tuple.TupleEntryIterator
 import org.apache.hadoop.conf.Configuration

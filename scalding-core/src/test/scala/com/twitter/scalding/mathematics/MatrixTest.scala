@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
-import cascading.pipe.joiner._
 import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.Group
 import com.twitter.algebird.field._
@@ -68,8 +67,6 @@ class MatrixSum(args: Args) extends Job(args) {
 
 class MatrixSum3(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, (Double, Double, Double)]('x1, 'y1, 'v1, p1)
 
@@ -78,8 +75,6 @@ class MatrixSum3(args: Args) extends Job(args) {
 }
 
 class Randwalk(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
@@ -91,8 +86,6 @@ class Randwalk(args: Args) extends Job(args) {
 
 class Cosine(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -102,8 +95,6 @@ class Cosine(args: Args) extends Job(args) {
 }
 
 class Covariance(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
@@ -115,8 +106,6 @@ class Covariance(args: Args) extends Job(args) {
 
 class VctProd(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -126,8 +115,6 @@ class VctProd(args: Args) extends Job(args) {
 }
 
 class VctDiv(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
@@ -186,8 +173,6 @@ class MatrixMapWithVal(args: Args) extends Job(args) {
 
 class RowMatProd(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -197,8 +182,6 @@ class RowMatProd(args: Args) extends Job(args) {
 }
 
 class MatColProd(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
@@ -210,8 +193,6 @@ class MatColProd(args: Args) extends Job(args) {
 
 class RowRowSum(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -221,8 +202,6 @@ class RowRowSum(args: Args) extends Job(args) {
 }
 
 class RowRowDiff(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
@@ -235,8 +214,6 @@ class RowRowDiff(args: Args) extends Job(args) {
 
 class RowRowHad(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -247,8 +224,6 @@ class RowRowHad(args: Args) extends Job(args) {
 
 class VctOuterProd(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x1, 'y1, 'v1)).read
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
@@ -258,8 +233,6 @@ class VctOuterProd(args: Args) extends Job(args) {
 }
 
 class FilterMatrix(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("mat1", ('x, 'y, 'v)).read
   val p2 = Tsv("mat2", ('x, 'y, 'v)).read
@@ -272,8 +245,6 @@ class FilterMatrix(args: Args) extends Job(args) {
 
 class KeepRowsCols(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x, 'y, 'v)).read
   val mat1 = new Matrix[Int, Int, Double]('x, 'y, 'v, p1)
   val p2 = Tsv("col1", ('x, 'v)).read
@@ -285,8 +256,6 @@ class KeepRowsCols(args: Args) extends Job(args) {
 
 class RemoveRowsCols(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("mat1", ('x, 'y, 'v)).read
   val mat1 = new Matrix[Int, Int, Double]('x, 'y, 'v, p1)
   val p2 = Tsv("col1", ('x, 'v)).read
@@ -297,8 +266,6 @@ class RemoveRowsCols(args: Args) extends Job(args) {
 }
 
 class ScalarRowRight(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("row1", ('x, 'v)).read
   val row1 = new RowVector[Int, Double]('x, 'v, p1)
@@ -315,8 +282,6 @@ class ScalarRowRight(args: Args) extends Job(args) {
 
 class ScalarRowLeft(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("row1", ('x, 'v)).read
   val row1 = new RowVector[Int, Double]('x, 'v, p1)
 
@@ -331,8 +296,6 @@ class ScalarRowLeft(args: Args) extends Job(args) {
 }
 
 class ScalarColRight(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("col1", ('x, 'v)).read
   val col1 = new ColVector[Int, Double]('x, 'v, p1)
@@ -349,8 +312,6 @@ class ScalarColRight(args: Args) extends Job(args) {
 
 class ScalarColLeft(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("col1", ('x, 'v)).read
   val col1 = new ColVector[Int, Double]('x, 'v, p1)
 
@@ -365,8 +326,6 @@ class ScalarColLeft(args: Args) extends Job(args) {
 }
 
 class ScalarDiagRight(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("diag1", ('x, 'v)).read
   val diag1 = new DiagonalMatrix[Int, Double]('x, 'v, p1)
@@ -383,8 +342,6 @@ class ScalarDiagRight(args: Args) extends Job(args) {
 
 class ScalarDiagLeft(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("diag1", ('x, 'v)).read
   val diag1 = new DiagonalMatrix[Int, Double]('x, 'v, p1)
 
@@ -400,8 +357,6 @@ class ScalarDiagLeft(args: Args) extends Job(args) {
 
 class ColNormalize(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val p1 = Tsv("col1", ('x, 'v)).read
   val col1 = new ColVector[Int, Double]('x, 'v, p1)
 
@@ -411,16 +366,12 @@ class ColNormalize(args: Args) extends Job(args) {
 
 class ColDiagonal(args: Args) extends Job(args) {
 
-  import Matrix._
-
   val col1 = new ColVector[Int, Double]('x, 'v, null, FiniteHint(100, 1))
 
   val sizeHintTotal = col1.diag.sizeHint.total.get
 }
 
 class RowNormalize(args: Args) extends Job(args) {
-
-  import Matrix._
 
   val p1 = Tsv("row1", ('x, 'v)).read
   val row1 = new RowVector[Int, Double]('x, 'v, p1)

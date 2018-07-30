@@ -9,27 +9,24 @@ import com.twitter.scalding.{
   ExecutionContext,
   ExecutionCounters,
   FlowStateMap,
-  FutureCache,
   HadoopMode,
   JobStats,
   Mappable,
-  Mode,
   TypedPipe,
   source,
   typed
 }
 import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
-import com.stripe.dagon.{ Dag, Rule, HMap }
+import com.stripe.dagon.{ Rule, HMap }
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.slf4j.LoggerFactory
-import scala.collection.mutable
-import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
+import scala.util.{ Failure, Success }
 
 import Execution.{ Writer, ToWrite }
 

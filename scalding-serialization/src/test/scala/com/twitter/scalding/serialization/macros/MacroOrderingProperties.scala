@@ -34,7 +34,6 @@ import org.scalatest.prop.{ Checkers, PropertyChecks }
 import org.scalatest.FunSuite //, ShouldMatchers }
 import com.twitter.scalding.some.other.space.space._
 import scala.collection.immutable.Queue
-import scala.language.experimental.macros
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 
 object LawTester {

@@ -1,9 +1,7 @@
 package com.twitter.scalding.serialization
 
-import org.scalacheck.Arbitrary
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen.choose
 import org.scalacheck.Prop._
 
 object UnsignedComparisonLaws extends Properties("UnsignedComparisonLaws") {

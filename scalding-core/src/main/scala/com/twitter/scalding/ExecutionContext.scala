@@ -39,8 +39,6 @@ trait ExecutionContext {
   def flowDef: FlowDef
   def mode: CascadingMode
 
-  import ExecutionContext._
-
   private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
   }

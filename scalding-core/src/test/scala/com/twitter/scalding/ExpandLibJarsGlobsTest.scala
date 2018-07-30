@@ -1,8 +1,6 @@
 package com.twitter.scalding
 
 import java.io.File
-import java.nio._
-import java.nio.file._
 import org.scalatest.{ Matchers, WordSpec }
 
 class ExpandLibJarsGlobsTest extends WordSpec with Matchers {

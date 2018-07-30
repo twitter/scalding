@@ -17,12 +17,10 @@ package com.twitter.scalding.serialization.macros.impl.ordered_serialization.pro
 
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
 object SealedTraitOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
       case tpe if (tpe.typeSymbol.isClass && (tpe.typeSymbol.asClass.isAbstractClass || tpe.typeSymbol.asClass.isTrait)) =>

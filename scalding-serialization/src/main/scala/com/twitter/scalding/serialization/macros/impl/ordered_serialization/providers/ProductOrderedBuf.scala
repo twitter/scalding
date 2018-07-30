@@ -15,18 +15,12 @@
  */
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization.providers
 
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
-import com.twitter.scalding._
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
-  CompileTimeLengthTypes,
-  ProductLike,
+ProductLike,
   TreeOrderedBuf
 }
-import CompileTimeLengthTypes._
-import java.nio.ByteBuffer
-import com.twitter.scalding.serialization.OrderedSerialization
 
 object ProductOrderedBuf {
   def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]])

@@ -23,7 +23,7 @@ import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.twitter.scalding._
 import java.io.{ BufferedWriter, File, FileOutputStream, IOException, OutputStreamWriter }
-import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.fs.Path
 
 /**
  * A tsv source with the column name header info.

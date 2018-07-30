@@ -1,10 +1,5 @@
 package com.twitter.scalding.quotation
 
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
-import org.scalatest.FreeSpec
-import org.scalatest.MustMatchers
-
 class ProjectionMacroTest extends Test {
 
   class TestClass {

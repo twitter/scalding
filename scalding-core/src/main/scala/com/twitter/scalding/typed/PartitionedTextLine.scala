@@ -22,10 +22,9 @@ import cascading.scheme.Scheme
 import cascading.scheme.hadoop.TextLine
 import cascading.scheme.local.{ TextLine => LocalTextLine }
 import cascading.tap.{ Tap, SinkMode }
-import cascading.tap.hadoop.{ Hfs, PartitionTap }
+import cascading.tap.hadoop.PartitionTap
 import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
-import cascading.tap.partition.Partition
-import cascading.tuple.{ Fields, Tuple, TupleEntry }
+import cascading.tuple.Fields
 
 /**
  * Scalding source to read or write partitioned text.

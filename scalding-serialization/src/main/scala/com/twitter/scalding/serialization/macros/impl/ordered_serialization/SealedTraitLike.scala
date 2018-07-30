@@ -15,11 +15,8 @@
  */
 package com.twitter.scalding.serialization.macros.impl.ordered_serialization
 
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
-import com.twitter.scalding._
-import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.Hasher.int.{ hash => intHash }
 
 object SealedTraitLike {

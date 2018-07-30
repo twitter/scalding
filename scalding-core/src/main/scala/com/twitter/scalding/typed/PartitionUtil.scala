@@ -15,10 +15,6 @@
 package com.twitter.scalding
 package typed
 
-import cascading.scheme.Scheme
-import cascading.tap.{ Tap, SinkMode }
-import cascading.tap.hadoop.{ Hfs, PartitionTap }
-import cascading.tap.partition.Partition
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
 
 /** Utility functions to assist with creating partitioned sourced. */

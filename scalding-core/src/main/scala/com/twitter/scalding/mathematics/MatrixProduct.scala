@@ -20,15 +20,12 @@ package com.twitter.scalding.mathematics
  * Handles the implementation of various versions of MatrixProducts
  */
 
-import com.twitter.algebird.{ Ring, Monoid, Group, Field }
+import com.twitter.algebird.Ring
 import com.twitter.scalding.RichPipe
 import com.twitter.scalding.Dsl._
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
-
-import scala.math.Ordering
-import scala.annotation.tailrec
 
 /**
  * Abstracts the approach taken to join the two matrices

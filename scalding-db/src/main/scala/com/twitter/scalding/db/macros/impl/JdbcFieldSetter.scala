@@ -15,7 +15,6 @@
  */
 package com.twitter.scalding.db.macros.impl
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.util.Try
 

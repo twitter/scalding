@@ -26,7 +26,6 @@ import scala.collection.immutable.HashMap
 import com.twitter.algebird.{
   AveragedValue,
   DecayedValue,
-  HyperLogLog,
   HyperLogLogMonoid,
   Moments,
   Monoid
@@ -109,7 +108,6 @@ class KryoTest extends WordSpec with Matchers {
     }
 
     "round trip any non-array object" in {
-      import HyperLogLog._
       implicit val hllmon: HyperLogLogMonoid = new HyperLogLogMonoid(4)
       val test = List(1, 2, "hey", (1, 2), Args("--this is --a --b --test 34"),
         ("hey", "you"),

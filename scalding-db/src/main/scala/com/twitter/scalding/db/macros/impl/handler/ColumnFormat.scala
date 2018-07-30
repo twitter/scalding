@@ -2,7 +2,6 @@ package com.twitter.scalding.db.macros.impl.handler
 
 import scala.reflect.macros.Context
 
-import com.twitter.scalding.db.macros._
 import com.twitter.scalding.db.macros.impl.FieldName
 
 object ColumnFormat {

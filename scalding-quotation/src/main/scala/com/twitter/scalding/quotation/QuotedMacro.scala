@@ -1,11 +1,7 @@
 package com.twitter.scalding.quotation
 
-import language.experimental.macros
 import scala.reflect.macros.blackbox.Context
-import scala.reflect.internal.util.RangePosition
-import scala.reflect.internal.util.OffsetPosition
 import scala.reflect.macros.runtime.{ Context => ReflectContext }
-import java.io.File
 
 class QuotedMacro(val c: Context)
   extends TreeOps

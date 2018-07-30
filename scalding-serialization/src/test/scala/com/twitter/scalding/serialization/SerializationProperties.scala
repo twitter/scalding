@@ -41,7 +41,7 @@ abstract class LawTester[T](g: Gen[T], base: String, laws: Iterable[Law[T]]) ext
 
 object SerializationProperties extends Properties("SerializationProperties") {
 
-  import OrderedSerialization.{ resultFrom, CompareFailure, readThenCompare }
+  import OrderedSerialization.readThenCompare
 
   implicit val intOrderedSerialization: OrderedSerialization[Int] = new OrderedSerialization[Int] {
     def read(in: InputStream) = Try(Reader.read[Int](in))

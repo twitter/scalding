@@ -18,7 +18,7 @@ package com.twitter.scalding
 import com.twitter.scalding.typed.LookupJoin
 import org.scalatest.{ Matchers, WordSpec }
 
-import com.twitter.algebird.{ Monoid, Semigroup, Group }
+import com.twitter.algebird.Semigroup
 
 object LookupJoinedTest {
 
@@ -37,8 +37,6 @@ object LookupJoinedTest {
 }
 
 class LookupJoinerJob(args: Args) extends Job(args) {
-
-  import TDsl._
 
   val in0 = TypedTsv[(Int, Int, Int)]("input0")
   val in1 = TypedTsv[(Int, Int, Int)]("input1")
@@ -62,7 +60,6 @@ class LookupJoinerJob(args: Args) extends Job(args) {
 
 class LookupJoinedTest extends WordSpec with Matchers {
 
-  import Dsl._
   import LookupJoinedTest.genList
 
   def lookupJoin[T: Ordering, K, V, W](in0: Iterable[(T, K, V)], in1: Iterable[(T, K, W)]) = {
@@ -136,8 +133,6 @@ class LookupJoinedTest extends WordSpec with Matchers {
 
 class WindowLookupJoinerJob(args: Args) extends Job(args) {
 
-  import TDsl._
-
   val in0 = TypedTsv[(Int, Int, Int)]("input0")
   val in1 = TypedTsv[(Int, Int, Int)]("input1")
   val window = args("window").toInt
@@ -156,7 +151,6 @@ class WindowLookupJoinerJob(args: Args) extends Job(args) {
 
 class WindowLookupJoinedTest extends WordSpec with Matchers {
 
-  import Dsl._
   import LookupJoinedTest.genList
 
   def windowLookupJoin[K, V, W](in0: Iterable[(Int, K, V)], in1: Iterable[(Int, K, W)], win: Int) = {

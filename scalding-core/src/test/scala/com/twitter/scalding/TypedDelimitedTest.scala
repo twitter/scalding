@@ -70,7 +70,6 @@ class DailySuffixTypedTsvJob(args: Args) extends Job(args) with UtcDateRangeJob 
 }
 
 class TypedDelimitedTest extends WordSpec with Matchers {
-  import Dsl._
 
   val data = List(("aaa", 1), ("bbb", 2))
 

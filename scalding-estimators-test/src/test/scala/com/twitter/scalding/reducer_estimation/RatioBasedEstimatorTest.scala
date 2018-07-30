@@ -138,7 +138,6 @@ class InvalidHistoryBasedEstimator extends RatioBasedEstimator {
 }
 
 class RatioBasedReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
-  import HipJob._
 
   "Single-step job with ratio-based reducer estimator" should {
     "not set reducers when no history is found" in {

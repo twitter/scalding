@@ -15,15 +15,12 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird.{ Bytes, CMS, CMSHasherImplicits, Batched }
+import com.twitter.algebird.{ Bytes, CMS, Batched }
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
 import com.twitter.scalding.serialization.{ OrderedSerialization, OrderedSerialization2 }
 import com.twitter.algebird.CMSMonoid
 
-import scala.language.experimental.macros
-
 // This was a bad design choice, we should have just put these in the CMSHasher object
-import CMSHasherImplicits._
 
 /**
  * This class is generally only created by users

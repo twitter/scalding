@@ -22,7 +22,6 @@ import cascading.tuple.Fields
 import com.twitter.scalding.source._
 
 class SourceSpec extends WordSpec with Matchers {
-  import Dsl._
 
   "A case class Source" should {
     "inherit equality properly from TimePathedSource" in {
@@ -126,7 +125,6 @@ object MapFunctionAndThenTest {
   val output: List[(Int, String, Int)] = List((0, "a", 0), (1, "b", 1), (2, "c", 2))
 }
 class TypedPipeAndThenTest extends WordSpec with Matchers {
-  import Dsl._
   import MapFunctionAndThenTest._
   "Mappable.andThen is like TypedPipe.map" should {
     JobTest(new MapTypedPipe(_))

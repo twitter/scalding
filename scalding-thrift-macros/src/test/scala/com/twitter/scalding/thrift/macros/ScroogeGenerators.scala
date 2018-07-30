@@ -1,7 +1,7 @@
 package com.twitter.scalding.thrift.macros
 
 import com.twitter.scalding.thrift.macros.scalathrift._
-import org.scalacheck.{ Arbitrary, Gen, Prop }
+import org.scalacheck.{ Arbitrary, Gen }
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import java.nio.ByteBuffer
 import org.scalacheck.Gen.Parameters

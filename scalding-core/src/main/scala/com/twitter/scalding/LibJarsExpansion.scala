@@ -46,7 +46,6 @@ object ExpandLibJarsGlobs {
       })
 
   def fromGlob(glob: String, filesOnly: Boolean = true): Stream[Path] = {
-    import java.nio._
     import java.nio.file._
     val fs = FileSystems.getDefault()
     val expandedSlash = if (glob.endsWith("/")) s"${glob}/*" else glob

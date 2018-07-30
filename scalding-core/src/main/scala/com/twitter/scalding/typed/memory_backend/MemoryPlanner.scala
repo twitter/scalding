@@ -1,7 +1,6 @@
 package com.twitter.scalding.typed.memory_backend
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 import com.stripe.dagon.{ Memoize, FunctionK }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Config

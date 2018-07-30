@@ -20,7 +20,6 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.thrift.macros.impl.ordered_serialization.{ ScroogeEnumOrderedBuf, ScroogeUnionOrderedBuf, ScroogeOrderedBuf, ScroogeOuterOrderedBuf }
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 // The flow here is that we start with the outer dispatcher. Outer dispatcher is the only one allowed to recurse into a thrift struct `ScroogeOrderedBuf.dispatch`.
@@ -35,7 +34,6 @@ object ScroogeInternalOrderedSerializationImpl {
   // which will inject an implicit lazy val for a new OrderedSerialization and then exit the macro.
   // This avoids methods becoming too long via inlining.
   private def baseScroogeDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    import c.universe._
     def buildDispatcher: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = ScroogeInternalOrderedSerializationImpl.innerDispatcher(c)
     val scroogeEnumDispatcher = ScroogeEnumOrderedBuf.dispatch(c)
     val scroogeUnionDispatcher = ScroogeUnionOrderedBuf.dispatch(c)(buildDispatcher)

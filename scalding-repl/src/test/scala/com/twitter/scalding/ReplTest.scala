@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tuple.Fields
 import java.io.File
 import java.nio.file.Files
 import org.scalatest.WordSpec

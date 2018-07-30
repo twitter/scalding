@@ -27,7 +27,6 @@ import java.util.regex.Pattern
  */
 class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZone, child: Option[BaseGlobifier])
   extends java.io.Serializable {
-  import DateOps._
   // result <= rd
   private def greatestLowerBound(rd: RichDate) = dur.floorOf(rd)
   // rd <= result

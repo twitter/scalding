@@ -19,8 +19,6 @@ import java.util.{ Iterator => JIterator }
 
 import cascading.flow.FlowException
 import cascading.pipe.joiner.{ InnerJoin, JoinerClosure }
-import cascading.scheme.Scheme
-import cascading.scheme.hadoop.{ TextLine => CHTextLine }
 import cascading.tap.Tap
 import cascading.tuple.{ Fields, Tuple }
 import com.twitter.scalding._

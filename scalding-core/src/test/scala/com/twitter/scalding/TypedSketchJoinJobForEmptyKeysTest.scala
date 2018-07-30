@@ -25,7 +25,6 @@ class TypedSketchJoinJobForEmptyKeys(args: Args) extends Job(args) {
 }
 
 class TypedSketchJoinJobForEmptyKeysTest extends WordSpec with Matchers {
-  import Dsl._
   "A TypedSketchJoinJobForEmptyKeysTest" should {
     "Sketch leftJoin with a single left key should be correct" in {
       JobTest(new TypedSketchJoinJobForEmptyKeys(_))

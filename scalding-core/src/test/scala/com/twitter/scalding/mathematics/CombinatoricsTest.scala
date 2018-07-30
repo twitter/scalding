@@ -36,7 +36,6 @@ class CombinatoricsJob(args: Args) extends Job(args) {
 }
 
 class CombinatoricsJobTest extends WordSpec with Matchers {
-  import Dsl._
 
   "A Combinatorics Job" should {
     JobTest(new CombinatoricsJob(_))
