@@ -1,6 +1,6 @@
 package com.twitter.scalding.reducer_estimation
 
-import com.twitter.scalding.estimation.{ Common, FlowStepHistory, FlowStrategyInfo, HistoryEstimator }
+import com.twitter.scalding.estimation.{ Common, FlowStepHistory, FlowStrategyInfo }
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 

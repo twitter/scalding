@@ -18,7 +18,6 @@ package com.twitter.scalding.serialization.macros.impl.ordered_serialization.pro
 import scala.reflect.macros.blackbox.Context
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
   CompileTimeLengthTypes,
-  ProductLike,
   TreeOrderedBuf
 }
 import CompileTimeLengthTypes._

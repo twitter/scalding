@@ -24,7 +24,6 @@ import cascading.stats.CascadingStats
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 
-import scala.util.Try
 
 object JobTest {
 

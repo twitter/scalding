@@ -25,8 +25,6 @@ import org.scalacheck.Prop._
 import JavaStreamEnrichments._
 import java.io._
 
-import scala.collection.generic.CanBuildFrom
-
 object JavaStreamEnrichmentsProperties extends Properties("JavaStreamEnrichmentsProperties") {
 
   def output = new ByteArrayOutputStream

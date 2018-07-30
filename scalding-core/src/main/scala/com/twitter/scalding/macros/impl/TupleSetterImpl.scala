@@ -15,12 +15,9 @@
  */
 package com.twitter.scalding.macros.impl
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
-import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
-import com.twitter.bijection.macros.impl.IsCaseClassImpl
 /**
  * This class contains the core macro implementations. This is in a separate module to allow it to be in
  * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.

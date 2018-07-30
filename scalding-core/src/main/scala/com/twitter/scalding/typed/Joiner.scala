@@ -15,8 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.scalding._
-
 object Joiner extends java.io.Serializable {
 
   type JoinFn[K, V, U, R] = (K, Iterator[V], Iterable[U]) => Iterator[R]

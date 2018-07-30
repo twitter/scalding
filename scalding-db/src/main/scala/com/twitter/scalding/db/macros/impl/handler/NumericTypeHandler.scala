@@ -1,12 +1,8 @@
 package com.twitter.scalding.db.macros.impl.handler
 
-import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
-import scala.reflect.runtime.universe._
 import scala.util.{ Success, Failure }
 
-import com.twitter.scalding._
 import com.twitter.scalding.db.macros.impl.FieldName
 
 object NumericTypeHandler {
@@ -16,7 +12,6 @@ object NumericTypeHandler {
     annotationInfo: List[(c.universe.Type, Option[Int])],
     nullable: Boolean,
     numericType: String): scala.util.Try[List[ColumnFormat[c.type]]] = {
-    import c.universe._
 
     val helper = new {
       val ctx: c.type = c

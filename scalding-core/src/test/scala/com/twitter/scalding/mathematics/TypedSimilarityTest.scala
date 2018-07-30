@@ -100,7 +100,6 @@ class TypedSimilarityTest extends WordSpec with Matchers {
   }
 
   "A TypedCosineJob" should {
-    import Dsl._
     "compute cosine similarity" in {
       JobTest(new TypedCosineSimJob(_))
         .source(TypedTsv[(Int, Int)]("ingraph"), edges)

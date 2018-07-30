@@ -15,7 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.scalding.serialization.CascadingBinaryComparator
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.StringOrderedSerialization
 import com.twitter.scalding.serialization.RequireOrderedSerializationMode

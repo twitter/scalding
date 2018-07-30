@@ -15,11 +15,8 @@
  */
 package com.twitter.scalding.thrift.macros.impl.ordered_serialization
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-import com.twitter.scalding._
-import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 
 object UnionLike {

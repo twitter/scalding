@@ -18,19 +18,12 @@ package com.twitter.scalding.mathematics
 import com.twitter.scalding._
 import com.twitter.scalding.serialization._
 import com.twitter.scalding.source.TypedText
-import cascading.pipe.joiner._
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.algebird.{ Ring, Group }
 import com.twitter.algebird.field._
-
-import java.io.{ InputStream, OutputStream }
-import scala.util.{ Try, Success }
 
 class Matrix2Sum(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -46,7 +39,6 @@ class Matrix2Sum(args: Args) extends Job(args) {
 }
 
 class Matrix2SumOrderedSerialization(args: Args) extends Job(args) {
-  import Matrix2._
   import RequiredBinaryComparators.orderedSerialization
 
   override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> "true")
@@ -64,9 +56,7 @@ class Matrix2SumOrderedSerialization(args: Args) extends Job(args) {
 
 class Matrix2Sum3(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -79,9 +69,7 @@ class Matrix2Sum3(args: Args) extends Job(args) {
 
 class Matrix2SumChain(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -102,9 +90,7 @@ class Matrix2SumChain(args: Args) extends Job(args) {
 
 class Matrix2RowRowHad(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -118,9 +104,7 @@ class Matrix2RowRowHad(args: Args) extends Job(args) {
 
 class Matrix2ZeroHad(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -137,9 +121,7 @@ class Matrix2ZeroHad(args: Args) extends Job(args) {
 
 class Matrix2HadSum(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -160,9 +142,7 @@ class Matrix2HadSum(args: Args) extends Job(args) {
 
 class Matrix2Prod(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -177,7 +157,6 @@ class Matrix2JProd(args: Args) extends Job(args) {
 
   import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -190,9 +169,7 @@ class Matrix2JProd(args: Args) extends Job(args) {
 
 class Matrix2ProdSum(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -208,9 +185,6 @@ class Matrix2ProdSum(args: Args) extends Job(args) {
 }
 
 class Matrix2PropJob(args: Args) extends Job(args) {
-  import Matrix2._
-  import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val tsv1 = TypedText.tsv[(Int, Int, Int)]("graph")
@@ -230,9 +204,7 @@ class Matrix2PropJob(args: Args) extends Job(args) {
 
 class Matrix2Cosine(args: Args) extends Job(args) {
 
-  import Matrix2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read
@@ -245,11 +217,6 @@ class Matrix2Cosine(args: Args) extends Job(args) {
 }
 
 class Matrix2Normalize(args: Args) extends Job(args) {
-
-  import Matrix2._
-  import cascading.pipe.Pipe
-  import cascading.tuple.Fields
-  import com.twitter.scalding.TDsl._
 
   val tp1 = TypedPipe.from(TypedText.tsv[(Int, Int, Double)]("mat1"))
   val mat1 = MatrixLiteral(tp1, NoClue)
@@ -269,10 +236,8 @@ class Matrix2Normalize(args: Args) extends Job(args) {
 
 class Scalar2Ops(args: Args) extends Job(args) {
 
-  import Matrix2._
   import Scalar2._
   import cascading.pipe.Pipe
-  import cascading.tuple.Fields
   import com.twitter.scalding.TDsl._
 
   val p1: Pipe = Tsv("mat1", ('x1, 'y1, 'v1)).read

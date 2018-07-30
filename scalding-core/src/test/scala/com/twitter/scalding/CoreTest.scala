@@ -19,7 +19,6 @@ import org.scalatest.{ WordSpec, Matchers }
 
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
-import java.util.concurrent.TimeUnit
 import com.twitter.scalding.source.DailySuffixTsv
 
 import java.lang.{ Integer => JInt }
@@ -32,7 +31,6 @@ class NumberJoinerJob(args: Args) extends Job(args) {
 }
 
 class NumberJoinTest extends WordSpec with Matchers {
-  import Dsl._
   "A NumberJoinerJob" should {
     //Set up the job:
     "not throw when joining longs with ints" in {
@@ -61,7 +59,6 @@ class SpillingJob(args: Args) extends Job(args) {
 }
 
 class SpillingTest extends WordSpec with Matchers {
-  import Dsl._
   "A SpillingJob" should {
     val src = (0 to 9).map(_ -> 1) ++ List(0 -> 4)
     val result = src.groupBy(_._1)
@@ -1283,7 +1280,6 @@ class InnerCaseJob(args: Args) extends Job(args) {
 }
 
 class InnerCaseTest extends WordSpec with Matchers {
-  import Dsl._
 
   val input = List(Tuple1(1), Tuple1(2), Tuple1(2), Tuple1(4))
   "An InnerCaseJob" should {
@@ -1438,7 +1434,6 @@ class TypedThrowsErrorsJob2(args: Args) extends Job(args) {
 }
 
 class TypedItsATrapTest extends WordSpec with Matchers {
-  import TDsl._
 
   "A Typed AddTrap with many traps" should {
     import TypedThrowsErrorsJob._
@@ -1504,7 +1499,6 @@ class GroupAllToListTestJob(args: Args) extends Job(args) {
 }
 
 class GroupAllToListTest extends WordSpec with Matchers {
-  import Dsl._
 
   "A GroupAllToListTestJob" should {
     val input = List((1L, "a", 1.0), (1L, "b", 2.0), (2L, "a", 1.0), (2L, "b", 2.0))
@@ -1534,7 +1528,6 @@ class ToListGroupAllToListTestJob(args: Args) extends Job(args) {
 }
 
 class ToListGroupAllToListSpec extends WordSpec with Matchers {
-  import Dsl._
 
   val expected = List(("us", List(1)), ("jp", List(3, 2)), ("gb", List(3, 1)))
 

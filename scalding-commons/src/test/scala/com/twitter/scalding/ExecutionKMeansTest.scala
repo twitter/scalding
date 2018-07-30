@@ -18,7 +18,6 @@ package com.twitter.scalding.typed
 import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.scalding._
-import scala.util.Try
 
 import com.twitter.scalding.examples.KMeans
 

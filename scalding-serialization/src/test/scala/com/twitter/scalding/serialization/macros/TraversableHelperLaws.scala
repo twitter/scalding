@@ -17,7 +17,6 @@ limitations under the License.
 package com.twitter.scalding.serialization.macros
 
 import org.scalatest.{ FunSuite, Matchers }
-import org.scalatest.prop.Checkers
 import org.scalatest.prop.PropertyChecks
 
 import impl.ordered_serialization.runtime_helpers.TraversableHelpers._

@@ -27,7 +27,7 @@ import cascading.tuple.TupleEntry
 import cascading.util.Util
 import cascading.tap.partition.Partition
 
-import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv, _ }
+import com.twitter.scalding.{ PartitionedTsv => StandardPartitionedTsv }
 
 object PartitionSourceTestHelpers {
   import Dsl._

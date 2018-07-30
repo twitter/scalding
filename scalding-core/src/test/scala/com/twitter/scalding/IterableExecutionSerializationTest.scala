@@ -3,9 +3,7 @@ package com.twitter.scalding
 import com.twitter.bijection.JavaSerializationInjection
 import com.twitter.chill.KryoPool
 import com.twitter.chill.config.ScalaAnyRefMapConfig
-import com.twitter.scalding.Execution
 import com.twitter.scalding.serialization.{ Externalizer, KryoHadoop }
-import com.twitter.scalding.typed.TypedPipe
 import com.twitter.scalding.source.TypedText
 import org.scalatest.FunSuite
 

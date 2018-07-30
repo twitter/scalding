@@ -15,17 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import com.twitter.algebird.monad.Reader
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
 import com.twitter.scalding.serialization.OrderedSerialization
-import java.nio.file.{FileSystems, Files, Path}
+import java.nio.file.Files
 import java.io.File
 import java.util
-import org.scalatest.{Assertion, Matchers, WordSpec}
+import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future, Promise, ExecutionContext => ConcurrentExecutionContext}
-import scala.util.Random
+import scala.concurrent.{Future, Promise, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.{Failure, Success, Try}
 import ExecutionContext._
 import cascading.flow.{Flow, FlowListener}

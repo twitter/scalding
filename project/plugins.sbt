@@ -6,6 +6,7 @@ resolvers ++= Seq(
   "Twitter Maven" at "https://maven.twttr.com"
 )
 
+addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"        % "0.5.10")
 addSbtPlugin("com.eed3si9n"       % "sbt-assembly"        % "0.10.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"          % "0.3.3")
 addSbtPlugin("com.fortysevendeg"  % "sbt-microsites"      % "0.3.3")

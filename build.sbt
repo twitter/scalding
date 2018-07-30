@@ -48,9 +48,9 @@ val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencie
 val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
   organization := "com.twitter",
 
-  scalaVersion := "2.11.11",
+  scalaVersion := "2.11.12",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.3"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.4"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
@@ -103,7 +103,8 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       "-deprecation",
       "-language:implicitConversions",
       "-language:higherKinds",
-      "-language:existentials"
+      "-language:existentials",
+      "-Ywarn-unused-import"
     ),
 
   scalacOptions in(Compile, doc) ++= Seq(scalaVersion.value).flatMap {

@@ -15,9 +15,6 @@ limitations under the License.
 */
 package com.twitter.scalding.typed
 
-import com.twitter.algebird._
-import com.twitter.scalding.{ Mode, IterableSource }
-
 import com.twitter.scalding.Execution
 
 object ValuePipe extends java.io.Serializable {

@@ -41,7 +41,6 @@ class MutatedSourceJob(args: Args) extends Job(args) {
 }
 
 class MutatedSourceTest extends WordSpec with Matchers {
-  import Dsl._
   "A MutatedSourceJob" should {
     "Not throw when using a converted source" in {
       JobTest(new MutatedSourceJob(_))
@@ -72,7 +71,6 @@ class ContraMappedAndThenSourceJob(args: Args) extends Job(args) {
 }
 
 class ContraMappedAndThenSourceTest extends WordSpec with Matchers {
-  import Dsl._
   "A ContraMappedAndThenSourceJob" should {
     "Not throw when using a converted source" in {
       JobTest(new ContraMappedAndThenSourceJob(_))

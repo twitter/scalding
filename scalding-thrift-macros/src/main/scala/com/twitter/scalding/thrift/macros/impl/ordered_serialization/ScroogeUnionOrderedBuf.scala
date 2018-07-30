@@ -19,7 +19,6 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.prov
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scrooge.ThriftUnion
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 object ScroogeUnionOrderedBuf {

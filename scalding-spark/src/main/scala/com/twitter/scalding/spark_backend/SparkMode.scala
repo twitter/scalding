@@ -4,7 +4,7 @@ import com.twitter.scalding.{ Config, Mode }
 import com.twitter.scalding.typed.{ Resolver, TypedSource, TypedSink }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import scala.concurrent.{ Future, ExecutionContext, Promise }
+import scala.concurrent.{ Future, ExecutionContext }
 
 case class SparkMode(sources: Resolver[TypedSource, SparkSource], sink: Resolver[TypedSink, SparkSink]) extends Mode {
   def newWriter(): SparkWriter =

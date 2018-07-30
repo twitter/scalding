@@ -3,12 +3,8 @@ package com.twitter.scalding.spark_backend
 import com.stripe.dagon.{ FunctionK, Memoize }
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter, SubTypes }
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter }
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.ExecutionContext
-import scala.reflect.ClassTag
 
 object SparkPlanner {
   /**

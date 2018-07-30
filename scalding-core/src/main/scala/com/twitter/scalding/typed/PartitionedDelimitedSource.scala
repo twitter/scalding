@@ -21,11 +21,7 @@ import java.io.{ InputStream, OutputStream, Serializable }
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.TextDelimited
 import cascading.scheme.local.{ TextDelimited => LocalTextDelimited }
-import cascading.tap.{ Tap, SinkMode }
-import cascading.tap.hadoop.{ Hfs, PartitionTap }
-import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
-import cascading.tap.partition.Partition
-import cascading.tuple.{ Fields, Tuple, TupleEntry }
+import cascading.tuple.Fields
 
 /**
  * Scalding source to read or write partitioned delimited text.

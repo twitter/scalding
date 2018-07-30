@@ -27,7 +27,6 @@ import java.io.Serializable
 import org.apache.thrift.TBase
 
 // Retrieve implicits
-import Dsl._
 
 abstract class DailySuffixLzoCodec[T](prefix: String, dateRange: DateRange)(implicit @transient suppliedInjection: Injection[T, Array[Byte]])
   extends DailySuffixSource(prefix, dateRange) with LzoCodec[T] {

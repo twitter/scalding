@@ -18,16 +18,12 @@ package com.twitter.scalding.macros
 import cascading.tuple.{ Tuple => CTuple, TupleEntry }
 import com.twitter.bijection.macros.{ IsCaseClass, MacroGenerated }
 import com.twitter.scalding._
-import com.twitter.scalding.macros._
-import com.twitter.scalding.macros.impl._
 import com.twitter.scalding.serialization.Externalizer
 import org.scalacheck.Arbitrary
-import org.scalacheck.Gen.choose
 import org.scalacheck.Prop
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Properties
 import org.scalatest.{ Matchers, WordSpec }
-import scala.language.experimental.{ macros => smacros }
 import scala.reflect.runtime.universe._
 
 // We avoid nesting these just to avoid any complications in the serialization test

@@ -1,7 +1,7 @@
 package com.twitter.scalding.bdd
 
 import org.scalatest.{ Matchers, WordSpec }
-import com.twitter.scalding.{ Dsl, RichPipe }
+import com.twitter.scalding.RichPipe
 import scala.collection.mutable.Buffer
 import cascading.pipe.Pipe
 import cascading.tuple.Tuple

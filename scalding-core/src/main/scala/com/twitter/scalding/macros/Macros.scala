@@ -20,7 +20,6 @@ import scala.language.experimental.macros
 import com.twitter.scalding._
 import com.twitter.scalding.macros.impl._
 import cascading.tuple.Fields
-import com.twitter.scalding.serialization.OrderedSerialization
 
 object Macros {
 

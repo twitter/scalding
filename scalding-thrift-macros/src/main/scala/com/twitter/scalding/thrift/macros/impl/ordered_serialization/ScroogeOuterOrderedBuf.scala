@@ -18,7 +18,6 @@ package com.twitter.scalding.thrift.macros.impl.ordered_serialization
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import com.twitter.scrooge.{ ThriftStruct, ThriftUnion }
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 /*

@@ -14,7 +14,6 @@ limitations under the License.
 package com.twitter.scalding.typed
 
 import java.io.{ OutputStream, InputStream, Serializable }
-import java.util.UUID
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe

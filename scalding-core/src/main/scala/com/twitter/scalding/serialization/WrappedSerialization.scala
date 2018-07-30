@@ -29,8 +29,6 @@ import scala.collection.JavaConverters._
  */
 class WrappedSerialization[T] extends HSerialization[T] with Configurable {
 
-  import WrappedSerialization.ClassSerialization
-
   private var conf: Option[Configuration] = None
   private var serializations: Map[Class[_], Serialization[_]] = Map.empty
 

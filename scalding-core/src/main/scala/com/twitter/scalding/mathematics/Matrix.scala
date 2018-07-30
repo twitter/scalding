@@ -19,17 +19,13 @@ import com.twitter.algebird.{ Monoid, Group, Ring, Field }
 import com.twitter.algebird.field._ // backwards compatiblity support
 import com.twitter.scalding._
 
-import cascading.pipe.assembly._
 import cascading.pipe.joiner._
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import cascading.tuple._
 import cascading.flow._
-import cascading.tap._
 
 import com.twitter.scalding.Dsl._
-import scala.math.max
-import scala.annotation.tailrec
 
 /**
  * Matrix class - represents an infinite (hopefully sparse) matrix.

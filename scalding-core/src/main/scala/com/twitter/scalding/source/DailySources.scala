@@ -17,7 +17,6 @@
 package com.twitter.scalding.source
 
 import com.twitter.scalding._
-import Dsl._
 import cascading.tuple.Fields
 
 abstract class DailyPrefixSuffixSource(prefixTemplate: String, suffixTemplate: String, dateRange: DateRange)

@@ -1,12 +1,9 @@
 package com.twitter.scalding
 
 import org.scalatest.{ PropSpec, Matchers, WordSpec }
-import org.scalacheck.{ Arbitrary, Properties }
 import org.scalacheck.Prop.forAll
 import org.scalatest.prop.Checkers
 import org.scalacheck.Gen
-
-import scala.collection.mutable.ListBuffer
 
 class StringUtilityTest extends WordSpec with Matchers {
   "fastSplitTest" should {

@@ -4,15 +4,12 @@ import cascading.flow.FlowDef
 import cascading.tuple.Fields
 import com.stripe.dagon.{ Dag, Rule }
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.WritableSequenceFile
 import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.Writable
-import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource, TupleConverter }
+import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.prop.GeneratorDrivenPropertyChecks.PropertyCheckConfiguration
 import org.scalacheck.{ Arbitrary, Gen }
 import scala.util.{ Failure, Success, Try }
 
@@ -256,7 +253,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("standard rules are reproducible") {
-    import TypedPipeGen.{ genWithFakeSources, genRule }
+    import TypedPipeGen.genWithFakeSources
 
     implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithFakeSources) { t =>

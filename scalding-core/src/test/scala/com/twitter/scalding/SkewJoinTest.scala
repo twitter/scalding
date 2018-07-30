@@ -43,7 +43,6 @@ class SkewJoinJob(args: Args) extends Job(args) {
 }
 
 object JoinTestHelper {
-  import Dsl._
 
   val rng = new java.util.Random
   def generateInput(size: Int, max: Int): List[(String, String, String)] = {

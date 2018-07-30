@@ -16,14 +16,12 @@
 package com.twitter.scalding.macros
 
 import org.scalatest.WordSpec
-import com.twitter.scalding.macros.{ _ => _ }
 
 /**
  * This test is intended to ensure that the macros do not require any imported code in scope. This is why all
  * references are via absolute paths.
  */
 class MacroDepHygiene extends WordSpec {
-  import com.twitter.bijection.macros.impl.IsCaseClassImpl
 
   case class A(x: Int, y: String)
   case class B(x: A, y: String, z: A)

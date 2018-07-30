@@ -16,7 +16,6 @@ limitations under the License.
 
 package com.twitter.scalding.commons.source
 
-import scala.reflect.ClassTag
 
 import com.twitter.elephantbird.mapreduce.io.BinaryConverter
 import com.twitter.scalding._

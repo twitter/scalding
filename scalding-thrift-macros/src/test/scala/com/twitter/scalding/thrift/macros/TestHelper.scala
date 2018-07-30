@@ -20,7 +20,6 @@ import com.twitter.scalding.serialization.JavaStreamEnrichments._
 import com.twitter.scalding.serialization.OrderedSerialization
 import java.io._
 import org.scalatest.Matchers
-import scala.language.experimental.macros
 
 object TestHelper extends Matchers {
 

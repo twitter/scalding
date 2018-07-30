@@ -1,8 +1,5 @@
 package com.twitter.scalding.quotation
 
-import org.scalatest.MustMatchers
-import org.scalatest.FreeSpec
-
 class QuotedMacroTest extends Test {
 
   val test = new TestClass

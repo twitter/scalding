@@ -17,9 +17,7 @@ package com.twitter.scalding.filecache
 
 import cascading.tuple.Tuple
 import com.twitter.scalding._
-import java.io.File
 import java.net.URI
-import org.apache.hadoop.conf.Configuration
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.mutable
 

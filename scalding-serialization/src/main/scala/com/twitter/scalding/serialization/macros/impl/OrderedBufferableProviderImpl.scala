@@ -15,9 +15,7 @@
  */
 package com.twitter.scalding.serialization.macros.impl
 
-import scala.language.experimental.macros
 import scala.reflect.macros.Context
-import scala.util.Random
 
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
@@ -74,7 +72,6 @@ object OrderedSerializationProviderImpl {
   // Same as the outer dispatcher but we allow an implicit fallback for fields.
   // So in essence it never fails to do a lookup
   private def innerDispatcher(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    import c.universe._
     val innerF = scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c))
 
     val f: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
@@ -86,7 +83,6 @@ object OrderedSerializationProviderImpl {
   }
 
   def apply[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[OrderedSerialization[T]] = {
-    import c.universe._
 
     val b: TreeOrderedBuf[c.type] = outerDispatcher(c)(T.tpe)
     val res = TreeOrderedBuf.toOrderedSerialization[T](c)(b)

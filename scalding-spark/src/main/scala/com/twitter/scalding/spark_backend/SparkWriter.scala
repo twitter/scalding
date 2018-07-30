@@ -1,9 +1,8 @@
 package com.twitter.scalding.spark_backend
 
-import scala.concurrent.{ Future, ExecutionContext, Promise }
-import com.stripe.dagon.{ HMap, Rule }
+import scala.concurrent.{ Future, ExecutionContext }
 import com.twitter.scalding.typed._
-import com.twitter.scalding.{ Config, Execution, ExecutionCounters, Mode }
+import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
 
 import Execution.{ ToWrite, Writer }
 

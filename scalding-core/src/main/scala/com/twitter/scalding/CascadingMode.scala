@@ -9,7 +9,7 @@ import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import java.io.File
 import java.util.{ UUID, Properties }
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.annotation.tailrec

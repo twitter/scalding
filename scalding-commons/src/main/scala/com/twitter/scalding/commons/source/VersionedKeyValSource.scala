@@ -218,7 +218,6 @@ object RichPipeEx extends java.io.Serializable {
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {
   import Dsl._
-  import TDsl._
 
   // Tap reads existing data from the `sourceVersion` (or latest
   // version) of data specified in `src`, merges the K,V pairs from

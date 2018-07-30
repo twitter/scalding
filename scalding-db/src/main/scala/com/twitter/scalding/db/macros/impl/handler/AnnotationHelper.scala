@@ -1,11 +1,8 @@
 package com.twitter.scalding.db.macros.impl.handler
 
-import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
 import scala.util.{ Success, Failure }
 
-import com.twitter.scalding.db.ColumnDefinition
 import com.twitter.scalding.db.macros.impl.FieldName
 
 private[handler] sealed trait SizeAnno

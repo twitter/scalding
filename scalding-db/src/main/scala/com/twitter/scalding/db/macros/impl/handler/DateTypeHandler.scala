@@ -1,9 +1,6 @@
 package com.twitter.scalding.db.macros.impl.handler
 
-import scala.language.experimental.macros
-
 import scala.reflect.macros.Context
-import scala.reflect.runtime.universe._
 import scala.util.Success
 
 import com.twitter.scalding.db.macros.impl.FieldName
@@ -15,7 +12,6 @@ object DateTypeHandler {
     defaultValue: Option[c.Expr[String]],
     annotationInfo: List[(c.universe.Type, Option[Int])],
     nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
-    import c.universe._
 
     val helper = new {
       val ctx: c.type = c
