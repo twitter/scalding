@@ -142,6 +142,9 @@ abstract class Config extends Serializable {
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
 
+  def getMapSideAggregationThreshold: Option[Int] =
+    get(AggregateBy.AGGREGATE_BY_THRESHOLD).map(_.toInt)
+
   @deprecated("Use setRequireOrderedSerializationMode", "12/14/17")
   def setRequireOrderedSerialization(b: Boolean): Config =
     this + (ScaldingRequireOrderedSerialization -> (b.toString))

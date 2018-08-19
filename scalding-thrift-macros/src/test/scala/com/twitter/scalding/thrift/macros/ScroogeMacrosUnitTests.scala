@@ -20,7 +20,6 @@ import com.twitter.scalding.thrift.macros.scalathrift._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 
-
 class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks {
   import ScroogeGenerators._
   import TestHelper._

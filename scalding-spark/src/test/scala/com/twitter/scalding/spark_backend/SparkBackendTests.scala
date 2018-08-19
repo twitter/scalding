@@ -51,4 +51,11 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       evens ++ odds
     }
   }
+
+  test("sumByKey matches") {
+    sparkMatchesMemory {
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2).sumByLocalKeys
+    }
+  }
 }

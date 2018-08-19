@@ -1,10 +1,13 @@
 package com.twitter.scalding.spark_backend
 
 import com.stripe.dagon.{ FunctionK, Memoize }
+import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter }
+import java.util.{ LinkedHashMap => JLinkedHashMap, Map => JMap }
 import org.apache.spark.storage.StorageLevel
+import scala.collection.mutable.{ Map => MMap }
 
 object SparkPlanner {
   /**
@@ -82,7 +85,10 @@ object SparkPlanner {
             // we can use Algebird's SummingCache https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/SummingCache.scala#L36
             // plus mapPartitions to implement this
             val SumByLocalKeys(p, sg) = sblk
-            ???
+            // TODO set a default in a better place
+            val defaultCapacity = 10000
+            val capacity = config.getMapSideAggregationThreshold.getOrElse(defaultCapacity)
+            rec(p).mapPartitions(CachingSum(capacity, sg))
           }
           sum(slk)
 
@@ -145,4 +151,64 @@ object SparkPlanner {
           ???
       }
     })
+
+  case class CachingSum[K, V](capacity: Int, semigroup: Semigroup[V]) extends Function1[Iterator[(K, V)], Iterator[(K, V)]] {
+    def newCache(evicted: MMap[K, V]): JMap[K, V] = new JLinkedHashMap[K, V](capacity + 1, 0.75f, true) {
+      override protected def removeEldestEntry(eldest: JMap.Entry[K, V]) =
+        if (super.size > capacity) {
+          evicted.put(eldest.getKey, eldest.getValue)
+          true
+        } else {
+          false
+        }
+    }
+
+    def onEmpty[A](it: Iterator[A])(fn: () => Unit): Iterator[A] =
+      new Iterator[A] {
+        var fnMut: () => Unit = fn
+        def hasNext = it.hasNext || {
+          if (fnMut != null) { fnMut(); fnMut = null }
+          false
+        }
+
+        def next = it.next
+      }
+
+    def apply(kvs: Iterator[(K, V)]) = {
+      val evicted = MMap.empty[K, V]
+      val currentCache = newCache(evicted)
+      // TODO actually do something here
+      new Iterator[(K, V)] {
+        var resultIterator: Iterator[(K, V)] = Iterator.empty
+
+        def hasNext = kvs.hasNext || resultIterator.hasNext
+        @annotation.tailrec
+        def next: (K, V) = {
+          if (resultIterator.hasNext) {
+            resultIterator.next
+          } else if (kvs.hasNext) {
+            val (k, deltav) = kvs.next
+            val vold = currentCache.get(k)
+            if (vold == null) {
+              currentCache.put(k, deltav)
+            } else {
+              currentCache.put(k, semigroup.plus(vold, deltav))
+            }
+            // let's see if we have anything to evict
+            if (evicted.nonEmpty) {
+              resultIterator = onEmpty(evicted.iterator)(() => evicted.clear())
+            }
+            next
+          } else {
+            // time to flush the cache
+            import scala.collection.JavaConverters._
+            val cacheIter = currentCache.entrySet.iterator.asScala.map { e => (e.getKey, e.getValue) }
+            resultIterator = onEmpty(cacheIter)(() => currentCache.clear())
+            next
+          }
+        }
+      }
+    }
+  }
+
 }
