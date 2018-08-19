@@ -136,16 +136,17 @@ object SparkPlanner {
             uir.evidence.subst[OpT](op)
           }
           go(uir)
-        case (ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)), rec) =>
-          def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[V]) = {
-            val op = rec(p)
-            //Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord))
-            ???
+        case (ReduceStepPipe(ivsr @ IdentityValueSortedReduce(_, _, _, _, _, _)), rec) =>
+          def go[K, V1, V2](uir: IdentityValueSortedReduce[K, V1, V2]): Op[(K, V2)] = {
+            type OpT[V] = Op[(K, V)]
+            val op = rec(uir.mapped)
+            val sortedOp = op.sorted(uir.keyOrdering, uir.valueSort)
+            uir.evidence.subst[OpT](sortedOp)
           }
-          go(pipe, ord)
-        case (ReduceStepPipe(ValueSortedReduce(_, pipe, ord, fn, _, _)), rec) =>
+          go(ivsr)
+        case (ReduceStepPipe(ValueSortedReduce(ordK, pipe, ordV, fn, _, _)), rec) =>
           val op = rec(pipe)
-          ???
+          op.sortedMapGroup(fn)(ordK, ordV)
         case (ReduceStepPipe(IteratorMappedReduce(ordK, pipe, fn, _, _)), rec) =>
           val op = rec(pipe)
           op.mapGroup(fn)(ordK)

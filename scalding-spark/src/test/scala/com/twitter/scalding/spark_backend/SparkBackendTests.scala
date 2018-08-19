@@ -69,4 +69,17 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       input.groupBy(_ % 2).foldLeft(0)(_ + _)
     }
   }
+
+  test(".group.sorted works") {
+    sparkMatchesMemory {
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2).sorted.toTypedPipe
+    }
+  }
+  test(".group.sorted.foldLeft works") {
+    sparkMatchesMemory {
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2).sorted.foldLeft(0)(_ - _).toTypedPipe
+    }
+  }
 }
