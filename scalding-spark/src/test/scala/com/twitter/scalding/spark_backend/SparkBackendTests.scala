@@ -15,7 +15,11 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   private var sc: SparkContext = _
 
   before {
-    val conf = new SparkConf().setMaster(master).setAppName(appName)
+    val conf =
+      new SparkConf()
+        .setMaster(master)
+        .setAppName(appName)
+        .set("spark.driver.host", "localhost") // this is needed to work on OSX when disconnected from the network
     sc = new SparkContext(conf)
   }
 
@@ -56,6 +60,13 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     sparkMatchesMemory {
       val input = TypedPipe.from(0 to 100000)
       input.groupBy(_ % 2).sumByLocalKeys
+    }
+  }
+
+  test(".group.foldLeft works") {
+    sparkMatchesMemory {
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2).foldLeft(0)(_ + _)
     }
   }
 }

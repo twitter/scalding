@@ -1,6 +1,6 @@
 package com.twitter.scalding.spark_backend
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{HashPartitioner, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,6 +34,17 @@ object Op {
       Transformed[(K, V), (K, U)](op, _.flatMapValues(fn))
     def mapValues[U](fn: V => U): Op[(K, U)] =
       Transformed[(K, V), (K, U)](op, _.mapValues(fn))
+    def mapGroup[U](fn: (K, Iterator[V]) => Iterator[U])(implicit ordK: Ordering[K]): Op[(K, U)] =
+      Transformed[(K, V), (K, U)](op, { rdd: RDD[(K, V)] =>
+        val numPartitions = rdd.getNumPartitions
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val partitioned = rdd.repartitionAndSortWithinPartitions(partitioner)
+        partitioned.mapPartitions({ its =>
+          // since we are sorted, the adjacent keys are next to each other
+          val grouped = Iterators.groupSequential(its)
+          grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+        }, preservesPartitioning = true)
+      })
   }
 
   implicit class InvariantOp[A](val op: Op[A]) extends AnyVal {

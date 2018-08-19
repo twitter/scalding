@@ -146,11 +146,21 @@ object SparkPlanner {
         case (ReduceStepPipe(ValueSortedReduce(_, pipe, ord, fn, _, _)), rec) =>
           val op = rec(pipe)
           ???
-        case (ReduceStepPipe(IteratorMappedReduce(_, pipe, fn, _, _)), rec) =>
+        case (ReduceStepPipe(IteratorMappedReduce(ordK, pipe, fn, _, _)), rec) =>
           val op = rec(pipe)
-          ???
+          op.mapGroup(fn)(ordK)
       }
     })
+
+  case class OnEmptyIterator[A](it: Iterator[A], fn: () => Unit) extends Iterator[A] {
+    var fnMut: () => Unit = fn
+    def hasNext = it.hasNext || {
+      if (fnMut != null) { fnMut(); fnMut = null }
+      false
+    }
+
+    def next = it.next
+  }
 
   case class CachingSum[K, V](capacity: Int, semigroup: Semigroup[V]) extends Function1[Iterator[(K, V)], Iterator[(K, V)]] {
     def newCache(evicted: MMap[K, V]): JMap[K, V] = new JLinkedHashMap[K, V](capacity + 1, 0.75f, true) {
@@ -162,17 +172,6 @@ object SparkPlanner {
           false
         }
     }
-
-    def onEmpty[A](it: Iterator[A])(fn: () => Unit): Iterator[A] =
-      new Iterator[A] {
-        var fnMut: () => Unit = fn
-        def hasNext = it.hasNext || {
-          if (fnMut != null) { fnMut(); fnMut = null }
-          false
-        }
-
-        def next = it.next
-      }
 
     def apply(kvs: Iterator[(K, V)]) = {
       val evicted = MMap.empty[K, V]
@@ -196,14 +195,14 @@ object SparkPlanner {
             }
             // let's see if we have anything to evict
             if (evicted.nonEmpty) {
-              resultIterator = onEmpty(evicted.iterator)(() => evicted.clear())
+              resultIterator = OnEmptyIterator(evicted.iterator, () => evicted.clear())
             }
             next
           } else {
             // time to flush the cache
             import scala.collection.JavaConverters._
             val cacheIter = currentCache.entrySet.iterator.asScala.map { e => (e.getKey, e.getValue) }
-            resultIterator = onEmpty(cacheIter)(() => currentCache.clear())
+            resultIterator = OnEmptyIterator(cacheIter, () => currentCache.clear())
             next
           }
         }
