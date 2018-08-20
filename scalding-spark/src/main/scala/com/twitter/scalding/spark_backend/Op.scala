@@ -46,6 +46,9 @@ object Op extends Serializable {
         }, preservesPartitioning = true)
       })
 
+    def hashJoin[U, W](right: Op[(K, U)])(fn: (K, V, Iterable[U]) => Iterator[W]): Op[(K, W)] =
+      HashJoinOp(op, right, fn)
+
     def sorted(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, V)] =
       Transformed[(K, V), (K, V)](op, { rdd: RDD[(K, V)] =>
         // The idea here is that we put the key and the value in
@@ -143,6 +146,7 @@ object Op extends Serializable {
 
   final case class Merged[A](left: Op[A], right: Op[A]) extends Op[A] {
     def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] = {
+      // start running in parallel
       val lrdd = left.run(ctx)
       val rrdd = right.run(ctx)
       for {
@@ -150,5 +154,37 @@ object Op extends Serializable {
         r <- rrdd
       } yield widen[A](l) ++ widen[A](r)
     }
+  }
+
+  final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
+    @transient private val cache = new FutureCache[SparkContext, RDD[_ <: (A, D)]]
+
+    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
+      cache.getOrElseUpdate(ctx, {
+        // start running in parallel
+        val rrdd = right.run(ctx)
+        val lrdd = left.run(ctx)
+
+        rrdd.flatMap { rightRdd =>
+          // TODO: spark has some thing to send replicated data to nodes
+          // we should materialize the small side, use the above, then
+          // implement a join using mapPartitions
+          val rightMap: Map[A, List[C]] = rightRdd
+            .toLocalIterator
+            .toList
+            .groupBy(_._1)
+            .map { case (k, vs) => (k, vs.map(_._2)) }
+
+          lrdd.map { leftrdd =>
+
+            val localJoiner = joiner
+
+            leftrdd.mapPartitions({ it: Iterator[(A, B)] =>
+              it.flatMap { case (a, b) => localJoiner(a, b, rightMap.getOrElse(a, Nil)).map((a, _)) }
+            }, preservesPartitioning = true)
+          }
+        }
+      })
+
   }
 }

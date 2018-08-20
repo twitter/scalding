@@ -109,7 +109,9 @@ object SparkPlanner {
 
         case (hcg @ HashCoGroup(_, _, _), rec) =>
           def go[K, V1, V2, W](hcg: HashCoGroup[K, V1, V2, W]): Op[(K, W)] = {
-            ???
+            val leftOp = rec(hcg.left)
+            val rightOp = rec(ReduceStepPipe(HashJoinable.toReduceStep(hcg.right)))
+            leftOp.hashJoin(rightOp)(hcg.joiner)
           }
           go(hcg)
 
@@ -205,7 +207,7 @@ object SparkPlanner {
     }
   }
 
-  private def planHashJoinable[K, V](config: Config, hj: HashJoinable[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] =
+  private def planHashJoinable[K, V](hj: HashJoinable[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] =
     rec(TypedPipe.ReduceStepPipe(HashJoinable.toReduceStep(hj)))
 
   private def planCoGroup[K, V](config: Config, cg: CoGrouped[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] = {
@@ -226,7 +228,7 @@ object SparkPlanner {
         // but for now just do the naive thing:
         def planSide[A, B](cg: CoGroupable[A, B]): Op[(A, B)] =
           cg match {
-            case hg: HashJoinable[A, B] => planHashJoinable(config, hg, rec)
+            case hg: HashJoinable[A, B] => planHashJoinable(hg, rec)
             case cg: CoGrouped[A, B] => planCoGroup(config, cg, rec)
           }
 

@@ -90,4 +90,12 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       inputLeft.groupBy(_ / 10).join(inputRight.groupBy(_ / 3)).sum.toTypedPipe
     }
   }
+
+  test("hashJoin works") {
+    sparkMatchesMemory {
+      val inputLeft = TypedPipe.from(0 to 100000 by 3)
+      val inputRight = TypedPipe.from(1 to 1000 by 3)
+      inputLeft.groupBy(_ / 10).hashJoin(inputRight.groupBy(_ / 3))
+    }
+  }
 }
