@@ -7,7 +7,7 @@ import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter }
 import java.util.{ LinkedHashMap => JLinkedHashMap, Map => JMap }
 import org.apache.spark.storage.StorageLevel
-import scala.collection.mutable.{ Map => MMap }
+import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
 object SparkPlanner {
   /**
@@ -114,13 +114,7 @@ object SparkPlanner {
           go(hcg)
 
         case (CoGroupedPipe(cg), rec) =>
-          def go[K, V](cg: CoGrouped[K, V]): Op[(K, V)] = {
-            val inputs = cg.inputs
-            val joinf = cg.joinFunction
-            //Op.BulkJoin(inputs.map(rec(_)), joinf)
-            ???
-          }
-          go(cg)
+          planCoGroup(config, cg, rec)
 
         case (ReduceStepPipe(ir @ IdentityReduce(_, _, _, descriptions, _)), rec) =>
           def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): Op[(K, V2)] = {
@@ -211,4 +205,82 @@ object SparkPlanner {
     }
   }
 
+  private def planHashJoinable[K, V](config: Config, hj: HashJoinable[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] =
+    rec(TypedPipe.ReduceStepPipe(HashJoinable.toReduceStep(hj)))
+
+  private def planCoGroup[K, V](config: Config, cg: CoGrouped[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] = {
+    import CoGrouped._
+
+    cg match {
+      case FilterKeys(cg, fn) =>
+        planCoGroup(config, cg, rec).filter { case (k, _) => fn(k) }
+      case MapGroup(cg, fn) =>
+        // don't need to repartition, just mapPartitions
+        planCoGroup(config, cg, rec)
+          .mapPartitions { its =>
+            val grouped = Iterators.groupSequential(its)
+            grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+          }
+      case pair @ Pair(_, _, _) =>
+        // ideally, we do one partitioning of all the data,
+        // but for now just do the naive thing:
+        def planSide[A, B](cg: CoGroupable[A, B]): Op[(A, B)] =
+          cg match {
+            case hg: HashJoinable[A, B] => planHashJoinable(config, hg, rec)
+            case cg: CoGrouped[A, B] => planCoGroup(config, cg, rec)
+          }
+
+        def planPair[A, B, C, D](p: Pair[A, B, C, D]): Op[(A, D)] = {
+          val eleft: Op[(A, Either[B, C])] = planSide(p.larger).map { case (k, v) => (k, Left(v)) }
+          val eright: Op[(A, Either[B, C])] = planSide(p.smaller).map { case (k, v) => (k, Right(v)) }
+          val joinFn = p.fn
+          (eleft ++ eright).sorted(p.keyOrdering, JoinOrdering()).mapPartitions { it =>
+            val grouped = Iterators.groupSequential(it)
+            grouped.flatMap {
+              case (k, eithers) =>
+                val kfn: Function2[Iterator[B], Iterable[C], Iterator[D]] = joinFn(k, _, _)
+                JoinIterator[B, C, D](kfn)(eithers).map((k, _))
+            }
+          }
+        }
+        planPair(pair)
+
+      case WithDescription(cg, d) =>
+        // TODO handle descriptions in some way
+        planCoGroup(config, cg, rec)
+      case WithReducers(cg, r) =>
+        // TODO handle the number of reducers, maybe by setting the number of partitions
+        planCoGroup(config, cg, rec)
+    }
+  }
+
+  // Put the rights first
+  case class JoinOrdering[A, B]() extends Ordering[Either[A, B]] {
+    def compare(left: Either[A, B], right: Either[A, B]): Int =
+      if (left.isLeft && right.isRight) 1
+      else if (left.isRight && right.isLeft) -1
+      else 0
+  }
+
+  case class JoinIterator[A, B, C](fn: (Iterator[A], Iterable[B]) => Iterator[C]) extends Function1[Iterator[Either[A, B]], Iterator[C]] {
+    @SuppressWarnings(Array("org.wartremover.warts.EitherProjectionPartial"))
+    def apply(eitherIter: Iterator[Either[A, B]]) = {
+      val buffered = eitherIter.buffered
+      val bs: Iterable[B] = {
+        @annotation.tailrec
+        def loop(buf: ArrayBuffer[B]): Iterable[B] = {
+          if (buffered.isEmpty) buf
+          else if (buffered.head.isLeft) buf
+          else {
+            buf += buffered.next.right.get
+            loop(buf)
+          }
+        }
+        loop(ArrayBuffer())
+      }
+      val iterA: Iterator[A] = buffered.map(_.left.get)
+
+      fn(iterA, bs)
+    }
+  }
 }
