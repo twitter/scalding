@@ -48,9 +48,9 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     val optimizedWrites = ToWrite.optimizeWriteBatch(writes, phases)
 
     def force[T](p: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
-      val op = planner(p)
       val pipePromise = Promise[Iterable[T]]()
       val action = () => {
+        val op = planner(p)
         val arrayBufferF = op.result
         pipePromise.completeWith(arrayBufferF)
 

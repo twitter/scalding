@@ -20,6 +20,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
         .setMaster(master)
         .setAppName(appName)
         .set("spark.driver.host", "localhost") // this is needed to work on OSX when disconnected from the network
+
     sc = new SparkContext(conf)
   }
 
@@ -31,10 +32,9 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) = {
     val memit = t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
 
-    val rdd = Await.result(SparkPlanner.plan(Config.empty, Resolver.empty)(t).run(sc)(ExecutionContext.global),
-      scala.concurrent.duration.Duration.Inf)
+    val semit = t.toIterableExecution.waitFor(Config.empty, SparkMode.empty(sc)).get
 
-    assert((rdd.toLocalIterator: Iterator[A]).toList.sorted == memit.toList.sorted)
+    assert(semit.toList.sorted == memit.toList.sorted)
   }
 
   test("some basic map-only operations work") {
@@ -56,7 +56,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("sumByKey matches") {
+  test("sumByLocalKeys matches") {
     sparkMatchesMemory {
       val input = TypedPipe.from(0 to 100000)
       input.groupBy(_ % 2).sumByLocalKeys
@@ -96,6 +96,13 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       val inputLeft = TypedPipe.from(0 to 100000 by 3)
       val inputRight = TypedPipe.from(1 to 1000 by 3)
       inputLeft.groupBy(_ / 10).hashJoin(inputRight.groupBy(_ / 3))
+    }
+  }
+
+  test("crossValue works") {
+    sparkMatchesMemory {
+      val inputLeft = TypedPipe.from(0 to 100000 by 3)
+      inputLeft.cross(ValuePipe("wee"))
     }
   }
 }
