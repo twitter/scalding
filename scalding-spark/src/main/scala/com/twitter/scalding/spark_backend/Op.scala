@@ -175,11 +175,13 @@ object Op extends Serializable {
             .groupBy(_._1)
             .map { case (k, vs) => (k, vs.map(_._2)) }
 
+          val bcastMap = ctx.broadcast(rightMap)
           lrdd.map { leftrdd =>
 
             val localJoiner = joiner
 
             leftrdd.mapPartitions({ it: Iterator[(A, B)] =>
+              val rightMap = bcastMap.value
               it.flatMap { case (a, b) => localJoiner(a, b, rightMap.getOrElse(a, Nil)).map((a, _)) }
             }, preservesPartitioning = true)
           }
