@@ -173,7 +173,6 @@ object SparkPlanner {
     def apply(kvs: Iterator[(K, V)]) = {
       val evicted = MMap.empty[K, V]
       val currentCache = newCache(evicted)
-      // TODO actually do something here
       new Iterator[(K, V)] {
         var resultIterator: Iterator[(K, V)] = Iterator.empty
 
@@ -195,6 +194,8 @@ object SparkPlanner {
               resultIterator = OnEmptyIterator(evicted.iterator, () => evicted.clear())
             }
             next
+          } else if (currentCache.isEmpty) {
+            throw new java.util.NoSuchElementException("next called on empty CachingSum Iterator")
           } else {
             // time to flush the cache
             import scala.collection.JavaConverters._
@@ -218,6 +219,8 @@ object SparkPlanner {
         planCoGroup(config, cg, rec).filter { case (k, _) => fn(k) }
       case MapGroup(cg, fn) =>
         // don't need to repartition, just mapPartitions
+        // we know this because cg MUST be a join, there is no non-joined CoGrouped
+        // so we know the output op planCoGroup(config, cg, rec) is already partitioned
         planCoGroup(config, cg, rec)
           .mapPartitions { its =>
             val grouped = Iterators.groupSequential(its)
