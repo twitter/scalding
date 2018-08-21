@@ -1,6 +1,6 @@
 package com.twitter.scalding.spark_backend
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{HashPartitioner, Partitioner, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,7 +25,7 @@ sealed abstract class Op[+A] {
     Transformed[A, B](this, _.mapPartitions(fn, preservesPartitioning = true))
 }
 
-object Op {
+object Op extends Serializable {
   // TODO, this may be just inefficient, or it may be wrong
   implicit private def fakeClassTag[A]: ClassTag[A] = ClassTag(classOf[AnyRef]).asInstanceOf[ClassTag[A]]
 
@@ -34,6 +34,63 @@ object Op {
       Transformed[(K, V), (K, U)](op, _.flatMapValues(fn))
     def mapValues[U](fn: V => U): Op[(K, U)] =
       Transformed[(K, V), (K, U)](op, _.mapValues(fn))
+    def mapGroup[U](fn: (K, Iterator[V]) => Iterator[U])(implicit ordK: Ordering[K]): Op[(K, U)] =
+      Transformed[(K, V), (K, U)](op, { rdd: RDD[(K, V)] =>
+        val numPartitions = rdd.getNumPartitions
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val partitioned = rdd.repartitionAndSortWithinPartitions(partitioner)
+        partitioned.mapPartitions({ its =>
+          // since we are sorted, the adjacent keys are next to each other
+          val grouped = Iterators.groupSequential(its)
+          grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+        }, preservesPartitioning = true)
+      })
+
+    def hashJoin[U, W](right: Op[(K, U)])(fn: (K, V, Iterable[U]) => Iterator[W]): Op[(K, W)] =
+      HashJoinOp(op, right, fn)
+
+    def sorted(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, V)] =
+      Transformed[(K, V), (K, V)](op, { rdd: RDD[(K, V)] =>
+        // The idea here is that we put the key and the value in
+        // logical key, but partition only on the left part of the key
+        val numPartitions = rdd.getNumPartitions
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val keyOnlyPartioner = KeyHashPartitioner(partitioner)
+        val unitValue: RDD[((K, V), Unit)] = rdd.map { kv => (kv, ()) }
+        val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
+        partitioned.mapPartitions({ its =>
+          // discard the unit value
+          its.map { case (kv, _) => kv }
+        }, preservesPartitioning = true) // the keys haven't changed
+      })
+
+    def sortedMapGroup[U](fn: (K, Iterator[V]) => Iterator[U])(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, U)] =
+      Transformed[(K, V), (K, U)](op, { rdd: RDD[(K, V)] =>
+        // The idea here is that we put the key and the value in
+        // logical key, but partition only on the left part of the key
+        val numPartitions = rdd.getNumPartitions
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val keyOnlyPartioner = KeyHashPartitioner(partitioner)
+        val unitValue: RDD[((K, V), Unit)] = rdd.map { kv => (kv, ()) }
+        val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
+        partitioned.mapPartitions({ its =>
+          // discard the unit value
+          val kviter = its.map { case (kv, _) => kv }
+          // since we are sorted first by key, then value, the keys are grouped
+          val grouped = Iterators.groupSequential(kviter)
+          grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+        }, preservesPartitioning = true) // the keys haven't changed
+      })
+  }
+
+  private case class KeyHashPartitioner(partitioner: Partitioner) extends Partitioner {
+    override def numPartitions: Int = partitioner.numPartitions
+
+    override def getPartition(keyValue: Any): Int = {
+      val key: Any = keyValue.asInstanceOf[(Any, Any)]._1
+      partitioner.getPartition(key)
+    }
+
   }
 
   implicit class InvariantOp[A](val op: Op[A]) extends AnyVal {
@@ -74,9 +131,9 @@ object Op {
   }
 
   private def widen[A](r: RDD[_ <: A]): RDD[A] =
-    r.map { a => a }
+    //r.map { a => a }
     // or we could just cast
-    //r.asInstanceOf[RDD[A]]
+    r.asInstanceOf[RDD[A]]
 
   final case class Transformed[Z, A](input: Op[Z], fn: RDD[Z] => RDD[A]) extends Op[A] {
 
@@ -89,6 +146,7 @@ object Op {
 
   final case class Merged[A](left: Op[A], right: Op[A]) extends Op[A] {
     def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] = {
+      // start running in parallel
       val lrdd = left.run(ctx)
       val rrdd = right.run(ctx)
       for {
@@ -96,5 +154,39 @@ object Op {
         r <- rrdd
       } yield widen[A](l) ++ widen[A](r)
     }
+  }
+
+  final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
+    @transient private val cache = new FutureCache[SparkContext, RDD[_ <: (A, D)]]
+
+    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
+      cache.getOrElseUpdate(ctx, {
+        // start running in parallel
+        val rrdd = right.run(ctx)
+        val lrdd = left.run(ctx)
+
+        rrdd.flatMap { rightRdd =>
+          // TODO: spark has some thing to send replicated data to nodes
+          // we should materialize the small side, use the above, then
+          // implement a join using mapPartitions
+          val rightMap: Map[A, List[C]] = rightRdd
+            .toLocalIterator
+            .toList
+            .groupBy(_._1)
+            .map { case (k, vs) => (k, vs.map(_._2)) }
+
+          val bcastMap = ctx.broadcast(rightMap)
+          lrdd.map { leftrdd =>
+
+            val localJoiner = joiner
+
+            leftrdd.mapPartitions({ it: Iterator[(A, B)] =>
+              val rightMap = bcastMap.value
+              it.flatMap { case (a, b) => localJoiner(a, b, rightMap.getOrElse(a, Nil)).map((a, _)) }
+            }, preservesPartitioning = true)
+          }
+        }
+      })
+
   }
 }
