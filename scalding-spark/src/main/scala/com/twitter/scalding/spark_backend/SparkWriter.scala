@@ -6,7 +6,7 @@ import com.twitter.scalding.typed._
 import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox
 import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ Future, ExecutionContext, Promise }
@@ -16,7 +16,7 @@ import Execution.{ ToWrite, Writer }
 
 class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
-  private def ctx: SparkContext = sparkMode.ctx
+  private def session: SparkSession = sparkMode.session
 
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
@@ -96,7 +96,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       sparkMode.sink(sink) match {
         case None => Future.failed(new Exception(s"unknown sink: $sink when writing $init"))
         case Some(ssink) =>
-          get(c, init)._2.flatMap(ssink.write(ctx, c, _))
+          get(c, init)._2.flatMap(ssink.write(session, c, _))
       }
   }
 
@@ -110,8 +110,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private def materializedSource[A](persisted: Future[RDD[_ <: A]]): SparkSource[A] =
     new SparkSource[A] {
-      def read(sc: SparkContext, config: Config)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-        if (ctx != sc) Future.failed(new Exception("SparkContext has changed, illegal state. You must not share TypedPipes across Execution runs"))
+      def read(s: SparkSession, config: Config)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
+        if (session != s) Future.failed(new Exception("SparkSession has changed, illegal state. You must not share TypedPipes across Execution runs"))
         else {
           persisted
         }
@@ -157,7 +157,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       def action = () => {
         // actually run
         val op = planner(opt)
-        val rddF = op.run(ctx)
+        val rddF = op.run(session)
         promise.completeWith(rddF)
         rddF.map(_ => ())
       }
@@ -171,7 +171,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
           if (added) {
             // actually run
             val op = planner(opt)
-            val rddF = op.run(ctx)
+            val rddF = op.run(session)
             promise.completeWith(rddF)
             rddF.map(_ => ())
           }

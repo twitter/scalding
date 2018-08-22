@@ -349,7 +349,8 @@ lazy val scaldingCore = module("core").settings(
 
 lazy val scaldingSpark = module("spark").settings(
   libraryDependencies ++= Seq(
-    "org.apache.spark" %% "spark-core" % sparkVersion
+    "org.apache.spark" %% "spark-core" % sparkVersion,
+    "org.apache.spark" %% "spark-sql" % sparkVersion
     )
   ).dependsOn(scaldingCore)
 

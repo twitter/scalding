@@ -1,7 +1,8 @@
 package com.twitter.scalding.spark_backend
 
-import org.apache.spark.{HashPartitioner, Partitioner, SparkContext}
+import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
@@ -11,7 +12,7 @@ import com.twitter.scalding.typed.TypedSource
 sealed abstract class Op[+A] {
   import Op.{Transformed, fakeClassTag}
 
-  def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]]
+  def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]]
 
   def map[B](fn: A => B): Op[B] =
     Transformed[A, B](this, _.map(fn))
@@ -107,8 +108,8 @@ object Op extends Serializable {
   }
 
   object Empty extends Op[Nothing] {
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext) =
-      Future(ctx.emptyRDD[Nothing])
+    def run(session: SparkSession)(implicit ec: ExecutionContext) =
+      Future(session.sparkContext.emptyRDD[Nothing])
 
     override def map[B](fn: Nothing => B): Op[B] = this
     override def concatMap[B](fn: Nothing => TraversableOnce[B]): Op[B] = this
@@ -118,15 +119,15 @@ object Op extends Serializable {
   }
 
   final case class FromIterable[A](iterable: Iterable[A]) extends Op[A] {
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      Future(ctx.makeRDD(iterable.toSeq, 1))
+    def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
+      Future(session.sparkContext.makeRDD(iterable.toSeq, 1))
   }
 
   final case class Source[A](conf: Config, original: TypedSource[A], input: Option[SparkSource[A]]) extends Op[A] {
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
+    def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       input match {
         case None => Future.failed(new IllegalArgumentException(s"source $original was not connected to a spark source"))
-        case Some(src) => src.read(ctx, conf)
+        case Some(src) => src.read(session, conf)
       }
   }
 
@@ -136,34 +137,36 @@ object Op extends Serializable {
     r.asInstanceOf[RDD[A]]
 
   final case class Transformed[Z, A](input: Op[Z], fn: RDD[Z] => RDD[A]) extends Op[A] {
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
-    private val cache = new FutureCache[SparkContext, RDD[_ <: A]]
-
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(ctx,
-        input.run(ctx).map { rdd => fn(widen(rdd)) })
+    def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
+      cache.getOrElseUpdate(session,
+        input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
   final case class Merged[A](left: Op[A], right: Op[A]) extends Op[A] {
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] = {
-      // start running in parallel
-      val lrdd = left.run(ctx)
-      val rrdd = right.run(ctx)
-      for {
-        l <- lrdd
-        r <- rrdd
-      } yield widen[A](l) ++ widen[A](r)
-    }
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
+
+    def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
+      cache.getOrElseUpdate(session, {
+        // start running in parallel
+        val lrdd = left.run(session)
+        val rrdd = right.run(session)
+        for {
+          l <- lrdd
+          r <- rrdd
+        } yield widen[A](l) ++ widen[A](r)
+      })
   }
 
   final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
-    @transient private val cache = new FutureCache[SparkContext, RDD[_ <: (A, D)]]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)]]
 
-    def run(ctx: SparkContext)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
-      cache.getOrElseUpdate(ctx, {
+    def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
+      cache.getOrElseUpdate(session, {
         // start running in parallel
-        val rrdd = right.run(ctx)
-        val lrdd = left.run(ctx)
+        val rrdd = right.run(session)
+        val lrdd = left.run(session)
 
         rrdd.flatMap { rightRdd =>
           // TODO: spark has some thing to send replicated data to nodes
@@ -175,7 +178,7 @@ object Op extends Serializable {
             .groupBy(_._1)
             .map { case (k, vs) => (k, vs.map(_._2)) }
 
-          val bcastMap = ctx.broadcast(rightMap)
+          val bcastMap = session.sparkContext.broadcast(rightMap)
           lrdd.map { leftrdd =>
 
             val localJoiner = joiner

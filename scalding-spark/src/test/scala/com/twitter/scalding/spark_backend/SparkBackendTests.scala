@@ -1,7 +1,8 @@
 package com.twitter.scalding.spark_backend
 
 import org.scalatest.{ FunSuite, BeforeAndAfter }
-import org.apache.spark.{ SparkContext, SparkConf }
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
@@ -12,7 +13,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   private val master = "local[2]"
   private val appName = "spark-backent-tests"
 
-  private var sc: SparkContext = _
+  private var session: SparkSession = _
 
   before {
     val conf =
@@ -21,18 +22,18 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
         .setAppName(appName)
         .set("spark.driver.host", "localhost") // this is needed to work on OSX when disconnected from the network
 
-    sc = new SparkContext(conf)
+    session = SparkSession.builder.config(conf).getOrCreate()
   }
 
   after {
-    sc.stop()
-    sc = null
+    session.stop()
+    session = null
   }
 
   def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) = {
     val memit = t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
 
-    val semit = t.toIterableExecution.waitFor(Config.empty, SparkMode.empty(sc)).get
+    val semit = t.toIterableExecution.waitFor(Config.empty, SparkMode.empty(session)).get
 
     assert(semit.toList.sorted == memit.toList.sorted)
   }
