@@ -64,7 +64,7 @@ After the release occurs, you will need to update the documentation. Here is a l
 
 (Other changes may be necessary, especially for large releases.)
 
-You can get a list of changes between release tags `v0.1.2` and `v0.2.0` via `git log v0.1.2..v0.2.0`. Scanning this list of commit messages is a good way to get a summary of what happened, although it does not account for conversations that occured on Github.
+You can get a list of changes between release tags `v0.1.2` and `v0.2.0` via `git log v0.1.2..v0.2.0`. Scanning this list of commit messages is a good way to get a summary of what happened, although it does not account for conversations that occurred on Github.
 
 Once the relevant documentation changes have been committed, new [release notes](https://github.com/twitter/scalding/releases) should be added. You can add a release by clicking the "Draft a new release" button on that page, or if the relevant release already exists, you can click "Edit release".
 

@@ -838,7 +838,7 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    * @return a pipe equivalent to the current pipe.
    */
   def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    // We do want to record the line number that this occured at
+    // We do want to record the line number that this occurred at
     val next = withLine
     FlowStateMap.merge(flowDef, FlowState.withTypedWrite(next, dest, mode))
     next
