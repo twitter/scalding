@@ -189,6 +189,7 @@ public class ScroogeStructConverter {
         thriftType = new ThriftType.I64Type();
         break;
       case STRING:
+        
         thriftType = new ThriftType.StringType();
         break;
       case STRUCT:
