@@ -50,7 +50,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.12",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.4"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.7"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
