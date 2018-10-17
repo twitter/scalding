@@ -107,6 +107,79 @@ object TypedPipe extends Serializable {
       left ++ right
   }
 
+  implicit class IteratorCloseMethods[A](val pipe: TypedPipe[A]) extends AnyVal {
+    /**
+     * This gives an Execution that when run evaluates the TypedPipe,
+     * writes it to disk, and then gives you an Iterable that reads from
+     * disk on the submit node each time .iterator is called.
+     * Because of how scala Iterables work, mapping/flatMapping/filtering
+     * the Iterable forces a read of the entire thing. If you need it to
+     * be lazy, call .iterator and use the Iterator inside instead.
+     *
+     * Also this gives you Execution to clean up resources associated with Iterable.
+     *
+     * Example:
+     *
+     * pipe
+     *  .toIterableExecutionWithClose
+     *  .flatMap { case (iterable, close) =>
+     *    val distinctId = iterable.map(_.id).toSet
+     *
+     *    close.map(_ => distinctId)
+     *  }
+     *
+     * Note: prefer use `useAsIterator`
+     */
+    def toIterableExecutionWithClose: Execution[(Iterable[A], Execution[Unit])] = {
+      val cachedRandomUUID = java.util.UUID.randomUUID
+
+      pipe.forceToDiskPathExecution(temporaryPath(_, cachedRandomUUID), deleteFiles = false)
+        .flatMap(_.toIterableExecution)
+        .map { iterable =>
+          val close =
+            Execution.getConfigMode.flatMap { case (config, mode) =>
+              val fileToDelete = temporaryPath(config, cachedRandomUUID)
+
+              Execution.from {
+                Execution.TempFileCleanup(Iterable(fileToDelete), mode).run()
+              }
+            }
+
+          (iterable, close)
+        }
+    }
+
+    /**
+     * When Execution run evaluates the TypedPipe, writes it to disk,
+     * and then gives you an Iterator that reads from disk on the submit node and clean up resources
+     * associated with Iterator after `fn` is done.
+     *
+     * WARNING: you must fully use the `Iterator` BEFORE you return Execution[B] in `fn`,
+     * because after `fn` is done we will clean up resources and data will be no longer available.
+     *
+     * Example:
+     *
+     * pipe.useAsIterator { iterator =>
+     *    Execution.from {
+     *      iterator.map(_.id).toSet
+     *    }
+     * }
+     */
+    def useAsIterator[B](fn: Iterator[A] => Execution[B]): Execution[B] =
+      toIterableExecutionWithClose.flatMap { case (iterable, close) =>
+        val execB = fn(iterable.iterator)
+        execB.flatMap(b => close.map(_ => b))
+      }
+  }
+
+  private def temporaryPath(conf: Config, uuid: UUID): String = {
+    val tmpDir = conf.get("hadoop.tmp.dir")
+      .orElse(conf.get("cascading.tmp.dir"))
+      .getOrElse("/tmp")
+
+    tmpDir + "/scalding/snapshot-" + uuid + ".seq"
+  }
+
   private val identityOrdering: OrderedSerialization[Int] = {
     val delegate = BinaryOrdering.ordSer[Int]
     new OrderedSerialization[Int] {
@@ -490,31 +563,13 @@ trait TypedPipe[+T] extends Serializable {
   def sumByKey[K, V](implicit ev: T <:< (K, V), ord: Ordering[K], plus: Semigroup[V]): UnsortedGrouped[K, V] =
     group[K, V].sum[V]
 
-  /**
-   * This is used when you are working with Execution[T] to create loops.
-   * You might do this to checkpoint and then flatMap Execution to continue
-   * from there. Probably only useful if you need to flatMap it twice to fan
-   * out the data into two children jobs.
-   *
-   * This writes the current TypedPipe into a temporary file
-   * and then opens it after complete so that you can continue from that point
-   */
-  def forceToDiskExecution: Execution[TypedPipe[T]] = {
-    val cachedRandomUUID = java.util.UUID.randomUUID
+  private def forceToDiskPathExecution(path: Config => String, deleteFiles: Boolean = true): Execution[TypedPipe[T]] = {
     lazy val inMemoryDest = new MemorySink[T]
-
-    def temporaryPath(conf: Config, uuid: UUID): String = {
-      val tmpDir = conf.get("hadoop.tmp.dir")
-        .orElse(conf.get("cascading.tmp.dir"))
-        .getOrElse("/tmp")
-
-      tmpDir + "/scalding/snapshot-" + uuid + ".seq"
-    }
 
     def hadoopTypedSource(conf: Config): TypedSource[T] with TypedSink[T] = {
       // come up with unique temporary filename, use the config here
       // TODO: refactor into TemporarySequenceFile class
-      val tmpSeq = temporaryPath(conf, cachedRandomUUID)
+      val tmpSeq = path(conf)
       source.TypedSequenceFile[T](tmpSeq)
 
     }
@@ -541,11 +596,30 @@ trait TypedPipe[+T] extends Serializable {
         case _: CascadingLocal => // Local or Test mode
           Set[String]()
         case _: HadoopMode =>
-          Set(temporaryPath(conf, cachedRandomUUID))
+          Set(path(conf))
       }
     }
 
-    Execution.write(writeFn, readFn, filesToDeleteFn)
+    if (deleteFiles) {
+      Execution.write(writeFn, readFn, filesToDeleteFn)
+    } else {
+      Execution.write(writeFn, readFn)
+    }
+  }
+
+  /**
+   * This is used when you are working with Execution[T] to create loops.
+   * You might do this to checkpoint and then flatMap Execution to continue
+   * from there. Probably only useful if you need to flatMap it twice to fan
+   * out the data into two children jobs.
+   *
+   * This writes the current TypedPipe into a temporary file
+   * and then opens it after complete so that you can continue from that point
+   */
+  def forceToDiskExecution: Execution[TypedPipe[T]] = {
+    val cachedRandomUUID = java.util.UUID.randomUUID
+
+    forceToDiskPathExecution(TypedPipe.temporaryPath(_, cachedRandomUUID))
   }
 
   /**
