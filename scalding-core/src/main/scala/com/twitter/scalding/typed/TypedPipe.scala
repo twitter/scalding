@@ -373,6 +373,12 @@ object TypedPipe extends Serializable {
       case Left(cnt) => (Nil, ((group, cnt), 1L) :: Nil)
     }
   }
+  private case class ItClose[A, B](fn: Iterator[A] => Execution[B]) extends (((Iterable[A], Execution[Unit])) => Execution[B]) {
+    def apply(asClose: (Iterable[A], Execution[Unit])): Execution[B] = {
+      val (iterable, close) = asClose
+      fn(iterable.iterator).flatMap(b => close.map(_ => b))
+    }
+  }
 
   implicit class TallyEnrichment[A, B <: Iterable[((String, String), Long)]](val pipe: TypedPipe[(A, B)]) extends AnyVal {
     /**
@@ -815,6 +821,50 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    */
   def toIterableExecution: Execution[Iterable[T]] =
     Execution.toIterable(this)
+
+  /**
+   * This gives an Execution that when run evaluates the TypedPipe,
+   * writes it to disk, and then gives you an Iterable that reads from
+   * disk on the submit node each time .iterator is called.
+   * Because of how scala Iterables work, mapping/flatMapping/filtering
+   * the Iterable forces a read of the entire thing. If you need it to
+   * be lazy, call .iterator and use the Iterator inside instead.
+   *
+   * Also this gives you Execution to clean up resources associated with Iterable.
+   *
+   * Example:
+   *
+   * pipe
+   *  .toIterableExecutionWithClose
+   *  .flatMap { case (iterable, close) =>
+   *    val distinctId = iterable.map(_.id).toSet
+   *
+   *    close.map(_ => distinctId)
+   *  }
+   *
+   * Note: prefer use `useAsIterator`
+   * Note: close will be no-op if typedPipe already forced on disk (i.e. you call forceToDisk before)
+   */
+  def toIterableExecutionWithClose: Execution[(Iterable[T], Execution[Unit])] =
+    Execution.toIterableWithClose(this)
+
+  /**
+   * When Execution run evaluates the TypedPipe, writes it to disk,
+   * and then gives you an Iterator that reads from disk on the submit node and clean up resources
+   * associated with Iterator after `fn` is done.
+   *
+   * WARNING: you must fully use the `Iterator` BEFORE you return Execution[B] in `fn`,
+   * because after `fn` is done we will clean up resources and data will be no longer available.
+   *
+   * Example:
+   *
+   * pipe.useAsIterator { iterator =>
+   *    val distinctId = iterable.map(_.id).toSet
+   *    Execution.from(distinctId)
+   * }
+   */
+  def useAsIterator[B](fn: Iterator[T] => Execution[B]): Execution[B] =
+    toIterableExecutionWithClose.flatMap(TypedPipe.ItClose(fn))
 
   /** use a TupleUnpacker to flatten U out into a cascading Tuple */
   def unpackToPipe[U >: T](fieldNames: Fields)(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {

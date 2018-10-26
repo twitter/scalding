@@ -63,6 +63,50 @@ object ExecutionTestJobs {
       .flatMap(_.toIterableExecution)
       .map(_.toList)
   }
+
+  def writeExecutionWithTempFileAndCloseWithFork(tempFile: String, testData: List[String]): Execution[(List[String], Int)] = {
+    val forced =
+      TypedPipe.from(testData).map(s => s)
+        .forceToDiskExecution
+        .map { pipe =>
+          (pipe, pipe.map(_.length).sum)
+        }
+
+    Execution.withConfig(forced) { conf => conf + ("hadoop.tmp.dir" -> tempFile) }
+      .flatMap {
+        case (pipe, sum) =>
+          val leftList = pipe.toIterableExecutionWithClose
+              .flatMap {
+                case (iter, close) =>
+                  val list = iter.toList
+                  close.map(_ => list)
+              }
+
+          leftList.zip(sum.getExecution)
+      }
+  }
+
+  def writeExecutionWithTempFileAndCloseWithoutForce(tempFile: String, testData: List[String]): Execution[List[String]] = {
+    val forced = TypedPipe.from(testData).map(s => s)
+      .toIterableExecutionWithClose
+
+    Execution.withConfig(forced) { conf => conf + ("hadoop.tmp.dir" -> tempFile) }
+      .flatMap {
+        case (iter, close) =>
+          val list = iter.toList
+          close.map(_ => list)
+      }
+  }
+
+  def writeExecutionAsIteratorWithoutForce(tempFile: String, testData: List[String]): Execution[List[String]] = {
+    val exec =
+      TypedPipe.from(testData).map(s => s).useAsIterator { iter =>
+        val list = iter.toList
+        Execution.from(list)
+      }
+
+    Execution.withConfig(exec) { conf => conf + ("hadoop.tmp.dir" -> tempFile) }
+  }
 }
 
 abstract class TestExecutionJob[+T](args: Args) extends ExecutionJob[T](args) {
@@ -394,6 +438,10 @@ class ExecutionTest extends WordSpec with Matchers {
     "clean up temporary files on finish" in {
       val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
       val testData = List("a", "b", "c")
+      getShutdownHooks.foreach { hook: Thread =>
+        isTempFileCleanupHook(hook) should be(false)
+      }
+
 
       val ex = ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
       val onFinish = Execution.withConfig(ex)(_.setExecutionCleanupOnFinish(true))
@@ -403,6 +451,93 @@ class ExecutionTest extends WordSpec with Matchers {
       // running by the time we check below
       // A small sleep like this appears to be sufficient to ensure we can see it
       Thread.sleep(1000)
+
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe None
+
+      val f = new File(tempFile)
+      def allChildren(f: File): List[File] =
+        if (f.isDirectory) f.listFiles().toList.flatMap(allChildren(_))
+        else List(f)
+
+      assert(allChildren(f).isEmpty, f.toString)
+    }
+
+    "not clean up temporary files as part of execution with fork" in {
+      val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testData = List("a", "b", "c")
+      getShutdownHooks.foreach { hook: Thread =>
+        isTempFileCleanupHook(hook) should be(false)
+      }
+
+      val ex = ExecutionTestJobs.writeExecutionWithTempFileAndCloseWithFork(tempFile, testData)
+      val onFinish = Execution.withConfig(ex)(_.setExecutionCleanupOnFinish(false))
+      val (left, right) = onFinish.shouldSucceedHadoop()
+
+      assert(left.map(_.length).sum == right)
+      assert(left == testData)
+
+      // This is hacky, but there's a small chance that the cleanup thread has not finished
+      // running by the time we check below
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe defined
+
+      val files = cleanupHook.get.asInstanceOf[TempFileCleanup].filesToCleanup
+
+      assert(files.size == 1)
+      assert(files.head.contains(tempFile))
+      cleanupHook.get.run()
+      // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
+      Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
+    }
+
+    "clean up temporary files as part of execution without forceToDisk" in {
+      val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testData = List("a", "b", "c")
+
+      val ex = ExecutionTestJobs.writeExecutionWithTempFileAndCloseWithoutForce(tempFile, testData)
+      val onFinish = Execution.withConfig(ex)(_.setExecutionCleanupOnFinish(false))
+      val result = onFinish.shouldSucceedHadoop()
+
+      testData shouldEqual result
+
+      // This is hacky, but there's a small chance that the cleanup thread has not finished
+      // running by the time we check below
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe None
+
+      val f = new File(tempFile)
+      def allChildren(f: File): List[File] =
+        if (f.isDirectory) f.listFiles().toList.flatMap(allChildren(_))
+        else List(f)
+
+      assert(allChildren(f).isEmpty, f.toString)
+    }
+
+    "clean up temporary files as part of execution with userAsIterator without forceToDisk" in {
+      val tempFile = Files.createTempDirectory("scalding-execution-test").toFile.getAbsolutePath
+      val testData = List("a", "b", "c")
+
+      val ex = ExecutionTestJobs.writeExecutionAsIteratorWithoutForce(tempFile, testData)
+      val onFinish = Execution.withConfig(ex)(_.setExecutionCleanupOnFinish(false))
+      val result = onFinish.shouldSucceedHadoop()
+
+      testData shouldEqual result
+
+      // This is hacky, but there's a small chance that the cleanup thread has not finished
+      // running by the time we check below
+      // A small sleep like this appears to be sufficient to ensure we can see it
+      Thread.sleep(1000)
+
+      val cleanupHook = getShutdownHooks.find(isTempFileCleanupHook)
+      cleanupHook shouldBe None
+
       val f = new File(tempFile)
       def allChildren(f: File): List[File] =
         if (f.isDirectory) f.listFiles().toList.flatMap(allChildren(_))
@@ -434,7 +569,7 @@ class ExecutionTest extends WordSpec with Matchers {
 
       assert(files.size == 2)
       assert(files.head.contains(tempFileOne) || files.head.contains(tempFileTwo))
-      assert(files(1).contains(tempFileOne) || files(1).contains(tempFileTwo))
+      assert(files.tail.head.contains(tempFileOne) || files.tail.head.contains(tempFileTwo))
       cleanupHook.get.run()
       // Remove the hook so it doesn't show up in the list of shutdown hooks for other tests
       Runtime.getRuntime.removeShutdownHook(cleanupHook.get)
@@ -737,7 +872,6 @@ class ExecutionTest extends WordSpec with Matchers {
             Execution.fromFn(fnF))))
       }
     }
-
     "Has consistent hashCode and equality for mutable" when {
       // These cases are a bit convoluted, but we still
       // want equality to be consistent
@@ -899,6 +1033,28 @@ class ExecutionTest extends WordSpec with Matchers {
       val workingDir = System.getProperty("user.dir")
       val job = TypedPipe.from(TextLine(workingDir + "/../tutorial/data/hello.txt")).map(_.size).toIterableExecution
       assert(job.waitFor(Config.empty, Local(true)).get.toList == List("Hello world", "Goodbye world").map(_.size))
+    }
+    "equal for same pipe" in {
+      val p = TypedPipe.from(Iterable(1, 2, 3))
+      assert(
+        Execution.toIterable(p) == Execution.toIterable(p)
+      )
+    }
+  }
+  "toIterableWithCloseExecution" should {
+    "equal for same pipe" in {
+      val p = TypedPipe.from(Iterable(1, 2, 3))
+      assert(
+        Execution.toIterableWithClose(p) == Execution.toIterableWithClose(p)
+      )
+    }
+  }
+  "forceToDisk" should {
+    "equal for same pipe" in {
+      val p = TypedPipe.from(Iterable(1, 2, 3))
+      assert(
+        Execution.forceToDisk(p) == Execution.forceToDisk(p)
+      )
     }
   }
 }

@@ -1,18 +1,18 @@
 package com.twitter.scalding.spark_backend
 
 import cascading.flow.FlowDef
-import com.stripe.dagon.{ HMap, Rule }
+import com.stripe.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox
-import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
+import com.twitter.scalding.{Config, Execution, ExecutionCounters}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ Future, ExecutionContext, Promise }
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import java.util.concurrent.atomic.AtomicLong
-
-import Execution.{ ToWrite, Writer }
+import Execution.{ToWrite, Writer}
+import java.util.UUID
 
 class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
@@ -127,6 +127,9 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
   def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit cec: ExecutionContext): Future[Iterable[T]] =
     state.get().getIterable(conf, initial)
 
+  def getCleanupFor(uuid: UUID)(implicit cec: ExecutionContext): Future[Unit] =
+    Future.successful(())
+
   def start(): Unit = ()
 
   /**
@@ -188,10 +191,10 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
      */
     val (id: Long, acts) = state.update { s =>
       val (nextState, acts) = optimizedWrites.foldLeft((s, List.empty[Action])) {
-        case (old@(state, acts), OptimizedWrite(pipe, Force(opt))) =>
+        case (old@(state, acts), OptimizedWrite(pipe, Force(opt, _))) =>
           val (st, a) = force(opt, pipe, state)
           (st, a :: acts)
-        case (old@(state, acts), OptimizedWrite(pipe, ToIterable(opt))) =>
+        case (old@(state, acts), OptimizedWrite(pipe, ToIterable(opt, _))) =>
           val (st, a) = force(opt, pipe, state)
           (st, a :: acts)
         case ((state, acts), OptimizedWrite(pipe, ToWrite.SimpleWrite(opt, sink))) =>

@@ -45,7 +45,7 @@ object AsyncFlowDefRunner {
    *
    * If the job is aborted the shutdown hook may not run and the temporary files will not get cleaned up
    */
-  final case class TempFileCleanup(filesToCleanup: List[String], mode: CascadingMode) extends Thread {
+  final case class TempFileCleanup(filesToCleanup: Iterable[String], mode: CascadingMode) extends Thread {
 
     val LOG = LoggerFactory.getLogger(this.getClass)
 
@@ -85,13 +85,29 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
   type StateKey[T] = (Config, TypedPipe[T])
   type WorkVal[T] = Future[TypedPipe[T]]
 
-  private case class FilesToCleanUp(onFinish: Set[String], onShutdown: Set[String]) {
-    def addFile(conf: Config, s: String): FilesToCleanUp =
-      if (conf.getExecutionCleanupOnFinish) copy(onFinish = onFinish + s)
-      else copy(onShutdown = onShutdown + s)
+  private case class FilesToCleanUp(
+    private val onFinishMap: Map[UUID, String],
+    private val onShutdownMap: Map[UUID, String]
+  ) {
+
+    def addFile(conf: Config, uuid: UUID, s: String): FilesToCleanUp =
+      if (conf.getExecutionCleanupOnFinish) copy(onFinishMap = onFinishMap + (uuid -> s))
+      else copy(onShutdownMap = onShutdownMap + (uuid -> s))
+
+    def popFile(uuid: UUID): (FilesToCleanUp, Option[String]) =
+      onShutdownMap.get(uuid) match {
+        case file@Some(_) => (copy(onShutdownMap = onShutdownMap - uuid), file)
+        case None =>
+          val file = onFinishMap.get(uuid)
+          (copy(onFinishMap = onFinishMap - uuid), file)
+      }
+
+    def onFinishFiles: Set[String] = onFinishMap.values.toSet
+
+    def onShutdownFiles: Set[String] = onShutdownMap.values.toSet
   }
   private object FilesToCleanUp {
-    def empty: FilesToCleanUp = FilesToCleanUp(Set.empty, Set.empty)
+    def empty: FilesToCleanUp = FilesToCleanUp(Map.empty, Map.empty)
   }
   /**
    * @param filesToCleanup temporary files created by forceToDiskExecution
@@ -103,15 +119,20 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
   private case class State(
     filesToCleanup: FilesToCleanUp,
     initToOpt: HMap[StateKey, TypedPipe],
-    forcedPipes: HMap[StateKey, WorkVal]) {
+    forcedPipes: HMap[StateKey, WorkVal]
+  ) {
 
-    def addFilesToCleanup(conf: Config, s: Option[String]): State =
-      s match {
+    def addFilesToCleanup(conf: Config, uuid: UUID, clean: Option[String]): State =
+      clean match {
         case Some(path) =>
-          val ftc1 = filesToCleanup.addFile(conf, path)
-          copy(filesToCleanup = ftc1)
+          copy(filesToCleanup = filesToCleanup.addFile(conf, uuid, path))
         case None => this
       }
+
+    def popFileToCleanup(uuid: UUID): (State, Option[String]) = {
+      val (files, file) = filesToCleanup.popFile(uuid)
+      (copy(filesToCleanup = files), file)
+    }
 
     /**
      * Returns true if we actually add this optimized pipe. We do this
@@ -229,11 +250,14 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     messageQueue.put(Stop)
     // get an immutable copy
     val filesToRm = getState.filesToCleanup
-    if (filesToRm.onShutdown.nonEmpty) {
-      Runtime.getRuntime.addShutdownHook(TempFileCleanup(filesToRm.onShutdown.toList, mode))
+    val onShutdown = filesToRm.onShutdownFiles
+    val onFinish = filesToRm.onFinishFiles
+
+    if (onShutdown.nonEmpty) {
+      Runtime.getRuntime.addShutdownHook(TempFileCleanup(onShutdown, mode))
     }
-    if (filesToRm.onFinish.nonEmpty) {
-      val cleanUpThread = TempFileCleanup(filesToRm.onFinish.toList, mode)
+    if (onFinish.nonEmpty) {
+      val cleanUpThread = TempFileCleanup(onFinish, mode)
       // run it that the outer most execution is complete
       cleanUpThread.start()
     }
@@ -274,16 +298,15 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         dest.writeFrom(pipe)(fd, mode)
       }
 
-      def force[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit = {
+      def force[A](init: TypedPipe[A], opt: TypedPipe[A], uuid: UUID): Unit = {
         val pipePromise = Promise[TypedPipe[A]]()
         val fut = pipePromise.future
         // This updates mutable state
         val sinkOpt = updateState { s =>
           val (nextState, added) = s.addForce(conf, init, opt, fut)
           if (added) {
-            val uuid = UUID.randomUUID
             val (sink, forcedPipe, clean) = forceToDisk(uuid, c, opt)
-            (nextState.addFilesToCleanup(conf, clean), Some((sink, forcedPipe)))
+            (nextState.addFilesToCleanup(conf, uuid, clean), Some((sink, forcedPipe)))
           } else {
             (nextState, None)
           }
@@ -308,9 +331,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       }
 
       optimizedWrites.foreach {
-        case OptimizedWrite(init, Force(opt)) =>
-          force(init, opt)
-        case OptimizedWrite(init, ToIterable(opt)) =>
+        case OptimizedWrite(init, Force(opt, uuid)) =>
+          force(init, opt, uuid)
+        case OptimizedWrite(init, ToIterable(opt, uuid)) =>
           def step[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit = {
             opt match {
               case TypedPipe.EmptyTypedPipe => addIter(init, Left(Nil))
@@ -318,7 +341,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
               case TypedPipe.SourcePipe(src: Mappable[A]) => addIter(init, Right(src))
               case other =>
                 // we need to write the pipe out first.
-                force(init, opt)
+                force(init, opt, uuid)
               // now, when we go to check for the pipe later, it
               // will be a SourcePipe of a Mappable by construction
             }
@@ -367,6 +390,15 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         val msg =
           s"logic error: expected an Iterable pipe. ($conf, $initial) -> $other is not iterable"
         Future.failed(new IllegalStateException(msg))
+    }
+
+  def getCleanupFor(uuid: UUID)(implicit cec: ConcurrentExecutionContext): Future[Unit] =
+    updateState(_.popFileToCleanup(uuid)) match {
+      case Some(path) =>
+        Future {
+          TempFileCleanup(Iterable(path), mode).run()
+        }
+      case None => Future.successful(())
     }
 
   private def forceToDisk[T]( // linter:disable:UnusedParameter

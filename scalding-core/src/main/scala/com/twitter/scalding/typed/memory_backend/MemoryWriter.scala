@@ -1,10 +1,11 @@
 package com.twitter.scalding.typed.memory_backend
 
-import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
-import com.stripe.dagon.{ HMap, Rule }
+import scala.concurrent.{Future, Promise, ExecutionContext => ConcurrentExecutionContext}
+import com.stripe.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
-import Execution.{ ToWrite, Writer }
+import com.twitter.scalding.{Config, Execution, ExecutionCounters}
+import Execution.{ToWrite, Writer}
+import java.util.UUID
 /**
  * This is the state of a single outer Execution execution running
  * in memory mode
@@ -69,13 +70,13 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       val (nextState, acts) = optimizedWrites.foldLeft((s, List.empty[Action])) {
         case (old @ (state, acts), write) =>
           write match {
-            case OptimizedWrite(pipe, Force(opt)) =>
+            case OptimizedWrite(pipe, Force(opt, _)) =>
               if (state.forced.contains(opt)) old
               else {
                 val (st, a) = force(opt, pipe, state)
                 (st, a :: acts)
               }
-            case OptimizedWrite(pipe, ToIterable(opt)) =>
+            case OptimizedWrite(pipe, ToIterable(opt, _)) =>
               opt match {
                 case TypedPipe.EmptyTypedPipe =>
                   (state.simplifiedForce(pipe, Future.successful(Nil)), acts)
@@ -137,4 +138,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     case TypedPipe.SourcePipe(src) => getSource(src)
     case other => getForced(conf, other).flatMap(getIterable(conf, _))
   }
+
+  def getCleanupFor(uuid: UUID)(implicit cec: ConcurrentExecutionContext): Future[Unit] =
+    Future.successful(())
 }

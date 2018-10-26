@@ -239,6 +239,8 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
               rec(RefPair(ex0, ex1))
             case (RefPair(TransformedConfig(ex0, fn0), TransformedConfig(ex1, fn1)), rec) =>
               (fn0 == fn1) && rec(RefPair(ex0, ex1))
+            case (RefPair(CleanupExecution(u0), CleanupExecution(u1)), _) =>
+              u0 == u1
             case (RefPair(UniqueIdExecution(fn0), UniqueIdExecution(fn1)), _) =>
               fn0 == fn1
             case (RefPair(WithNewCache(ex0), WithNewCache(ex1)), rec) =>
@@ -443,6 +445,14 @@ object Execution {
     }
   }
 
+  private final case class CleanupExecution(uuid: UUID) extends Execution[Unit] {
+    protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
+      Trampoline(cache.getOrElseInsert(conf, this,
+        cache.writer.getCleanupFor(uuid)(cec).map((_, Map.empty))
+      ))
+    }
+  }
+
   /**
    * This class allows running the passed execution with its own cache.
    * This will mean anything inside won't benefit from Execution's global attempts to avoid
@@ -610,14 +620,14 @@ object Execution {
     def pipe: TypedPipe[T]
     def replacePipe(p: TypedPipe[T]): ToWrite[T] =
       this match {
-        case ToWrite.Force(_) => ToWrite.Force(p)
-        case ToWrite.ToIterable(_) => ToWrite.ToIterable(p)
+        case ToWrite.Force(_, uuid) => ToWrite.Force(p, uuid)
+        case ToWrite.ToIterable(_, uuid) => ToWrite.ToIterable(p, uuid)
         case ToWrite.SimpleWrite(_, sink) => ToWrite.SimpleWrite(p, sink)
       }
   }
   object ToWrite extends Serializable {
-    final case class Force[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
-    final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
+    final case class Force[T](@transient pipe: TypedPipe[T], @transient uuid: UUID) extends ToWrite[T]
+    final case class ToIterable[T](@transient pipe: TypedPipe[T], @transient uuid: UUID) extends ToWrite[T]
     final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T]) extends ToWrite[T]
 
     final case class OptimizedWrite[F[_], T](@transient original: F[T], toWrite: ToWrite[T])
@@ -690,6 +700,10 @@ object Execution {
       conf: Config,
       initial: TypedPipe[T]
       )(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]]
+
+    private[Execution] def getCleanupFor(
+      uuid: UUID
+      )(implicit cec: ConcurrentExecutionContext): Future[Unit]
   }
 
   /**
@@ -806,6 +820,22 @@ object Execution {
       case Failure(err) => Future.failed(err)
     }
 
+  private case class RandomUUID() extends (ConcurrentExecutionContext => Future[UUID]) {
+    override def apply(context: ConcurrentExecutionContext): Future[UUID] = Future.successful(UUID.randomUUID())
+  }
+  private case class WithCleanup[A](uuid: UUID) extends (A => (A, CleanupExecution)) {
+    def apply(a: A): (A, CleanupExecution) = (a, CleanupExecution(uuid))
+  }
+  private case class ToIterableWithClose[A](t: TypedPipe[A]) extends (UUID => Execution[(Iterable[A], CleanupExecution)]) {
+    def apply(uuid: UUID): Execution[(Iterable[A], CleanupExecution)] = toIterable(t, uuid).map(WithCleanup(uuid))
+  }
+  private case class ToIterable[A](t: TypedPipe[A]) extends (UUID => Execution[Iterable[A]]) {
+    def apply(uuid: UUID): Execution[Iterable[A]] = toIterable(t, uuid)
+  }
+  private case class ForceToDisk[A](t: TypedPipe[A]) extends (UUID => Execution[TypedPipe[A]]) {
+    def apply(uuid: UUID): Execution[TypedPipe[A]] = forceToDisk(t, uuid)
+  }
+
   /**
    * This creates a definitely failed Execution.
    */
@@ -846,16 +876,26 @@ object Execution {
     FlowDefExecution(fn)
 
   def forceToDisk[T](t: TypedPipe[T]): Execution[TypedPipe[T]] =
+    fromFuture(RandomUUID()).flatMap(ForceToDisk(t))
+
+  def toIterable[T](t: TypedPipe[T]): Execution[Iterable[T]] =
+    fromFuture(RandomUUID()).flatMap(ToIterable(t))
+
+  def toIterableWithClose[T](t: TypedPipe[T]): Execution[(Iterable[T], Execution[Unit])] =
+    fromFuture(RandomUUID()).flatMap(ToIterableWithClose(t))
+
+  private[scalding] def forceToDisk[T](t: TypedPipe[T], uuid: UUID): Execution[TypedPipe[T]] =
     WriteExecution(
-      ToWrite.Force(t),
+      ToWrite.Force(t, uuid),
       Nil,
       { case (conf, _, w, cec) => w.getForced(conf, t)(cec) })
 
-  def toIterable[T](t: TypedPipe[T]): Execution[Iterable[T]] =
+  private[scalding] def toIterable[T](t: TypedPipe[T], uuid: UUID): Execution[Iterable[T]] =
     WriteExecution(
-      ToWrite.ToIterable(t),
+      ToWrite.ToIterable(t, uuid),
       Nil,
       { case (conf, _, w, cec) => w.getIterable(conf, t)(cec) })
+
 
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
