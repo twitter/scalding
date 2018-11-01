@@ -17,8 +17,8 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
-import cascading.tuple.{ Tuple => CTuple }
-
+import cascading.tuple.{Tuple => CTuple}
+import com.twitter.scalding.serialization.Externalizer
 import scala.collection.breakOut
 
 /**
@@ -48,17 +48,21 @@ trait LowPriorityTupleConverters extends java.io.Serializable {
 
 object TupleConverter extends GeneratedTupleConverters {
   final case class Single[@specialized(Int, Long, Float, Double) A](getter: TupleGetter[A]) extends TupleConverter[A] {
-    def apply(tup: TupleEntry) = getter.get(tup.getTuple, 0)
+    def apply(tup: TupleEntry): A = getter.get(tup.getTuple, 0)
     def arity = 1
   }
 
-  final case class AndThen[A, B](first: TupleConverter[A], fn: A => B) extends TupleConverter[B] {
-    def apply(te: TupleEntry) = fn(first(te))
-    def arity = first.arity
+  final case class AndThen[A, B](first: TupleConverter[A], @transient fn: A => B) extends TupleConverter[B] {
+    private val lockedFn = Externalizer(fn)
+
+    def apply(te: TupleEntry) = lockedFn.get(first(te))
+    def arity: Int = first.arity
   }
 
-  final case class FromFn[A](fn: TupleEntry => A, arity: Int) extends TupleConverter[A] {
-    def apply(te: TupleEntry) = fn(te)
+  final case class FromFn[A](@transient fn: TupleEntry => A, arity: Int) extends TupleConverter[A] {
+    private val lockedFn = Externalizer(fn)
+
+    def apply(te: TupleEntry) = lockedFn.get(te)
   }
 
   /**
