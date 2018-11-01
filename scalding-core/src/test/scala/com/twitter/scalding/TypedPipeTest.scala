@@ -15,9 +15,9 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.scalatest.{ FunSuite, Matchers, WordSpec }
-
-import com.twitter.scalding.source.TypedText
+import org.scalatest.{FunSuite, Matchers, WordSpec}
+import com.twitter.scalding.source.{FixedTypedText, TypedText}
+import scala.collection.mutable
 // Use the scalacheck generators
 import org.scalacheck.Gen
 import scala.collection.mutable.Buffer
@@ -1502,5 +1502,39 @@ class TypedPipeRequireTest extends FunSuite {
 
     assert(ex(false).waitFor(Config.empty, Local(true)).get.toList.sorted ==
       ex(true).waitFor(Config.empty, Local(true)).get.toList.sorted)
+  }
+}
+
+object TypedPipeConverterTest {
+  class TypedTsvWithCustomConverter[T: TypeDescriptor](nonSerializableOjb: Any, path: String*) extends FixedTypedText[T](TypedText.TAB, path: _*) {
+    override def converter[U >: T]: TupleConverter[U] =
+      super.converter.andThen { t: T => nonSerializableOjb; t }
+  }
+
+  class NonSerializableObj
+
+  val source = new TypedTsvWithCustomConverter[Int](new NonSerializableObj(), "input")
+
+  class JobWithCustomConverter(args: Args) extends Job(args) {
+    TypedPipe.from(source)
+      .map(i => i + 1)
+      .write(TypedText.tsv[Int]("output"))
+  }
+}
+
+class TypedPipeConverterTest extends FunSuite {
+  import TypedPipeConverterTest._
+
+  test("any converter should be serializable") {
+    val expected = mutable.Buffer[Int](0 to 10: _*)
+    val result = mutable.Buffer[Int]()
+
+    JobTest(new JobWithCustomConverter(_))
+      .source(source, expected.map(_ - 1))
+      .typedSink(TypedText.tsv[Int]("output")) { outBuf => result ++= outBuf }
+      .runHadoop
+      .finish()
+
+    assert(result == expected)
   }
 }
