@@ -1506,9 +1506,9 @@ class TypedPipeRequireTest extends FunSuite {
 }
 
 object TypedPipeConverterTest {
-  class TypedTsvWithCustomConverter[T: TypeDescriptor](nonSerializableOjb: Any, path: String*) extends FixedTypedText[T](TypedText.TAB, path: _*) {
+  class TypedTsvWithCustomConverter[T: TypeDescriptor](nonSerializableObj: Any, path: String*) extends FixedTypedText[T](TypedText.TAB, path: _*) {
     override def converter[U >: T]: TupleConverter[U] =
-      super.converter.andThen { t: T => nonSerializableOjb; t }
+      super.converter.andThen { t: T => nonSerializableObj; t }
   }
 
   class NonSerializableObj
