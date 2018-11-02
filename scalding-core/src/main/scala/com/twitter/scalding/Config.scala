@@ -518,6 +518,8 @@ object Config {
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
   val VerboseFileSourceLoggingKey: String = "scalding.filesource.verbose.logging"
   val OptimizationPhases: String = "scalding.optimization.phases"
+  val RuntimeFrameworkKey = "mapreduce.framework.name"
+  val RuntimeFrameworkValueLocal = "local"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -580,7 +582,7 @@ object Config {
    * Extensions to the Default Config to tune it for unit tests
    */
   def unitTestDefault: Config =
-    Config(Config.default.toMap ++ Map("cascading.update.skip" -> "true"))
+    Config(Config.default.toMap ++ Map("cascading.update.skip" -> "true", RuntimeFrameworkKey -> RuntimeFrameworkValueLocal))
 
   /**
    * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)

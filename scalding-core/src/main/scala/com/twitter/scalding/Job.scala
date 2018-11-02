@@ -235,6 +235,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
 
     val modeConf = mode match {
       case h: HadoopMode => Config.fromHadoop(h.jobConf)
+      case _: CascadingLocal => Config.unitTestDefault
       case _ => Config.empty
     }
 
