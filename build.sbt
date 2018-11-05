@@ -11,7 +11,7 @@ import scalariform.formatter.preferences._
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.10" => "2.10"
   case version if version startsWith "2.11" => "2.11"
-  case version if version startsWith "2.12" => "2.12"
+  case version if version startsWiih "2.12" => "2.12"
   case _ => sys.error("unknown error")
 }
 
@@ -38,7 +38,7 @@ val scalaTestVersion = "3.0.1"
 val scroogeVersion = "18.9.0"
 val sparkVersion = "2.0.0"
 val slf4jVersion = "1.6.6"
-val thriftVersion = "0.10.0"
+val thriftVersion = "0.7.0"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
 val jlineVersion = "2.14.3"
@@ -407,7 +407,7 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
