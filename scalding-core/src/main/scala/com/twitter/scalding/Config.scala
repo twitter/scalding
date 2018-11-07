@@ -481,6 +481,18 @@ abstract class Config extends Serializable {
   def getExecutionCleanupOnFinish: Boolean =
     getBoolean(ScaldingExecutionCleanupOnFinish, false)
 
+  /**
+   * Enable/Disable optimization of `Exception` graph.
+   */
+  def setExecutionOptimization(boolean: Boolean): Config =
+    this + (ScaldingExecutionOptimizationEnabled -> boolean.toString)
+
+  /**
+   * Should we optimize of `Execution` graph.
+   */
+  def getExecutionOptimization: Boolean =
+    getBoolean(ScaldingExecutionOptimizationEnabled, true)
+
   // we use Config as a key in Execution caches so we
   // want to avoid recomputing it repeatedly
   override lazy val hashCode = toMap.hashCode
@@ -507,6 +519,7 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingExecutionCleanupOnFinish: String = "scalding.execution.cleanup.onfinish"
+  val ScaldingExecutionOptimizationEnabled: String = "scalding.execution.optimization.enabled"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
