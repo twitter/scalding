@@ -26,7 +26,7 @@ import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.apache.hadoop.io.serializer.{ Serialization => HSerialization }
 
 import scala.concurrent.{ Future, Promise }
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 import java.io.{ BufferedWriter, FileOutputStream, OutputStreamWriter }
 import java.util.{ List => JList }
@@ -286,22 +286,25 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
   def buildFlow: Flow[_] =
     executionContext
       .flatMap(_.buildFlow)
-      .map { flow =>
-        listeners.foreach { flow.addListener(_) }
-        stepListeners.foreach { flow.addStepListener(_) }
-        skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
-        stepStrategy.foreach { strategy =>
-          val existing = flow.getFlowStepStrategy
-          val composed =
-            if (existing == null)
-              strategy
-            else
-              FlowStepStrategies[Any].plus(
-                existing.asInstanceOf[FlowStepStrategy[Any]],
-                strategy.asInstanceOf[FlowStepStrategy[Any]])
-          flow.setFlowStepStrategy(composed)
-        }
-        flow
+      .flatMap[Flow[_]] {
+        case None =>
+          Failure(new IllegalStateException("sink taps are required"))
+        case Some(flow) =>
+          listeners.foreach { flow.addListener(_) }
+          stepListeners.foreach { flow.addStepListener(_) }
+          skipStrategy.foreach { flow.setFlowSkipStrategy(_) }
+          stepStrategy.foreach { strategy =>
+            val existing = flow.getFlowStepStrategy
+            val composed =
+              if (existing == null)
+                strategy
+              else
+                FlowStepStrategies[Any].plus(
+                  existing.asInstanceOf[FlowStepStrategy[Any]],
+                  strategy.asInstanceOf[FlowStepStrategy[Any]])
+            flow.setFlowStepStrategy(composed)
+          }
+          Success(flow)
       }
       .get
 
