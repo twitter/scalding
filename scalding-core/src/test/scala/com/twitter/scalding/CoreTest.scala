@@ -15,13 +15,15 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.scalatest.{ WordSpec, Matchers }
-
+import org.scalatest.{Matchers, WordSpec}
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
+import com.twitter.algebird.{Fold, Semigroup}
 import com.twitter.scalding.source.DailySuffixTsv
-
-import java.lang.{ Integer => JInt }
+import com.twitter.scalding.typed.TypedPipeGen
+import java.lang.{Integer => JInt}
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.prop.PropertyChecks
 
 class NumberJoinerJob(args: Args) extends Job(args) {
   val in0 = TypedTsv[(Int, Int)]("input0").read.rename((0, 1) -> ('x0, 'y0))
@@ -266,7 +268,7 @@ class JoinJob(args: Args) extends Job(args) {
     .write(Tsv(args("output")))
 }
 
-class JoinTest extends WordSpec with Matchers {
+class JoinTest extends WordSpec with Matchers with PropertyChecks {
   "A JoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)
@@ -289,6 +291,479 @@ class JoinTest extends WordSpec with Matchers {
       }
       .run
       .finish()
+  }
+
+  "inner join" should {
+    case class Value(opt: Option[Int] = None)
+    case class TotalValue(k: String, opt: Option[Int])
+
+    "respect symmetric law" in {
+      val srcGen: Gen[TypedPipe[Int]] = {
+        val ints = Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_))
+        Gen.oneOf(ints, Gen.const(TypedPipe.empty))
+      }
+
+      forAll(TypedPipeGen.keyed(srcGen), TypedPipeGen.keyed(srcGen)) { (left, right) =>
+        val leftWithRight = left.join(right).values
+        val rightWithLeft = right.join(left).values.swap
+
+        assert(
+          TypedPipeChecker.inMemoryToList(leftWithRight).sorted ==
+            TypedPipeChecker.inMemoryToList(rightWithLeft).sorted
+        )
+      }
+    }
+
+    "correctly work with mapValueStream" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValueStream { _ =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        // left is random
+        val (k, (_, rV)) = result.head
+        assert(k == "b")
+        assert(rV == 2)
+      }
+    }
+
+    "correctly work with mapValues" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValues(identity)
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (1, 2)))
+      }
+    }
+
+    "correctly work with mapGroup" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapGroup { (_, _) =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        // left is random
+        val (k, (_, rV)) = result.head
+        assert(k == "b")
+        assert(rV == 2)
+      }
+    }
+
+    "correctly work with sumLeft and custom semigroup" in {
+      implicit val sg: Semigroup[Int] = new Semigroup[Int] {
+        override def plus(x: Int, y: Int): Int = x + y
+
+        //doing crazy
+        override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
+          if (iter.isEmpty) Some(0)
+          else super.sumOption(iter)
+      }
+
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sumLeft
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (1, 2)))
+      }
+    }
+
+    "correctly work with sum" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sum
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (1, 2)))
+      }
+    }
+
+    "correctly work with foldWithKey" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldWithKey { _ =>
+            Fold.foldLeft(Value()) {
+              case (acc, int) => acc.copy(Some(int))
+            }
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (Value(Some(1)), 2)))
+      }
+    }
+
+    "correctly work with foldLeft" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldLeft(Value()) {
+            case (acc, int) => acc.copy(Some(int))
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (Value(Some(1)), 2)))
+      }
+    }
+  }
+
+  "left join" should {
+    case class Value(opt: Option[Int] = None)
+    case class TotalValue(k: String, opt: Option[Int])
+
+    "correctly work with mapValueStream" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValueStream { _ =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with mapValues" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValues(identity)
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with mapGroup" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapGroup { (_, _) =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with sumLeft and custom semigroup" in {
+      implicit val sg: Semigroup[Int] = new Semigroup[Int] {
+        override def plus(x: Int, y: Int): Int = x + y
+
+        //doing crazy stuff
+        override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
+          if (iter.isEmpty) Some(0)
+          else super.sumOption(iter)
+      }
+
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sumLeft
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with sum" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sum
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.join(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 1)
+
+        assert(result.head == ("b", (1, 2)))
+      }
+    }
+
+    "correctly work with foldWithKey" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldWithKey { _ =>
+            Fold.foldLeft(Value()) {
+              case (acc, int) => acc.copy(Some(int))
+            }
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with foldLeft" in {
+      val left =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldLeft(Value()) {
+            case (acc, int) => acc.copy(Some(int))
+          }
+
+      val right =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val res = left.leftJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+  }
+
+  "right join" should {
+    case class Value(opt: Option[Int] = None)
+    case class TotalValue(k: String, opt: Option[Int])
+
+    "correctly work with mapValueStream" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValueStream { _ =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with mapValues" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapValues(identity)
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with mapGroup" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .mapGroup { (_, _) =>
+            Iterator.single(scala.util.Random.nextInt())
+          }
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with sumLeft and custom semigroup" in {
+      implicit val sg: Semigroup[Int] = new Semigroup[Int] {
+        override def plus(x: Int, y: Int): Int = x + y
+
+        //doing crazy stuff
+        override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
+          if (iter.isEmpty) Some(scala.util.Random.nextInt())
+          else super.sumOption(iter)
+      }
+
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sumLeft
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with sum" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .sum
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with foldWithKey" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldWithKey { _ =>
+            Fold.foldLeft(Value()) {
+              case (acc, int) => acc.copy(Some(int))
+            }
+          }
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
+
+    "correctly work with foldLeft" in {
+      val left =
+        TypedPipe.from(List("c" -> 3, "b" -> 2))
+
+      val right =
+        TypedPipe.from(List("a" -> 1, "b" -> 1))
+          .group
+          .foldLeft(Value()) {
+            case (acc, int) => acc.copy(Some(int))
+          }
+
+      val res = left.rightJoin(right)
+
+      TypedPipeChecker.checkOutput(res) { result =>
+        assert(result.size == 2)
+
+        assert(result.map(_._1) == List("a", "b"))
+      }
+    }
   }
 }
 
