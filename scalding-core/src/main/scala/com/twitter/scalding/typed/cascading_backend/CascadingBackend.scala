@@ -422,7 +422,11 @@ object CascadingBackend {
       val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
       dest.writeFrom(cpipe)(fd, mode)
     }
-    todos.foreach(doWrite(_))
+    if (todos.nonEmpty) {
+      todos.foreach(doWrite(_))
+      // In case if during writes planning other typed writes happened.
+      planTypedWrites(fd, mode)
+    }
   }
 
   /**
