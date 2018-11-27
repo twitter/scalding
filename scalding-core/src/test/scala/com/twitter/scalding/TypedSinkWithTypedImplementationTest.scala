@@ -18,6 +18,7 @@ package com.twitter.scalding
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
+import org.apache.hadoop.conf.Configuration
 import org.scalatest.{Matchers, WordSpec}
 
 class TypedSinkWithTypedImplementation(path: String) extends TypedSink[String] {
@@ -48,14 +49,11 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
 
   "A TypedSinkWithTypedImplementation" should {
     "should work with .writeExecution" in {
-      val testMode = JobTest(new TypedSinkWithTypedImplementationJob(_))
-        .getTestMode(useHadoop = true)
-
       val elements = List("test")
       val elementsFromExecution = TypedPipe.from(elements)
         .writeExecution(new TypedSinkWithTypedImplementation("output"))
         .flatMap(_ => TypedPipe.from(TypedTsv[String]("output")).toIterableExecution)
-        .waitFor(Config.default, testMode)
+        .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
         .get
         .toList
 
@@ -65,9 +63,6 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
 
   "A TypedSinkWithTypedImplementation" should {
     "should work with Execution.fromFn" in {
-      val testMode = JobTest(new TypedSinkWithTypedImplementationJob(_))
-        .getTestMode(useHadoop = true)
-
       val elements = List("test")
       val elementsFromExecution = Execution.fromFn { case (confArg, modeArg) =>
         implicit val flowDef = new FlowDef
@@ -76,7 +71,7 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
         flowDef
       }
         .flatMap(_ => TypedPipe.from(TypedTsv[String]("output")).toIterableExecution)
-        .waitFor(Config.default, testMode)
+        .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
         .get
         .toList
 
