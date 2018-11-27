@@ -23,8 +23,10 @@ import com.twitter.scalding.serialization.{
   WrappedSerialization
 }
 import java.util.WeakHashMap
+import org.slf4j.LoggerFactory
 
 object CascadingBackend {
+  private[this] val logger = LoggerFactory.getLogger(getClass)
 
   def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
     (t, s) match {
@@ -402,30 +404,41 @@ object CascadingBackend {
    * method in validate to make sure validation works.
    */
   def planTypedWrites(fd: FlowDef, mode: Mode): Unit = {
-    val writes = FlowStateMap.removeWrites(fd).pendingTypedWrites
-    val empty = Dag.empty(OptimizationRules.toLiteral)
-    type ToDo[A] = (Id[A], TypedSink[A])
-    val (rootedDag, todos) = writes.foldLeft((empty, List.empty[ToDo[_]])) { case ((dag, items), tw) =>
-      val (nextDag, id) = dag.addRoot(tw.pipe)
-      require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
-      (nextDag, (id, tw.sink) :: items)
-    }
-    val phases = defaultOptimizationRules(
-      mode match {
-        case h: HadoopMode => Config.fromHadoop(h.jobConf)
-        case _ => Config.empty
-      })
-    val optDag = rootedDag.applySeq(phases)
-    def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
-      val optPipe = optDag.evaluate(pair._1)
-      val dest = pair._2
-      val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
-      dest.writeFrom(cpipe)(fd, mode)
-    }
-    if (todos.nonEmpty) {
+    def doWrites(writes: List[FlowStateMap.TypedWrite[_]]): Unit = {
+      val empty = Dag.empty(OptimizationRules.toLiteral)
+      type ToDo[A] = (Id[A], TypedSink[A])
+      val (rootedDag, todos) = writes.foldLeft((empty, List.empty[ToDo[_]])) { case ((dag, items), tw) =>
+        val (nextDag, id) = dag.addRoot(tw.pipe)
+        require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
+        (nextDag, (id, tw.sink) :: items)
+      }
+      val phases = defaultOptimizationRules(
+        mode match {
+          case h: HadoopMode => Config.fromHadoop(h.jobConf)
+          case _ => Config.empty
+        })
+      val optDag = rootedDag.applySeq(phases)
+      def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
+        val optPipe = optDag.evaluate(pair._1)
+        val dest = pair._2
+        val cpipe = toPipeUnoptimized[A](optPipe, dest.sinkFields)(fd, mode, dest.setter)
+        dest.writeFrom(cpipe)(fd, mode)
+      }
       todos.foreach(doWrite(_))
-      // In case if during writes planning other typed writes happened.
-      planTypedWrites(fd, mode)
+    }
+
+    doWrites(FlowStateMap.removeWrites(fd).pendingTypedWrites)
+
+    // We do writes twice because customer can use Typed API in their TypedSink implementation.
+    val pendingWritesAfterPlan = FlowStateMap.removeWrites(fd).pendingTypedWrites
+    if (pendingWritesAfterPlan.nonEmpty) {
+      logger.warn("Using Typed API in TypedSink implementation is prohibited and " +
+        "might be removed in later releases of Scalding.")
+      doWrites(pendingWritesAfterPlan)
+    }
+
+    if (FlowStateMap.removeWrites(fd).pendingTypedWrites.nonEmpty) {
+      throw new IllegalStateException("You can't use Typed API in you TypedSink implementation nestedly.")
     }
   }
 

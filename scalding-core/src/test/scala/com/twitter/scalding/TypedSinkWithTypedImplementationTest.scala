@@ -32,6 +32,17 @@ class TypedSinkWithTypedImplementation(path: String) extends TypedSink[String] {
   }
 }
 
+class TypedSinkWithTypedImplementationRecursive(path: String) extends TypedSink[String] {
+  private val fields = new Fields(0)
+
+  override def setter[U <: String]: TupleSetter[U] = TupleSetter.singleSetter[U]
+
+  override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
+    TypedPipe.from[String](pipe, fields).write(new TypedSinkWithTypedImplementationRecursive(path))
+    pipe
+  }
+}
+
 class TypedSinkWithTypedImplementationJob(args: Args) extends Job(args) {
   TypedPipe.from(List("test"))
     .write(new TypedSinkWithTypedImplementation("output"))
@@ -76,6 +87,15 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
         .toList
 
       assert(elements == elementsFromExecution)
+    }
+  }
+
+  "A TypedSinkWithTypedImplementationRecursive" should {
+    "should fail" in {
+      assert(TypedPipe.from(List("test"))
+        .writeExecution(new TypedSinkWithTypedImplementationRecursive("output"))
+        .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
+        .isFailure)
     }
   }
 }
