@@ -38,7 +38,7 @@ class TypedSinkWithTypedImplementationJob(args: Args) extends Job(args) {
 
 class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
   "A TypedSinkWithTypedImplementationJob" should {
-    "should produce result in output path" in {
+    "should produce correct results" in {
       JobTest(new TypedSinkWithTypedImplementationJob(_))
         .sink[String](TypedTsv[String]("output"))(_.toList == List("test"))
         .runHadoop
