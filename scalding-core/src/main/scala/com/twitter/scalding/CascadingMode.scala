@@ -1,21 +1,23 @@
 package com.twitter.scalding
 
-import cascading.flow.local.{ LocalFlowConnector, LocalFlowProcess }
-import cascading.flow.{ FlowProcess, FlowConnector }
+import cascading.flow.local.{LocalFlowConnector, LocalFlowProcess}
+import cascading.flow.{FlowConnector, FlowProcess}
 import cascading.property.AppProps
-import cascading.tap.Tap
-import cascading.tuple.{ Tuple, TupleEntryIterator }
+import cascading.tap.{CompositeTap, Tap}
+import cascading.tap.hadoop.Hfs
+import cascading.tuple.{Tuple, TupleEntryIterator}
+import com.twitter.scalding.tap.ScaldingHfs
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import java.io.File
-import java.util.{ UUID, Properties }
+import java.util.{Properties, UUID}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ Buffer, Map => MMap, Set => MSet }
-import scala.util.{ Failure, Success }
+import scala.collection.mutable.{Buffer, Map => MMap, Set => MSet}
+import scala.util.{Failure, Success}
 
 /**
  * Any Mode running on cascading extends CascadingMode
@@ -38,6 +40,30 @@ trait CascadingMode extends Mode {
   def fileExists(filename: String): Boolean
   /** Create a new FlowConnector for this cascading planner */
   def newFlowConnector(props: Config): FlowConnector
+
+  /**
+   * Make sure we are using our `ScaldingHfs` for `Hfs` taps.
+   */
+  protected def checkTap(tap: Tap[_, _, _], config: Config): Unit = {
+    if (config.getCheckHfsTaps) {
+      tap match {
+        case hfs: Hfs =>
+          assert(
+            hfs.getClass.isAssignableFrom(classOf[ScaldingHfs]),
+            """You are using instance of tap inherited from cascading.tap.hadoop.Hfs in toIterator method,
+              |which is broken in cascading 2.6.1, instead you need to use com.twitter.scalding.tap.ScaldingHfs.
+            """.stripMargin
+          )
+        case composite: CompositeTap[t] =>
+          composite
+            .getChildTaps
+            .asScala
+            .map(_.asInstanceOf[Tap[_, _, _]])
+            .foreach(checkTap(_, config))
+        case _ =>
+      }
+    }
+  }
 }
 
 object CascadingMode {
@@ -83,6 +109,7 @@ trait HadoopMode extends CascadingMode {
 
   // TODO  unlike newFlowConnector, this does not look at the Job.config
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
+    checkTap(tap, config)
     val htap = tap.asInstanceOf[Tap[JobConf, _, _]]
     val conf = new JobConf(true) // initialize the default config
     // copy over Config
@@ -111,6 +138,7 @@ trait CascadingLocal extends CascadingMode {
     new LocalFlowConnector(conf.toMap.toMap[AnyRef, AnyRef].asJava) // linter:ignore
 
   override def openForRead(config: Config, tap: Tap[_, _, _]) = {
+    checkTap(tap, config)
     val ltap = tap.asInstanceOf[Tap[Properties, _, _]]
     val props = new java.util.Properties
     config.toMap.foreach { case (k, v) => props.setProperty(k, v) }

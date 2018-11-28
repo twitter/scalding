@@ -21,6 +21,7 @@ import cascading.flow.FlowProcess
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
 import cascading.scheme.Scheme
+import cascading.tap.hadoop.Hfs
 import com.twitter.scalding.tap.ScaldingHfs
 
 private[scalding] class ConfPropertiesHfsTap(
@@ -63,7 +64,7 @@ trait HfsConfPropertySetter extends HfsTapProvider {
   override def createHfsTap(
     scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
-    sinkMode: SinkMode): ScaldingHfs = {
+    sinkMode: SinkMode): Hfs = {
     // Deprecation handling
     val (srcCfg, sinkCfg) = if (sourceConfig == Config.empty && sinkConfig == Config.empty) {
       (tapConfig, tapConfig)

@@ -493,6 +493,18 @@ abstract class Config extends Serializable {
   def getExecutionOptimization: Boolean =
     getBoolean(ScaldingExecutionOptimizationEnabled, true)
 
+  /**
+   * Enable/Disable check of taps that we use ScaldingHfs before openForRead
+   */
+  def setCheckHfsTaps(boolean: Boolean): Config =
+    this + (ScaldingCheckHfsTaps -> boolean.toString)
+
+  /**
+   * Should we check taps that we use ScaldingHfs before openForRead
+   */
+  def getCheckHfsTaps: Boolean =
+    getBoolean(ScaldingCheckHfsTaps, false)
+
   // we use Config as a key in Execution caches so we
   // want to avoid recomputing it repeatedly
   override lazy val hashCode = toMap.hashCode
@@ -523,6 +535,7 @@ object Config {
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val ScaldingCheckHfsTaps: String = "scalding.taps.check.hfs"
   val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"

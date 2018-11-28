@@ -9,8 +9,8 @@ import com.twitter.scalding.{
   TypedPipe
 }
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.{Matchers, WordSpec}
-import scala.util.{Failure, Success}
+import org.scalatest.{ Matchers, WordSpec }
+import scala.util.{ Failure, Success }
 
 class ExecutionTest extends WordSpec with Matchers {
   object TestPath {
@@ -21,7 +21,6 @@ class ExecutionTest extends WordSpec with Matchers {
     }
     val testfsPathRoot = prefix + "/src/test/resources/com/twitter/scalding/test_filesystem/"
   }
-
 
   implicit class ExecutionTestHelper[T](ex: Execution[T]) {
     def shouldSucceed(): T = {

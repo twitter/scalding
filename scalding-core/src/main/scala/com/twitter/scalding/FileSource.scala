@@ -20,6 +20,7 @@ import java.util.{Properties, UUID}
 import cascading.scheme.Scheme
 import cascading.scheme.hadoop.{SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine}
 import cascading.scheme.local.{TextDelimited => CLTextDelimited, TextLine => CLTextLine}
+import cascading.tap.hadoop.Hfs
 import cascading.tap.{MultiSourceTap, SinkMode, Tap}
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
@@ -52,7 +53,7 @@ abstract class SchemedSource extends Source {
 trait HfsTapProvider {
   def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
-    sinkMode: SinkMode): ScaldingHfs =
+    sinkMode: SinkMode): Hfs =
     new ScaldingHfs(scheme, path, sinkMode)
 }
 

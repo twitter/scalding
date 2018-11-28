@@ -22,7 +22,7 @@ import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.scheme.NullScheme
 import com.twitter.scalding.tap.ScaldingHfs
-import java.io.{InputStream, OutputStream, Serializable}
+import java.io.{ InputStream, OutputStream, Serializable }
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
