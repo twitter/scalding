@@ -15,20 +15,20 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import cascading.tap.hadoop.Hfs
 import cascading.tap.SinkMode
 import org.apache.hadoop.mapred.JobConf
 import cascading.flow.FlowProcess
 import org.apache.hadoop.mapred.RecordReader
 import org.apache.hadoop.mapred.OutputCollector
 import cascading.scheme.Scheme
+import com.twitter.scalding.tap.ScaldingHfs
 
 private[scalding] class ConfPropertiesHfsTap(
   sourceConfig: Config,
   sinkConfig: Config,
   scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
   stringPath: String,
-  sinkMode: SinkMode) extends Hfs(scheme, stringPath, sinkMode) {
+  sinkMode: SinkMode) extends ScaldingHfs(scheme, stringPath, sinkMode) {
   override def sourceConfInit(process: FlowProcess[JobConf], conf: JobConf): Unit = {
     sourceConfig.toMap.foreach {
       case (k, v) =>
@@ -63,7 +63,7 @@ trait HfsConfPropertySetter extends HfsTapProvider {
   override def createHfsTap(
     scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
-    sinkMode: SinkMode): Hfs = {
+    sinkMode: SinkMode): ScaldingHfs = {
     // Deprecation handling
     val (srcCfg, sinkCfg) = if (sourceConfig == Config.empty && sinkConfig == Config.empty) {
       (tapConfig, tapConfig)

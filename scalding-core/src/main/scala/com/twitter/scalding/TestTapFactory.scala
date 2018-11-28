@@ -20,15 +20,12 @@ import cascading.scheme.Scheme
 import cascading.tuple.Fields
 import cascading.tap.SinkMode
 import cascading.tap.Tap
-import cascading.tap.hadoop.Hfs
 import cascading.scheme.NullScheme
-
-import java.io.{ Serializable, InputStream, OutputStream }
-
+import com.twitter.scalding.tap.ScaldingHfs
+import java.io.{InputStream, OutputStream, Serializable}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
-
 import scala.collection.JavaConverters._
 
 /**
@@ -102,12 +99,12 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
               val fields = sourceFields
               (new MemorySourceTap(buffer.toList.asJava, fields)).asInstanceOf[Tap[JobConf, _, _]]
             } else {
-              CastHfsTap(new Hfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
+              CastHfsTap(new ScaldingHfs(hdfsScheme.get, hdfsTest.getWritePathFor(src), sinkMode))
             }
           }
           case Write => {
             val path = hdfsTest.getWritePathFor(src)
-            CastHfsTap(new Hfs(hdfsScheme.get, path, sinkMode))
+            CastHfsTap(new ScaldingHfs(hdfsScheme.get, path, sinkMode))
           }
         }
       case _ => {

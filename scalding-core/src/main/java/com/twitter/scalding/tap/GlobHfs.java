@@ -11,13 +11,12 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
 import cascading.scheme.Scheme;
-import cascading.tap.hadoop.Hfs;
 
 /**
- * Default implementation of getSize in {@link Hfs} don't respect to paths with glob patterns,
+ * Default implementation of getSize in {@link cascading.tap.hadoop.Hfs} don't respect to paths with glob patterns,
  * that will throw IOException where we actually can calculate size of source.
  */
-public class GlobHfs extends Hfs {
+public class GlobHfs extends ScaldingHfs {
   public GlobHfs(Scheme<JobConf, RecordReader, OutputCollector, ?, ?> scheme) {
     super(scheme);
   }

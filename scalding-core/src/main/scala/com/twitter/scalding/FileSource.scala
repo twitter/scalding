@@ -15,24 +15,22 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import java.io.{ InputStream, OutputStream }
-import java.util.{ Properties, UUID }
-
+import java.io.{InputStream, OutputStream}
+import java.util.{Properties, UUID}
 import cascading.scheme.Scheme
-import cascading.scheme.hadoop.{ SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine }
-import cascading.scheme.local.{ TextDelimited => CLTextDelimited, TextLine => CLTextLine }
-import cascading.tap.{ MultiSourceTap, SinkMode, Tap }
-import cascading.tap.hadoop.Hfs
+import cascading.scheme.hadoop.{SequenceFile => CHSequenceFile, TextDelimited => CHTextDelimited, TextLine => CHTextLine}
+import cascading.scheme.local.{TextDelimited => CLTextDelimited, TextLine => CLTextLine}
+import cascading.tap.{MultiSourceTap, SinkMode, Tap}
 import cascading.tap.local.FileTap
 import cascading.tuple.Fields
 import com.etsy.cascading.tap.local.LocalTap
-import com.twitter.algebird.{ MapAlgebra, OrVal }
+import com.twitter.algebird.{MapAlgebra, OrVal}
+import com.twitter.scalding.tap.ScaldingHfs
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileStatus, Path, PathFilter }
-import org.apache.hadoop.mapred.{ JobConf, OutputCollector, RecordReader }
+import org.apache.hadoop.fs.{FileStatus, Path, PathFilter}
+import org.apache.hadoop.mapred.{JobConf, OutputCollector, RecordReader}
 import org.slf4j.LoggerFactory
-
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /**
  * A base class for sources that take a scheme trait.
@@ -54,8 +52,8 @@ abstract class SchemedSource extends Source {
 trait HfsTapProvider {
   def createHfsTap(scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _],
     path: String,
-    sinkMode: SinkMode): Hfs =
-    new Hfs(scheme, path, sinkMode)
+    sinkMode: SinkMode): ScaldingHfs =
+    new ScaldingHfs(scheme, path, sinkMode)
 }
 
 private[scalding] object CastFileTap {
