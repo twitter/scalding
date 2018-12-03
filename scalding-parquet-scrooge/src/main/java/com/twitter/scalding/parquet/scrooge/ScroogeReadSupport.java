@@ -62,11 +62,11 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
   /**
    * Method copied from ThriftReadSupport
    *
-   * @param context
-   * @return
+   * @param context the initialisation context
+   * @return the readContext that defines how to read the file
    */
   @Override
-  public org.apache.parquet.hadoop.api.ReadSupport.ReadContext init(InitContext context) {
+  public ReadContext init(InitContext context) {
     final Configuration configuration = context.getConfiguration();
     final MessageType fileMessageType = context.getFileSchema();
     MessageType requestedProjection = fileMessageType;
@@ -79,14 +79,13 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
         String.format("You cannot provide both a partial schema and field projection filter."
             + "Only one of (%s, %s, %s) should be set.",
           PARQUET_READ_SCHEMA, STRICT_THRIFT_COLUMN_FILTER_KEY, THRIFT_COLUMN_FILTER_KEY));
-    }
-
-    //set requestedProjections only when it's specified
-    if (partialSchemaString != null) {
+    } else if (partialSchemaString != null) {
       requestedProjection = getSchemaForRead(fileMessageType, partialSchemaString);
     } else if (projectionFilter != null) {
       try {
-        initThriftClassFromMultipleFiles(context.getKeyValueMetadata(), configuration);
+        if (thriftClass == null) {
+          thriftClass = getThriftClassFromMultipleFiles(context.getKeyValueMetadata(), configuration);
+        }
         requestedProjection = getProjectedSchema(projectionFilter);
       } catch (ClassNotFoundException e) {
         throw new ThriftProjectionException("can not find thriftClass from configuration", e);
@@ -98,11 +97,11 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
   }
 
   /**
-   * Method from ReadSupport, copied because it's static
+   * attempts to validate and construct a {@link MessageType} from a read projection schema
    *
-   * @param fileMessageType
-   * @param partialReadSchemaString
-   * @return
+   * @param fileMessageType         the typed schema of the source
+   * @param partialReadSchemaString the requested projection schema
+   * @return the typed schema that should be used to read
    */
   public static MessageType getSchemaForRead(MessageType fileMessageType, String partialReadSchemaString) {
     if (partialReadSchemaString == null)
@@ -113,24 +112,21 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
 
   /**
    * Updated method from ReadSupport which checks if the projection's compatible instead of a
-   * stricter if the file's schema contains the projection
+   * stricter check to see if the file's schema contains the projection
    *
    * @param fileMessageType
    * @param projectedMessageType
    * @return
    */
   public static MessageType getSchemaForRead(MessageType fileMessageType, MessageType projectedMessageType) {
-    areGroupsCompatible(fileMessageType, projectedMessageType);
+    assertGroupsAreCompatible(fileMessageType, projectedMessageType);
     return projectedMessageType;
   }
 
   /**
-   * Method from ThriftReadSupport, copied because it was private
+   * Getting thrift class from file metadata
    */
-  private void initThriftClassFromMultipleFiles(Map<String, Set<String>> fileMetadata, Configuration conf) throws ClassNotFoundException {
-    if (thriftClass != null) {
-      return;
-    }
+  private Class<T> getThriftClassFromMultipleFiles(Map<String, Set<String>> fileMetadata, Configuration conf) throws ClassNotFoundException {
     String className = conf.get(THRIFT_READ_CLASS_KEY, null);
     if (className == null) {
       Set<String> names = ThriftMetaData.getThriftClassNames(fileMetadata);
@@ -139,24 +135,24 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
       }
       className = names.iterator().next();
     }
-    thriftClass = (Class<T>) Class.forName(className);
+    return (Class<T>) Class.forName(className);
   }
 
   /**
    * Validates that the requested group type projection is compatible.
    * This allows the projection schema to have extra optional fields.
    *
-   * @param fileType
-   * @param projection
+   * @param fileType the typed schema of the source
+   * @param projection requested projection schema
    */
-  public static void areGroupsCompatible(GroupType fileType, GroupType projection) {
+  public static void assertGroupsAreCompatible(GroupType fileType, GroupType projection) {
     List<Type> fields = projection.getFields();
     for (Type otherType : fields) {
       if (fileType.containsField(otherType.getName())) {
         Type thisType = fileType.getType(otherType.getName());
-        areCompatible(thisType, otherType);
+        assertAreCompatible(thisType, otherType);
         if (!otherType.isPrimitive()) {
-          areGroupsCompatible(thisType.asGroupType(), otherType.asGroupType());
+          assertGroupsAreCompatible(thisType.asGroupType(), otherType.asGroupType());
         }
       } else if (otherType.getRepetition() == Type.Repetition.REQUIRED) {
         throw new InvalidRecordException(otherType.getName() + " not found in " + fileType);
@@ -169,10 +165,10 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    * This makes it possible to project a required field using optional since it is less
    * restrictive.
    *
-   * @param fileType
-   * @param projection
+   * @param fileType the typed schema of the source
+   * @param projection requested projection schema
    */
-  public static void areCompatible(Type fileType, Type projection) {
+  public static void assertAreCompatible(Type fileType, Type projection) {
     if (!fileType.getName().equals(projection.getName())
       || (fileType.getRepetition() != projection.getRepetition() && !fileType.getRepetition().isMoreRestrictiveThan(projection.getRepetition()))) {
       throw new InvalidRecordException(projection + " found: expected " + fileType);
