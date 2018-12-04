@@ -60,7 +60,17 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
   }
 
   /**
-   * Method copied from ThriftReadSupport
+   * Method overridden from ThriftReadSupport to call
+   * {@link #getSchemaForRead(MessageType, MessageType)} instead of
+   * {@link ReadSupport#getSchemaForRead(MessageType, MessageType)}
+   * <p>
+   * The changes are done to fix use cases https://github.com/apache/parquet-mr/pull/558
+   * Once that is merged, this overridden method can be removed along with
+   * {@link #getSchemaForRead(MessageType, MessageType)}
+   * {@link #getSchemaForRead(MessageType, String)}
+   * {@link #assertAreCompatible(Type, Type)}
+   * {@link #assertGroupsAreCompatible(GroupType, GroupType)}
+   * {@link #getThriftClassFromMultipleFiles(Map, Configuration)}
    *
    * @param context the initialisation context
    * @return the readContext that defines how to read the file
