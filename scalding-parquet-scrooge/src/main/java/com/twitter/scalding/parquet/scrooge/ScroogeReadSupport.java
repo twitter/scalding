@@ -126,7 +126,7 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
   /**
    * Getting thrift class from file metadata
    */
-  private Class<T> getThriftClassFromMultipleFiles(Map<String, Set<String>> fileMetadata, Configuration conf) throws ClassNotFoundException {
+  public static <T extends ThriftStruct> Class<T> getThriftClassFromMultipleFiles(Map<String, Set<String>> fileMetadata, Configuration conf) throws ClassNotFoundException {
     String className = conf.get(THRIFT_READ_CLASS_KEY, null);
     if (className == null) {
       Set<String> names = ThriftMetaData.getThriftClassNames(fileMetadata);
@@ -142,7 +142,7 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    * Validates that the requested group type projection is compatible.
    * This allows the projection schema to have extra optional fields.
    *
-   * @param fileType the typed schema of the source
+   * @param fileType   the typed schema of the source
    * @param projection requested projection schema
    */
   public static void assertGroupsAreCompatible(GroupType fileType, GroupType projection) {
@@ -165,7 +165,7 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    * This makes it possible to project a required field using optional since it is less
    * restrictive.
    *
-   * @param fileType the typed schema of the source
+   * @param fileType   the typed schema of the source
    * @param projection requested projection schema
    */
   public static void assertAreCompatible(Type fileType, Type projection) {
