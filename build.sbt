@@ -14,7 +14,6 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.12" => "2.12"
   case _ => sys.error("unknown error")
 }
-
 val algebirdVersion = "0.13.4"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
