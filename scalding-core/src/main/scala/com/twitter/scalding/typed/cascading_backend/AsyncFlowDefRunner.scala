@@ -168,20 +168,18 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         case Stop => ()
         case RunFlowDef(conf, fd, promise) =>
           try {
-            if (fd.getSinks.isEmpty) {
-              // These is nothing to do:
-              promise.success((id, JobStats.empty))
-            } else {
-              val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
-              ctx.buildFlow match {
-                case Success(flow) =>
-                  val future = FlowListenerPromise
+            val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
+            ctx.buildFlow match {
+              case Success(Some(flow)) =>
+                val future = FlowListenerPromise
                     .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
 
                   promise.completeWith(future)
-                case Failure(err) =>
-                  promise.failure(err)
-              }
+              case Success(None) =>
+                // These is nothing to do:
+                promise.success((id, JobStats.empty))
+              case Failure(err) =>
+                promise.failure(err)
             }
           } catch {
             case t: Throwable =>

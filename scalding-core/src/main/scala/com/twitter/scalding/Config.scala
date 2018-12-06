@@ -481,6 +481,30 @@ abstract class Config extends Serializable {
   def getExecutionCleanupOnFinish: Boolean =
     getBoolean(ScaldingExecutionCleanupOnFinish, false)
 
+  /**
+   * Enable/Disable optimization of `Exception` graph.
+   */
+  def setExecutionOptimization(boolean: Boolean): Config =
+    this + (ScaldingExecutionOptimizationEnabled -> boolean.toString)
+
+  /**
+   * Should we optimize of `Execution` graph.
+   */
+  def getExecutionOptimization: Boolean =
+    getBoolean(ScaldingExecutionOptimizationEnabled, true)
+
+  /**
+   * Enable/Disable check of taps that we use ScaldingHfs before openForRead
+   */
+  def setCheckHfsTaps(boolean: Boolean): Config =
+    this + (ScaldingCheckHfsTaps -> boolean.toString)
+
+  /**
+   * Should we check taps that we use ScaldingHfs before openForRead
+   */
+  def getCheckHfsTaps: Boolean =
+    getBoolean(ScaldingCheckHfsTaps, false)
+
   // we use Config as a key in Execution caches so we
   // want to avoid recomputing it repeatedly
   override lazy val hashCode = toMap.hashCode
@@ -507,9 +531,11 @@ object Config {
   val ScaldingFlowSubmittedTimestamp: String = "scalding.flow.submitted.timestamp"
   val ScaldingExecutionId: String = "scalding.execution.uuid"
   val ScaldingExecutionCleanupOnFinish: String = "scalding.execution.cleanup.onfinish"
+  val ScaldingExecutionOptimizationEnabled: String = "scalding.execution.optimization.enabled"
   val ScaldingJobArgs: String = "scalding.job.args"
   val ScaldingJobArgsSerialized: String = "scalding.job.argsserialized"
   val ScaldingVersion: String = "scalding.version"
+  val ScaldingCheckHfsTaps: String = "scalding.taps.check.hfs"
   val SkipNullCounters: String = "scalding.counters.skipnull"
   val HRavenHistoryUserName: String = "hraven.history.user.name"
   val ScaldingRequireOrderedSerialization: String = "scalding.require.orderedserialization"
@@ -518,6 +544,8 @@ object Config {
   val FlowStepStrategies: String = "scalding.strategies.flowstepstrategies"
   val VerboseFileSourceLoggingKey: String = "scalding.filesource.verbose.logging"
   val OptimizationPhases: String = "scalding.optimization.phases"
+  val RuntimeFrameworkKey = "mapreduce.framework.name"
+  val RuntimeFrameworkValueLocal = "local"
 
   /**
    * Parameter that actually controls the number of reduce tasks.
@@ -580,7 +608,7 @@ object Config {
    * Extensions to the Default Config to tune it for unit tests
    */
   def unitTestDefault: Config =
-    Config(Config.default.toMap ++ Map("cascading.update.skip" -> "true"))
+    Config(Config.default.toMap ++ Map("cascading.update.skip" -> "true", RuntimeFrameworkKey -> RuntimeFrameworkValueLocal))
 
   /**
    * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)

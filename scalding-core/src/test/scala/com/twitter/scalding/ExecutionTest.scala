@@ -24,8 +24,7 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
 import scala.concurrent.{Future, Promise, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.{Failure, Success, Try}
-import ExecutionContext._
-import cascading.flow.{Flow, FlowListener}
+import cascading.flow.{Flow, FlowDef, FlowListener}
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileCleanup
 import org.apache.hadoop.conf.Configuration
 
@@ -351,6 +350,39 @@ class ExecutionTest extends WordSpec with Matchers {
     }
   }
   "Executions" should {
+    "work correctly with flowDef from user" in {
+      class PipeBuilderJob(args: Args) extends TestExecutionJob[Unit](args) {
+        override def execution: Execution[Unit] =
+          Execution.getMode.flatMap { mode =>
+            val flowDef: FlowDef = new FlowDef
+
+            pipeBuilder(flowDef, mode)
+
+            Execution.fromFn((_, _) => flowDef)
+          }
+
+        def pipeBuilder(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Int] = {
+          TypedPipe.from(TextLine(args("input")))
+            .map(_.toInt)
+            .map(_ * 2)
+            .write(TypedTsv[Int]("out"))
+        }
+      }
+
+      val input = List((0, "1"), (1, "2"), (2, "3"), (3, "4"), (4, "5"))
+      val expected = input.map(_._2).map(_.toInt).map(_ * 2)
+
+      JobTest(new PipeBuilderJob(_))
+        .arg("input", "in")
+        .source(TextLine("in"), input)
+        .typedSink(TypedTsv[Int]("out")) { outBuf =>
+          outBuf.toList shouldBe expected
+        }
+        .run
+        .runHadoop
+        .finish()
+    }
+
     "shutdown hook should clean up temporary files" in {
       val tempFileOne = Files.createTempDirectory("scalding-execution-test")
       val tempFileTwo = Files.createTempDirectory("scalding-execution-test")

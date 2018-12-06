@@ -84,9 +84,9 @@ object CoGroupable extends Serializable {
       case MapValueStream(Take(_)) => true
       case MapValueStream(TakeWhile(_)) => true
       case FilterGroup(_) => true
+      case EmptyGuard(fn) if atMostOneFn(fn) => true // since 0 always goes to 0 due to empty guard, and 1 -> 0 or 1 since atMostOne
       case EmptyGuard(fn) => atMostInputSizeFn(fn)
       case ComposedMapGroup(first, second) => atMostInputSizeFn(first) && atMostInputSizeFn(second)
-      case fn if atMostOneFn(fn) => true // since 0 always goes to 0, and 1 -> 1, atMostOne implies atMostInputSize
       case _ => false
     }
 }

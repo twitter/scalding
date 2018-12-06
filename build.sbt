@@ -9,7 +9,6 @@ import scala.collection.JavaConverters._
 import scalariform.formatter.preferences._
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
-  case version if version startsWith "2.10" => "2.10"
   case version if version startsWith "2.11" => "2.11"
   case version if version startsWith "2.12" => "2.12"
   case _ => sys.error("unknown error")
@@ -35,7 +34,8 @@ val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "18.9.0"
-val sparkVersion = "2.0.0"
+val scroogeVersion = "4.12.0"
+val sparkVersion = "2.4.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
@@ -581,8 +581,7 @@ lazy val maple = Project(
   mimaPreviousArtifacts := Set.empty,
   crossPaths := false,
   autoScalaLibrary := false,
-  // Disable cross publishing for this artifact
-  publishArtifact := !scalaVersion.value.startsWith("2.10"),
+  publishArtifact := true,
   libraryDependencies ++= Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.apache.hbase" % "hbase" % hbaseVersion % "provided",

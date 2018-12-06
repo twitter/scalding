@@ -193,7 +193,7 @@ object TypedPipeGen {
     val pipe = CascadingBackend.toPipeUnoptimized(p, NullSink.sinkFields)(fd, mode, NullSink.setter)
     NullSink.writeFrom(pipe)(fd, mode)
     val ec = ExecutionContext.newContext(Config.defaultFrom(mode))(fd, mode)
-    val flow = ec.buildFlow.get
+    val flow = ec.buildFlow.get.get
     flow.getFlowSteps.size
   }
 

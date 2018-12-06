@@ -50,7 +50,13 @@ trait ExecutionContext {
     })
   }
 
-  final def buildFlow: Try[Flow[_]] =
+  /**
+   * @return
+   *    Success(Some(flow)) -- when everything is right and we can build a flow from flowDef
+   *    Success(None)       -- when flowDef doesn't have sinks, even after we applied pending writes
+   *    Failure(exception)  -- when it’s impossible to build a flow
+   */
+  final def buildFlow: Try[Option[Flow[_]]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
     // [error]
     // /Users/oscar/workspace/scalding/scalding-core/src/main/scala/com/twitter/scalding/Execution.scala:92:
@@ -79,73 +85,81 @@ trait ExecutionContext {
 
       // Do the optimization of the typed pipes, and register them
       CascadingBackend.planTypedWrites(flowDef, mode)
-      // identify the flowDef
-      val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
-      val flow = mode.newFlowConnector(configWithId).connect(flowDef)
 
-      config.getRequireOrderedSerializationMode.map { mode =>
-        // This will throw, but be caught by the outer try if
-        // we have groupby/cogroupby not using OrderedSerializations
-        CascadingBinaryComparator.checkForOrderedSerialization(flow, mode).get
+      // We can have empty flowDef even after applying pending writers
+      if (flowDef.getSinks.isEmpty) {
+        Success(None)
+      } else {
+        // identify the flowDef
+        val configWithId = config.addUniqueId(UniqueID.getIDFor(flowDef))
+        val flow = mode.newFlowConnector(configWithId).connect(flowDef)
+
+        config.getRequireOrderedSerializationMode.map { mode =>
+          // This will throw, but be caught by the outer try if
+          // we have groupby/cogroupby not using OrderedSerializations
+          CascadingBinaryComparator.checkForOrderedSerialization(flow, mode).get
+        }
+
+        flow match {
+          case hadoopFlow: HadoopFlow =>
+            val flowSteps = hadoopFlow.getFlowSteps.asScala
+            flowSteps.foreach {
+              case baseFlowStep: BaseFlowStep[JobConf] =>
+                updateStepConfigWithDescriptions(baseFlowStep)
+            }
+          case _ => // descriptions not yet supported in other modes
+        }
+
+        // if any reducer estimators have been set, register the step strategy
+        // which instantiates and runs them
+        mode match {
+          case _: HadoopMode =>
+            val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config
+              .get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
+            val memoryEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config
+              .get(Config.MemoryEstimators).toList.map(_ => MemoryEstimatorStepStrategy)
+
+            val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
+              case Success(fn) => fn(mode, configWithId)
+              case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
+            }
+
+            val optionalFinalStrategy = FlowStepStrategies()
+              .sumOption(reducerEstimatorStrategy ++ memoryEstimatorStrategy ++ otherStrategies)
+
+            optionalFinalStrategy.foreach { strategy =>
+              flow.setFlowStepStrategy(strategy)
+            }
+
+            config.getFlowListeners.foreach {
+              case Success(fn) => flow.addListener(fn(mode, configWithId))
+              case Failure(e) => throw new Exception("Failed to decode flow listener", e)
+            }
+
+            config.getFlowStepListeners.foreach {
+              case Success(fn) => flow.addStepListener(fn(mode, configWithId))
+              case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
+            }
+          case _: CascadingLocal =>
+            config.getFlowStepStrategies.foreach {
+              case Success(fn) => flow.setFlowStepStrategy(fn(mode, configWithId))
+              case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
+            }
+
+            config.getFlowListeners.foreach {
+              case Success(fn) => flow.addListener(fn(mode, configWithId))
+              case Failure(e) => throw new Exception("Failed to decode flow listener", e)
+            }
+
+            config.getFlowStepListeners.foreach {
+              case Success(fn) => flow.addStepListener(fn(mode, configWithId))
+              case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
+            }
+
+          case _ => ()
+        }
+        Success(Option(flow))
       }
-
-      flow match {
-        case hadoopFlow: HadoopFlow =>
-          val flowSteps = hadoopFlow.getFlowSteps.asScala
-          flowSteps.foreach {
-            case baseFlowStep: BaseFlowStep[JobConf] =>
-              updateStepConfigWithDescriptions(baseFlowStep)
-          }
-        case _ => // descriptions not yet supported in other modes
-      }
-
-      // if any reducer estimators have been set, register the step strategy
-      // which instantiates and runs them
-      mode match {
-        case _: HadoopMode =>
-          val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
-          val memoryEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config.get(Config.MemoryEstimators).toList.map(_ => MemoryEstimatorStepStrategy)
-
-          val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
-            case Success(fn) => fn(mode, configWithId)
-            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
-          }
-
-          val optionalFinalStrategy = FlowStepStrategies().sumOption(reducerEstimatorStrategy ++ memoryEstimatorStrategy ++ otherStrategies)
-
-          optionalFinalStrategy.foreach { strategy =>
-            flow.setFlowStepStrategy(strategy)
-          }
-
-          config.getFlowListeners.foreach {
-            case Success(fn) => flow.addListener(fn(mode, configWithId))
-            case Failure(e) => throw new Exception("Failed to decode flow listener", e)
-          }
-
-          config.getFlowStepListeners.foreach {
-            case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
-          }
-        case _: CascadingLocal =>
-          config.getFlowStepStrategies.foreach {
-            case Success(fn) => flow.setFlowStepStrategy(fn(mode, configWithId))
-            case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
-          }
-
-          config.getFlowListeners.foreach {
-            case Success(fn) => flow.addListener(fn(mode, configWithId))
-            case Failure(e) => throw new Exception("Failed to decode flow listener", e)
-          }
-
-          config.getFlowStepListeners.foreach {
-            case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-            case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
-          }
-
-        case _ => ()
-      }
-
-      Success(flow)
     } catch {
       case err: Throwable => Failure(err)
     }
@@ -156,7 +170,8 @@ trait ExecutionContext {
    */
   final def run: Future[JobStats] =
     buildFlow match {
-      case Success(flow) => Execution.run(flow)
+      case Success(Some(flow)) => Execution.run(flow)
+      case Success(None) => Future.successful(JobStats.empty)
       case Failure(err) => Future.failed(err)
     }
 
@@ -164,7 +179,10 @@ trait ExecutionContext {
    * Synchronously execute the plan in the FlowDef
    */
   final def waitFor: Try[JobStats] =
-    buildFlow.flatMap(Execution.waitFor(_))
+    buildFlow.flatMap {
+      case Some(flow) => Execution.waitFor(flow)
+      case None => Success(JobStats.empty)
+    }
 }
 
 /*
