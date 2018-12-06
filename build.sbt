@@ -19,6 +19,8 @@ val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
 val bijectionVersion = "0.9.5"
 val cascadingAvroVersion = "2.1.2"
+val catsEffectVersion = "1.1.0"
+val catsVersion = "1.5.0"
 val chillVersion = "0.8.4"
 val dagonVersion = "0.3.1"
 val elephantbirdVersion = "4.15"
@@ -218,6 +220,7 @@ lazy val scalding = Project(
   scaldingArgs,
   scaldingDate,
   scaldingQuotation,
+  scaldingCats,
   scaldingCore,
   scaldingCommons,
   scaldingAvro,
@@ -345,6 +348,14 @@ lazy val scaldingCore = module("core").settings(
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
 ).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+
+lazy val scaldingCats = module("cats").settings(
+  libraryDependencies ++= Seq(
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+    "org.typelevel" %% "cats-core" % catsVersion,
+    "org.typelevel" %% "cats-effect" % catsEffectVersion
+  )).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
+
 
 lazy val scaldingSpark = module("spark").settings(
   libraryDependencies ++= Seq(
