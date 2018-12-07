@@ -353,7 +353,9 @@ lazy val scaldingCats = module("cats").settings(
   libraryDependencies ++= Seq(
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.typelevel" %% "cats-core" % catsVersion,
-    "org.typelevel" %% "cats-effect" % catsEffectVersion
+    "org.typelevel" %% "cats-laws" % catsVersion % "test",
+    "org.typelevel" %% "cats-effect" % catsEffectVersion,
+    "org.typelevel" %% "cats-effect-laws" % catsEffectVersion % "test"
   )).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
 
 

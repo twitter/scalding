@@ -1,10 +1,10 @@
 package com.twitter.scalding.hellcats
 
-import cats.{Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad}
+import cats.{ Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad }
 import cats.effect.{ Async, Effect, ExitCase, SyncIO, IO }
 import com.twitter.scalding.{ Config, Mode, TypedPipe, Execution }
 import com.twitter.scalding.typed.CoGroupable
-import com.twitter.scalding.typed.functions.{Identity, MapOptionToFlatMap}
+import com.twitter.scalding.typed.functions.{ Identity, MapOptionToFlatMap }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 
 /**
@@ -35,8 +35,8 @@ object HellCats {
       override def filter[A](ta: TypedPipe[A])(fn: A => Boolean) = ta.filter(fn)
     }
 
-  implicit def semigroupalCoGroupable[K]: Semigroupal[({type F[V] = CoGroupable[K, V]})#F] =
-    new Semigroupal[({type F[V] = CoGroupable[K, V]})#F] {
+  implicit def semigroupalCoGroupable[K]: Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] =
+    new Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] {
       def product[A, B](ca: CoGroupable[K, A], cb: CoGroupable[K, B]) = ca.join(cb)
     }
 
@@ -63,7 +63,7 @@ object HellCats {
 
     // Members declared in cats.effect.Async
     def async[A](k: (Either[Throwable, A] => Unit) => Unit): Execution[A] =
-      Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
+      Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
         val p = Promise[A]()
         Future {
           k {
@@ -76,10 +76,10 @@ object HellCats {
           }
         }
         p.future
-      }
+      })
 
     def asyncF[A](k: (Either[Throwable, A] => Unit) => Execution[Unit]): Execution[A] =
-      Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
+      Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
         val p = Promise[A]()
         Future {
           k {
@@ -91,7 +91,7 @@ object HellCats {
               ()
           }.map(_ => p)
         }
-      }.flatten.flatMap { p => Execution.fromFuture(_ => p.future) }
+      }).flatten.flatMap { p => Execution.fromFuture(_ => p.future) }
 
     // Members declared in cats.effect.Bracket
     def bracketCase[A, B](acquire: Execution[A])(use: A => Execution[B])(release: (A, ExitCase[Throwable]) => Execution[Unit]): Execution[B] =
@@ -107,7 +107,8 @@ object HellCats {
       }
 
     override def delay[A](a: => A): Execution[A] =
-      Execution.from(a)
+      // we can't lawfully cache this
+      Execution.withNewCache(Execution.from(a))
 
     def handleErrorWith[A](ea: Execution[A])(fn: Throwable => Execution[A]): Execution[A] =
       ea.recoverWith { case t => fn(t) }
