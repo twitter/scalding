@@ -1,10 +1,10 @@
 package com.twitter.scalding.hellcats
 
-import cats.{Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad}
+import cats.{ Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad }
 import cats.effect.{ Async, Effect, ExitCase, SyncIO, IO }
 import com.twitter.scalding.{ Config, Mode, TypedPipe, Execution }
 import com.twitter.scalding.typed.CoGroupable
-import com.twitter.scalding.typed.functions.{Identity, MapOptionToFlatMap}
+import com.twitter.scalding.typed.functions.{ Identity, MapOptionToFlatMap }
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 
 /**
@@ -35,8 +35,8 @@ object HellCats {
       override def filter[A](ta: TypedPipe[A])(fn: A => Boolean) = ta.filter(fn)
     }
 
-  implicit def semigroupalCoGroupable[K]: Semigroupal[({type F[V] = CoGroupable[K, V]})#F] =
-    new Semigroupal[({type F[V] = CoGroupable[K, V]})#F] {
+  implicit def semigroupalCoGroupable[K]: Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] =
+    new Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] {
       def product[A, B](ca: CoGroupable[K, A], cb: CoGroupable[K, B]) = ca.join(cb)
     }
 
@@ -81,19 +81,29 @@ object HellCats {
       })
 
     def asyncF[A](k: (Either[Throwable, A] => Unit) => Execution[Unit]): Execution[A] =
-      Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
-        val p = Promise[A]()
-        Future {
-          k {
-            case Right(a) =>
-              p.success(a)
-              ()
-            case Left(err) =>
-              p.failure(err)
-              ()
-          }.map(_ => p)
-        }
-      }).flatten.flatMap { p => Execution.fromFuture(_ => p.future) }
+      delay(Promise[A]()).flatMap { p =>
+        val asyncEx = Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
+          Future {
+            k {
+              case Right(a) =>
+                p.success(a)
+                ()
+              case Left(err) =>
+                p.failure(err)
+                ()
+            }
+          }
+        }).flatten
+
+        val result = Execution.fromFuture(_ => p.future)
+
+        // this is not quite what is meant by async. We should actually
+        // allow the result to complete before the Execution that k returns
+        // completes. This is a bit weird for a distributed compute Effect like
+        // Execution. We can still pass the laws by blocking on Execution,
+        // so we do that here.
+        asyncEx.zip(result).map(_._2)
+      }
 
     // Members declared in cats.effect.Bracket
     def bracketCase[A, B](acquire: Execution[A])(use: A => Execution[B])(release: (A, ExitCase[Throwable]) => Execution[Unit]): Execution[B] =
