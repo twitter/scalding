@@ -1,10 +1,10 @@
 package com.twitter.scalding.hellcats
 
-import cats.{ Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad }
+import cats.{Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad}
 import cats.effect.{ Async, Effect, ExitCase, SyncIO, IO }
 import com.twitter.scalding.{ Config, Mode, TypedPipe, Execution }
 import com.twitter.scalding.typed.CoGroupable
-import com.twitter.scalding.typed.functions.{ Identity, MapOptionToFlatMap }
+import com.twitter.scalding.typed.functions.{Identity, MapOptionToFlatMap}
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 
 /**
@@ -35,8 +35,8 @@ object HellCats {
       override def filter[A](ta: TypedPipe[A])(fn: A => Boolean) = ta.filter(fn)
     }
 
-  implicit def semigroupalCoGroupable[K]: Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] =
-    new Semigroupal[({ type F[V] = CoGroupable[K, V] })#F] {
+  implicit def semigroupalCoGroupable[K]: Semigroupal[({type F[V] = CoGroupable[K, V]})#F] =
+    new Semigroupal[({type F[V] = CoGroupable[K, V]})#F] {
       def product[A, B](ca: CoGroupable[K, A], cb: CoGroupable[K, B]) = ca.join(cb)
     }
 
@@ -61,7 +61,9 @@ object HellCats {
         p.future
       }
 
-    // Members declared in cats.effect.Async
+    override def ap[A, B](ef: Execution[A => B])(ea: Execution[A]): Execution[B] =
+      ef.zip(ea).map { case (f, a) => f(a) }
+
     def async[A](k: (Either[Throwable, A] => Unit) => Unit): Execution[A] =
       Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
         val p = Promise[A]()
@@ -132,7 +134,7 @@ object HellCats {
       ea.recoverWith(fn)
 
     def suspend[A](ea: => Execution[A]): Execution[A] =
-      Execution.from(ea).flatten
+      delay(ea).flatten
   }
 
   class ExecutionEffect(c: Config, m: Mode)(implicit cec: ConcurrentExecutionContext) extends AsyncExecution with Effect[Execution] {
