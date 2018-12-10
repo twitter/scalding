@@ -102,7 +102,14 @@ object HellCats {
         // completes. This is a bit weird for a distributed compute Effect like
         // Execution. We can still pass the laws by blocking on Execution,
         // so we do that here.
-        asyncEx.zip(result).map(_._2)
+        //
+        // Note, we liftToTry here because the contract of asyncF is that
+        // it should be running independent of the result A. Failures
+        // are signaled by calling k with Left(err), not by failing the
+        // Execution.
+        asyncEx.liftToTry
+          .zip(result)
+          .map(_._2)
       }
 
     // Members declared in cats.effect.Bracket

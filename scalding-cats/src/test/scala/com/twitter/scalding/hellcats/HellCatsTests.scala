@@ -19,11 +19,7 @@ import cats.implicits._
 object ExecutionGen {
   def genMonadError[F[_], A](depth: Int, g: Gen[A])(implicit me: MonadError[F, Throwable]): Gen[F[A]] = {
     val recurse = Gen.lzy(genMonadError[F, A](depth - 1, g))
-    // due to a bug in cats-effect laws, we can't generate failures:
-    // https://github.com/typelevel/cats-effect/issues/441
-    // re-enable this when that is fixed.
-    //val g0 = Gen.frequency((5, g.map(me.pure(_))), (1, Gen.const(me.raiseError[A](new Exception("failed")))))
-    val g0 = g.map(me.pure(_))
+    val g0 = Gen.frequency((5, g.map(me.pure(_))), (1, Gen.const(me.raiseError[A](new Exception("failed")))))
     if (depth <= 0) g0
     else {
       implicit val arbEx: Arbitrary[F[A]] = Arbitrary(recurse)
@@ -33,8 +29,16 @@ object ExecutionGen {
         ei <- genIntEx
         fn <- genFn
       } yield ei.flatMap(fn)
+      val zip = for {
+        a <- recurse
+        b <- recurse
+        aOrB <- Gen.oneOf(a, b)
+      } yield aOrB
 
-      Gen.oneOf(g0, genFlatMap)
+      Gen.frequency(
+        (4, g0),
+        (4, genFlatMap),
+        (1, zip)) // use zip less because it branches
     }
   }
   def genExecution[A](depth: Int, g: Gen[A]): Gen[Execution[A]] =
