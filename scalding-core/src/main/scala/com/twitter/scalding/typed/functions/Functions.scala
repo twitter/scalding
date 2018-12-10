@@ -27,6 +27,13 @@ case class MakeKey[K, V](fn: V => K) extends Function1[V, (K, V)] {
   def apply(v: V) = (fn(v), v)
 }
 
+case class MapOptionToFlatMap[A, B](fn: A => Option[B]) extends Function1[A, List[B]] {
+  def apply(a: A) = fn(a) match {
+    case None => Nil
+    case Some(a) => a :: Nil
+  }
+}
+
 case class PartialFunctionToFilter[A, B](fn: PartialFunction[A, B]) extends Function1[A, Boolean] {
   def apply(a: A) = fn.isDefinedAt(a)
 }
