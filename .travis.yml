@@ -44,11 +44,11 @@ matrix:
       script: "scripts/run_test.sh"
 
     - scala: 2.11.12
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
       script: "scripts/run_test.sh"
 
     - scala: 2.12.4
-      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db"
+      env: BUILD="base" TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
       script: "scripts/run_test.sh"
 
     - scala: 2.11.12
