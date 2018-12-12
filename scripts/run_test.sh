@@ -37,7 +37,12 @@ echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd mimaReportBinaryIssues)"
 time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd mimaReportBinaryIssues)"
 MIMA_EXIT_CODE=$?
 
+echo "Running compile:doc ... "
+echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd compile:doc)"
+time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd compile:doc)"
+COMPILE_DOC_EXIT_CODE=$?
+
 echo "all done"
 
 $BASE_DIR/scripts/packDeps.sh
-exit $(( $TST_EXIT_CODE || $MIMA_EXIT_CODE ))
+exit $(( $TST_EXIT_CODE || $MIMA_EXIT_CODE || $COMPILE_DOC_EXIT_CODE ))
