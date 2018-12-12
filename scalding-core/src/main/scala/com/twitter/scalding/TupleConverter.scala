@@ -17,7 +17,7 @@ limitations under the License.
 package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{ Tuple => CTuple }
 import com.twitter.scalding.serialization.Externalizer
 import scala.collection.breakOut
 

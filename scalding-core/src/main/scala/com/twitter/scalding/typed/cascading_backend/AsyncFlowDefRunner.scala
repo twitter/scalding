@@ -172,9 +172,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
             ctx.buildFlow match {
               case Success(Some(flow)) =>
                 val future = FlowListenerPromise
-                    .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
+                  .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
 
-                  promise.completeWith(future)
+                promise.completeWith(future)
               case Success(None) =>
                 // These is nothing to do:
                 promise.success((id, JobStats.empty))
