@@ -76,7 +76,7 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    * @return the readContext that defines how to read the file
    */
   @Override
-  public ReadContext init(InitContext context) {
+  public ReadSupport.ReadContext init(InitContext context) {
     final Configuration configuration = context.getConfiguration();
     final MessageType fileMessageType = context.getFileSchema();
     MessageType requestedProjection = fileMessageType;

@@ -1,23 +1,23 @@
 package com.twitter.scalding
 
-import cascading.flow.local.{LocalFlowConnector, LocalFlowProcess}
-import cascading.flow.{FlowConnector, FlowProcess}
+import cascading.flow.local.{ LocalFlowConnector, LocalFlowProcess }
+import cascading.flow.{ FlowConnector, FlowProcess }
 import cascading.property.AppProps
-import cascading.tap.{CompositeTap, Tap}
+import cascading.tap.{ CompositeTap, Tap }
 import cascading.tap.hadoop.Hfs
-import cascading.tuple.{Tuple, TupleEntryIterator}
+import cascading.tuple.{ Tuple, TupleEntryIterator }
 import com.twitter.scalding.tap.ScaldingHfs
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import java.io.File
-import java.util.{Properties, UUID}
+import java.util.{ Properties, UUID }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{Buffer, Map => MMap, Set => MSet}
-import scala.util.{Failure, Success}
+import scala.collection.mutable.{ Buffer, Map => MMap, Set => MSet }
+import scala.util.{ Failure, Success }
 
 /**
  * Any Mode running on cascading extends CascadingMode
@@ -52,8 +52,7 @@ trait CascadingMode extends Mode {
             hfs.getClass.isAssignableFrom(classOf[ScaldingHfs]),
             """You are using instance of tap inherited from cascading.tap.hadoop.Hfs in toIterator method,
               |which is broken in cascading 2.6.1, instead you need to use com.twitter.scalding.tap.ScaldingHfs.
-            """.stripMargin
-          )
+            """.stripMargin)
         case composite: CompositeTap[t] =>
           composite
             .getChildTaps
