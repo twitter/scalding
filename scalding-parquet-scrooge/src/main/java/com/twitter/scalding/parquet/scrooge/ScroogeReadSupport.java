@@ -25,11 +25,13 @@ import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.hadoop.thrift.ThriftReadSupport;
 import org.apache.parquet.io.InvalidRecordException;
 import org.apache.parquet.io.ParquetDecodingException;
+import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.thrift.ThriftMetaData;
+import org.apache.parquet.thrift.ThriftRecordConverter;
 import org.apache.parquet.thrift.ThriftSchemaConverter;
 import org.apache.parquet.thrift.projection.FieldProjectionFilter;
 import org.apache.parquet.thrift.projection.ThriftProjectionException;
@@ -182,6 +184,56 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
     if (!fileType.getName().equals(projection.getName())
       || (fileType.getRepetition() != projection.getRepetition() && !fileType.getRepetition().isMoreRestrictiveThan(projection.getRepetition()))) {
       throw new InvalidRecordException(projection + " found: expected " + fileType);
+    }
+  }
+
+  /**
+   * Overriding to fall back to get descriptor from the {@link #thriftClass} if thrift metadata is
+   * not present
+   *
+   * @return
+   */
+  @Override
+  public RecordMaterializer<T> prepareForRead(Configuration configuration,
+                                              Map<String, String> keyValueMetaData, MessageType fileSchema,
+                                              ReadSupport.ReadContext readContext) {
+    ThriftMetaData thriftMetaData = ThriftMetaData.fromExtraMetaData(keyValueMetaData);
+    try {
+      if (thriftClass == null) {
+        thriftClass = getThriftClass(keyValueMetaData, configuration);
+      }
+
+      ThriftType.StructType descriptor = null;
+      if (thriftMetaData != null) {
+        descriptor = thriftMetaData.getDescriptor();
+      } else {
+        ScroogeStructConverter schemaConverter = new ScroogeStructConverter();
+        descriptor = schemaConverter.convert(thriftClass);
+      }
+
+      ThriftRecordConverter<T> converter = new ScroogeRecordConverter<T>(
+        thriftClass,
+        readContext.getRequestedSchema(),
+        descriptor);
+      return converter;
+    } catch (Exception t) {
+      throw new RuntimeException("Unable to create Thrift Converter for Thrift metadata " + thriftMetaData, t);
+    }
+  }
+
+  /**
+   * Getting thrift class from extra metadata
+   */
+  public static <T extends ThriftStruct> Class<T> getThriftClass(Map<String, String> fileMetadata, Configuration conf) throws ClassNotFoundException {
+    String className = conf.get(THRIFT_READ_CLASS_KEY, null);
+    if (className == null) {
+      final ThriftMetaData metaData = ThriftMetaData.fromExtraMetaData(fileMetadata);
+      if (metaData == null) {
+        throw new ParquetDecodingException("Could not read file as the Thrift class is not provided and could not be resolved from the file");
+      }
+      return (Class<T>) metaData.getThriftClass();
+    } else {
+      return (Class<T>) Class.forName(className);
     }
   }
 
