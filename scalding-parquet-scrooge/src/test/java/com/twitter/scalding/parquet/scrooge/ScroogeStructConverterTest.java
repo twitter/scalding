@@ -18,6 +18,7 @@
  */
 package com.twitter.scalding.parquet.scrooge;
 
+import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.thrift.TBase;
 import org.junit.Test;
 
@@ -79,7 +80,21 @@ public class ScroogeStructConverterTest {
 
   @Test
   public void testBinary() throws Exception {
-    shouldConvertConsistentlyWithThriftStructConverter(StringAndBinary.class);
+    // Commenting out because this is comparing scala generated class with java generated class. The java class is
+    // incorrectly generated, so this is currently an invalid test. See testScroogeBinary() instead.
+    // shouldConvertConsistentlyWithThriftStructConverter(StringAndBinary.class);
+  }
+
+  @Test
+  public void testScroogeBinary() {
+
+    MessageType expected = MessageTypeParser.parseMessageType(
+              "message ParquetSchema {\n" +
+                    "required binary s (UTF8) = 1;\n" +
+                    "required binary b = 2;\n" +
+                    "}");
+    assertEquals(expected, toParquetSchema(new ScroogeStructConverter().convert(StringAndBinary.class)));
+
   }
 
   @Test

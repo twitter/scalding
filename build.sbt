@@ -13,7 +13,6 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.12" => "2.12"
   case _ => sys.error("unknown error")
 }
-
 val algebirdVersion = "0.13.4"
 val apacheCommonsVersion = "2.2"
 val avroVersion = "1.7.4"
@@ -31,15 +30,15 @@ val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
 val paradiseVersion = "2.1.0"
-val parquetVersion = "1.8.1"
+val parquetVersion = "1.10.0"
 val protobufVersion = "2.4.1"
 val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
-val scroogeVersion = "4.12.0"
+val scroogeVersion = "18.9.0"
 val sparkVersion = "2.4.0"
 val slf4jVersion = "1.6.6"
-val thriftVersion = "0.5.0"
+val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
 val macroCompatVersion = "1.1.1"
 val jlineVersion = "2.14.3"
@@ -419,7 +418,7 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.thrift" % "libthrift" % thriftVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,

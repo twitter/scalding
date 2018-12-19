@@ -169,7 +169,7 @@ class MockTBase extends TBase[MockTBase, TFieldIdEnum] {
   override def isSet(p1: TFieldIdEnum): Boolean = false
   override def getFieldValue(p1: TFieldIdEnum): AnyRef = null
   override def setFieldValue(p1: TFieldIdEnum, p2: scala.Any): Unit = ()
-  override def deepCopy(): TBase[MockTBase, TFieldIdEnum] = null
+  override def deepCopy(): MockTBase = null
   override def clear(): Unit = ()
   override def compareTo(o: MockTBase): Int = 0
 }
