@@ -86,7 +86,16 @@ case class SumAll[T](sg: Semigroup[T]) extends Function1[TraversableOnce[T], Ite
 }
 
 case class Fill[A](size: Int) extends Function1[A, Iterator[A]] {
-  def apply(a: A) = Iterator.fill(size)(a)
+  def apply(a: A) = {
+    val originalHashCode = a.hashCode()
+    Iterator.fill(size)(a).map { value =>
+      if (value.hashCode() != originalHashCode) {
+        throw new IllegalStateException(s"Mutable value $value was passed and mutated during job execution. " +
+          s"This is prohibited.")
+      }
+      value
+    }
+  }
 }
 
 case class AggPrepare[A, B, C](agg: Aggregator[A, B, C]) extends Function1[A, B] {
