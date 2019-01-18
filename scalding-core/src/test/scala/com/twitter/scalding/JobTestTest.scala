@@ -1,6 +1,7 @@
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import com.twitter.scalding.source.TypedText
+import org.scalatest.{Matchers, WordSpec}
 
 /**
  * Simple identity job that reads from a Tsv and writes to a Tsv with no change.
@@ -39,6 +40,26 @@ class JobTestTest extends WordSpec with Matchers {
       JobTest(new SimpleTestJob(_)).getTestMode(true, None) match {
         case m: HadoopTest => m.jobConf.get("mapreduce.framework.name") shouldBe "local"
       }
+    }
+
+    "work with a lot of sinks at the same time" in {
+      val elements = List(1, 2, 3, 4, 5)
+      val sinks: Seq[TypedSink[Int] with Source] = (1 to 100).map { num =>
+        TypedText.tsv[Int]("output" + num)
+      }
+
+      val writes = sinks.map { sink =>
+        TypedPipe.from(elements).writeExecution(sink)
+      }
+      val writesExecution: Execution[Unit] = Execution.sequence(writes).unit
+
+      var jobTest = JobTest(new ExecutionJob[Unit](_) {
+        override def execution: Execution[Unit] = writesExecution
+      })
+      sinks.foreach { sink =>
+        jobTest = jobTest.sink[Int](sink)(_.toList == elements)
+      }
+      jobTest.run.finish()
     }
   }
 }

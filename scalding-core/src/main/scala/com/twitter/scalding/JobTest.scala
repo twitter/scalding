@@ -15,7 +15,7 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import scala.collection.mutable.{ Buffer, ListBuffer }
+import scala.collection.mutable
 import scala.collection.JavaConverters._
 import scala.annotation.tailrec
 import cascading.tuple.Tuple
@@ -45,6 +45,19 @@ object JobTest {
     }
     new JobTest(cons)
   }
+
+  // We have to memoize to return the same buffer each time.
+  private case class MemoizedSourceFn[T](
+    fn: Source => Option[Iterable[T]],
+    setter: TupleSetter[T]
+  ) extends (Source => Option[mutable.Buffer[Tuple]]) {
+    private val memo = mutable.Map[Source, Option[mutable.Buffer[Tuple]]]()
+    private val lock = new Object()
+
+    def apply(src: Source): Option[mutable.Buffer[Tuple]] = lock.synchronized {
+      memo.getOrElseUpdate(src, fn(src).map(elements => elements.map(t => setter(t)).toBuffer))
+    }
+  }
 }
 
 object CascadeTest {
@@ -62,11 +75,11 @@ object CascadeTest {
  */
 class JobTest(cons: (Args) => Job) {
   private var argsMap = Map[String, List[String]]()
-  private val callbacks = Buffer[() => Unit]()
-  private val statsCallbacks = Buffer[(CascadingStats) => Unit]()
+  private val callbacks = mutable.Buffer[() => Unit]()
+  private val statsCallbacks = mutable.Buffer[(CascadingStats) => Unit]()
   // TODO: Switch the following maps and sets from Source to String keys
   // to guard for scala equality bugs
-  private var sourceMap: (Source) => Option[Buffer[Tuple]] = { _ => None }
+  private var sourceMap: (Source) => Option[mutable.Buffer[Tuple]] = { _ => None }
   private var sinkSet = Set[Source]()
   private var fileSet = Set[String]()
   private var validateJob = false
@@ -88,11 +101,11 @@ class JobTest(cons: (Args) => Job) {
 
   /** Add a function to produce a mock when a certain source is requested */
   def source[T](fn: Source => Option[Iterable[T]])(implicit setter: TupleSetter[T]): JobTest = {
+    val memoized = JobTest.MemoizedSourceFn(fn, setter)
     val oldSm = sourceMap
-    val bufferTupFn = fn.andThen { optItT => optItT.map { _.map(t => setter(t)).toBuffer } }
-    // We have to memoize to return the same buffer each time
-    val memo = scala.collection.mutable.Map[Source, Option[Buffer[Tuple]]]()
-    sourceMap = { (src: Source) => memo.getOrElseUpdate(src, bufferTupFn(src)).orElse(oldSm(src)) }
+    sourceMap = { src: Source =>
+      memoized(src).orElse(oldSm(src))
+    }
     this
   }
 
@@ -109,10 +122,10 @@ class JobTest(cons: (Args) => Job) {
 
   // This use of `_.get` is probably safe, but difficult to prove correct
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
-  def sink[A](s: Source)(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
+  def sink[A](s: Source)(op: mutable.Buffer[A] => Unit)(implicit conv: TupleConverter[A]) = {
     if (sourceMap(s).isEmpty) {
       // if s is also used as a source, we shouldn't reset its buffer
-      source(s, new ListBuffer[Tuple])
+      source(s, new mutable.ListBuffer[Tuple])
     }
     val buffer = sourceMap(s).get
     /* NOTE: `HadoopTest.finalize` depends on `sinkSet` matching the set of
@@ -124,7 +137,7 @@ class JobTest(cons: (Args) => Job) {
     this
   }
 
-  def typedSink[A](s: Source with TypedSink[A])(op: Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
+  def typedSink[A](s: Source with TypedSink[A])(op: mutable.Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
     sink[A](s)(op)
 
   // Used to pass an assertion about a counter defined by the given group and name.
