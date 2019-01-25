@@ -40,7 +40,6 @@ val sparkVersion = "2.4.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
-val macroCompatVersion = "1.1.1"
 val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
@@ -424,8 +423,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
-    "org.typelevel" %% "macro-compat" % macroCompatVersion
+    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
     ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
