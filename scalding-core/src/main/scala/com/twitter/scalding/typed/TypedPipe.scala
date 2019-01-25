@@ -227,6 +227,7 @@ object TypedPipe extends Serializable {
      /**
        * If any errors happen below this line, but before a groupBy, write to a TypedSink
        */
+      @deprecated("semantics of addTrap are hard to follow, prefer to use Either and manually write out error branchs", "0.18.0")
       def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
         TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withLine
    }
