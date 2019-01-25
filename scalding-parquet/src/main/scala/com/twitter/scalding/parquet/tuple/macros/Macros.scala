@@ -5,7 +5,6 @@ import com.twitter.scalding.parquet.tuple.scheme.{ ParquetReadSupport, ParquetWr
 
 import scala.reflect.macros.whitebox.Context
 import scala.language.experimental.macros
-import macrocompat.bundle
 
 /**
  * Macros used to generate parquet tuple read/write support.
@@ -14,7 +13,6 @@ import macrocompat.bundle
  * @author Jian TANG
  */
 
-@bundle
 class Impl(val c: Context) {
   val schemaProvider = new ParquetSchemaProvider((s: String) => s)
   val r = new ParquetReadSupportProvider(schemaProvider)
