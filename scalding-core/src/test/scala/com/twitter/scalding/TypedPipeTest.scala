@@ -351,6 +351,20 @@ class TypedPipeHashJoinTest extends WordSpec with Matchers {
   }
 }
 
+class TypedPipeTwoHashJoinsInARowTest extends WordSpec with Matchers {
+  "Two hashJoins" should {
+    "work correctly" in {
+      val elements = List(1, 2, 3)
+      val tp1 = TypedPipe.from(elements.map(v => (v, v)))
+      val tp2 = TypedPipe.from(elements.map(v => (v, 2*v)))
+      val tp3 = TypedPipe.from(elements.map(v => (v, 3*v)))
+      TypedPipeChecker.checkOutput(tp1.hashJoin(tp2).hashJoin(tp3))(result =>
+        result shouldBe elements.map(v => (v, ((v, 2 * v), 3 * v)))
+      )
+    }
+  }
+}
+
 class TypedImplicitJob(args: Args) extends Job(args) {
   def revTup[K, V](in: (K, V)): (V, K) = (in._2, in._1)
   TextLine("inputFile").read.typed(1 -> ('maxWord, 'maxCnt)) { tpipe: TypedPipe[String] =>
