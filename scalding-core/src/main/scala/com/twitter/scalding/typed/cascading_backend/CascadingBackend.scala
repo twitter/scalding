@@ -667,7 +667,7 @@ object CascadingBackend {
       WrappedJoiner(new HashJoiner(singleValuePerRightKey, right.joinFunction, joiner)))
 
     CascadingPipe[(K, R)](
-      hashPipe,
+      RichPipe(hashPipe).project(kvFields),
       kvFields,
       fd,
       tuple2Converter[K, R])
