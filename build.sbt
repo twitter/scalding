@@ -15,7 +15,7 @@ def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
 }
 val algebirdVersion = "0.13.4"
 val apacheCommonsVersion = "2.2"
-val avroVersion = "1.7.4"
+val avroVersion = "1.8.2"
 val bijectionVersion = "0.9.5"
 val cascadingAvroVersion = "2.1.2"
 val catsEffectVersion = "1.1.0"
