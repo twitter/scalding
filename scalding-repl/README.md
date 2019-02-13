@@ -23,7 +23,7 @@ You will see some lovely ASCII art:
     / __| ((_)((_)_ | |  _| | (_) _(_/(  (()(_)
     \__ \/ _| / _` || |/ _` | | || ' \))/ _` |
     |___/\__| \__,_||_|\__,_| |_||_||_| \__, |
-                                    |___/
+                                        |___/
 
 You can then define vals to represent the inputs and outputs you want:
 
