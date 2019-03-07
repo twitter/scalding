@@ -106,8 +106,7 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
 
   /**
    * Make sure the hashCode is the same as Date for the (questionable) choice
-   * to make them equal. this is the same as what java does (and only sane thing):
-   * http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/util/Date.java#989
+   * to make them equal. This is the same as what java does (and only sane thing).
    */
   override def hashCode =
     (timestamp.toInt) ^ ((timestamp >> 32).toInt)
