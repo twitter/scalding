@@ -200,7 +200,7 @@ object ColumnDefinitionProviderImpl {
           case "BOOLEAN" | "TINYINT" => q"""List("BOOLEAN", "BOOL", "TINYINT").contains($typeNameTerm)"""
           case "INT" => q"""List("INTEGER", "INT").contains($typeNameTerm)"""
           // In Vertica, `INTEGER`, `INT`, `BIGINT`, `INT8`, `SMALLINT`, and `TINYINT` are all 64 bits
-          // https://my.vertica.com/docs/7.1.x/HTML/Content/Authoring/SQLReferenceManual/DataTypes/Numeric/INTEGER.htm
+          // https://www.vertica.com/docs/8.1.x/HTML/index.htm#Authoring/SQLReferenceManual/DataTypes/Numeric/INTEGER.htm
           // In MySQL, `TINYINT`, `SMALLINT`, `MEDIUMINT`, `INT`, and `BIGINT` are all <= 64 bits
           // https://dev.mysql.com/doc/refman/5.7/en/integer-types.html
           // As the user has told us this field can store a `BIGINT`, we can safely accept any of these

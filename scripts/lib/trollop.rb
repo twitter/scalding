@@ -662,7 +662,6 @@ private
   end
 
   ## instance_eval but with ability to handle block arguments
-  ## thanks to why: http://redhanded.hobix.com/inspect/aBlockCostume.html
   def cloaker &b
     (class << self; self; end).class_eval do
       define_method :cloaker_, &b
@@ -703,8 +702,7 @@ end
 ##
 ##   ## if called with --monkey
 ##   p opts # => {:monkey_given=>true, :monkey=>true, :goat=>true, :num_limbs=>4, :help=>false, :num_thumbs=>nil}
-##
-## See more examples at http://trollop.rubyforge.org.
+
 def options args=ARGV, *a, &b
   @last_parser = Parser.new(*a, &b)
   with_standard_exception_handling(@last_parser) { @last_parser.parse args }
