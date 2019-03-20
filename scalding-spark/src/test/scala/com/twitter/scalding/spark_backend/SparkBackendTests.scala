@@ -8,6 +8,7 @@ import com.twitter.scalding.{ Config, Execution, TextLine, WritableSequenceFile 
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
 import java.io.File
+import java.nio.file.Paths
 
 import SparkMode.SparkConfigMethods
 
@@ -123,9 +124,14 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     }
   }
 
+  def tmpPath(suffix: String): String =
+    Paths.get(System.getProperty("java.io.tmpdir"),
+      "scalding",
+      "spark_backend",
+      suffix).toString
+
   test("writeExecution works with TextLine") {
-    val tmp = System.getProperty("java.io.tmpdir")
-    val path = s"${tmp}scalding/spark/test/w1"
+    val path = tmpPath("textline")
     sparkMatchesIterable({
       val loc = TextLine(path)
       val input = TypedPipe.from(0 to 100000)
@@ -145,8 +151,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   }
 
   test("writeExecution works with IntWritable") {
-    val tmp = System.getProperty("java.io.tmpdir")
-    val path = s"${tmp}scalding/spark/test/w2"
+    val path = tmpPath("int_writable")
     sparkMatchesIterable({
       val loc = WritableSequenceFile[IntWritable, IntWritable](path)
       val input = TypedPipe.from(0 to 100000)
