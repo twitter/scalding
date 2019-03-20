@@ -70,7 +70,11 @@ object SparkPlanner {
           }
         case (Fork(pipe), rec) =>
           val sparkPipe = rec(pipe)
-          config.getForceToDiskPersistMode.getOrElse(StorageLevel.MEMORY_ONLY) match {
+          // just let spark do it's default thing on Forks.
+          // unfortunately, that may mean recomputing the upstream
+          // multiple times, so users may want to override this,
+          // or be careful about using forceToDisk
+          config.getForkPersistMode.getOrElse(StorageLevel.NONE) match {
             case StorageLevel.NONE => sparkPipe
             case notNone => sparkPipe.persist(notNone)
           }
