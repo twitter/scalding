@@ -10,6 +10,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
 object SparkPlanner {
+  import SparkMode.SparkConfigMethods
   /**
    * Convert a TypedPipe to an RDD
    */
@@ -62,9 +63,21 @@ object SparkPlanner {
           val op = rec(prev) // linter:disable:UndesirableTypeInference
           op.concatMap(fn)
         case (ForceToDisk(pipe), rec) =>
-          rec(pipe).persist(StorageLevel.DISK_ONLY)
+          val sparkPipe = rec(pipe)
+          config.getForceToDiskPersistMode.getOrElse(StorageLevel.DISK_ONLY) match {
+            case StorageLevel.NONE => sparkPipe
+            case notNone => sparkPipe.persist(notNone)
+          }
         case (Fork(pipe), rec) =>
-          rec(pipe).persist(StorageLevel.MEMORY_ONLY)
+          val sparkPipe = rec(pipe)
+          // just let spark do it's default thing on Forks.
+          // unfortunately, that may mean recomputing the upstream
+          // multiple times, so users may want to override this,
+          // or be careful about using forceToDisk
+          config.getForkPersistMode.getOrElse(StorageLevel.NONE) match {
+            case StorageLevel.NONE => sparkPipe
+            case notNone => sparkPipe.persist(notNone)
+          }
         case (IterablePipe(iterable), _) =>
           Op.FromIterable(iterable)
         case (f @ MapValues(_, _), rec) =>
