@@ -1552,3 +1552,49 @@ class TypedPipeConverterTest extends FunSuite {
     assert(result == expected)
   }
 }
+
+object TypedPipeCrossWithMapTest {
+  val source = TypedText.tsv[Int]("source")
+
+  val sink1 = TypedText.tsv[Int]("sink1")
+  val sink2 = TypedText.tsv[Int]("sink2")
+
+  class TestJob(args: Args) extends Job(args) {
+    val mapPipe: TypedPipe[Map[Int, Int]] = TypedPipe.from(source)
+      .groupAll
+      .toList
+      .mapValues(values => values.map(v => (v, v)).toMap)
+      .values
+
+    val crossedMapped = TypedPipe.from(source)
+      .cross(mapPipe)
+      .map { case (value, map) => map(value) }
+
+    crossedMapped.toPipe('value).write(sink1)
+    crossedMapped.map(identity).toPipe('value).write(sink2)
+  }
+}
+
+class TypedPipeCrossWithMapTest extends FunSuite {
+  import TypedPipeCrossWithMapTest._
+
+  test("data between cross and subsequent map shouldn't be materialized") {
+    val n = 3000
+    val bytesPerElement = 10000 // we shouldn't write more than 10kb per element
+    val values = 1 to n
+
+    JobTest(new TestJob(_))
+      .source(source, values)
+      .typedSink(sink1) { outBuf =>
+        assert(outBuf.toSet == values.toSet)
+      }
+      .typedSink(sink2) { outBuf =>
+        assert(outBuf.toSet == values.toSet)
+      }
+      .counter("FILE_BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.FileSystemCounter") {
+        value => assert(value / n < bytesPerElement)
+      }
+      .runHadoop
+      .finish()
+  }
+}
