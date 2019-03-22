@@ -1,7 +1,7 @@
 package com.twitter.scalding.spark_backend
 
 import org.apache.spark.{HashPartitioner, Partitioner}
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
@@ -103,7 +103,7 @@ object Op extends Serializable {
           that match {
             case Empty => nonEmpty
             case thatNE =>
-              Merged(pc, nonEmpty, thatNE)
+              Merged(pc, nonEmpty, thatNE :: Nil)
           }
       }
   }
@@ -145,26 +145,34 @@ object Op extends Serializable {
         input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
-  final case class Merged[A](pc: PartitionComputer, left: Op[A], right: Op[A]) extends Op[A] {
+  final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       cache.getOrElseUpdate(session, {
         // start running in parallel
         val lrdd = left.run(session)
-        val rrdd = right.run(session)
-        for {
-          l <- lrdd
-          r <- rrdd
-        } yield {
-          val merged = widen[A](l) ++ widen[A](r)
-          val partitions = merged.getNumPartitions
-          val newPartitions = pc(partitions)
-          if (partitions != newPartitions) {
-            merged.coalesce(newPartitions)
-          } else {
-            merged
-          }
+        val tailRunning = tail.map(_.run(session))
+        tailRunning match {
+          case Nil => lrdd
+          case nonEmpty =>
+            // start all the upstream in parallel:
+            val rrdd = Future.traverse(nonEmpty) { frdd => frdd }
+            for {
+              l <- lrdd
+              rs <- rrdd
+            } yield {
+              val rdds = l :: rs
+              val rddAs = rdds.map(widen[A](_))
+              val merged = new UnionRDD(session.sparkContext, rddAs)
+              val partitions = merged.getNumPartitions
+              val newPartitions = pc(partitions)
+              if (partitions != newPartitions) {
+                merged.coalesce(newPartitions)
+              } else {
+                merged
+              }
+            }
         }
       })
   }
