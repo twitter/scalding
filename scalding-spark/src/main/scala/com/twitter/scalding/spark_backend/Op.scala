@@ -157,17 +157,12 @@ object Op extends Serializable {
           case Nil => lrdd
           case nonEmpty =>
             // start all the upstream in parallel:
-            val rrdd = Future.traverse(nonEmpty) { frdd => frdd }
-            for {
-              l <- lrdd
-              rs <- rrdd
-            } yield {
-              val rdds = l :: rs
+            Future.sequence(lrdd :: nonEmpty).map { rdds =>
               val rddAs = rdds.map(widen[A](_))
               val merged = new UnionRDD(session.sparkContext, rddAs)
               val partitions = merged.getNumPartitions
               val newPartitions = pc(partitions)
-              if (partitions != newPartitions) {
+              if (newPartitions < partitions) {
                 merged.coalesce(newPartitions)
               } else {
                 merged
