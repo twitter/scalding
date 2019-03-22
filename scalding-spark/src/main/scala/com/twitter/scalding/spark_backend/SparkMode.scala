@@ -45,6 +45,18 @@ object SparkMode {
       StorageLevel.fromString(str)
       conf + ("scalding.spark.forcetodisk.persist" -> str)
     }
+    def getMaxPartitionCount: Option[Int] =
+      conf.get("scalding.spark.maxpartitioncount").map(_.toInt)
+    def setMaxPartitionCount(c: Int): Config = {
+      require(c > 0, s"expected maxpartitioncount to be > 0, got $c")
+      conf + ("scalding.spark.maxpartitioncount" -> c.toString)
+    }
+    def getReducerScaling: Option[Double] =
+      conf.get("scalding.spark.reducerscaling").map(_.toDouble)
+    def setReducerScaling(c: Double): Config = {
+      require(c > 0, s"expected reducerscaling to be > 0, got $c")
+      conf + ("scalding.spark.reducerscaling" -> c.toString)
+    }
   }
 }
 

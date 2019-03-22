@@ -11,6 +11,38 @@ import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
 object SparkPlanner {
   import SparkMode.SparkConfigMethods
+  sealed trait PartitionComputer {
+    def apply(currentNumPartitions: Int): Int
+  }
+
+  final case object IdentityPartitionComputer extends PartitionComputer {
+    def apply(currentNumPartitions: Int): Int = currentNumPartitions
+  }
+  final case class ConfigPartitionComputer(config: Config, scaldingReducers: Option[Int]) extends PartitionComputer {
+    def apply(currentNumPartitions: Int): Int = {
+      val maxPartitions = config.getMaxPartitionCount
+      val getReducerScaling = config.getReducerScaling.getOrElse(1.0D)
+      val candidates = scaldingReducers match {
+        case None =>
+          currentNumPartitions
+        case Some(i) if i < 0 =>
+          currentNumPartitions
+        case Some(red) =>
+          (getReducerScaling * red).toInt
+      }
+      if (candidates > 0) {
+        maxPartitions match {
+          case Some(maxP) =>
+            Math.min(maxP, candidates)
+          case None =>
+            candidates
+        }
+      } else {
+        1
+      }
+    }
+  }
+
   /**
    * Convert a TypedPipe to an RDD
    */
@@ -88,8 +120,10 @@ object SparkPlanner {
           val op = rec(input) // linter:disable:UndesirableTypeInference
           op.map(fn)
         case (m @ MergedTypedPipe(_, _), rec) =>
-          def go[A](m: MergedTypedPipe[A]): Op[A] =
-            rec(m.left) ++ rec(m.right)
+          def go[A](m: MergedTypedPipe[A]): Op[A] = {
+            val pc = ConfigPartitionComputer(config, None)
+            rec(m.left).merge(pc, rec(m.right))
+          }
           go(m)
         case (SourcePipe(src), _) =>
           Op.Source(config, src, srcs(src))
@@ -149,16 +183,19 @@ object SparkPlanner {
           def go[K, V1, V2](uir: IdentityValueSortedReduce[K, V1, V2]): Op[(K, V2)] = {
             type OpT[V] = Op[(K, V)]
             val op = rec(uir.mapped)
-            val sortedOp = op.sorted(uir.keyOrdering, uir.valueSort)
+            val pc = ConfigPartitionComputer(config, uir.reducers)
+            val sortedOp = op.sorted(pc)(uir.keyOrdering, uir.valueSort)
             uir.evidence.subst[OpT](sortedOp)
           }
           go(ivsr)
-        case (ReduceStepPipe(ValueSortedReduce(ordK, pipe, ordV, fn, _, _)), rec) =>
+        case (ReduceStepPipe(ValueSortedReduce(ordK, pipe, ordV, fn, red, _)), rec) =>
           val op = rec(pipe)
-          op.sortedMapGroup(fn)(ordK, ordV)
-        case (ReduceStepPipe(IteratorMappedReduce(ordK, pipe, fn, _, _)), rec) =>
+          val pc = ConfigPartitionComputer(config, red)
+          op.sortedMapGroup(pc)(fn)(ordK, ordV)
+        case (ReduceStepPipe(IteratorMappedReduce(ordK, pipe, fn, red, _)), rec) =>
           val op = rec(pipe)
-          op.mapGroup(fn)(ordK)
+          val pc = ConfigPartitionComputer(config, red)
+          op.mapGroup(pc)(fn)(ordK)
       }
     })
 
@@ -252,14 +289,18 @@ object SparkPlanner {
           val eleft: Op[(A, Either[B, C])] = planSide(p.larger).map { case (k, v) => (k, Left(v)) }
           val eright: Op[(A, Either[B, C])] = planSide(p.smaller).map { case (k, v) => (k, Right(v)) }
           val joinFn = p.fn
-          (eleft ++ eright).sorted(p.keyOrdering, JoinOrdering()).mapPartitions { it =>
-            val grouped = Iterators.groupSequential(it)
-            grouped.flatMap {
-              case (k, eithers) =>
-                val kfn: Function2[Iterator[B], Iterable[C], Iterator[D]] = joinFn(k, _, _)
-                JoinIterator[B, C, D](kfn)(eithers).map((k, _))
+          val pc = ConfigPartitionComputer(config, p.reducers)
+          // we repartition in sorted, so no need to repartition in merge
+          (eleft.merge(IdentityPartitionComputer, eright))
+            .sorted(pc)(p.keyOrdering, JoinOrdering())
+            .mapPartitions { it =>
+              val grouped = Iterators.groupSequential(it)
+              grouped.flatMap {
+                case (k, eithers) =>
+                  val kfn: Function2[Iterator[B], Iterable[C], Iterator[D]] = joinFn(k, _, _)
+                  JoinIterator[B, C, D](kfn)(eithers).map((k, _))
+              }
             }
-          }
         }
         planPair(pair)
 
