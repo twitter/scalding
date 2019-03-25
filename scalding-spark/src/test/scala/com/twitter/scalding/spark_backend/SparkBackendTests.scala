@@ -209,28 +209,28 @@ class ConfigPartitionComputerTest extends PropSpec with PropertyChecks {
     val pc = ConfigPartitionComputer(Config.empty, None)
     forAll { i: Int =>
       if (i >= 1) assert(pc(i) == i)
-      else assert(pc(i) == 1)
+      else if (i > 0) assert(pc(i) == 1)
     }
   }
 
   property("when number of reducers are given but no scaling factor, returns the number of reducers") {
     val pc = ConfigPartitionComputer(Config.empty, Some(10))
     forAll { i: Int =>
-      pc(i) == 10
+      if (i >= 0) assert(pc(i) == 10)
     }
   }
 
   property("when reducer scaling factor given, scales the number of reducers") {
     val pc = ConfigPartitionComputer(Config.empty.setReducerScaling(2.0), Some(10))
     forAll { i: Int =>
-      pc(i) == 2.0D * 10
+      if (i > 0) assert(pc(i) == 20)
     }
   }
 
   property("when max partition count given, caps the result") {
     val pc = ConfigPartitionComputer(Config.empty.setMaxPartitionCount(10), None)
     forAll { i: Int =>
-      pc(i) == Math.min(10, i)
+      if (i > 0) assert(pc(i) == Math.min(10, i))
     }
   }
 }
