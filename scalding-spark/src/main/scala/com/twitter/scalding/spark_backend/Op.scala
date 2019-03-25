@@ -160,7 +160,7 @@ object Op extends Serializable {
           val merged = widen[A](l) ++ widen[A](r)
           val partitions = merged.getNumPartitions
           val newPartitions = pc(partitions)
-          if (partitions != newPartitions) {
+          if (newPartitions < partitions) {
             merged.coalesce(newPartitions)
           } else {
             merged
