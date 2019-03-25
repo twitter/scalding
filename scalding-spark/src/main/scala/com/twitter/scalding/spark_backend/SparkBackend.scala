@@ -18,27 +18,41 @@ object SparkPlanner {
   final case object IdentityPartitionComputer extends PartitionComputer {
     def apply(currentNumPartitions: Int): Int = currentNumPartitions
   }
+
+  /**
+   * A PartitionComputer which returns the desired number of partitions given the configured
+   * max partition count, reducer scaling factor, number of scalding reducers, and current number of partitions.
+   * We calculate the desired number of partitions in two stages:
+   * 1. If the number of scalding reducers is provided, we scale this number by the reducer scaling factor.
+   *    If it is <= 0 or missing, we use the current number of partitions.
+   * 2. If we have a configured a max number of partitions, we cap the result of 1 by this number. Otherwise,
+   *    just return the result of 1.
+   */
   final case class ConfigPartitionComputer(config: Config, scaldingReducers: Option[Int]) extends PartitionComputer {
     def apply(currentNumPartitions: Int): Int = {
       val maxPartitions = config.getMaxPartitionCount
       val getReducerScaling = config.getReducerScaling.getOrElse(1.0D)
-      val candidates = scaldingReducers match {
+      val candidate = scaldingReducers match {
         case None =>
           currentNumPartitions
-        case Some(i) if i < 0 =>
+        case Some(i) if i <= 0 =>
+          // scaldingReducers should be > 0, otherwise we default to the current number of partitions
           currentNumPartitions
         case Some(red) =>
           (getReducerScaling * red).toInt
       }
-      if (candidates > 0) {
+      if (candidate > 0) {
         maxPartitions match {
           case Some(maxP) =>
-            Math.min(maxP, candidates)
+            Math.min(maxP, candidate)
           case None =>
-            candidates
+            candidate
         }
-      } else {
+      } else if (candidate == 0) {
+        // we probably always want at least 1 partition
         1
+      } else {
+        throw new IllegalArgumentException("Got a negative partition count. Check configured maxPartitionCount or reducerScaling.")
       }
     }
   }
