@@ -1553,7 +1553,7 @@ class TypedPipeConverterTest extends FunSuite {
   }
 }
 
-object TypedPipeCrossWithMapTest {
+object TypedPipeCrossWithMapWithToPipeTest {
   val source = TypedText.tsv[Int]("source")
 
   val sink1 = TypedText.tsv[Int]("sink1")
@@ -1575,10 +1575,53 @@ object TypedPipeCrossWithMapTest {
   }
 }
 
-class TypedPipeCrossWithMapTest extends FunSuite {
-  import TypedPipeCrossWithMapTest._
+class TypedPipeCrossWithMapWithToPipeTest extends FunSuite {
+  import TypedPipeCrossWithMapWithToPipeTest._
 
   test("data between cross and subsequent map shouldn't be materialized") {
+    val n = 3000
+    val bytesPerElement = 10000 // we shouldn't write more than 10kb per element
+    val values = 1 to n
+
+    JobTest(new TestJob(_))
+      .source(source, values)
+      .typedSink(sink1) { outBuf =>
+        assert(outBuf.toSet == values.toSet)
+      }
+      .typedSink(sink2) { outBuf =>
+        assert(outBuf.toSet == values.toSet)
+      }
+      .counter("FILE_BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.FileSystemCounter") {
+        value => assert(value / n < bytesPerElement)
+      }
+      .runHadoop
+      .finish()
+  }
+}
+
+object TypedPipeCrossWithDifferentMapsAfterTest {
+  val source = TypedText.tsv[Int]("source")
+
+  val sink1 = TypedText.tsv[Int]("sink1")
+  val sink2 = TypedText.tsv[Int]("sink2")
+
+  class TestJob(args: Args) extends Job(args) {
+    val mapPipe: TypedPipe[Map[Int, Int]] = TypedPipe.from(source)
+      .groupAll
+      .toList
+      .mapValues(values => values.map(v => (v, v)).toMap)
+      .values
+
+    val crossed = TypedPipe.from(source).cross(mapPipe)
+    crossed.map { case (value, map) => map(value) }.write(sink1)
+    crossed.map { case (value, map) => map(identity(value)) }.write(sink2)
+  }
+}
+
+class TypedPipeCrossWithDifferentMapsAfterTest extends FunSuite {
+  import TypedPipeCrossWithDifferentMapsAfterTest._
+
+  test("cross data shouldn't be materialized") {
     val n = 3000
     val bytesPerElement = 10000 // we shouldn't write more than 10kb per element
     val values = 1 to n
