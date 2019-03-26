@@ -134,11 +134,16 @@ object SparkPlanner {
           val op = rec(input) // linter:disable:UndesirableTypeInference
           op.map(fn)
         case (m @ MergedTypedPipe(_, _), rec) =>
-          def go[A](m: MergedTypedPipe[A]): Op[A] = {
-            val pc = ConfigPartitionComputer(config, None)
-            rec(m.left).merge(pc, rec(m.right))
+          // Spark can handle merging several inputs at once,
+          // but won't otherwise optimize if not given in
+          // one batch
+          OptimizationRules.unrollMerge(m) match {
+            case Nil => rec(EmptyTypedPipe)
+            case h :: Nil => rec(h)
+            case h :: rest =>
+              val pc = ConfigPartitionComputer(config, None)
+              Op.Merged(pc, rec(h), rest.map(rec(_)))
           }
-          go(m)
         case (SourcePipe(src), _) =>
           Op.Source(config, src, srcs(src))
         case (slk @ SumByLocalKeys(_, _), rec) =>

@@ -4,6 +4,7 @@ import org.scalatest.{ BeforeAndAfter, FunSuite, PropSpec }
 import org.apache.hadoop.io.IntWritable
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import com.twitter.algebird.Monoid
 import com.twitter.scalding.{ Config, Execution, TextLine, WritableSequenceFile }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
@@ -73,6 +74,12 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       val (evens, odds) = input.partition(_ % 2 == 0)
 
       evens ++ odds
+    }
+
+    sparkMatchesMemory {
+      val input = TypedPipe.from(0 to 1000)
+      // many merges
+      Monoid.sum((2 to 8).map { i => input.filter(_ % i == 0) })
     }
   }
 
