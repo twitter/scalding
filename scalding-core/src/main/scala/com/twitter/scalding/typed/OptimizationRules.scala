@@ -1,7 +1,8 @@
 package com.twitter.scalding.typed
 
+import com.twitter.algebird.Monoid
 import com.stripe.dagon.{ FunctionK, Memoize, Rule, PartialRule, Dag, Literal }
-import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FilterKeysToFilter, FilterGroup, Fill, MapGroupMapValues, MapGroupFlatMapValues, SumAll, MapValueStream }
+import com.twitter.scalding.typed.functions.{ FlatMapping, FlatMappedFn, FlatMapValuesToFlatMap, FilterKeysToFilter, FilterGroup, Fill, MapValuesToMap, MapGroupMapValues, MapGroupFlatMapValues, MergeFlatMaps, SumAll, MapValueStream }
 import com.twitter.scalding.typed.functions.ComposedFunctions.{ ComposedMapFn, ComposedFilterFn, ComposedOnComplete }
 
 object OptimizationRules {
@@ -627,6 +628,7 @@ object OptimizationRules {
 
   /**
    * (a ++ a) == a.flatMap { t => List(t, t) }
+   * This is a very simple rule that is subsumed by DeDiamondMappers below
    */
   object DiamondToFlatMap extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
@@ -643,6 +645,148 @@ object OptimizationRules {
           })
         }
       case _ => None
+    }
+  }
+
+  /**
+   * This is a more expensive, but more general version of the
+   * previous rule: we can merge trailing mapping operations
+   * that originate at a common node.
+   *
+   * After this rule, the only diamonds that exist have at least
+   * one non-mapping operation on the path.
+   */
+  object DeDiamondMappers extends Rule[TypedPipe] {
+    sealed abstract class Mapper[+A] {
+      type Init
+      val input: TypedPipe[Init]
+      val fn: FlatMappedFn[Init, A]
+      val descriptions: List[(String, Boolean)]
+
+      def combine[B](fn2: FlatMappedFn[A, B]): Mapper.Aux[Init, B] =
+        Mapper(input, fn.combine(fn2), descriptions)
+
+      def withDescriptions(desc: List[(String, Boolean)]): Mapper.Aux[Init, A] =
+        Mapper(input, fn,
+          ComposeDescriptions.combine(descriptions, desc))
+
+      def toTypedPipe: TypedPipe[A] = {
+        val pipe = FlatMappedFn.asId(fn) match {
+          case Some(ev) =>
+            ev.subst[TypedPipe](input)
+          case None =>
+            FlatMappedFn.asFilter(fn) match {
+              case Some((f, ev)) =>
+                ev.subst[TypedPipe](Filter(input, f))
+              case None =>
+                FlatMapped(input, fn)
+            }
+        }
+        Mapper.maybeDescribe(pipe, descriptions)
+      }
+    }
+
+    object Mapper {
+      type Aux[A, +B] = Mapper[B] { type Init = A }
+
+      def maybeDescribe[A](tp: TypedPipe[A], descs: List[(String, Boolean)]): TypedPipe[A] =
+        descs match {
+          case Nil => tp
+          case ne =>
+            tp match {
+              case WithDescriptionTypedPipe(t0, d0) =>
+                WithDescriptionTypedPipe(t0, ComposeDescriptions.combine(d0, ne))
+              case notD =>
+                // here we use combine to make sure follow the rules of removing uniqued
+                // descriptions
+                WithDescriptionTypedPipe(notD, ComposeDescriptions.combine(Nil, ne))
+            }
+        }
+
+      def apply[A, B](p: TypedPipe[A], fn0: FlatMappedFn[A, B], desc: List[(String, Boolean)]): Mapper[B] { type Init = A } =
+        new Mapper[B] {
+          type Init = A
+          val input = p
+          val fn = fn0
+          val descriptions = desc
+        }
+
+      def unmapped[A](p: TypedPipe[A]): Aux[A, A] =
+        apply(p, FlatMappedFn.identity[A], Nil)
+    }
+
+    def toMappers[A](tp: TypedPipe[A]): List[Mapper[A]] =
+      tp match {
+        // First, these are non-mapped pipes.
+        case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_) | ReduceStepPipe(_) |
+          CoGroupedPipe(_) | CrossPipe(_, _) | CounterPipe(_) | CrossValue(_, _) | DebugPipe(_) |
+          ForceToDisk(_) | Fork(_) | HashCoGroup(_, _, _) | SumByLocalKeys(_, _) | TrappedPipe(_, _, _) | WithOnComplete(_, _) =>
+          Mapper.unmapped(tp) :: Nil
+        case FilterKeys(p, fn) =>
+          toMappers(p).map(_.combine(FlatMappedFn.fromFilter(FilterKeysToFilter(fn))))
+        case f@Filter(_, _) =>
+          // type inference needs hand holding on this one
+          def go[A1 <: A](p: TypedPipe[A1], fn: A1 => Boolean): List[Mapper[A]] = {
+            val fn1: FlatMappedFn[A1, A] =
+              FlatMappedFn.fromFilter[A1](fn)
+            toMappers(p).map(_.combine(fn1))
+          }
+          go(f.input, f.fn)
+        case FlatMapValues(p, fn) =>
+          toMappers(p).map(_.combine(FlatMappedFn(FlatMapValuesToFlatMap(fn))))
+        case FlatMapped(p, fn) =>
+          toMappers(p).map(_.combine(FlatMappedFn(fn)))
+        case MapValues(p, fn) =>
+          toMappers(p).map(_.combine(FlatMappedFn.fromMap(MapValuesToMap(fn))))
+        case Mapped(p, fn) =>
+          toMappers(p).map(_.combine(FlatMappedFn.fromMap(fn)))
+        case MergedTypedPipe(a, b) =>
+          toMappers(a) ::: toMappers(b)
+        case WithDescriptionTypedPipe(p, ds) =>
+          toMappers(p).map(_.withDescriptions(ds))
+      }
+
+    // This is unsafe as written, since we require callers to ensure
+    // that the init is the same
+    private def merge[A](ms: Iterable[Mapper[A]]): TypedPipe[A] =
+      ms.toList match {
+        case Nil => EmptyTypedPipe
+        case h :: Nil =>
+          // there is only one Mapper, just convert back to a TypedPipe
+          h.toTypedPipe
+        case all@(h :: t) =>
+          // we have several merged back from a common point
+          // we don't know what that previous type was, but
+          // we cast it to Any, we know the values in there
+          // must be compatible with all the Mappers, since they
+          // all consume, so this cast is safe after this check:
+          require(t.forall(_.input == h.input), s"mismatched inputs: ${all.map(_.input)}")
+          val msCast = all.asInstanceOf[List[Mapper.Aux[Any, A]]]
+          val fn: Any => TraversableOnce[A] = MergeFlatMaps(msCast.map(_.fn))
+          val fmpipe = FlatMapped(h.input, fn)
+          Mapper.maybeDescribe(fmpipe, all.flatMap(_.descriptions))
+      }
+
+    def apply[A](on: Dag[TypedPipe]) = {
+      // here are the trailing mappers of this pipe
+      case fork@Fork(inner) if on.hasSingleDependent(fork) =>
+        // due to a previous application of this rule,
+        // this fork may have been reduced to only one
+        // downstream, in that case, we can remove the fork
+        Some(inner)
+      case m@MergedTypedPipe(_, _) =>
+        // this rule only applies to merged pipes
+        // let's see if we have any duplicated inputs:
+        val mapperGroups = toMappers(m).groupBy(_.input)
+        val hasDiamond = mapperGroups.exists { case (_, ps) => ps.lengthCompare(1) > 0 }
+        if (hasDiamond) Some {
+          val groups = mapperGroups.map { case (_, ms) => merge(ms) }
+          Monoid.sum(groups)
+        }
+        else None
+      case _ =>
+        // Not a merge or a fork
+        None
     }
   }
 
@@ -1018,10 +1162,22 @@ object OptimizationRules {
       AddExplicitForks,
       RemoveUselessFork,
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
-      IgnoreNoOpGroup.orElse(composeSame).orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
+      IgnoreNoOpGroup.orElse(composeSame)
+        .orElse(DescribeLater)
+        .orElse(DeferMerge),
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
-      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DiamondToFlatMap).orElse(ComposeDescriptions).orElse(MapValuesInReducers),
-      // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
+      composeIntoFlatMap
+        .orElse(simplifyEmpty)
+        .orElse(ComposeDescriptions)
+        .orElse(DescribeLater)
+        .orElse(DeferMerge)
+        .orElse(DeDiamondMappers), // better to put expensive rules last in an orElse
+      // phase 3, after we can do any de-diamonding, we finally pull mapValues into reducers
+      // if we do this before de-diamonding, it can hide diamonds as an artifact
+      // of making reduce operations look different
+      MapValuesInReducers
+        .orElse(FilterKeysEarly),
+      // phase 4, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 
   /**

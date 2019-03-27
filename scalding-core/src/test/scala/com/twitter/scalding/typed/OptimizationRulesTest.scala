@@ -8,6 +8,7 @@ import com.twitter.scalding.source.{ TypedText, NullSink }
 import org.apache.hadoop.conf.Configuration
 import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import com.twitter.scalding.typed.memory_backend.MemoryMode
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.{ Arbitrary, Gen }
@@ -278,6 +279,16 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       .waitFor(conf, Local(true)).get.isEmpty)
   }
 
+  def optimizationLawMemory[T: Ordering](t: TypedPipe[T], rule: Rule[TypedPipe]) = {
+    val optimized = Dag.applyRule(t, toLiteral, rule)
+
+    // We don't want any further optimization on this job
+    val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
+    assert(TypedPipeDiff.diff(t, optimized)
+      .toIterableExecution
+      .waitFor(conf, MemoryMode.empty).get.isEmpty)
+  }
+
   def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
     val optimized = Dag.applyRule(init, toLiteral, rule)
 
@@ -288,6 +299,12 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     import TypedPipeGen.{ genWithIterableSources, genRule }
     implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 50)
     forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
+  }
+
+  test("dediamonding never changes results") {
+    import TypedPipeGen.genWithIterableSources
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 50)
+    forAll(genWithIterableSources)(optimizationLawMemory[Int](_, OptimizationRules.DeDiamondMappers))
   }
 
   test("some past failures of the optimizationLaw") {
@@ -643,5 +660,62 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     val pipe = Monoid.sum(pipes)
 
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe)
+  }
+
+  test("dediamond map only diamonds") {
+    def law[A, B: Ordering](root: TypedPipe[A], diamond: TypedPipe[B]) = {
+      val dag0 = Dag.empty(OptimizationRules.toLiteral)
+      val (dag1, id1) = dag0.addRoot(root)
+      val (dag2, id2) = dag1.addRoot(diamond)
+      val dag3 = dag2.applySeq(OptimizationRules.standardMapReduceRules)
+      val optDiamond = dag3.evaluate(id2)
+      val optRoot = dag3.evaluate(id1)
+
+      import TypedPipe._
+      optDiamond match {
+        case WithDescriptionTypedPipe(FlatMapped(r1, _), _) =>
+          assert(r1 == optRoot)
+        case err => fail(s"expected a single mapper: $err")
+      }
+
+      // Make sure running this with dediamounding doesn't change the rules
+      optimizationLawMemory(diamond, OptimizationRules.DeDiamondMappers)
+    }
+
+    {
+      val pipe = TypedPipe.from(List(1, 2))
+      val diamond = pipe.map(_ + 1) ++ pipe.map(_ + 2)
+      law(pipe, diamond)
+    }
+
+    {
+      // we need to use a flatMap to make sure that none of the optimizations are applied
+      val pipe: TypedPipe[(Int, Int)] = TypedPipe
+        .from(0 to 1000)
+        .flatMap { k => (k % 11, k % 13) :: Nil }
+        .sumByKey
+        .toTypedPipe
+      // Do all kinds of different map only operations, but see them merged down to one flatMap
+      val diamond = pipe.map(identity) ++
+        pipe.mapValues(_ ^ 11) ++
+        pipe.flatMapValues { i => (0 until (i % 7)) } ++
+        pipe.flatMap { case (k, v) => (k, v) :: (v, k) :: Nil } ++
+        pipe.filter { case (k, v) => k > v } ++
+        pipe.filterKeys(_ % 3 == 0)
+      law(pipe, diamond)
+    }
+
+    {
+      // single forks are removed
+      val pipe = TypedPipe.from(List(1, 2)).asKeys.sum
+      val diamond = pipe.map(identity) ++ pipe.map(identity).fork
+      law(pipe, diamond)
+    }
+
+    {
+      // here is a merge that doesn't dediamond, don't mess this us
+      val pipe = TypedPipe.from(List(1, 2)).map(_ * 2) ++ TypedPipe.from(0 to 100).map(_ * Int.MaxValue)
+      optimizationLawMemory(pipe, OptimizationRules.DeDiamondMappers)
+    }
   }
 }

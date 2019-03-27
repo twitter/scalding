@@ -224,6 +224,10 @@ case class FlatMapValuesToFlatMap[K, A, B](fn: A => TraversableOnce[B]) extends 
   }
 }
 
+case class MergeFlatMaps[A, B](fns: Iterable[A => TraversableOnce[B]]) extends Function1[A, TraversableOnce[B]] {
+  def apply(a: A) = fns.iterator.flatMap { fn => fn(a) }
+}
+
 case class MapValuesToMap[K, A, B](fn: A => B) extends Function1[(K, A), (K, B)] {
   def apply(ka: (K, A)) = (ka._1, fn(ka._2))
 }

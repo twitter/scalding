@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import com.twitter.scalding.source.TypedText
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 /**
  * Simple identity job that reads from a Tsv and writes to a Tsv with no change.
