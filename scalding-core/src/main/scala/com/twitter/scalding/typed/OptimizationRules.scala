@@ -697,7 +697,9 @@ object OptimizationRules {
               case WithDescriptionTypedPipe(t0, d0) =>
                 WithDescriptionTypedPipe(t0, ComposeDescriptions.combine(d0, ne))
               case notD =>
-                WithDescriptionTypedPipe(notD, ne)
+                // here we use combine to make sure follow the rules of removing uniqued
+                // descriptions
+                WithDescriptionTypedPipe(notD, ComposeDescriptions.combine(Nil, ne))
             }
         }
 
@@ -1166,10 +1168,10 @@ object OptimizationRules {
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
       composeIntoFlatMap
         .orElse(simplifyEmpty)
-        .orElse(DeDiamondMappers)
         .orElse(ComposeDescriptions)
         .orElse(DescribeLater)
-        .orElse(DeferMerge),
+        .orElse(DeferMerge)
+        .orElse(DeDiamondMappers), // better to put expensive rules last in an orElse
       // phase 3, after we can do any de-diamonding, we finally pull mapValues into reducers
       // if we do this before de-diamonding, it can hide diamonds as an artifact
       // of making reduce operations look different
