@@ -15,14 +15,14 @@ limitations under the License.
 */
 package com.twitter.scalding
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import cascading.tuple.Fields
 import cascading.tuple.TupleEntry
-import com.twitter.algebird.{Fold, Semigroup}
+import com.twitter.algebird.{ Fold, Semigroup }
 import com.twitter.scalding.source.DailySuffixTsv
 import com.twitter.scalding.typed.TypedPipeGen
-import java.lang.{Integer => JInt}
-import org.scalacheck.{Arbitrary, Gen}
+import java.lang.{ Integer => JInt }
+import org.scalacheck.{ Arbitrary, Gen }
 import org.scalatest.prop.PropertyChecks
 
 class NumberJoinerJob(args: Args) extends Job(args) {
@@ -309,8 +309,7 @@ class JoinTest extends WordSpec with Matchers with PropertyChecks {
 
         assert(
           TypedPipeChecker.inMemoryToList(leftWithRight).sorted ==
-            TypedPipeChecker.inMemoryToList(rightWithLeft).sorted
-        )
+            TypedPipeChecker.inMemoryToList(rightWithLeft).sorted)
       }
     }
 
