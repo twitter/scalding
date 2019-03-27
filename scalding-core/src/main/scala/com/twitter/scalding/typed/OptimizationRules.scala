@@ -666,7 +666,8 @@ object OptimizationRules {
       def combine[B](fn2: FlatMappedFn[A, B]): Mapper.Aux[Init, B] =
         Mapper(input, fn.combine(fn2), descriptions)
       def withDescriptions(desc: List[(String, Boolean)]): Mapper.Aux[Init, A] =
-        Mapper(input, fn, descriptions ::: desc)
+        Mapper(input, fn,
+          ComposeDescriptions.combine(descriptions, desc))
 
       def toTypedPipe: TypedPipe[A] = {
         val pipe = FlatMappedFn.asId(fn) match {
