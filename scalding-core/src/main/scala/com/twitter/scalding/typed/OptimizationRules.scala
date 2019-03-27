@@ -1159,10 +1159,22 @@ object OptimizationRules {
       AddExplicitForks,
       RemoveUselessFork,
       // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
-      IgnoreNoOpGroup.orElse(composeSame).orElse(DescribeLater).orElse(FilterKeysEarly).orElse(DeferMerge),
+      IgnoreNoOpGroup.orElse(composeSame)
+        .orElse(DescribeLater)
+        .orElse(DeferMerge),
       // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
-      composeIntoFlatMap.orElse(simplifyEmpty).orElse(DeDiamondMappers).orElse(ComposeDescriptions).orElse(MapValuesInReducers),
-      // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
+      composeIntoFlatMap
+        .orElse(simplifyEmpty)
+        .orElse(DeDiamondMappers)
+        .orElse(ComposeDescriptions)
+        .orElse(DescribeLater)
+        .orElse(DeferMerge),
+      // phase 3, after we can do any de-diamonding, we finally pull mapValues into reducers
+      // if we do this before de-diamonding, it can hide diamonds as an artifact
+      // of making reduce operations look different
+      MapValuesInReducers
+        .orElse(FilterKeysEarly),
+      // phase 4, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
       RemoveDuplicateForceFork)
 
   /**

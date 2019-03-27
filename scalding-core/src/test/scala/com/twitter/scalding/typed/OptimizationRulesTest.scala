@@ -689,8 +689,19 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     }
 
     {
-      val pipe = TypedPipe.from(List(1, 2)).asKeys.sum
-      val diamond = pipe.map(identity) ++ pipe.map(identity)
+      // we need to use a flatMap to make sure that none of the optimizations are applied
+      val pipe: TypedPipe[(Int, Int)] = TypedPipe
+        .from(0 to 1000)
+        .flatMap { k => (k % 11, k % 13) :: Nil }
+        .sumByKey
+        .toTypedPipe
+      // Do all kinds of different map only operations, but see them merged down to one flatMap
+      val diamond = pipe.map(identity) ++
+        pipe.mapValues(_ ^ 11) ++
+        pipe.flatMapValues { i => (0 until (i % 7)) } ++
+        pipe.flatMap { case (k, v) => (k, v) :: (v, k) :: Nil } ++
+        pipe.filter { case (k, v) => k > v } ++
+        pipe.filterKeys(_ % 3 == 0)
       law(pipe, diamond)
     }
 
