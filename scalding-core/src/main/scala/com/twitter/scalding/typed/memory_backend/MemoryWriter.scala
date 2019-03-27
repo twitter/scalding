@@ -65,7 +65,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
      * we will not materialize it, so both branches can't own it. Since we only emit Iterable
      * out, this may be okay because no external readers can modify, but worth thinking of
      */
-    val (id, acts) = state.update { s =>
+    val idActs: (Long, List[Action]) = state.update { s =>
       val (nextState, acts) = optimizedWrites.foldLeft((s, List.empty[Action])) {
         case (old @ (state, acts), write) =>
           write match {
@@ -108,6 +108,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       }
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
+    val (id, acts) = idActs
     // now we run the actions:
     Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty))
   }

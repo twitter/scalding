@@ -665,6 +665,7 @@ object OptimizationRules {
 
       def combine[B](fn2: FlatMappedFn[A, B]): Mapper.Aux[Init, B] =
         Mapper(input, fn.combine(fn2), descriptions)
+
       def withDescriptions(desc: List[(String, Boolean)]): Mapper.Aux[Init, A] =
         Mapper(input, fn,
           ComposeDescriptions.combine(descriptions, desc))
@@ -686,7 +687,7 @@ object OptimizationRules {
     }
 
     object Mapper {
-      type Aux[A, B] = Mapper[B] { type Init = A }
+      type Aux[A, +B] = Mapper[B] { type Init = A }
 
       def maybeDescribe[A](tp: TypedPipe[A], descs: List[(String, Boolean)]): TypedPipe[A] =
         descs match {
