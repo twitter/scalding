@@ -4,7 +4,8 @@ import cascading.flow.FlowDef
 import cascading.operation.Debug
 import cascading.pipe.{ CoGroup, Each, Pipe, HashJoin }
 import cascading.tuple.{ Fields, Tuple => CTuple }
-import com.stripe.dagon.{ FunctionK, Id, Memoize, Rule, Dag }
+import com.stripe.dagon.{ FunctionK, HCache, Id, Rule, Dag }
+import com.stripe.dagon.Memoize.RecursiveK
 import com.twitter.scalding.TupleConverter.{ singleConverter, tuple2Converter }
 import com.twitter.scalding.TupleSetter.{ singleSetter, tup2Setter }
 import com.twitter.scalding.{
@@ -182,9 +183,35 @@ object CascadingBackend {
   }
   private[this] val cache = new CompilerCache
 
-  private def compile[T](mode: Mode): FunctionK[TypedPipe, CascadingPipe] =
-    Memoize.functionK[TypedPipe, CascadingPipe](
-      new Memoize.RecursiveK[TypedPipe, CascadingPipe] {
+  private def compile(mode: Mode): FunctionK[TypedPipe, CascadingPipe] =
+    new FunctionK[TypedPipe, CascadingPipe] {
+      private val cache = HCache.empty[TypedPipe, CascadingPipe]
+
+      override def toFunction[U]: TypedPipe[U] => CascadingPipe[U] = cached
+
+      private def cached[U]: TypedPipe[U] => CascadingPipe[U] = {
+        // Don't cache `CrossPipe`, but cache `left` and `right` side of it
+        case cp@CrossPipe(left, right) =>
+          notCached(excludes = Set(left, right))(cp)
+        // Don't cache `Fork` and `WithDescriptionTypedPipe`
+        // since if we do cache them `CrossPipe` will end up being cached as well
+        case tp@Fork(_) =>
+          transform(tp, this)
+        case tp@WithDescriptionTypedPipe(_, _) =>
+          transform(tp, this)
+        // Cache all other typed pipes
+        case tp =>
+          cache.getOrElseUpdate(tp, transform(tp, this))
+      }
+
+      private def notCached(excludes: Set[TypedPipe[_]]): FunctionK[TypedPipe, CascadingPipe] =
+        new FunctionK[TypedPipe, CascadingPipe] {
+          override def toFunction[U]: TypedPipe[U] => CascadingPipe[U] = { tp =>
+            if (excludes.contains(tp)) cached(tp) else transform(tp, this)
+          }
+        }
+
+      private val transform: RecursiveK[TypedPipe, CascadingPipe] = new RecursiveK[TypedPipe, CascadingPipe] {
         def toFunction[T] = {
           case (cp@CounterPipe(_), rec) =>
             def go[A](cp: CounterPipe[A]): CascadingPipe[A] = {
@@ -340,7 +367,8 @@ object CascadingBackend {
           case (CoGroupedPipe(cg), rec) =>
             planCoGroup(cg, rec)
         }
-      })
+      }
+    }
 
   private def applyDescriptions(p: Pipe, descriptions: List[(String, Boolean)]): Pipe = {
     val ordered = descriptions.collect { case (d, false) => d }.reverse
