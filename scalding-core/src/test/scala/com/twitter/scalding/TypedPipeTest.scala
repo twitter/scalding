@@ -1580,7 +1580,7 @@ class TypedPipeCrossWithMapWithToPipeTest extends FunSuite {
 
   test("data between cross and subsequent map shouldn't be materialized") {
     val n = 3000
-    val bytesPerElement = 10000 // we shouldn't write more than 10kb per element
+    val bytesPerElement = 100 // we shouldn't write more than 100 bytes per element
     val values = 1 to n
 
     JobTest(new TestJob(_))
@@ -1591,7 +1591,7 @@ class TypedPipeCrossWithMapWithToPipeTest extends FunSuite {
       .typedSink(sink2) { outBuf =>
         assert(outBuf.toSet == values.toSet)
       }
-      .counter("FILE_BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.FileSystemCounter") {
+      .counter("BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter") {
         value => assert(value / n < bytesPerElement)
       }
       .runHadoop
@@ -1623,7 +1623,7 @@ class TypedPipeCrossWithDifferentMapsAfterTest extends FunSuite {
 
   test("cross data shouldn't be materialized") {
     val n = 3000
-    val bytesPerElement = 10000 // we shouldn't write more than 10kb per element
+    val bytesPerElement = 100 // we shouldn't write more than 100 bytes per element
     val values = 1 to n
 
     JobTest(new TestJob(_))
@@ -1634,7 +1634,7 @@ class TypedPipeCrossWithDifferentMapsAfterTest extends FunSuite {
       .typedSink(sink2) { outBuf =>
         assert(outBuf.toSet == values.toSet)
       }
-      .counter("FILE_BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.FileSystemCounter") {
+      .counter("BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter") {
         value => assert(value / n < bytesPerElement)
       }
       .runHadoop
