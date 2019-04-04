@@ -30,6 +30,13 @@ object TUtil {
   def printStack(fn: => Unit): Unit = {
     try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
   }
+
+  implicit class JobTestExt(test: JobTest) {
+    def writesLessDataThen(limitInBytes: Int): JobTest = test
+      .counter("BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter") {
+        value => assert(value < limitInBytes, s"Job wrote $value bytes of data with limit $limitInBytes")
+      }
+  }
 }
 
 class TupleAdderJob(args: Args) extends Job(args) {
@@ -1577,6 +1584,7 @@ object TypedPipeCrossWithMapWithToPipeTest {
 
 class TypedPipeCrossWithMapWithToPipeTest extends FunSuite {
   import TypedPipeCrossWithMapWithToPipeTest._
+  import TUtil._
 
   test("data between cross and subsequent map shouldn't be materialized") {
     val n = 3000
@@ -1591,9 +1599,7 @@ class TypedPipeCrossWithMapWithToPipeTest extends FunSuite {
       .typedSink(sink2) { outBuf =>
         assert(outBuf.toSet == values.toSet)
       }
-      .counter("BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter") {
-        value => assert(value / n < bytesPerElement)
-      }
+      .writesLessDataThen(bytesPerElement * n)
       .runHadoop
       .finish()
   }
@@ -1620,6 +1626,7 @@ object TypedPipeCrossWithDifferentMapsAfterTest {
 
 class TypedPipeCrossWithDifferentMapsAfterTest extends FunSuite {
   import TypedPipeCrossWithDifferentMapsAfterTest._
+  import TUtil._
 
   test("cross data shouldn't be materialized") {
     val n = 3000
@@ -1634,9 +1641,7 @@ class TypedPipeCrossWithDifferentMapsAfterTest extends FunSuite {
       .typedSink(sink2) { outBuf =>
         assert(outBuf.toSet == values.toSet)
       }
-      .counter("BYTES_WRITTEN", group = "org.apache.hadoop.mapreduce.lib.output.FileOutputFormatCounter") {
-        value => assert(value / n < bytesPerElement)
-      }
+      .writesLessDataThen(bytesPerElement * n)
       .runHadoop
       .finish()
   }
