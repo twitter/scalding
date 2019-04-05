@@ -29,6 +29,7 @@ public class VersionedTap extends GlobHfs {
 
   // sink-specific
   private String newVersionPath;
+  private String writtenPath;
 
   public VersionedTap(String dir, Scheme<JobConf,RecordReader,OutputCollector,?,?> scheme, TapMode mode)
       throws IOException {
@@ -148,11 +149,16 @@ public class VersionedTap extends GlobHfs {
     if (newVersionPath != null) {
       store.succeedVersion(newVersionPath);
       markSuccessfulOutputDir(new Path(newVersionPath), conf);
+      writtenPath = newVersionPath;
       newVersionPath = null;
       store.cleanup(getVersionsToKeep());
     }
 
     return true;
+  }
+
+  public String getWrittenPath() {
+    return writtenPath;
   }
 
   private static void markSuccessfulOutputDir(Path path, JobConf conf) throws IOException {
