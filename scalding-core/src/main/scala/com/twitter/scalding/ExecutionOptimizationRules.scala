@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
 import scala.annotation.tailrec
+import com.twitter.scalding.typed.functions.{ ComposedFunctions, Swap }
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 
 object ExecutionOptimizationRules {
@@ -108,25 +109,69 @@ object ExecutionOptimizationRules {
         }
     }
 
-  object ZipWrite extends PartialRule[Execution] {
-    type InputType = (Config, Mode, Execution.Writer, ConcurrentExecutionContext)
-    type ResFun[T] =  InputType => Future[T]
-
-    case class NewFn[T, U](left: ResFun[T], right: ResFun[U]) extends (InputType => Future[(T, U)]) {
-      override def apply(tup: InputType): Future[(T, U)] =
-        Execution.failFastZip(left(tup), right(tup))(tup._4)
+  /**
+   * Here we attempt to merge into the largest WriteExecution possible
+   */
+  case object ZipWrite extends Rule[Execution] {
+    import Execution._
+    case class Twist[A, B, C]() extends Function1[((A, B), C), (A, (B, C))] {
+      def apply(in: ((A, B), C)) =
+        (in._1._1, (in._1._2, in._2))
     }
 
-    override def applyWhere[T](on: Dag[Execution]) = {
-      /*
-      * run this and that in parallel, without any dependency. This will
-      * be done in a single cascading flow if possible.
-      *
-      * If both sides are write executions then merge them
-      */
-      case Execution.Zipped(Execution.WriteExecution(oH, oT, oR), Execution.WriteExecution(tH, tT, tR)) =>
-        Execution.WriteExecution(oH, tH :: tT ::: oT, NewFn(oR, tR))
+    case class TwistSwap[A, B, C]() extends Function1[((A, B), C), (A, (C, B))] {
+      def apply(in: ((A, B), C)) =
+        (in._1._1, (in._2, in._1._2))
     }
+
+    case class ComposeWriteFn[A, B, C, D, E](
+      fn1: ((A, B, C, ConcurrentExecutionContext)) => Future[D],
+      fn2: ((A, B, C, ConcurrentExecutionContext)) => Future[E]) extends Function1[(A, B, C, ConcurrentExecutionContext), Future[(D, E)]] {
+
+      def apply(tup: (A, B, C, ConcurrentExecutionContext)): Future[(D, E)] =
+        (Execution.failFastZip(fn1(tup), fn2(tup))(tup._4))
+    }
+    def mergeWrite[A, B](w1: WriteExecution[A], w2: WriteExecution[B]): WriteExecution[(A, B)] = {
+      val newFn = ComposeWriteFn(w1.result, w2.result)
+      WriteExecution(w1.head, w1.tail ::: (w2.head :: w2.tail), newFn)
+    }
+
+    /**
+     * Here we handle cases like zip(write, zip(write, nonWrite))
+     * without this, the presence of nonWrite executions, (flatmaps, recover, etc...)
+     * can destory the write composition in zips
+     */
+    def handleZip2r[A, B, C](z: Zipped[A, (B, C)]): Option[Execution[(A, (B, C))]] =
+      z match {
+        case Zipped(w0 @ WriteExecution(_, _, _), Zipped(w1 @ WriteExecution(_, _, _), w2 @ WriteExecution(_, _, _))) =>
+          Some(mergeWrite(w0, mergeWrite(w1, w2)))
+        case Zipped(ex, Zipped(w1 @ WriteExecution(_, _, _), w2 @ WriteExecution(_, _, _))) =>
+          Some(Zipped(ex, mergeWrite(w1, w2)))
+        case Zipped(w1 @ WriteExecution(_, _, _), Zipped(w2 @ WriteExecution(_, _, _), ex)) =>
+          Some(Mapped(Zipped(mergeWrite(w1, w2), ex), Twist[A, B, C]()))
+        case Zipped(w1 @ WriteExecution(_, _, _), Zipped(ex, w2 @ WriteExecution(_, _, _))) =>
+          Some(Mapped(Zipped(mergeWrite(w1, w2), ex), TwistSwap[A, C, B]()))
+        case _ => None
+      }
+    def handleZip2l[A, B, C](z: Zipped[(A, B), C]): Option[Execution[((A, B), C)]] =
+      handleZip2r(Zipped(z.two, z.one)).map(Mapped(_, Swap[C, (A, B)]()))
+
+    def handleZip[A, B](z: Zipped[A, B]): Option[Execution[(A, B)]] =
+      z match {
+        case Zipped(w1 @ WriteExecution(_, _, _), w2 @ WriteExecution(_, _, _)) =>
+          Some(mergeWrite(w1, w2))
+        case Zipped(left, right: Zipped[b, c]) =>
+          handleZip2r[A, b, c](Zipped(left, right))
+        case Zipped(left: Zipped[a, c], right) =>
+          handleZip2l[a, c, B](Zipped(left, right))
+        case _ => None
+      }
+
+    def apply[A](on: Dag[Execution]) =
+      {
+        case z @ Zipped(_, _) => handleZip(z)
+        case _ => None
+      }
   }
 
   object ZipMap extends PartialRule[Execution] {
@@ -178,11 +223,28 @@ object ExecutionOptimizationRules {
   }
 
   object MapWrite extends PartialRule[Execution] {
+    case class ComposeMap[A, B, C, D, E](
+      fn1: ((A, B, C, ConcurrentExecutionContext)) => Future[D],
+      fn2: D => E) extends Function1[(A, B, C, ConcurrentExecutionContext), Future[E]] {
+
+      def apply(tup: (A, B, C, ConcurrentExecutionContext)): Future[E] =
+        fn1(tup).map(fn2)(tup._4)
+    }
+
     override def applyWhere[T](on: Dag[Execution]) = {
-      case Execution.Mapped(write@ Execution.WriteExecution(_, _, _), fn) =>
-        write.map(fn)
+      case Execution.Mapped(Execution.WriteExecution(h, t, f1), f2) =>
+        Execution.WriteExecution(h, t, ComposeMap(f1, f2))
     }
   }
+
+  case object FuseMaps extends PartialRule[Execution] {
+    import Execution._
+    def applyWhere[A](on: Dag[Execution]) = {
+      case Mapped(Mapped(ex, fn0), fn1) =>
+        Mapped(ex, ComposedFunctions.ComposedMapFn(fn0, fn1))
+    }
+  }
+
 
   val std: Rule[Execution] =
     Rule.orElse(
@@ -190,7 +252,8 @@ object ExecutionOptimizationRules {
         ZipWrite,
         MapWrite,
         ZipMap,
-        ZipFlatMap
+        ZipFlatMap,
+        FuseMaps
       )
     )
 

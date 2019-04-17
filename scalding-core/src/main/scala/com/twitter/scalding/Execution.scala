@@ -151,13 +151,7 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     val ec = new EvalCache(writer)
     val confWithId = conf.setScaldingExecutionId(UUID.randomUUID.toString)
 
-    val exec =
-      if (conf.getExecutionOptimization) {
-        ExecutionOptimizationRules.stdOptimizations(this)
-      } else {
-        this
-      }
-
+    val exec = Execution.optimize(conf, this)
     // get on Trampoline
     val result = exec.runStats(confWithId, mode, ec)(cec).get.map(_._1)
     // When the final future in complete we stop the submit thread
@@ -305,6 +299,13 @@ object Execution {
     }
   }
 
+  private def optimize[A](conf: Config, ex: Execution[A]): Execution[A] =
+    if (conf.getExecutionOptimization) {
+      ExecutionOptimizationRules.stdOptimizations(ex)
+    } else {
+      ex
+    }
+
   /**
    * This is an instance of Monad for execution so it can be used
    * in functions that apply to all Monads
@@ -411,7 +412,9 @@ object Execution {
         cache.getOrElseInsert(conf, this,
           for {
             (s, st1) <- fut1
-            next = fn(s)
+            next0 = fn(s)
+            // next0 has not been optimized yet, we need to try
+            next = optimize(conf, next0)
             (t, st2) <- Trampoline.call(next.runStats(conf, mode, cache)).get
           } yield (t, st1 ++ st2))
       }
@@ -496,7 +499,11 @@ object Execution {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { fut =>
         cache.getOrElseInsert(conf, this,
-          fut.recoverWith(fn.andThen(_.runStats(conf, mode, cache).get)))
+          fut.recoverWith(fn.andThen { ex0 =>
+            // we haven't optimized ex0 yet
+            val ex = optimize(conf, ex0)
+            ex.runStats(conf, mode, cache).get
+          }))
       }
   }
 
@@ -582,7 +589,10 @@ object Execution {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
       Trampoline(cache.getOrElseInsert(conf, this, {
         val (uid, nextConf) = conf.ensureUniqueId
-        fn(uid).runStats(nextConf, mode, cache).get
+        val next0 = fn(uid)
+        // next0 has not been optimized yet, we need to try
+        val next = optimize(conf, next0)
+        next.runStats(nextConf, mode, cache).get
       }))
     }
   }
@@ -720,7 +730,7 @@ object Execution {
     override def map[U](mapFn: T => U): Execution[U] =
       WriteExecution(head,
         tail,
-        { tup => result(tup).map(mapFn)(tup._4) })
+        ExecutionOptimizationRules.MapWrite.ComposeMap(result, mapFn))
 
     def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
       case (a, Left(b)) :: tail =>
@@ -777,6 +787,14 @@ object Execution {
 
 
     /*
+     * This is such an important optimization, that we apply it locally.
+     * It is a bit ugly to have it here and in ExecutionOptimizationRules
+     * but since this is so important, we do so anyway.
+     *
+     * Note, each Write is individually cached so it won't happen twice,
+     * but it is usually better to compose into the biggest set of writes
+     * so the planner can optimize the largest graph possible.
+     *
      * run this and that in parallel, without any dependency. This will
      * be done in a single cascading flow if possible.
      *
@@ -784,12 +802,9 @@ object Execution {
      */
     override def zip[U](that: Execution[U]): Execution[(T, U)] =
       that match {
-        case WriteExecution(h, t, other) =>
-          val newFn = { tup: (Config, Mode, Writer, ConcurrentExecutionContext) =>
-            (failFastZip(result(tup), other(tup))(tup._4))
-          }
-          WriteExecution(head, h :: t ::: tail, newFn)
-        case o => Zipped(this, that)
+        case w1@WriteExecution(_, _, _) =>
+          ExecutionOptimizationRules.ZipWrite.mergeWrite(this, w1)
+        case that => Zipped(this, that)
       }
   }
 

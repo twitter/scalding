@@ -215,6 +215,32 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     }
   }
 
+  test("zip with const is optimized") {
+    val pipe = TypedPipe.from(List(1, 2, 3))
+    val sink = new MemorySource[Int]()
+
+    val job0 = pipe.writeExecution(sink)
+      .zip(Execution.from("hello"))
+      .zip(pipe.writeExecution(sink))
+
+    import Execution._
+    ExecutionOptimizationRules.stdOptimizations(job0) match {
+      case Mapped(Zipped(WriteExecution(_, _, _), FutureConst(_)), _) =>
+        assert(true)
+      case other => assert(false, s"expected 1 write execution, found: $other")
+    }
+
+    val job1 = pipe.writeExecution(sink)
+      .zip(Execution.from("hello").zip(pipe.writeExecution(sink)))
+
+    import Execution._
+    ExecutionOptimizationRules.stdOptimizations(job1) match {
+      case Mapped(Zipped(WriteExecution(_, _, _), FutureConst(_)), _) =>
+        assert(true)
+      case other => assert(false, s"expected 1 write execution, found: $other")
+    }
+  }
+
   test("push map fn into write") {
     forAll(mappedWrites) { e =>
       val opt = ExecutionOptimizationRules.apply(e, MapWrite)
