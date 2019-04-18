@@ -256,7 +256,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
       val opt = ExecutionOptimizationRules.apply(e, MapWrite)
 
       assert(e.isInstanceOf[Execution.Mapped[_, _]])
-      assert(writeCount(opt) == 1)
+      assert(opt.isInstanceOf[Execution.WriteExecution[_]])
     }
   }
 
