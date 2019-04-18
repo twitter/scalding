@@ -445,7 +445,8 @@ object ExecutionOptimizationRules {
           flat <- flatten(z)
           wc = flat.writeCount
           // only optimize if there is more the 1 write, otherwise we create an infinite loop
-          opt <- flat.optimize if (wc > 1)
+          if (wc > 1)
+          opt <- flat.optimize
         } yield opt.execution
       case _ => None
     }
