@@ -54,5 +54,10 @@ object SubTypes extends java.io.Serializable {
     val idPair: Pair[C] = SubTypes.fromSubType[(A, C), (A, C)]
     ev.subst[Pair](idPair)
   }
+
+  def compose[A, B, C](sub0: SubTypes[A, B], sub1: SubTypes[B, C]): SubTypes[A, C] = {
+     type SubC[-X] = SubTypes[X, C]
+     sub0.subst[SubC](sub1)
+  }
 }
 

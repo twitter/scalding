@@ -728,6 +728,7 @@ object Execution {
      * Here we inline the map operation into the presentation function so we can zip after map.
      */
     override def map[U](mapFn: T => U): Execution[U] =
+
       WriteExecution(head,
         tail,
         ExecutionOptimizationRules.MapWrite.ComposeMap(result, mapFn))
