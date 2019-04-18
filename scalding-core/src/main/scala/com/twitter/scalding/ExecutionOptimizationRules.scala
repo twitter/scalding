@@ -447,38 +447,26 @@ object ExecutionOptimizationRules {
       }
     }
 
-    def flatten[A](ex: Execution[A]): Option[FlattenedZip[Execution, A]] = {
-      def loop[A](ex: Execution[A]): FlattenedZip[Execution, A] =
-        ex match {
-          case Zipped(left, right) => loop(left).zip(loop(right))
-          case Mapped(that, fn) => loop(that).map(fn)
-          case notZipMap => FlattenedZip.Single(notZipMap)
-        }
-
-      def notSingle[A](f: FlattenedZip[Execution, A]): Option[FlattenedZip[Execution, A]] =
-        f match {
-          case FlattenedZip.Single(_) => None
-          case FlattenedZip.MapZip(inner, fn) =>
-            notSingle(inner).map(FlattenedZip.MapZip(_, fn))
-          case m@FlattenedZip.Many(_, _, _) => Some(m)
-        }
-
-      notSingle(loop(ex))
-    }
+    def flatten[A](ex: Execution[A]): FlattenedZip[Execution, A] =
+      ex match {
+        case Zipped(left, right) => flatten(left).zip(flatten(right))
+        case Mapped(that, fn) => flatten(that).map(fn)
+        case notZipMap => FlattenedZip.Single(notZipMap)
+      }
 
 
     def apply[A](on: Dag[Execution]) = {
       case z@Zipped(_, _) =>
-        for {
-          flat <- flatten(z)
-          wc = flat.writeCount
-          // only optimize if there are 2 or more writes, otherwise we create an infinite loop
-          if (wc > 1)
-          // unless there is a bug, this optimized will be defined
-          // but internally, optimize can return None. Just to be
-          // cleaner we use flatMap here rather than getOrElse(sys.error("unreachable"))
-          opt <- flat.optimize
-        } yield opt.execution
+        val flat = flatten(z)
+        val wc = flat.writeCount
+        // only optimize if there are 2 or more writes, otherwise we create an infinite loop
+        if (wc > 1) {
+        // unless there is a bug, this optimized will be defined
+        // but internally, optimize can return None. Just to be
+        // cleaner we use flatMap here rather than getOrElse(sys.error("unreachable"))
+          flat.optimize.map(_.execution)
+        }
+        else None
       case _ =>
         // since this optimization only applies to zips, there
         // is no need to check on nodes that aren't zips.
