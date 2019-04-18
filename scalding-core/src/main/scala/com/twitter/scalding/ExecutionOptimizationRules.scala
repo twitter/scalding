@@ -3,7 +3,7 @@ package com.twitter.scalding
 import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
 import com.twitter.scalding.typed.functions.{ ComposedFunctions, SubTypes, Swap }
 import scala.annotation.tailrec
-import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext, Promise}
+import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 
 object ExecutionOptimizationRules {
   type LiteralExecution[T] = Literal[Execution, T]
@@ -169,29 +169,6 @@ object ExecutionOptimizationRules {
     def mergeWrite[A, B](w1: WriteExecution[A], w2: WriteExecution[B]): WriteExecution[(A, B)] = {
       val newFn = ComposeWriteFn(w1.result, w2.result)
       WriteExecution(w1.head, w1.tail ::: (w2.head :: w2.tail), newFn)
-    }
-
-    case class ComposeWriteFnUnit[A, B, C](
-      fn1: ((A, B, C, ConcurrentExecutionContext)) => Future[Unit],
-      fn2: ((A, B, C, ConcurrentExecutionContext)) => Future[Unit]) extends Function1[(A, B, C, ConcurrentExecutionContext), Future[Unit]] {
-
-      def apply(tup: (A, B, C, ConcurrentExecutionContext)): Future[Unit] =
-        (Execution.failFastZip(fn1(tup), fn2(tup))(tup._4)).map(_ => ())(tup._4)
-    }
-    def mergeWriteUnit(w1: WriteExecution[Unit], w2: WriteExecution[Unit]): WriteExecution[Unit] = {
-      val newFn = ComposeWriteFnUnit(w1.result, w2.result)
-      WriteExecution(w1.head, w1.tail ::: (w2.head :: w2.tail), newFn)
-    }
-
-    case class CompleteFn[A, B, C, D](
-      fn: ((A, B, C, ConcurrentExecutionContext)) => Future[D],
-      promise: Promise[D]) extends Function1[(A, B, C, ConcurrentExecutionContext), Future[Unit]] {
-
-      def apply(tup: (A, B, C, ConcurrentExecutionContext)): Future[Unit] =
-        Future {
-          promise.tryCompleteWith(fn(tup))
-          ()
-        }(tup._4)
     }
 
     /**
