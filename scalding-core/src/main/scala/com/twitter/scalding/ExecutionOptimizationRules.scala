@@ -123,8 +123,8 @@ object ExecutionOptimizationRules {
     case class Cons2Fn[A, B <: HList]() extends Function1[(A, B), A :: B] {
       def apply(ab: (A, B)): A :: B = ::(ab._1, ab._2)
     }
-    case class HeadFn[A]() extends Function1[A :: HNil.type, A] {
-      def apply(a: A :: HNil.type): A = a.head
+    case class HeadFn[A, B <: HList]() extends Function1[A :: B, A] {
+      def apply(a: A :: B): A = a.head
     }
   }
 
@@ -210,7 +210,7 @@ object ExecutionOptimizationRules {
         }
 
       def zip[B](that: FlattenedZip[Execution, B]): FlattenedZip[Execution, (A, B)]
-      def map[B](fn: A => B): FlattenedZip[Ex, B] =
+      final def map[B](fn: A => B): FlattenedZip[Ex, B] =
         this match {
           case MapZip(f1, fn1) =>
             MapZip(f1, ComposedFunctions.ComposedMapFn(fn1, fn))
@@ -218,8 +218,11 @@ object ExecutionOptimizationRules {
             MapZip(notMap, fn)
         }
 
-      // How many writes are there in this FlattenedZip
-      def writeCount: Int = {
+      /**
+       * How many writes are there in this FlattenedZip
+       * if this number is 2 or more, the optimization can apply
+       */
+      final def writeCount: Int = {
         def isW[A](ex: Execution[A]): Int =
           ex match {
             case WriteExecution(_, _, _) => 1
@@ -241,6 +244,21 @@ object ExecutionOptimizationRules {
        * must be a WriteExecution. Additionally, none of
        * the other items are, but we don't prove that in the types,
        * instead we prove that with tests
+       *
+       * Note, one might imagine we could always return a FlattenedZip
+       * here, if the optimization does not apply, just return `this`.
+       * That intuition is not quite correct: the type changes in the result
+       * Since we start as FlattenedZip[Ex, A] for some Ex[A] subtype of
+       * Execution[A] but we return
+       * FlattenedZip[WriteExecution, A], if there are no WriteExecution
+       * instances in the graph, we have no way of returning a FlattenedZip
+       * with one in it.
+       *
+       * It's a bit confusing because below when we use it in our rule,
+       * we only call it when we know it applies since we count
+       * the writes and verify there are 2 or more, but internally
+       * we recursively call this method, and we do exercise the None
+       * branch.
        */
       def optimize: Option[FlattenedZip[WriteExecution, A]]
     }
@@ -255,8 +273,8 @@ object ExecutionOptimizationRules {
         type H = A :: HNil.type
         type ExH = Execution[A] :: HNil.type
         def executions = ::(ex, HNil)
-        def toExecution(ex: Execution[A] :: HNil.type): Execution[A :: HNil.type] =
-          ex.head.map(ConsFn(HNil))
+        def toExecution(exa: Execution[A] :: HNil.type): Execution[A :: HNil.type] =
+          exa.head.map(ConsFn(HNil))
 
         def fn = HeadFn()
         def zip[B](that: FlattenedZip[Execution, B]) =
@@ -281,6 +299,14 @@ object ExecutionOptimizationRules {
           }
       }
 
+      final case class ManyUnHListFn[A, B <: HList, C](tailFn: B => C) extends Function1[A :: B, (A, C)] {
+        def apply(cons: A :: B): (A, C) = {
+          val a = cons.head
+          val restH = cons.tail
+          val c: C = tailFn(restH)
+          (a, c)
+        }
+      }
       /**
        * Here is a non-empty list of Executions. Since scala has a hard time with inferring types
        * of ADTs we use the Liskov trick here, which we call SubTypes in the scalding codebase.
@@ -294,12 +320,11 @@ object ExecutionOptimizationRules {
         def toExecution(ex: Execution[A] :: rest.ExH): Execution[A :: rest.H] =
           Mapped(Zipped(ex.head, rest.toExecution(ex.tail)), Cons2Fn())
 
-        def fn: (A :: rest.H) => C = { cons =>
-          val a = cons.head
-          val restH = cons.tail
-          val t: T = rest.fn(restH)
-          sub((a, t))
+        def fn: (A :: rest.H) => C = {
+          type F[+X] = Function1[A :: rest.H, X]
+          sub.liftCo[F](ManyUnHListFn(rest.fn))
         }
+
         def zip[B](that: FlattenedZip[Execution, B]): FlattenedZip[Execution, (C, B)] = {
           val m1: FlattenedZip[Execution, (A, (T, B))] = Many(head, rest.zip(that))
           val m2: FlattenedZip[Execution, ((A, T), B)] = m1.map(UnTwist())
@@ -395,6 +420,9 @@ object ExecutionOptimizationRules {
       }
 
       object Many {
+        /**
+         * This is a handy constructor function that builds the SubTypes instance for us
+         */
         def apply[Ex[x] <: Execution[x], A, B](head: Ex[A], rest: FlattenedZip[Execution, B]): Many[Ex, A, B, (A, B)] =
           Many(head, rest, SubTypes.fromSubType[(A, B), (A, B)])
       }
@@ -444,11 +472,17 @@ object ExecutionOptimizationRules {
         for {
           flat <- flatten(z)
           wc = flat.writeCount
-          // only optimize if there is more the 1 write, otherwise we create an infinite loop
+          // only optimize if there are 2 or more writes, otherwise we create an infinite loop
           if (wc > 1)
+          // unless there is a bug, this optimized will be defined
+          // but internally, optimize can return None. Just to be
+          // cleaner we use flatMap here rather than getOrElse(sys.error("unreachable"))
           opt <- flat.optimize
         } yield opt.execution
-      case _ => None
+      case _ =>
+        // since this optimization only applies to zips, there
+        // is no need to check on nodes that aren't zips.
+        None
     }
   }
 

@@ -721,11 +721,19 @@ object Execution {
     result: ((Config, Mode, Writer, ConcurrentExecutionContext)) => Future[T]) extends Execution[T] {
 
     /**
-     * Apply a pure function to the result. This may not
-     * be called if subsequently the result is discarded with .unit
-     * For side effects see onComplete.
+     * We override this here to enable inlining the zip optimization
+     * below.
      *
-     * Here we inline the map operation into the presentation function so we can zip after map.
+     * This is such an important optimization, that we apply it locally.
+     * It is a bit ugly to have it here and in ExecutionOptimizationRules
+     * but since this is so important, we do so anyway.
+     *
+     * Note Execution optimizations are not always applied, they are something
+     * users can disable, which they may since in some cases giant Execution
+     * graphs have seen stack overflows. It doesn't hurt to apply this optimization
+     * here, but it doesn't cover all cases since it only combines adjacent
+     * writes.
+     *
      */
     override def map[U](mapFn: T => U): Execution[U] =
 
@@ -787,10 +795,16 @@ object Execution {
     }
 
 
-    /*
+    /**
      * This is such an important optimization, that we apply it locally.
      * It is a bit ugly to have it here and in ExecutionOptimizationRules
      * but since this is so important, we do so anyway.
+     *
+     * Note Execution optimizations are not always applied, they are something
+     * users can disable, which they may since in some cases giant Execution
+     * graphs have seen stack overflows. It doesn't hurt to apply this optimization
+     * here, but it doesn't cover all cases since it only combines adjacent
+     * writes.
      *
      * Note, each Write is individually cached so it won't happen twice,
      * but it is usually better to compose into the biggest set of writes
