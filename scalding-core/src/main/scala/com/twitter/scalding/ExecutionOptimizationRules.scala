@@ -2,6 +2,7 @@ package com.twitter.scalding
 
 import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
 import com.twitter.scalding.ExecutionOptimizationRules.ZipMap.{MapLeft, MapRight}
+import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapFn
 import com.twitter.scalding.typed.functions.{ComposedFunctions, Identity, Swap}
 import scala.annotation.tailrec
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
@@ -167,8 +168,6 @@ object ExecutionOptimizationRules {
       WriteExecution(w.head, w.tail, MapWriteFn(w.result, fn))
     }
 
-    // either NonWrite(ex: Execution), Write(ex: Execution), composed: NonWrite, Write
-
     /**
      * This is the fundamental type we use to optimize zips, basically we
      * expand graphs of WriteExecution, Zipped, Mapped and other into
@@ -189,7 +188,7 @@ object ExecutionOptimizationRules {
     private object FlattenedZip {
       final case class NonWrite[T](nonWrite: Execution[T]) extends FlattenedZip[T]
       final case class Write[T](write: WriteExecution[T]) extends FlattenedZip[T]
-      final case class Composed[T1, T2, T](write: WriteExecution[T1], nonWrite: Execution[T2], compose: (((T1, T2)) => T)) extends FlattenedZip[T]
+      final case class Composed[T1, T2, T](write: WriteExecution[T1], nonWrite: Execution[T2], compose: Function1[(T1, T2), T]) extends FlattenedZip[T]
 
       def toExecution[A](ex: FlattenedZip[A]): Execution[A] = ex match {
         case NonWrite(nonWrite) => nonWrite
@@ -200,7 +199,7 @@ object ExecutionOptimizationRules {
       def map[A, B](ex: FlattenedZip[A], fn: A => B): FlattenedZip[B] = ex match {
         case NonWrite(nonWrite) => NonWrite(nonWrite.map(fn))
         case Write(write) => Write(mapWrite(write, fn))
-        case Composed(write, nonWrite, compose) => Composed(write, nonWrite, compose.andThen(fn))
+        case Composed(write, nonWrite, compose) => Composed(write, nonWrite, ComposedMapFn(compose, fn))
       }
 
       def zip[A, B](left: FlattenedZip[A], right: FlattenedZip[B]): FlattenedZip[(A, B)] = (left, right) match {
@@ -222,21 +221,18 @@ object ExecutionOptimizationRules {
           map(zipNonWriteComposed(right, left), Swap[B, A]())
         case (left@Composed(_, _, _), right@Write(_)) =>
           map(zipWriteComposed(right, left), Swap[B, A]())
-        case (c1@Composed(_, _, _), c2@Composed(_, _, _)) =>
-          zipComposed(c1, c2)
+        case (left@Composed(_, _, _), right@Composed(_, _, _)) =>
+          Composed(mergeWrite(left.write, right.write), left.nonWrite.zip(right.nonWrite),
+            ComposedFn(left.compose, right.compose))
       }
 
       private def zipNonWriteComposed[A, B1, B2, B](left: NonWrite[A], right: Composed[B1, B2, B]): Composed[B1, (B2, A), (A, B)] =
         Composed(right.write, right.nonWrite.zip(left.nonWrite),
-          UnTwist().andThen(MapLeft[(B1, B2), A, B](right.compose)).andThen(Swap()))
+          ComposedMapFn(ComposedMapFn(UnTwist(), MapLeft[(B1, B2), A, B](right.compose)), Swap[B, A]()))
 
       private def zipWriteComposed[A, B1, B2, B](left: Write[A], right: Composed[B1, B2, B]): Composed[(A, B1), B2, (A, B)] =
         Composed(mergeWrite(left.write, right.write), right.nonWrite,
-          Twist().andThen(MapRight[A, (B1, B2), B](right.compose)))
-
-      private def zipComposed[A1, A2, A, B1, B2, B](left: Composed[A1, A2, A], right: Composed[B1, B2, B]): Composed[(A1, B1), (A2, B2), (A, B)] =
-        Composed(mergeWrite(left.write, right.write), left.nonWrite.zip(right.nonWrite),
-          ComposedFn(left.compose, right.compose))
+          ComposedMapFn(Twist(), MapRight[A, (B1, B2), B](right.compose)))
 
       /**
        * Convert an Execution to the Flattened (tuple-ized) representation
