@@ -167,7 +167,7 @@ object ExecutionOptimizationRules {
      * or when optimized WriteExecution[X], proving that we have
      * pushed the Write into the head position of the Tuple
      */
-    sealed trait FlattenedZip[+Ex[x] <: Execution[x], +A] extends Serializable {
+    private sealed trait FlattenedZip[+Ex[x] <: Execution[x], +A] extends Serializable {
       import FlattenedZip._
 
       // this is an internal representation of Executions that when zipped give Execution[A]
@@ -237,7 +237,7 @@ object ExecutionOptimizationRules {
       def optimize: Option[FlattenedZip[WriteExecution, A]]
     }
 
-    object FlattenedZip {
+    private object FlattenedZip {
 
       /**
        * Here is the simplest FlattenZip: just a single Execution
@@ -402,28 +402,37 @@ object ExecutionOptimizationRules {
         def optimize: Option[FlattenedZip[WriteExecution, B]] =
           flat.optimize.map(MapZip(_, mapFn))
       }
+
+      /**
+       * Convert an Execution to the Flattened (tuple-ized) representation
+       */
+      def apply[A](ex: Execution[A]): FlattenedZip[Execution, A] =
+        ex match {
+          case Zipped(left, right) => apply(left).zip(apply(right))
+          case Mapped(that, fn) => apply(that).map(fn)
+          case notZipMap => FlattenedZip.Single(notZipMap)
+        }
     }
 
-    def flatten[A](ex: Execution[A]): FlattenedZip[Execution, A] =
-      ex match {
-        case Zipped(left, right) => flatten(left).zip(flatten(right))
-        case Mapped(that, fn) => flatten(that).map(fn)
-        case notZipMap => FlattenedZip.Single(notZipMap)
-      }
-
-
-    def apply[A](on: Dag[Execution]) = {
-      case z@Zipped(_, _) =>
-        val flat = flatten(z)
-        val wc = flat.writeCount
-        // only optimize if there are 2 or more writes, otherwise we create an infinite loop
-        if (wc > 1) {
+    /**
+     * Apply the optimization of merging all zipped/mapped WriteExecution
+     * into a single value. If ex is already optimal (0 or 1 write) return None
+     */
+    def optimize[A](ex: Execution[A]): Option[Execution[A]] = {
+      val flat = FlattenedZip(ex)
+      val wc = flat.writeCount
+      // only optimize if there are 2 or more writes, otherwise we create an infinite loop
+      if (wc > 1) {
         // unless there is a bug, this optimized will be defined
         // but internally, optimize can return None. Just to be
         // cleaner we use flatMap here rather than getOrElse(sys.error("unreachable"))
-          flat.optimize.map(_.execution)
-        }
-        else None
+        flat.optimize.map(_.execution)
+      }
+      else None
+    }
+
+    def apply[A](on: Dag[Execution]) = {
+      case z@Zipped(_, _) => optimize(z)
       case _ =>
         // since this optimization only applies to zips, there
         // is no need to check on nodes that aren't zips.
