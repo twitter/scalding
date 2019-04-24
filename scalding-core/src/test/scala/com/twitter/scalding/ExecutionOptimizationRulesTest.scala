@@ -5,7 +5,7 @@ import cascading.pipe.Pipe
 import cascading.scheme.NullScheme
 import cascading.tap.Tap
 import cascading.tuple.{Fields, Tuple}
-import com.stripe.dagon.Rule
+import com.stripe.dagon.{Dag, Rule}
 import com.twitter.maple.tap.MemorySourceTap
 import com.twitter.scalding.typed.TypedPipeGen
 import java.io.{InputStream, OutputStream}
@@ -150,7 +150,8 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     ZipWrite,
     ZipMap,
     ZipFlatMap,
-    MapWrite
+    MapWrite,
+    FuseMaps
   )
 
   def genRuleFrom(rs: List[Rule[Execution]]): Gen[Rule[Execution]] =
@@ -163,6 +164,15 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
 
   def invert[T](exec: Execution[T]) =
     assert(toLiteral(exec).evaluate == exec)
+
+  // how many writes (not hidden inside FlatMap) are there
+  def writeCount[A](ex: Execution[A]): Int = {
+    val (dag, _) = Dag(ex, ExecutionOptimizationRules.toLiteral)
+    dag.allNodes.count {
+      case Execution.WriteExecution(_, _, _) => true
+      case _ => false
+    }
+  }
 
   test("randomly generated executions trees are invertible") {
     forAll(genExec) { exec =>
@@ -211,8 +221,34 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
       val opt = ExecutionOptimizationRules.apply(e, ZipWrite)
 
       assert(e.isInstanceOf[Execution.Zipped[_, _]])
-      assert(opt.isInstanceOf[Execution.WriteExecution[_]])
+      assert(writeCount(opt) == 1)
     }
+  }
+
+  test("zip with const is optimized") {
+    val pipe = TypedPipe.from(List(1, 2, 3))
+    val sink = new MemorySource[Int]()
+
+    val job0 = pipe.writeExecution(sink)
+      .zip(Execution.from("hello"))
+      .zip(pipe.writeExecution(sink))
+
+    assert(writeCount(job0) == 2)
+
+    assert(writeCount(ExecutionOptimizationRules.stdOptimizations(job0)) == 1)
+
+    val job1 = pipe.writeExecution(sink)
+      .zip(Execution.from("hello").zip(pipe.writeExecution(sink)))
+    assert(writeCount(job1) == 2)
+
+    assert(writeCount(ExecutionOptimizationRules.stdOptimizations(job1)) == 1)
+
+    val job2 = pipe.writeExecution(sink)
+      .zip(Execution.from("world"))
+      .zip(Execution.from("hello").zip(pipe.writeExecution(sink)))
+
+    assert(writeCount(job2) == 2)
+    assert(writeCount(ExecutionOptimizationRules.stdOptimizations(job2)) == 1)
   }
 
   test("push map fn into write") {
