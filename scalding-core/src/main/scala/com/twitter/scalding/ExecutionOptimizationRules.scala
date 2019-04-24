@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
-import com.twitter.scalding.typed.functions.{ ComposedFunctions, Identity, MapValuesToMap, SubTypes, Swap }
+import com.twitter.scalding.typed.functions.{ ComposedFunctions, SubTypes, Swap }
 import scala.annotation.tailrec
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 
@@ -170,8 +170,6 @@ object ExecutionOptimizationRules {
     sealed trait FlattenedZip[+Ex[x] <: Execution[x], +A] extends Serializable {
       import FlattenedZip._
 
-      // this is an internal representation of A
-      type H
       // this is an internal representation of Executions that when zipped give Execution[A]
       type ExH
 
@@ -179,16 +177,11 @@ object ExecutionOptimizationRules {
       def executions: ExH
       // this converts the above executions back into a single Execution, but still on the HList
       // type
-      def toExecution(ex: ExH): Execution[H]
-      def fn: H => A
+      def toExecution(ex: ExH): Execution[A]
 
       // convert back to the original Execution type
       final def execution: Execution[A] =
-        this match {
-          case Single(a) => a
-          case notSingle =>
-            Mapped(toExecution(executions), fn)
-        }
+        toExecution(executions)
 
       def zip[B](that: FlattenedZip[Execution, B]): FlattenedZip[Execution, (A, B)]
       final def map[B](fn: A => B): FlattenedZip[Ex, B] =
@@ -250,13 +243,11 @@ object ExecutionOptimizationRules {
        * Here is the simplest FlattenZip: just a single Execution
        */
       final case class Single[+Ex[x] <: Execution[x], A](ex: Ex[A]) extends FlattenedZip[Ex, A] {
-        type H = A
         type ExH = Execution[A]
         def executions = ex
         def toExecution(exa: Execution[A]): Execution[A] =
           exa
 
-        def fn = Identity()
         def zip[B](that: FlattenedZip[Execution, B]) =
           that match {
             case s@Single(ex2) => Many[Execution, A, B](ex, s)
@@ -286,16 +277,10 @@ object ExecutionOptimizationRules {
        * is something scala has a hard time with.
        */
       final case class Many[+Ex[x] <: Execution[x], A, T, +C](head: Ex[A], rest: FlattenedZip[Execution, T], sub: SubTypes[(A, T), C]) extends FlattenedZip[Ex, C] {
-        type H = (A, rest.H)
         type ExH = (Execution[A], rest.ExH)
         def executions = (head, rest.executions)
-        def toExecution(ex: (Execution[A], rest.ExH)): Execution[(A, rest.H)] =
-          Zipped(ex._1, rest.toExecution(ex._2))
-
-        def fn: ((A, rest.H)) => C = {
-          type F[+X] = Function1[(A, rest.H), X]
-          sub.liftCo[F](MapValuesToMap(rest.fn))
-        }
+        def toExecution(ex: (Execution[A], rest.ExH)): Execution[C] =
+          sub.liftCo[Execution](Zipped(ex._1, rest.toExecution(ex._2)))
 
         def zip[B](that: FlattenedZip[Execution, B]): FlattenedZip[Execution, (C, B)] = {
           val m1: FlattenedZip[Execution, (A, (T, B))] = Many(head, rest.zip(that))
@@ -405,12 +390,12 @@ object ExecutionOptimizationRules {
        * the WriteExecution moves all the way over to the head
        */
       final case class MapZip[Ex[x] <: Execution[x], A, B](flat: FlattenedZip[Ex, A], mapFn: A => B) extends FlattenedZip[Ex, B] {
-        type H = flat.H
         type ExH = flat.ExH
 
         def executions: ExH = flat.executions
-        def toExecution(ex: ExH): Execution[H] = flat.toExecution(ex)
-        def fn: H => B = ComposedFunctions.ComposedMapFn(flat.fn, mapFn)
+        def toExecution(ex: ExH): Execution[B] =
+          Mapped(flat.toExecution(ex), mapFn)
+
         def zip[C](that: FlattenedZip[Execution, C]): FlattenedZip[Execution, (B, C)] =
           MapZip(flat.zip(that), ZipMap.MapLeft[A, C, B](mapFn))
 
