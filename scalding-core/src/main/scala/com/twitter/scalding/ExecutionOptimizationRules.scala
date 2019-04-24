@@ -170,18 +170,13 @@ object ExecutionOptimizationRules {
 
     /**
      * This is the fundamental type we use to optimize zips, basically we
-     * expand graphs of WriteExecution, Zipped, Mapped and other into
-     * a new dag of single, many, or mapped results. We do this
-     * by keeping a Tuple (like a heterogeneous list) of all non-mapped
-     * Executions. In this representation, we can recursively optimize.
+     * expand graphs of WriteExecution, Zipped, Mapped.
+     * Our goal to optimize any `Execution`'s DAG to have at most one write.
      *
-     * On this simpler dag, we define optimize that ensures that
-     * after there is exactly 1 WriteExecution in the head position
-     * in the Tuple
-     *
-     * The first type parameter Ex[x] will either be Execution[X]
-     * or when optimized WriteExecution[X], proving that we have
-     * pushed the Write into the head position of the Tuple
+     * This is achieved by optimizing any `Execution` to either:
+     * - `NonWrite` execution
+     * - `Write` execution
+     * - composed execution which has both write and non write.
      */
     private sealed trait FlattenedZip[+A]
 
