@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
-import com.twitter.scalding.typed.functions.{ ComposedFunctions, SubTypes, Swap }
+import com.twitter.scalding.typed.functions.{ ComposedFunctions, Identity, MapValuesToMap, SubTypes, Swap }
 import scala.annotation.tailrec
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 
@@ -109,25 +109,6 @@ object ExecutionOptimizationRules {
         }
     }
 
-  sealed abstract class HList
-  object HList {
-    final case object HNil extends HList
-    final case class ::[A, B <: HList](head: A, tail: B) extends HList
-
-    /*
-     * Some functions to deal with HLists
-     */
-    case class ConsFn[A, B <: HList](b: B) extends Function1[A, A :: B] {
-      def apply(a: A): A :: B = ::(a, b)
-    }
-    case class Cons2Fn[A, B <: HList]() extends Function1[(A, B), A :: B] {
-      def apply(ab: (A, B)): A :: B = ::(ab._1, ab._2)
-    }
-    case class HeadFn[A, B <: HList]() extends Function1[A :: B, A] {
-      def apply(a: A :: B): A = a.head
-    }
-  }
-
   /**
    * This is a rather complex optimization rule, but also very important.
    * After this runs, there will only be 1 WriteExecution in a graph,
@@ -175,24 +156,24 @@ object ExecutionOptimizationRules {
      * This is the fundamental type we use to optimize zips, basically we
      * expand graphs of WriteExecution, Zipped, Mapped and other into
      * a new dag of single, many, or mapped results. We do this
-     * by keeping an HList (heterogeneous list) of all non-mapped
+     * by keeping a Tuple (like a heterogeneous list) of all non-mapped
      * Executions. In this representation, we can recursively optimize.
      *
      * On this simpler dag, we define optimize that ensures that
      * after there is exactly 1 WriteExecution in the head position
-     * in the HList
+     * in the Tuple
      *
      * The first type parameter Ex[x] will either be Execution[X]
      * or when optimized WriteExecution[X], proving that we have
-     * pushed the Write into the head position of the HList
+     * pushed the Write into the head position of the Tuple
      */
     sealed trait FlattenedZip[+Ex[x] <: Execution[x], +A] extends Serializable {
       import FlattenedZip._
 
-      // this is the type of the HList representation of A
-      type H <: HList
-      // this is the type of thes HList representation of Executions that when zipped give Execution[A]
-      type ExH <: HList
+      // this is an internal representation of A
+      type H
+      // this is an internal representation of Executions that when zipped give Execution[A]
+      type ExH
 
       // here is value for the HList of Executions that have been unzipped
       def executions: ExH
@@ -264,19 +245,18 @@ object ExecutionOptimizationRules {
     }
 
     object FlattenedZip {
-      import HList._
 
       /**
        * Here is the simplest FlattenZip: just a single Execution
        */
       final case class Single[+Ex[x] <: Execution[x], A](ex: Ex[A]) extends FlattenedZip[Ex, A] {
-        type H = A :: HNil.type
-        type ExH = Execution[A] :: HNil.type
-        def executions = ::(ex, HNil)
-        def toExecution(exa: Execution[A] :: HNil.type): Execution[A :: HNil.type] =
-          exa.head.map(ConsFn(HNil))
+        type H = A
+        type ExH = Execution[A]
+        def executions = ex
+        def toExecution(exa: Execution[A]): Execution[A] =
+          exa
 
-        def fn = HeadFn()
+        def fn = Identity()
         def zip[B](that: FlattenedZip[Execution, B]) =
           that match {
             case s@Single(ex2) => Many[Execution, A, B](ex, s)
@@ -299,14 +279,6 @@ object ExecutionOptimizationRules {
           }
       }
 
-      final case class ManyUnHListFn[A, B <: HList, C](tailFn: B => C) extends Function1[A :: B, (A, C)] {
-        def apply(cons: A :: B): (A, C) = {
-          val a = cons.head
-          val restH = cons.tail
-          val c: C = tailFn(restH)
-          (a, c)
-        }
-      }
       /**
        * Here is a non-empty list of Executions. Since scala has a hard time with inferring types
        * of ADTs we use the Liskov trick here, which we call SubTypes in the scalding codebase.
@@ -314,15 +286,15 @@ object ExecutionOptimizationRules {
        * is something scala has a hard time with.
        */
       final case class Many[+Ex[x] <: Execution[x], A, T, +C](head: Ex[A], rest: FlattenedZip[Execution, T], sub: SubTypes[(A, T), C]) extends FlattenedZip[Ex, C] {
-        type H = A :: rest.H
-        type ExH = Execution[A] :: rest.ExH
-        def executions = ::(head, rest.executions)
-        def toExecution(ex: Execution[A] :: rest.ExH): Execution[A :: rest.H] =
-          Mapped(Zipped(ex.head, rest.toExecution(ex.tail)), Cons2Fn())
+        type H = (A, rest.H)
+        type ExH = (Execution[A], rest.ExH)
+        def executions = (head, rest.executions)
+        def toExecution(ex: (Execution[A], rest.ExH)): Execution[(A, rest.H)] =
+          Zipped(ex._1, rest.toExecution(ex._2))
 
-        def fn: (A :: rest.H) => C = {
-          type F[+X] = Function1[A :: rest.H, X]
-          sub.liftCo[F](ManyUnHListFn(rest.fn))
+        def fn: ((A, rest.H)) => C = {
+          type F[+X] = Function1[(A, rest.H), X]
+          sub.liftCo[F](MapValuesToMap(rest.fn))
         }
 
         def zip[B](that: FlattenedZip[Execution, B]): FlattenedZip[Execution, (C, B)] = {
@@ -437,7 +409,7 @@ object ExecutionOptimizationRules {
         type ExH = flat.ExH
 
         def executions: ExH = flat.executions
-        def toExecution(ex: ExH): Execution[H] = flat.toExecution(executions)
+        def toExecution(ex: ExH): Execution[H] = flat.toExecution(ex)
         def fn: H => B = ComposedFunctions.ComposedMapFn(flat.fn, mapFn)
         def zip[C](that: FlattenedZip[Execution, C]): FlattenedZip[Execution, (B, C)] =
           MapZip(flat.zip(that), ZipMap.MapLeft[A, C, B](mapFn))
