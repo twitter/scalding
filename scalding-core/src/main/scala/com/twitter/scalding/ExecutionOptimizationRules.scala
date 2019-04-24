@@ -141,7 +141,10 @@ object ExecutionOptimizationRules {
       def apply(in: (A, (B, C))) =
         (in._2._1, (in._1, in._2._2))
     }
-    case class ComposedFn[A1, A2, A, B1, B2, B](fn1: ((A1, A2)) => A, fn2: ((B1, B2)) => B) extends Function1[((A1, B1), (A2, B2)), (A, B)] {
+    case class ComposedFn[A1, A2, A, B1, B2, B](
+      fn1: Function1[(A1, A2), A],
+      fn2: Function1[(B1, B2), B]
+    ) extends Function1[((A1, B1), (A2, B2)), (A, B)] {
       override def apply(v1: ((A1, B1), (A2, B2))): (A, B) = (fn1(v1._1._1, v1._2._1), fn2(v1._1._2, v1._2._2))
     }
 
