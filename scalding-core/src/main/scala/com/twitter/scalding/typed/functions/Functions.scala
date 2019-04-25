@@ -131,7 +131,7 @@ case class DropValue1[A, B, C]() extends Function1[(A, (B, C)), (A, C)] {
 
 case class RandomNextInt(seed: Long, modulus: Int) extends Function1[Any, Int] {
   private[this] lazy val rng = new Random(seed)
-  def apply(a: Any) = rng.nextInt(modulus)
+  def apply(a: Any) = rng.nextInt(modulus) ^ a.hashCode()
 }
 
 case class RandomFilter(seed: Long, fraction: Double) extends Function1[Any, Boolean] {
