@@ -161,9 +161,6 @@ object ExecutionOptimizationRules {
       WriteExecution(w1.head, w1.tail ::: (w2.head :: w2.tail), newFn)
     }
 
-    def mapWrite[A, B](w: WriteExecution[A], fn: A => B): WriteExecution[B] =
-      WriteExecution(w.head, w.tail, MapWrite.ComposeMap(w.result, fn))
-
     /**
      * This is the fundamental type we use to optimize zips, basically we
      * expand graphs of WriteExecution, Zipped, Mapped.
@@ -188,9 +185,12 @@ object ExecutionOptimizationRules {
       }
 
       def map[A, B](ex: FlattenedZip[A], fn: A => B): FlattenedZip[B] = ex match {
-        case NonWrite(nonWrite) => NonWrite(nonWrite.map(fn))
-        case Write(write) => Write(mapWrite(write, fn))
-        case Composed(write, nonWrite, compose) => Composed(write, nonWrite, ComposedMapFn(compose, fn))
+        case NonWrite(nonWrite) =>
+          NonWrite(nonWrite.map(fn))
+        case Write(write) =>
+          Write(WriteExecution(write.head, write.tail, MapWrite.ComposeMap(write.result, fn)))
+        case Composed(write, nonWrite, compose) =>
+          Composed(write, nonWrite, ComposedMapFn(compose, fn))
       }
 
       def zip[A, B](left: FlattenedZip[A], right: FlattenedZip[B]): FlattenedZip[(A, B)] = (left, right) match {
