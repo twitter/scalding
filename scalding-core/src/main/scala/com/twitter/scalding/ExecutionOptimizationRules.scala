@@ -156,20 +156,13 @@ object ExecutionOptimizationRules {
         (Execution.failFastZip(fn1(tup), fn2(tup))(tup._4))
     }
 
-    case class MapWriteFn[A, B, C, D, E](
-      fn1: ((A, B, C, ConcurrentExecutionContext)) => Future[D],
-      mapFn: D => E) extends Function1[(A, B, C, ConcurrentExecutionContext), Future[E]] {
-
-      def apply(tup: (A, B, C, ConcurrentExecutionContext)): Future[E] = fn1(tup).map(mapFn)(tup._4)
-    }
-
     def mergeWrite[A, B](w1: WriteExecution[A], w2: WriteExecution[B]): WriteExecution[(A, B)] = {
       val newFn = ComposeWriteFn(w1.result, w2.result)
       WriteExecution(w1.head, w1.tail ::: (w2.head :: w2.tail), newFn)
     }
-    def mapWrite[A, B](w: WriteExecution[A], fn: A => B): WriteExecution[B] = {
-      WriteExecution(w.head, w.tail, MapWriteFn(w.result, fn))
-    }
+
+    def mapWrite[A, B](w: WriteExecution[A], fn: A => B): WriteExecution[B] =
+      WriteExecution(w.head, w.tail, MapWrite.ComposeMap(w.result, fn))
 
     /**
      * This is the fundamental type we use to optimize zips, basically we
