@@ -242,11 +242,18 @@ object ExecutionOptimizationRules {
      * into a single value. If ex is already optimal (0 or 1 write) return None
      */
     def optimize[A](ex: Execution[A]): Option[Execution[A]] = {
-      def writes(ex: Execution[_]): Int = ex match {
-        case Zipped(left, right) => writes(left) + writes(right)
-        case Mapped(that, _) => writes(that)
-        case WriteExecution(_, _, _) => 1
-        case _ => 0
+      def writes(execution: Execution[_]): Int = {
+        @tailrec
+        def loop(executions: List[Execution[_]], acc: Int): Int = executions match {
+          case Nil => acc
+          case head :: tail => head match {
+            case Zipped(left, right) => loop(left :: right :: tail, acc)
+            case Mapped(that, _) => loop(that :: tail, acc)
+            case WriteExecution(_, _, _) => loop(tail, acc + 1)
+            case _ => loop(tail, acc)
+          }
+        }
+        loop(execution :: Nil, 0)
       }
       // only optimize if there are 2 or more writes, otherwise we create an infinite loop
       if (writes(ex) > 1)
