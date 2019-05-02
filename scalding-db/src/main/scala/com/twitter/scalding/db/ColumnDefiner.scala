@@ -26,6 +26,7 @@ case object VARCHAR extends SqlType
 case object DATE extends SqlType
 case object DATETIME extends SqlType
 case object TEXT extends SqlType
+case object BLOB extends SqlType
 case object DOUBLE extends SqlType
 
 object IsNullable {

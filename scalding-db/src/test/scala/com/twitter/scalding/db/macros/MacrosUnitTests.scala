@@ -2,16 +2,15 @@ package com.twitter.scalding.db.macros
 
 import org.mockito.Mockito.when
 import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.Inside._
 import org.scalatest.exceptions.TestFailedException
 import org.scalatest.mock.MockitoSugar
-
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
-
 import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding.db._
-
-import java.sql.{ ResultSet, ResultSetMetaData }
+import java.sql.{ Blob, ResultSet, ResultSetMetaData }
 import java.util.Date
+import javax.sql.rowset.serial.SerialBlob
 
 object User {
   // these defaults should not get picked up in ColumnDefinition
@@ -64,8 +63,8 @@ case class ExhaustiveJdbcCaseClass(
   @size(2051)@varchar forcedVarChar: String, // Forced inline to table -- only some sql version support > 255 for varchar
   myDateWithTime: Date, // Default goes to MySQL DateTime/Timestamp so its not lossy
   @date myDateWithoutTime: Date,
-  optiLong: Option[Long] // Nullable long
-  )
+  optiLong: Option[Long], // Nullable long
+  byteArr: Array[Byte])
 
 private final case class VerticaCaseClass(
   verticaLong: Long,
@@ -290,7 +289,8 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(VARCHAR, ColumnName("forcedVarChar"), NotNullable, Some(2051), None),
       ColumnDefinition(DATETIME, ColumnName("myDateWithTime"), NotNullable, None, None),
       ColumnDefinition(DATE, ColumnName("myDateWithoutTime"), NotNullable, None, None),
-      ColumnDefinition(BIGINT, ColumnName("optiLong"), Nullable, None, None))
+      ColumnDefinition(BIGINT, ColumnName("optiLong"), Nullable, None, None),
+      ColumnDefinition(BLOB, ColumnName("byteArr"), NotNullable, None, None))
 
     val typeDesc = DBMacro.toDBTypeDescriptor[ExhaustiveJdbcCaseClass]
     val columnDef = typeDesc.columnDefn
@@ -325,9 +325,14 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rsmd.isNullable(13)) thenReturn (ResultSetMetaData.columnNoNulls)
     when(rsmd.getColumnTypeName(14)) thenReturn ("BIGINT")
     when(rsmd.isNullable(14)) thenReturn (ResultSetMetaData.columnNullable)
+    when(rsmd.getColumnTypeName(15)) thenReturn ("BLOB")
+    when(rsmd.isNullable(15)) thenReturn (ResultSetMetaData.columnNoNulls)
 
     assert(columnDef.resultSetExtractor.validate(rsmd).isSuccess)
 
+    val byteArrStr: String = "byteArr"
+    val byteArr: Array[Byte] = byteArrStr.getBytes
+    val blob: Blob = new SerialBlob(byteArr)
     val rs = mock[ResultSet]
     when(rs.getLong("bigInt")) thenReturn (12345678L)
     when(rs.getInt("smallerAgainInt")) thenReturn (123)
@@ -343,23 +348,43 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     when(rs.getTimestamp("myDateWithTime")) thenReturn (new java.sql.Timestamp(1111L))
     when(rs.getTimestamp("myDateWithoutTime")) thenReturn (new java.sql.Timestamp(1112L))
     when(rs.getLong("optiLong")) thenReturn (1113L)
+    when(rs.getBlob("byteArr")) thenReturn (blob)
 
-    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) ==
-      ExhaustiveJdbcCaseClass(
-        12345678L,
-        123,
-        12,
-        1,
-        1.1,
-        true,
-        "small_string",
-        "smallish_string",
-        "large_string",
-        "force_text_string",
-        "forced_var_char",
-        new Date(1111L),
-        new Date(1112L),
-        Some(1113L)))
+    val actual: ExhaustiveJdbcCaseClass = columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter)
+
+    inside(actual) {
+      case ExhaustiveJdbcCaseClass(
+        bigInt,
+        smallerAgainInt,
+        normalIntWithSize,
+        evenSmallerInt,
+        numberFun,
+        booleanFlag,
+        smallString,
+        smallishString,
+        largeString,
+        forceTextString,
+        forcedVarChar,
+        myDateWithTime,
+        myDateWithoutTime,
+        optiLong,
+        bArr) =>
+        bigInt should be (12345678L)
+        smallerAgainInt should be (123)
+        normalIntWithSize should be (12)
+        evenSmallerInt should be (1)
+        numberFun should be (1.1)
+        booleanFlag should be (true)
+        smallString should be ("small_string")
+        smallishString should be ("smallish_string")
+        largeString should be ("large_string")
+        forceTextString should be ("force_text_string")
+        forcedVarChar should be ("forced_var_char")
+        myDateWithTime should be (new Date(1111L))
+        myDateWithoutTime should be (new Date(1112L))
+        optiLong.get should be (1113L)
+        bArr shouldEqual byteArr
+    }
     () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
