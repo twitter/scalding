@@ -41,6 +41,7 @@ val slf4jVersion = "1.6.6"
 val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
 val jlineVersion = "2.14.3"
+val hiveVersion = "3.0.0"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
@@ -413,7 +414,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.apache.parquet" % "parquet-thrift" % parquetVersion
     // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      exclude("org.apache.parquet", "parquet-pig")
+      //exclude("org.apache.parquet", "parquet-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -423,8 +424,11 @@ lazy val scaldingParquet = module("parquet").settings(
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
-    ),
+    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
+    "org.apache.hive" % "hive-exec" % hiveVersion % "test",
+    "org.slf4j" % "slf4j-api" % slf4jVersion % "test",
+    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
+  ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
 
