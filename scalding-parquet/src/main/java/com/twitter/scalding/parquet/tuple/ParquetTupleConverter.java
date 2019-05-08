@@ -2,6 +2,7 @@ package com.twitter.scalding.parquet.tuple;
 
 import cascading.tuple.Tuple;
 
+import com.twitter.scalding.parquet.convert.DecimalUtils;
 import com.twitter.scalding.parquet.convert.ParquetTimestampUtils;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -14,7 +15,6 @@ import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
-import org.apache.parquet.pig.convert.DecimalUtils;
 
 public class ParquetTupleConverter extends GroupConverter {
 

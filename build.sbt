@@ -414,7 +414,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
     "org.apache.parquet" % "parquet-thrift" % parquetVersion
     // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      //exclude("org.apache.parquet", "parquet-pig")
+      exclude("org.apache.parquet", "parquet-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -425,9 +425,7 @@ lazy val scaldingParquet = module("parquet").settings(
     "com.twitter" %% "bijection-macros" % bijectionVersion,
     "com.twitter" %% "chill-bijection" % chillVersion,
     "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test",
-    "org.apache.hive" % "hive-exec" % hiveVersion % "test",
-    "org.slf4j" % "slf4j-api" % slf4jVersion % "test",
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "test"
+    "org.apache.hive" % "hive-exec" % hiveVersion % "test" intransitive()
   ),
   addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
   .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
@@ -440,7 +438,8 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
     scroogeLanguages in Test := Seq("java", "scala"),
     libraryDependencies ++= Seq(
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
-        exclude("com.google.guava", "guava"),
+        exclude("com.google.guava", "guava")
+        exclude("org.apache.hive", "hive-exec" ),
       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
       "org.apache.thrift" % "libthrift" % thriftVersion
   )
@@ -454,14 +453,14 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
       "org.apache.parquet" % "parquet-thrift" % parquetVersion % "test" classifier "tests"
         exclude("org.apache.parquet", "parquet-pig")
         exclude("com.twitter.elephantbird", "elephant-bird-pig")
-        exclude("com.twitter.elephantbird", "elephant-bird-core"),
+        exclude("com.twitter.elephantbird", "elephant-bird-core")
+        exclude("org.apache.hive", "hive-exec" ),
       "com.twitter" %% "scrooge-serializer" % scroogeVersion
         exclude("com.google.guava", "guava"),
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
-
-    )
+  )
 ).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
 
 lazy val scaldingHRaven = module("hraven").settings(
