@@ -12,8 +12,8 @@ object BlobTypeHandler {
     annotationInfo: List[(c.universe.Type, Option[Int])],
     nullable: Boolean): scala.util.Try[List[ColumnFormat[c.type]]] = {
 
-    assert(defaultValue.isEmpty)
-    assert(annotationInfo.isEmpty)
+    assert(defaultValue.isEmpty, "Default values are not supported for blob fields")
+    assert(annotationInfo.isEmpty, "Annotation info is not supported for blob fields")
 
     Success(List(ColumnFormat(c)(accessorTree, "BLOB", None)))
   }

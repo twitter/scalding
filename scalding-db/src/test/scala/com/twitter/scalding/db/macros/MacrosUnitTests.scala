@@ -8,7 +8,8 @@ import org.scalatest.mock.MockitoSugar
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
 import com.twitter.bijection.macros.MacroGenerated
 import com.twitter.scalding.db._
-import java.sql.{ Blob, ResultSet, ResultSetMetaData }
+import java.sql
+import java.sql.{ Blob, ResultSet, ResultSetMetaData, Timestamp }
 import java.util.Date
 import javax.sql.rowset.serial.SerialBlob
 
@@ -93,6 +94,11 @@ case class OuterWithBadNesting(
   id: Int, // duplicate in nested case class
   @text name: String,
   details: InnerWithBadNesting)
+
+case class CaseClassWithByteAndTimestamp(
+  date: Date,
+  age: Byte,
+  id: Long)
 
 class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
@@ -227,6 +233,42 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       ColumnDefinition(VARCHAR, ColumnName("gender"), NotNullable, Some(22), Some("male")))
 
     assert(DBMacro.toDBTypeDescriptor[User].columnDefn.columns.toList === expectedColumns)
+    () // Need this till: https://github.com/scalatest/scalatest/issues/1107
+  }
+
+  "tinyint and timestamp mapping" should {
+
+    DBMacro.toDBTypeDescriptor[CaseClassWithByteAndTimestamp]
+    isJDBCTypeInfoAvailable[CaseClassWithByteAndTimestamp]
+
+    val expectedColumns = List(
+      ColumnDefinition(DATETIME, ColumnName("date"), NotNullable, None, None),
+      ColumnDefinition(TINYINT, ColumnName("age"), NotNullable, None, None),
+      ColumnDefinition(BIGINT,ColumnName("id"), NotNullable, None, None)
+    )
+
+    val typeDesc = DBMacro.toDBTypeDescriptor[CaseClassWithByteAndTimestamp]
+    val columnDef = typeDesc.columnDefn
+
+    val timestamp = new Timestamp(1557348881)
+    val date = new sql.Date(timestamp.getTime)
+    val age: Byte = 42
+
+    val rsmd = mock[ResultSetMetaData]
+    when(rsmd.getColumnTypeName(1)) thenReturn "TIMESTAMP"
+    when(rsmd.isNullable(1)) thenReturn ResultSetMetaData.columnNoNulls
+    when(rsmd.getColumnTypeName(2)) thenReturn "BYTE"
+    when(rsmd.isNullable(2)) thenReturn ResultSetMetaData.columnNoNulls
+    when(rsmd.getColumnTypeName(3)) thenReturn "LONG"
+    when(rsmd.isNullable(3)) thenReturn ResultSetMetaData.columnNoNulls
+
+    val rs = mock[ResultSet]
+    when(rs.getTimestamp("date")) thenReturn timestamp
+    when(rs.getByte("age")) thenReturn age.asInstanceOf[Byte]
+    when(rs.getLong("id")) thenReturn 1L
+
+    assert(DBMacro.toDBTypeDescriptor[CaseClassWithByteAndTimestamp].columnDefn.columns.toList === expectedColumns)
+    assert(columnDef.resultSetExtractor.toCaseClass(rs, typeDesc.converter) == CaseClassWithByteAndTimestamp(date, age, 1L))
     () // Need this till: https://github.com/scalatest/scalatest/issues/1107
   }
 
