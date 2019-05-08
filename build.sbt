@@ -41,7 +41,7 @@ val slf4jVersion = "1.6.6"
 val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
 val jlineVersion = "2.14.3"
-val hiveVersion = "3.0.0"
+val hiveVersion = "2.2.0"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
