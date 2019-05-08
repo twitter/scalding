@@ -264,7 +264,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     val rs = mock[ResultSet]
     when(rs.getTimestamp("date")) thenReturn timestamp
-    when(rs.getByte("age")) thenReturn age.asInstanceOf[Byte]
+    when(rs.getByte("age")) thenReturn age
     when(rs.getLong("id")) thenReturn 1L
 
     assert(DBMacro.toDBTypeDescriptor[CaseClassWithByteAndTimestamp].columnDefn.columns.toList === expectedColumns)
