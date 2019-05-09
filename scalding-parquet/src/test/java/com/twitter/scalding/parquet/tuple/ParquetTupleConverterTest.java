@@ -248,6 +248,23 @@ public class ParquetTupleConverterTest {
     assertThat(tuple.getString(index), is("2011-01-01 00:00:00.123100001"));
   }
 
+  @Test
+  public void testConvertInt96DateAnoherDate() {
+    int index = 12;
+    tupleConverter = (PrimitiveConverter) converter.getConverter(index);
+
+    assertThat(tupleConverter, is(notNullValue()));
+    Binary value = timestampStringToBinary("2015-12-17 16:19:59.192837465");
+
+    converter.start();
+    tupleConverter.addBinary(value);
+    converter.end();
+
+    Tuple tuple = converter.getCurrentTuple();
+
+    assertThat(tuple.getString(index), is("2015-12-17 16:19:59.192837465"));
+  }
+
   public static final byte[] intToTwoByteArray(int value) {
     return new byte[]{
         (byte) (value >>> 8),
@@ -257,7 +274,6 @@ public class ParquetTupleConverterTest {
   public static Binary timestampStringToBinary(String timestampString) {
     Timestamp timestamp = Timestamp.valueOf(timestampString);
     NanoTime nanoTime = getNanoTime(timestamp, false);
-    ByteBuffer buffer = ByteBuffer.wrap(nanoTime.toBinary().getBytes());
-    return Binary.fromConstantByteBuffer(buffer);
+    return nanoTime.toBinary();
   }
 }
