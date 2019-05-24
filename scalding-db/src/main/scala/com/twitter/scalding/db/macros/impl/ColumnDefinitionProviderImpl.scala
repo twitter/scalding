@@ -2,10 +2,9 @@ package com.twitter.scalding.db.macros.impl
 
 import scala.annotation.tailrec
 import scala.reflect.macros.Context
-import scala.util.{ Success, Failure }
-
+import scala.util.{Failure, Success}
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
-import com.twitter.scalding.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
+import com.twitter.scalding.db.{ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor, TINYINT}
 import com.twitter.scalding.db.macros.impl.handler._
 
 // Simple wrapper to pass around the string name format of fields
@@ -59,7 +58,6 @@ object ColumnDefinitionProviderImpl {
         // String handling
         case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe =:= typeOf[Array[Byte]] => BlobTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
-        case tpe if tpe =:= typeOf[Byte] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "TINYINT")
         case tpe if tpe =:= typeOf[Short] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "SMALLINT")
         case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "INT")
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
@@ -210,7 +208,6 @@ object ColumnDefinitionProviderImpl {
           case "BIGINT" =>
             q"""List("INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
                "TINYINT", "SMALLINT", "MEDIUMINT").contains($typeNameTerm)"""
-          case "DATETIME" => q"""List("DATE","DATETIME","TIMESTAMP").contains($typeNameTerm)"""
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""
@@ -243,10 +240,8 @@ object ColumnDefinitionProviderImpl {
         val (box: Option[Tree], primitiveGetter: Tree) = cf.fieldType match {
           case "VARCHAR" | "TEXT" =>
             (None, q"""$rsTerm.getString($fieldName)""")
-          case "BOOLEAN" =>
+          case "BOOLEAN" | "TINYINT" =>
             (Some(q"""_root_.java.lang.Boolean.valueOf"""), q"""$rsTerm.getBoolean($fieldName)""")
-          case "TINYINT" =>
-            (Some(q"""_root_.java.lang.Byte.valueOf"""), q"""$rsTerm.getByte($fieldName)""")
           case "DATE" | "DATETIME" =>
             (None, q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull""")
           // dates set to null are populated as None by tuple converter
