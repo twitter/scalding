@@ -1,7 +1,7 @@
-resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("artifactory", url("https://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
 resolvers ++= Seq(
-  "jgit-repo" at "http://download.eclipse.org/jgit/maven",
+  "jgit-repo" at "https://download.eclipse.org/jgit/maven",
   "sonatype-releases"  at "https://oss.sonatype.org/content/repositories/releases",
   "Twitter Maven" at "https://maven.twttr.com"
 )

@@ -73,7 +73,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     Opts.resolver.mavenLocalFile,
     Opts.resolver.sonatypeSnapshots,
     Opts.resolver.sonatypeReleases,
-    "Concurrent Maven Repo" at "http://conjars.org/repo",
+    "Concurrent Maven Repo" at "https://conjars.org/repo",
     "Twitter Maven" at "https://maven.twttr.com",
     "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
   ),
@@ -194,17 +194,17 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
         <developer>
           <id>posco</id>
           <name>Oscar Boykin</name>
-          <url>http://twitter.com/posco</url>
+          <url>https://twitter.com/posco</url>
         </developer>
         <developer>
           <id>avibryant</id>
           <name>Avi Bryant</name>
-          <url>http://twitter.com/avibryant</url>
+          <url>https://twitter.com/avibryant</url>
         </developer>
         <developer>
           <id>argyris</id>
           <name>Argyris Zymnis</name>
-          <url>http://twitter.com/argyris</url>
+          <url>https://twitter.com/argyris</url>
         </developer>
       </developers>)
 ) ++ mimaDefaultSettings
@@ -687,7 +687,7 @@ lazy val docSettings = Seq(
   micrositeDescription := "Scala API for Cascading.",
   micrositeAuthor := "Scalding's contributors",
   micrositeHighlightTheme := "atom-one-light",
-  micrositeHomepage := "http://twitter.github.io/scalding",
+  micrositeHomepage := "https://twitter.github.io/scalding",
   micrositeBaseUrl := "scalding",
   micrositeDocumentationUrl := "api",
   micrositeGithubOwner := "twitter",

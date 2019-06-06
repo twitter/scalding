@@ -144,7 +144,7 @@ object TypedSimilarity extends Serializable {
    * key: document,
    * value: (word, documentsWithWord)
    * return: Edge of similarity between words measured by documents
-   * See: http://arxiv.org/pdf/1206.2082v2.pdf
+   * See: https://arxiv.org/pdf/1206.2082v2.pdf
    */
   def discoCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Int)],
     bigG: Grouped[N, (N, Int)], oversample: Double): TypedPipe[Edge[N, Double]] = {
@@ -181,7 +181,7 @@ object TypedSimilarity extends Serializable {
    * key: document,
    * value: (word, word weight in the document, norm of the word)
    * return: Edge of similarity between words measured by documents
-   * See: http://stanford.edu/~rezab/papers/dimsum.pdf
+   * See: https://stanford.edu/~rezab/papers/dimsum.pdf
    */
   def dimsumCosineSimilarity[N: Ordering](smallG: Grouped[N, (N, Double, Double)],
     bigG: Grouped[N, (N, Double, Double)], oversample: Double): TypedPipe[Edge[N, Double]] = {
@@ -236,7 +236,7 @@ class ExactInCosine[N](reducers: Int = -1)(implicit override val nodeOrdering: O
  * minCos: the minimum cosine similarity you care about accuracy for
  * delta: the error on the approximated cosine (e.g. 0.05 = 5%)
  * boundedProb: the probability we have larger than delta error
- * see: http://arxiv.org/pdf/1206.2082v2.pdf for more details
+ * see: https://arxiv.org/pdf/1206.2082v2.pdf for more details
  */
 class DiscoInCosine[N](minCos: Double, delta: Double, boundedProb: Double, reducers: Int = -1)(implicit override val nodeOrdering: Ordering[N]) extends TypedSimilarity[N, InDegree, Double] {
 

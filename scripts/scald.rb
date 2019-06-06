@@ -330,13 +330,13 @@ end
 #Convert a maven dependency to a url for downloading.
 #Example:
 #Input dependency: org.apache.hadoop/hadoop-core/0.20.2
-#Output url: http://repo1.maven.org/maven2/org/apache/hadoop/hadoop-core/0.20.2/hadoop-core-0.20.2.jar
+#Output url: https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-core/0.20.2/hadoop-core-0.20.2.jar
 def dependency_to_url(dependency)
   #Each dependency is in the form group/artifact/version.
   group, artifact, version = dependency.split("/")
   jar_filename = dependency_to_jar(dependency)
   group_with_slash = group.split(".").join("/")
-  "http://repo1.maven.org/maven2/#{group_with_slash}/#{artifact}/#{version}/#{jar_filename}"
+  "https://repo1.maven.org/maven2/#{group_with_slash}/#{artifact}/#{version}/#{jar_filename}"
 end
 
 #Convert a maven dependency to the name of its jar file.
