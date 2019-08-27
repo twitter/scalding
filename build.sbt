@@ -37,7 +37,7 @@ val scalaTestVersion = "3.0.1"
 val scroogeVersion = "4.12.0"
 val sparkVersion = "2.4.0"
 val slf4jVersion = "1.6.6"
-val thriftVersion = "0.5.0"
+val thriftVersion = "0.12.0"
 val junitVersion = "4.10"
 val jlineVersion = "2.14.3"
 
@@ -405,7 +405,7 @@ lazy val scaldingParquet = module("parquet").settings(
       exclude("com.twitter.elephantbird", "elephant-bird-pig")
       exclude("com.twitter.elephantbird", "elephant-bird-core"),
     "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "org.apache.thrift" % "libthrift" % "0.7.0",
+    "org.apache.thrift" % "libthrift" % "0.12.0",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
