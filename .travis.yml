@@ -1,5 +1,5 @@
 language: scala
-jdk: oraclejdk8
+jdk: openjdk8
 sudo: false
 
 before_install:
