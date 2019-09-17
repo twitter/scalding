@@ -253,6 +253,45 @@ class ExecutionTest extends WordSpec with Matchers {
       assert(cancelledEx2.isDefined)
     }
 
+    "If one write fails, the other gets cancelled" in {
+      var cancelledEx: Option[Throwable] = None
+      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).map { _ => throw new Exception("oh no") }
+      val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
+      val blockingTp: TypedPipe[Int] = TypedPipe.from(Seq(1)).map { i =>
+        // sleep so we have time to cancel the resulting execution
+        Thread.sleep(1000)
+        i
+      }
+      val otherEx: Execution[Iterable[Int]] = blockingTp.toIterableExecution.onComplete { t =>
+        if (t.isFailure) {
+          cancelledEx = t.failed.toOption
+        }
+      }
+
+      failedEx.zip(otherEx).shouldFail()
+      // execution should be cancelled
+      assert(cancelledEx.isDefined)
+
+      // same on the other side
+      var cancelledEx2: Option[Throwable] = None
+      val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).map { _ => throw new Exception("oh no") }
+      val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
+      val blockingTp2: TypedPipe[Int] = TypedPipe.from(Seq(1)).map { i =>
+        // sleep so we have time to cancel the resulting execution
+        Thread.sleep(1000)
+        i
+      }
+      val otherEx2: Execution[Iterable[Int]] = blockingTp2.toIterableExecution.onComplete { t =>
+        if (t.isFailure) {
+          cancelledEx2 = t.failed.toOption
+        }
+      }
+
+      otherEx2.zip(failedEx2).shouldFail()
+      // execution should be cancelled
+      assert(cancelledEx2.isDefined)
+    }
+
     "Config transformer will isolate Configs" in {
       def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
         if (cfg.get("test.cfg.variable").isDefined)
