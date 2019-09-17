@@ -212,6 +212,47 @@ class ExecutionTest extends WordSpec with Matchers {
         .shouldSucceed() shouldBe (1, "1")
     }
 
+    "If one fails, the other gets cancelled" in {
+      import scala.concurrent.ExecutionContext.Implicits.global
+      var cancelledEx: Option[Throwable] = None
+
+      val neverHappens = Promise[Int]().future
+      // this promise will only complete if cancelled, so we register a callback on completion
+      val otherEx = Execution.fromFuture { _ => neverHappens }
+        .onComplete { t =>
+          if (t.isFailure) {
+            cancelledEx = t.failed.toOption
+            ()
+          }
+        }
+
+      otherEx
+        .zip(Execution.failed(new Exception("oh no")))
+        .shouldFail()
+
+      // execution should have been cancelled
+      assert(cancelledEx.isDefined)
+
+      // same on the other side
+      var cancelledEx2: Option[Throwable] = None
+      // this promise will only complete if cancelled, so we register a callback on completion
+      val neverHappens2 = Promise[Int]().future
+      val otherEx2 = Execution.fromFuture { _ => neverHappens }
+        .onComplete { t =>
+          if (t.isFailure) {
+            cancelledEx2 = t.failed.toOption
+            ()
+          }
+        }
+
+      Execution.failed(new Exception("oh no"))
+          .zip(otherEx2)
+          .shouldFail()
+
+      // execution should have been cancelled
+      assert(cancelledEx2.isDefined)
+    }
+
     "Config transformer will isolate Configs" in {
       def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
         if (cfg.get("test.cfg.variable").isDefined)
