@@ -376,7 +376,7 @@ object Execution {
    * This is a mutable state that is kept internal to an execution
    * as it is evaluating.
    */
-  private[scalding] class EvalCache(val writer: Execution.Writer) {
+  private[scalding] class EvalCache(val writer: Execution.Writer)(implicit cec: ConcurrentExecutionContext) {
 
     type Counters = Map[Long, ExecutionCounters]
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
@@ -387,17 +387,17 @@ object Execution {
     def cleanCache: EvalCache =
       new EvalCache(writer)
 
-    def getOrLock(cfg: Config, write: ToWrite[_]): Either[Promise[Counters], Future[Counters]] =
+    def getOrLock(cfg: Config, write: ToWrite[_]): (Either[Promise[Counters], Future[Counters]], CancellationHandler) =
       toWriteCache.getOrPromise((cfg, write))
 
     def getOrElseInsertWithFeedback[T](cfg: Config, ex: Execution[T],
-      res: => Future[(T, Counters)]): (Boolean, Future[(T, Counters)]) =
+      res: => (Future[(T, Counters)], CancellationHandler)): (Boolean, (Future[(T, Counters)], CancellationHandler)) =
       // This cast is safe because we always insert with match T types
       cache.getOrElseUpdateIsNew((cfg, ex), res)
-        .asInstanceOf[(Boolean, Future[(T, Counters)])]
+        .asInstanceOf[(Boolean, (Future[(T, Counters)], CancellationHandler))]
 
     def getOrElseInsert[T](cfg: Config, ex: Execution[T],
-      res: => Future[(T, Counters)]): Future[(T, Counters)] =
+      res: => (Future[(T, Counters)], CancellationHandler)): (Future[(T, Counters)], CancellationHandler) =
       getOrElseInsertWithFeedback(cfg, ex, res)._2
   }
 
@@ -405,13 +405,12 @@ object Execution {
   private[scalding] final case class FutureConst[T](get: ConcurrentExecutionContext => Future[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline {
-        val fut = cache.getOrElseInsert(conf, this,
-          for {
-            futt <- toFuture(Try(get(cec)))
-            t <- futt
-          } yield (t, Map.empty[Long, ExecutionCounters]))
-        val (cancellableFut, cancelHandler) = CancellationHandler.cancellable(fut)
-        (cancellableFut, cancelHandler)
+        lazy val fut = for {
+          futt <- toFuture(Try(get(cec)))
+          t <- futt
+        } yield (t, Map.empty[Long, ExecutionCounters])
+
+        cache.getOrElseInsert(conf, this, (fut, CancellationHandler.empty))
       }
 
     // Note that unit is not optimized away, since Futures are often used with side-effects, so,
@@ -420,53 +419,46 @@ object Execution {
   private[scalding] final case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut1, cancelHandler1) =>
-        val fut = cache.getOrElseInsert(conf, this,
-          for {
-            (s, st1) <- fut1
-            next0 = fn(s)
-            // next0 has not been optimized yet, we need to try
-            next = optimize(conf, next0)
-            (fut, cancelHandler2) = Trampoline.call(next.runStats(conf, mode, cache)).get
-            (t, st2) <- fut
-          } yield (t, st1 ++ st2))
+        lazy val uncachedFutCancel = for {
+          (s, st1) <- fut1
+          next0 = fn(s)
+          // next0 has not been optimized yet, we need to try
+          next = optimize(conf, next0)
+          (fut, cancelHandler2) = Trampoline.call(next.runStats(conf, mode, cache)).get
+          (t, st2) <- fut
+        } yield ((t, st1 ++ st2), cancelHandler2)
 
+        val futCancel = cache.getOrElseInsert(conf, this,
+          (uncachedFutCancel.map(_._1), CancellationHandler.empty.compose(uncachedFutCancel.map(_._2))))
 
-        (fut, ???) // TODO compose the cancel handlers, compose future
+        (futCancel._1, cancelHandler1.compose(futCancel._2))
       }
   }
 
   private[scalding] final case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut, cancelHandler) =>
-        val mappedFut = cache.getOrElseInsert(conf, this,
-          fut.map { case (s, stats) => (fn(s), stats) })
-
-        val (cancellableMappedFut, mapCancelHandler) = CancellationHandler.cancellable(mappedFut)
-
-        (cancellableMappedFut, cancelHandler.compose(mapCancelHandler))
+        cache.getOrElseInsert(conf, this,
+          (fut.map { case (s, stats) => (fn(s), stats) }, cancelHandler))
       }
   }
 
   private[scalding] final case class GetCounters[T](prev: Execution[T]) extends Execution[(T, ExecutionCounters)] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut, cancelHandler) =>
-        val mappedFut = cache.getOrElseInsert(conf, this,
-          fut.map {
+        cache.getOrElseInsert(conf, this,
+          (fut.map {
             case (t, c) =>
               val totalCount = Monoid.sum(c.map(_._2))
               ((t, totalCount), c)
-          })
-        val (cancellableMappedFut, mapCancelHandler) = CancellationHandler.cancellable(mappedFut)
-        (cancellableMappedFut, cancelHandler.compose(mapCancelHandler))
+          }, cancelHandler))
       }
   }
   private[scalding] final case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut, cancelHandler) =>
-        val mappedFut = cache.getOrElseInsert(conf, this,
-          fut.map { case (t, _) => (t, Map.empty[Long, ExecutionCounters]) })
-        val (cancellableMappedFut, mapCancelHandler) = CancellationHandler.cancellable(mappedFut)
-        (cancellableMappedFut, cancelHandler.compose(mapCancelHandler))
+        cache.getOrElseInsert(conf, this,
+          (fut.map { case (t, _) => (t, Map.empty[Long, ExecutionCounters]) }, cancelHandler))
       }
   }
 
@@ -499,7 +491,7 @@ object Execution {
   private[scalding] final case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut, cancelHandler) =>
-        val finishedFut = cache.getOrElseInsert(conf, this, {
+        cache.getOrElseInsert(conf, this, {
           /**
            * The result we give is only completed AFTER fn is run
            * so callers can wait on the result of this OnComplete
@@ -513,27 +505,27 @@ object Execution {
               finished.complete(tryT)
             }
           }
-          finished.future
+          (finished.future, cancelHandler)
         })
-
-        val (cancellableFinishedFut, finishedCancelHandler) = CancellationHandler.cancellable(finishedFut)
-        (cancellableFinishedFut, cancelHandler.compose(finishedCancelHandler))
       }
   }
 
   private[scalding] final case class RecoverWith[T](prev: Execution[T], fn: PartialFunction[Throwable, Execution[T]]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case (fut, cancelHandler) =>
-        val recoveredFut = cache.getOrElseInsert(conf, this,
-          fut.recoverWith(fn.andThen { ex0 =>
+        lazy val uncachedFut = {
+          fut
+            .map {v => (v, CancellationHandler.empty) } // map this to the right shape
+            .recoverWith(fn.andThen { ex0 =>
             // we haven't optimized ex0 yet
             val ex = optimize(conf, ex0)
-            val (recFut, recCancelHandler) = ex.runStats(conf, mode, cache).get // TODO deal with this cancel handler
-            recFut
-          }))
+            val (f, c) = ex.runStats(conf, mode, cache).get
+            f.map { v => (v, c) }
+          })
+        }
 
-        val (cancellableRecoveredFut, recoveredCancelHandler) = CancellationHandler.cancellable(recoveredFut)
-        (cancellableRecoveredFut, cancelHandler.compose(recoveredCancelHandler))
+        val recoveredFut = cache.getOrElseInsert(conf, this, (uncachedFut.map(_._1), CancellationHandler.empty.compose(uncachedFut.map(_._2))))
+        (recoveredFut._1, cancelHandler.compose(recoveredFut._2))
       }
   }
 
@@ -612,27 +604,20 @@ object Execution {
       } yield {
         val (f1, cancelHandler1) = futCancel1
         val (f2, cancelHandler2) = futCancel2
-        val zippedFut = cache.getOrElseInsert(conf, this,
-          failFastZip(f1, f2)
-            .map { case ((s, ss), (t, st)) => ((s, t), ss ++ st) })
-
-        val (cancellableZipFut, zipCancelHandler) = CancellationHandler.cancellable(zippedFut)
-        (cancellableZipFut, cancelHandler1.compose(cancelHandler2.compose(zipCancelHandler)))
+        cache.getOrElseInsert(conf, this,
+          (failFastZip(f1, f2)
+            .map { case ((s, ss), (t, st)) => ((s, t), ss ++ st) }, cancelHandler1.compose(cancelHandler2)))
       }
   }
   private[scalding] final case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
-      val uidFut = cache.getOrElseInsert(conf, this, {
+      Trampoline(cache.getOrElseInsert(conf, this, {
         val (uid, nextConf) = conf.ensureUniqueId
         val next0 = fn(uid)
         // next0 has not been optimized yet, we need to try
         val next = optimize(conf, next0)
-        val (fut, cancelHandler) = next.runStats(nextConf, mode, cache).get
-        // TODO deal with cancelHandler
-        fut
-      })
-
-      Trampoline(CancellationHandler.cancellable(uidFut))
+        next.runStats(nextConf, mode, cache).get
+      }))
     }
   }
   /*
@@ -640,7 +625,7 @@ object Execution {
    */
   private[scalding] final case class FlowDefExecution(result: (Config, Mode) => FlowDef) extends Execution[Unit] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
-      lazy val (future, cancelHandler) = {
+      Trampoline(cache.getOrElseInsert(conf, this, {
         cache.writer match {
           case ar: AsyncFlowDefRunner =>
             val (fut, cancelHandler) = ar.validateAndRun(conf)(result(_, mode))
@@ -652,9 +637,7 @@ object Execution {
 
             (fut, CancellationHandler.empty)
         }
-      }
-
-      Trampoline((cache.getOrElseInsert(conf, this, future), cancelHandler))
+      }))
     }
   }
 
@@ -783,13 +766,13 @@ object Execution {
         tail,
         ExecutionOptimizationRules.MapWrite.ComposeMap(result, mapFn))
 
-    def unwrapListEither[A, B, C](it: List[(A, Either[B, C])]): (List[(A, B)], List[(A, C)]) = it match {
-      case (a, Left(b)) :: tail =>
+    private def unwrapListEither[A, B, C, D](it: List[(A, (Either[B, C], D))]): (List[(A, B, D)], List[(A, C, D)]) = it match {
+      case (a, (Left(b), d)) :: tail =>
         val (l, r) = unwrapListEither(tail)
-        ((a, b) :: l, r)
-      case (a, Right(c)) :: tail =>
+        ((a, b, d) :: l, r)
+      case (a, (Right(c), d)) :: tail =>
         val (l, r) = unwrapListEither(tail)
-        (l, (a, c) :: r)
+        (l, (a, c, d) :: r)
       case Nil => (Nil, Nil)
     }
 
@@ -797,16 +780,18 @@ object Execution {
     // if so we remove them from the cache.
     // Anything not already ran we run as part of a single flow def, using their combined counters for the others
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) = {
-      val fut = cache.getOrElseInsert(conf, this, {
-        val cacheLookup: List[(ToWrite[_], Either[Promise[Map[Long, ExecutionCounters]], Future[Map[Long, ExecutionCounters]]])] =
+      lazy val uncachedFutureCancel = {
+        val cacheLookup: List[(ToWrite[_], (Either[Promise[Map[Long, ExecutionCounters]], Future[Map[Long, ExecutionCounters]]], CancellationHandler))] =
           (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
         val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+        val otherCancellationHandler = someoneElseDoesOperation.map(_._3).foldLeft(CancellationHandler.empty) { case (acc, cancel) => acc.compose(cancel) }
+
         otherResult.value match {
-          case Some(Failure(e)) => Future.failed(e)
+          case Some(Failure(e)) => (Future.failed(e), CancellationHandler.empty)
           case _ => // Either successful or not completed yet
-            val localFlowDefCountersFuture: Future[Map[Long, ExecutionCounters]] =
+            val localFlowDefCountersFuture: (Future[Map[Long, ExecutionCounters]], CancellationHandler) =
               weDoOperation match {
                 case all @ (h :: tail) =>
                   val (fut, cancelHandler) = cache.writer
@@ -818,25 +803,31 @@ object Execution {
                   // Complete all of the promises we put into the cache
                   // with this future counters set
                   all.foreach {
-                    case (toWrite, promise) =>
+                    case (toWrite, promise, cancel) =>
                       promise.completeWith(futCounters)
                   }
-                  futCounters
+                  (futCounters, cancelHandler)
                 case Nil =>
                   // No work to do, provide a fulled set of 0 counters to operate on
-                  Future.successful(Map.empty)
+                  (Future.successful(Map.empty), CancellationHandler.empty)
               }
 
-            val bothFutures = failFastZip(otherResult, localFlowDefCountersFuture)
-            for {
+            val bothFutures = failFastZip(otherResult, localFlowDefCountersFuture._1)
+            val cancelHandler = otherCancellationHandler.compose(localFlowDefCountersFuture._2)
+
+            val fut = for {
               (lCounters, fdCounters) <- bothFutures
-              t <- result((conf, mode, cache.writer, cec))
+              t <- result((conf, mode, cache.writer, cec)) // TODO do i need to do something here to make this cancellable?
               summedCounters = (fdCounters :: lCounters).reduce(_ ++ _)
             } yield (t, summedCounters)
-        }
-      })
 
-      Trampoline((fut, ???))
+            (fut, cancelHandler)
+        }
+      }
+
+      val (fut, cancel) = cache.getOrElseInsert(conf, this, uncachedFutureCancel)
+
+      Trampoline((fut, cancel))
     }
 
 

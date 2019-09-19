@@ -262,8 +262,8 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       (resultFut, cancelHandler) = runFlowDef(conf, flowDef) // how to pass cancelHandler through?
       (id, jobStats) <- resultFut
       _ = FlowStateMap.clear(flowDef)
-    } yield (id, ExecutionCounters.fromJobStats(jobStats))
-    (fut, ???) // TODO need to thread cancelHandler through
+    } yield ((id, ExecutionCounters.fromJobStats(jobStats)), cancelHandler)
+    (fut.map(_._1), CancellationHandler.empty.compose(fut.map(_._2)))
   }
 
   def execute(

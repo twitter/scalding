@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import com.twitter.scalding.{Config, FutureCache}
+import com.twitter.scalding.{Config, FutureCache, CancellationHandler}
 import com.twitter.scalding.typed.TypedSource
 import SparkPlanner.PartitionComputer
 
@@ -142,14 +142,14 @@ object Op extends Serializable {
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       cache.getOrElseUpdate(session,
-        input.run(session).map { rdd => fn(widen(rdd)) })
+        (input.run(session).map { rdd => fn(widen(rdd)) }, CancellationHandler.empty))._1
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(session, {
+      cache.getOrElseUpdate(session, ({
         // start running in parallel
         val lrdd = left.run(session)
         val tailRunning = tail.map(_.run(session))
@@ -169,14 +169,14 @@ object Op extends Serializable {
               }
             }
         }
-      })
+      }, CancellationHandler.empty))._1
   }
 
   final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
-      cache.getOrElseUpdate(session, {
+      cache.getOrElseUpdate(session, ({
         // start running in parallel
         val rrdd = right.run(session)
         val lrdd = left.run(session)
@@ -202,7 +202,7 @@ object Op extends Serializable {
             }, preservesPartitioning = true)
           }
         }
-      })
+      }, CancellationHandler.empty))._1
 
   }
 }

@@ -3,6 +3,7 @@ package com.twitter.scalding.typed.memory_backend
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import com.stripe.dagon.{ HMap, Rule }
 import com.twitter.scalding.typed._
+import com.twitter.scalding.CancellationHandler
 import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
 import Execution.{ ToWrite, Writer }
 /**
@@ -35,7 +36,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
    */
   def execute(
     conf: Config,
-    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): Future[(Long, ExecutionCounters)] = {
+    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): (Future[(Long, ExecutionCounters)], CancellationHandler) = {
 
     val planner = MemoryPlanner.planner(conf, mem.srcs)
 
@@ -110,7 +111,8 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     }
     val (id, acts) = idActs
     // now we run the actions:
-    Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty))
+    val fut = Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty))
+    (fut, CancellationHandler.empty)
   }
 
   /**
