@@ -159,8 +159,8 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     result.onComplete { t =>
       writer.finished()
       if (t.isFailure) {
-        // cancel running upstream executions if this was a failure
-        cancelHandler.stop() // need to block until cancelled?
+        // cancel running downstream executions if this was a failure
+        Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration.Inf) // need to block until cancelled?
       }
     }
     // wait till the end to start the thread in case the above throws

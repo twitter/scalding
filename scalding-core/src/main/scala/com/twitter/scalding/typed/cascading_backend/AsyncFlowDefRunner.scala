@@ -259,7 +259,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     val fut = for {
       flowDef <- Future(fn(conf))
       _ = FlowStateMap.validateSources(flowDef, mode)
-      (resultFut, cancelHandler) = runFlowDef(conf, flowDef) // how to pass cancelHandler through?
+      (resultFut, cancelHandler) = runFlowDef(conf, flowDef)
       (id, jobStats) <- resultFut
       _ = FlowStateMap.clear(flowDef)
     } yield ((id, ExecutionCounters.fromJobStats(jobStats)), cancelHandler)
