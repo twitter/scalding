@@ -6,19 +6,20 @@ trait CancellationHandler { outer =>
   def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit]
   def compose(other: CancellationHandler): CancellationHandler = new CancellationHandler {
     override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
-      other.stop().flatMap(_ => outer.stop())
-    }
-  }
-  def compose(other: Future[CancellationHandler]): CancellationHandler = new CancellationHandler {
-    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
-      other.flatMap(_.stop).flatMap(_ => outer.stop())
+      other.stop().zip(outer.stop()).map(_ => ())
     }
   }
 }
 
 object CancellationHandler {
-  def empty: CancellationHandler = new CancellationHandler {
-    def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future(())
+  val empty: CancellationHandler = new CancellationHandler {
+    def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future.successful(())
+  }
+
+  def fromFuture(f: Future[CancellationHandler]): CancellationHandler = new CancellationHandler {
+    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
+      f.flatMap(_.stop())
+    }
   }
 
   def cancellable[T](f: Future[T], onCancel: => Unit = ())(implicit ec: ConcurrentExecutionContext): (Future[T], CancellationHandler) = {

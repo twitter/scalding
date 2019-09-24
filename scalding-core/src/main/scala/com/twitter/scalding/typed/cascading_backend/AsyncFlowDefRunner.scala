@@ -16,7 +16,7 @@ import com.twitter.scalding.{
   source,
   typed
 }
-import com.twitter.scalding.CancellationHandler
+import com.twitter.scalding.{ CancellationHandler, CFuture, CPromise }
 import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.stripe.dagon.{ Rule, HMap }
@@ -38,8 +38,7 @@ object AsyncFlowDefRunner {
   private sealed trait FlowDefAction
   private final case class RunFlowDef(conf: Config,
     fd: FlowDef,
-    result: Promise[(Long, JobStats)],
-    cancellationHandler: FlowCancellationHandler) extends FlowDefAction
+    result: CPromise[(Long, JobStats)]) extends FlowDefAction
   private case object Stop extends FlowDefAction
 
   /**
@@ -74,7 +73,10 @@ object AsyncFlowDefRunner {
 
   case class FlowCancellationHandler(flow: Promise[Flow[_]]) extends CancellationHandler {
     def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
-      flow.future.map(_.stop)
+      println(">>>> stopping flow")
+      Future(flow.future.onComplete { flowTry =>
+        flowTry.map(_.stop())
+      })
     }
   }
 }
@@ -174,22 +176,33 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       @annotation.tailrec
       def go(id: Long): Unit = messageQueue.take match {
         case Stop => ()
-        case RunFlowDef(conf, fd, promise, cancelHandler) =>
+        case RunFlowDef(conf, fd, cpromise) =>
           try {
             val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
             // should we move this logic to validateAndRun so we have access to flow?
             ctx.buildFlow match {
               case Success(Some(flow)) =>
+                println(">>>> Success")
                 val future = FlowListenerPromise
                   .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
                 // we want to stop the flow when the execution is cancelled
-                cancelHandler.flow.success(flow)
-                promise.completeWith(future)
+                val cancel = new CancellationHandler {
+                  def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
+                    Future {
+                      println(">>>> stopping flow")
+                      flow.stop()
+                    }
+                  }
+                }
+                cpromise.completeWith(CFuture(future, cancel))
               case Success(None) =>
                 // These is nothing to do:
-                promise.success((id, JobStats.empty))
+                println(">>>> Success(None)")
+                sys.error("success none")
+                cpromise.promise.success((id, JobStats.empty))
               case Failure(err) =>
-                promise.failure(err)
+                println(">>>> Failure")
+                cpromise.promise.failure(err)
             }
           } catch {
             case t: Throwable =>
@@ -201,7 +214,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
               // In a sense, this thread does not exist logically and
               // must forward all exceptions to threads that requested
               // this work be started.
-              promise.tryFailure(t)
+              cpromise.promise.tryFailure(t)
           }
           // Loop
           go(id + 1)
@@ -212,20 +225,17 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     }
   })
 
-  def runFlowDef(conf: Config, fd: FlowDef): (Future[(Long, JobStats)], CancellationHandler) =
+  def runFlowDef(conf: Config, fd: FlowDef): CFuture[(Long, JobStats)] =
     try {
-      val promise = Promise[(Long, JobStats)]()
-      val fut = promise.future
+      val cpromise = CPromise[(Long, JobStats)]()
       // fill in flow once it is built
-      val flowPromise = Promise[Flow[_]]
-      val cancelHandler = FlowCancellationHandler(flowPromise)
-      messageQueue.put(RunFlowDef(conf, fd, promise, cancelHandler))
+      messageQueue.put(RunFlowDef(conf, fd, cpromise))
       // Don't do any work after the .put call, we want no chance for exception
       // after the put
-      (fut, cancelHandler)
+      cpromise.cfuture
     } catch {
       case NonFatal(e) =>
-        (Future.failed(e), CancellationHandler.empty)
+        CFuture(Future.failed(e), CancellationHandler.empty)
     }
 
   def start(): Unit = {
@@ -255,20 +265,20 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
    * calls runFlowDef, then clears the FlowStateMap
    */
   def validateAndRun(conf: Config)(fn: Config => FlowDef)(
-    implicit cec: ConcurrentExecutionContext): (Future[(Long, ExecutionCounters)], CancellationHandler) = {
+    implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
     val fut = for {
       flowDef <- Future(fn(conf))
       _ = FlowStateMap.validateSources(flowDef, mode)
-      (resultFut, cancelHandler) = runFlowDef(conf, flowDef)
+      CFuture(resultFut, cancelHandler) = runFlowDef(conf, flowDef)
       (id, jobStats) <- resultFut
       _ = FlowStateMap.clear(flowDef)
     } yield ((id, ExecutionCounters.fromJobStats(jobStats)), cancelHandler)
-    (fut.map(_._1), CancellationHandler.empty.compose(fut.map(_._2)))
+    CFuture(fut.map(_._1), CancellationHandler.fromFuture(fut.map(_._2)))
   }
 
   def execute(
     conf: Config,
-    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): (Future[(Long, ExecutionCounters)], CancellationHandler) = {
+    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
 
     import Execution.ToWrite._
 
@@ -346,11 +356,11 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       fd
     }
 
-    val (resultFuture, cancelHandler) = validateAndRun(conf)(prepareFD _)
+    val CFuture(resultFuture, cancelHandler) = validateAndRun(conf)(prepareFD _)
 
     // When we are done, the forced pipes are ready:
     done.completeWith(resultFuture.map(_ => ()))
-    (resultFuture, cancelHandler)
+    CFuture(resultFuture, cancelHandler)
   }
 
   def getForced[T](
