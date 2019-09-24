@@ -28,6 +28,12 @@ import scala.concurrent.Future;
  * deal with in scala
  */
 public class FlowListenerPromise {
+  public static class FlowStopException extends Exception {
+    public FlowStopException(String message) {
+      super(message);
+    }
+  }
+
   /*
    * This starts the flow and applies a mapping function fn in
    * the same thread that completion happens
@@ -37,7 +43,7 @@ public class FlowListenerPromise {
     flow.addListener(new FlowListener() {
       public void onStarting(Flow f) { } // ignore
       public void onStopping(Flow f) { // in case of runtime exception cascading call onStopping
-        result.tryFailure(new Exception("Flow was stopped"));
+        result.tryFailure(new FlowStopException("Flow was stopped"));
       }
       public void onCompleted(Flow f) {
         // This is always called, but onThrowable is called first

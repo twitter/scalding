@@ -23,6 +23,7 @@ import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
 import com.twitter.scalding.typed.functions.{ ConsList, ReverseList }
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
+import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import com.stripe.dagon.{Memoize, RefPair}
 import java.io.Serializable
 import java.util.UUID
@@ -516,14 +517,20 @@ object Execution {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
         lazy val uncachedFut = {
-          fut
-            .map {v => (v, CancellationHandler.empty) } // map this to the right shape
-            .recoverWith(fn.andThen { ex0 =>
-            // we haven't optimized ex0 yet
-            val ex = optimize(conf, ex0)
-            val CFuture(f, c) = ex.runStats(conf, mode, cache).get
-            f.map { v => (v, c) }
-          })
+            fut
+              .map {v => (v, CancellationHandler.empty) } // map this to the right shape
+              .recoverWith {
+                case t: FlowStopException => // do not recover when the flow was stopped
+                  Future.failed(t)
+                case t =>
+                  val chainedFn = fn.andThen { ex0 =>
+                    // we haven't optimized ex0 yet
+                    val ex = optimize(conf, ex0)
+                    val CFuture(f, c) = ex.runStats(conf, mode, cache).get
+                    f.map { v => (v, c) }
+                  }
+                chainedFn(t)
+              }
         }
 
         val recoveredFut = cache.getOrElseInsert(conf, this, CFuture(uncachedFut.map(_._1), CancellationHandler.fromFuture(uncachedFut.map(_._2))))

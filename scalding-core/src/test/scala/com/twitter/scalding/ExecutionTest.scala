@@ -27,6 +27,7 @@ import scala.concurrent.{ Future, Promise, ExecutionContext => ConcurrentExecuti
 import scala.util.{ Failure, Success, Try }
 import cascading.flow.{ Flow, FlowDef, FlowListener }
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileCleanup
+import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import org.apache.hadoop.conf.Configuration
 
 object ExecutionTestJobs {
@@ -244,7 +245,7 @@ class ExecutionTest extends WordSpec with Matchers {
       onCompleteCountDownLatch.await()
 
       // execution should be cancelled and the flow stopped
-      assert(cancelledEx.get.getMessage == "Flow was stopped")
+      assert(cancelledEx.get.isInstanceOf[FlowStopException])
 
       // finish counting down on the map to release the thread
       mapCountDownLatch.countDown()
@@ -280,11 +281,63 @@ class ExecutionTest extends WordSpec with Matchers {
       onCompleteCountDownLatch2.await()
 
       // execution should be cancelled and the flow stopped
-      assert(cancelledEx2.get.getMessage == "Flow was stopped")
+      assert(cancelledEx2.get.isInstanceOf[FlowStopException])
 
       // finish counting down on the map to release the thread
       mapCountDownLatch2.countDown()
     }
+
+    "recover from failure" in {
+      val tp = TypedPipe.from(Seq(1)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val recoveredTp = TypedPipe.from(Seq(2)).groupAll.sum.values
+      val recoveredEx = tp.toIterableExecution.recoverWith { case t: Throwable =>
+        recoveredTp.toIterableExecution
+      }
+
+      val res = recoveredEx.shouldSucceed()
+      res shouldBe List(2)
+    }
+
+    "not recover when cancelled by another execution" in {
+      @volatile var cancelledEx: Option[Throwable] = None
+
+      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
+
+      val mapCountDownLatch = new CountDownLatch(1)
+
+      val blockingTp: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values.map { i =>
+        // block until we are done
+        mapCountDownLatch.await()
+        i
+      }
+
+      val onCompleteCountDownLatch = new CountDownLatch(1)
+      val recoveredTp = TypedPipe.from(Seq(2))
+      val otherEx: Execution[Iterable[Int]] = blockingTp.toIterableExecution.recoverWith { case t: Throwable =>
+        recoveredTp.toIterableExecution
+      }.onComplete { t =>
+        if (t.isFailure) {
+          // capture the exception
+          cancelledEx = t.failed.toOption
+        }
+        onCompleteCountDownLatch.countDown()
+      }
+
+      val zipped = failedEx.zip(otherEx)
+
+      zipped.shouldFail()
+
+      // wait for onComplete to finish
+      onCompleteCountDownLatch.await()
+
+      // execution should be cancelled and the flow stopped
+      assert(cancelledEx.get.isInstanceOf[FlowStopException])
+
+      // finish counting down on the map to release the thread
+      mapCountDownLatch.countDown()
+    }
+
 
     "Config transformer will isolate Configs" in {
       def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
