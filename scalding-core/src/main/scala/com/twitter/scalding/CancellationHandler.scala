@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 
-trait CancellationHandler { outer =>
+sealed trait CancellationHandler { outer =>
   def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit]
   def compose(other: CancellationHandler): CancellationHandler = new CancellationHandler {
     override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
@@ -14,6 +14,12 @@ trait CancellationHandler { outer =>
 object CancellationHandler {
   val empty: CancellationHandler = new CancellationHandler {
     def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future.successful(())
+  }
+
+  def fromFn(fn: () => Unit): CancellationHandler = new CancellationHandler {
+    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future {
+      fn()
+    }
   }
 
   def fromFuture(f: Future[CancellationHandler]): CancellationHandler = new CancellationHandler {

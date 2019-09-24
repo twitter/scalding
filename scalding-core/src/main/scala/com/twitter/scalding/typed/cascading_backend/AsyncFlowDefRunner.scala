@@ -175,13 +175,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
                 val future = FlowListenerPromise
                   .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
                 // we want to stop the flow when the execution is cancelled
-                val cancel = new CancellationHandler {
-                  def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
-                    Future {
-                      flow.stop()
-                    }
-                  }
-                }
+                val cancel = CancellationHandler.fromFn(() => flow.stop())
                 cpromise.completeWith(CFuture(future, cancel))
               case Success(None) =>
                 // These is nothing to do:
@@ -220,7 +214,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       cpromise.cfuture
     } catch {
       case NonFatal(e) =>
-        CFuture(Future.failed(e), CancellationHandler.empty)
+        CFuture.failed(e)
     }
 
   def start(): Unit = {
@@ -254,15 +248,13 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     Try(fn(conf)) match {
       case Success(flowDef) =>
         FlowStateMap.validateSources(flowDef, mode)
-        val cfuture = runFlowDef(conf, flowDef)
-        val fut = cfuture.future.map {
+        runFlowDef(conf, flowDef).map {
           case (id, jobStats) =>
             FlowStateMap.clear(flowDef)
             (id, ExecutionCounters.fromJobStats(jobStats))
         }
-        CFuture(fut, cfuture.cancellationHandler)
       case Failure(e) =>
-        CFuture(Future.failed(e), CancellationHandler.empty)
+        CFuture.failed(e)
     }
   }
 
@@ -346,11 +338,11 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       fd
     }
 
-    val CFuture(resultFuture, cancelHandler) = validateAndRun(conf)(prepareFD _)
+    val cfuture = validateAndRun(conf)(prepareFD _)
 
     // When we are done, the forced pipes are ready:
-    done.completeWith(resultFuture.map(_ => ()))
-    CFuture(resultFuture, cancelHandler)
+    done.completeWith(cfuture.future.map(_ => ()))
+    cfuture
   }
 
   def getForced[T](

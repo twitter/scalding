@@ -160,8 +160,7 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     result.onComplete { t =>
       if (t.isFailure) {
         // cancel running executions if this was a failure
-        // TODO consider shortening the timeout
-        Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration.Inf)
+        Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration(30, scala.concurrent.duration.SECONDS))
       }
       writer.finished()
     }
@@ -440,28 +439,27 @@ object Execution {
 
   private[scalding] final case class Mapped[S, T](prev: Execution[S], fn: S => T) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
-        cache.getOrElseInsert(conf, this,
-          CFuture(fut.map { case (s, stats) => (fn(s), stats) }, cancelHandler))
+      Trampoline.call(prev.runStats(conf, mode, cache)).map { cfuture =>
+        cache.getOrElseInsert(conf, this, cfuture.map { case (s, stats) => (fn(s), stats) })
       }
   }
 
   private[scalding] final case class GetCounters[T](prev: Execution[T]) extends Execution[(T, ExecutionCounters)] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
+      Trampoline.call(prev.runStats(conf, mode, cache)).map { cfuture =>
         cache.getOrElseInsert(conf, this,
-          CFuture(fut.map {
+          cfuture.map {
             case (t, c) =>
               val totalCount = Monoid.sum(c.map(_._2))
               ((t, totalCount), c)
-          }, cancelHandler))
+          })
       }
   }
   private[scalding] final case class ResetCounters[T](prev: Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
+      Trampoline.call(prev.runStats(conf, mode, cache)).map { cfuture =>
         cache.getOrElseInsert(conf, this,
-          CFuture(fut.map { case (t, _) => (t, Map.empty[Long, ExecutionCounters]) }, cancelHandler))
+          cfuture.map { case (t, _) => (t, Map.empty[Long, ExecutionCounters]) })
       }
   }
 
@@ -493,8 +491,8 @@ object Execution {
 
   private[scalding] final case class OnComplete[T](prev: Execution[T], fn: Try[T] => Unit) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
-        cache.getOrElseInsert(conf, this, {
+      Trampoline.call(prev.runStats(conf, mode, cache)).map { cfuture =>
+        cache.getOrElseInsert(conf, this, cfuture.mapFuture { fut =>
           /**
            * The result we give is only completed AFTER fn is run
            * so callers can wait on the result of this OnComplete
@@ -508,7 +506,7 @@ object Execution {
               finished.complete(tryT)
             }
           }
-          CFuture(finished.future, cancelHandler)
+          finished.future
         })
       }
   }
@@ -539,22 +537,8 @@ object Execution {
   }
 
   /**
-   * Use our internal faster failing zip function rather than the standard one due to waiting
-   */
-  def failFastSequence[T](t: Iterable[CFuture[T]])(implicit cec: ConcurrentExecutionContext): CFuture[List[T]] = {
-    val ffFuture = t.map(_.future).foldLeft(Future.successful(Nil: List[T])) { (f, i) =>
-      failFastZip(f, i).map { case (tail, h) => h :: tail }
-    }.map(_.reverse)
-
-    val ffCancel = t.map(_.cancellationHandler).foldLeft(CancellationHandler.empty) { case (acc, c) =>
-        acc.compose(c)
-    }
-    CFuture(ffFuture, ffCancel)
-  }
-
-  /**
-   * Standard scala zip waits forever on the left side, even if the right side fails
-   */
+    * Standard scala zip waits forever on the left side, even if the right side fails
+    */
   def failFastZip[T, U](ft: Future[T], fu: Future[U])(implicit cec: ConcurrentExecutionContext): Future[(T, U)] = {
     type State = Either[(T, Promise[U]), (U, Promise[T])]
     val middleState = Promise[State]()
@@ -616,12 +600,8 @@ object Execution {
         futCancel1 <- Trampoline.call(one.runStats(conf, mode, cache))
         futCancel2 <- Trampoline.call(two.runStats(conf, mode, cache))
       } yield {
-        val CFuture(f1, cancelHandler1) = futCancel1
-        val CFuture(f2, cancelHandler2) = futCancel2
         cache.getOrElseInsert(conf, this,
-          CFuture(failFastZip(f1, f2)
-            .map { case ((s, ss), (t, st)) =>
-              ((s, t), ss ++ st) }, cancelHandler1.compose(cancelHandler2)))
+          futCancel1.zip(futCancel2).map { case ((s, ss), (t, st)) => ((s, t), ss ++ st) })
       }
   }
   private[scalding] final case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
@@ -643,14 +623,11 @@ object Execution {
       Trampoline(cache.getOrElseInsert(conf, this, {
         cache.writer match {
           case ar: AsyncFlowDefRunner =>
-            val CFuture(fut, cancelHandler) = ar.validateAndRun(conf)(result(_, mode))
-            CFuture(fut.map { m => ((), Map(m)) }, cancelHandler)
+            ar.validateAndRun(conf)(result(_, mode)).map { m => ((), Map(m)) }
           case other =>
-            val fut = Future.failed(
+            CFuture.failed(
               new IllegalArgumentException(
                 s"requires cascading Mode producing AsyncFlowDefRunner, found mode: $mode and writer ${other.getClass}: $other"))
-
-            CFuture(fut, CancellationHandler.empty)
         }
       }))
     }
@@ -800,7 +777,7 @@ object Execution {
           (head :: tail).map{ tw => (tw, cache.getOrLock(conf, tw)) }
         val (weDoOperation, someoneElseDoesOperation) = unwrapListEither(cacheLookup)
 
-        val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
+        val otherResult = CFuture.failFastSequence(someoneElseDoesOperation.map(_._2))
 
         val localFlowDefCountersFuture: CFuture[Map[Long, ExecutionCounters]] =
           weDoOperation match {
@@ -826,17 +803,15 @@ object Execution {
         otherResult.future.value match {
           case Some(Failure(e)) => CFuture(Future.failed(e), localFlowDefCountersFuture.cancellationHandler) // the other future failed, we need to cancel the other side
           case _ => // Either successful or not completed yet
-            val bothFutures = failFastZip(otherResult.future, localFlowDefCountersFuture.future)
-            // TODO potentially do this in failFastZip
-            val cancelHandler = otherResult.cancellationHandler.compose(localFlowDefCountersFuture.cancellationHandler)
+            val bothFutures = otherResult.zip(localFlowDefCountersFuture)
 
             val fut = for {
-              (lCounters, fdCounters) <- bothFutures
+              (lCounters, fdCounters) <- bothFutures.future
               t <- result((conf, mode, cache.writer, cec)) // TODO do i need to do something here to make this cancellable?
               summedCounters = (fdCounters :: lCounters).reduce(_ ++ _)
             } yield (t, summedCounters)
 
-            CFuture(fut, cancelHandler)
+            CFuture(fut, bothFutures.cancellationHandler)
         }
       }
 
