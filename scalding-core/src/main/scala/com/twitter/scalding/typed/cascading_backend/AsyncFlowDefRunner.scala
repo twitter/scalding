@@ -185,7 +185,6 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
                 cpromise.completeWith(CFuture(future, cancel))
               case Success(None) =>
                 // These is nothing to do:
-                sys.error("success none")
                 cpromise.promise.success((id, JobStats.empty))
               case Failure(err) =>
                 cpromise.promise.failure(err)

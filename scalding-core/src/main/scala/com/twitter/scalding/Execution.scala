@@ -157,12 +157,12 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     val result = fut.map(_._1)
     // When the final future in complete we stop the submit thread
     result.onComplete { t =>
-      writer.finished()
       if (t.isFailure) {
-        // cancel running downstream executions if this was a failure
+        // cancel running executions if this was a failure
         // TODO consider shortening the timeout
         Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration.Inf)
       }
+      writer.finished()
     }
     // wait till the end to start the thread in case the above throws
     writer.start()
@@ -387,8 +387,6 @@ object Execution {
     // the underlying thread and message queue of the parent evalCache
     def cleanCache: EvalCache = new EvalCache(writer)
 
-    // CFuture/CPromise?
-    // CancellationHandler is not currently settable here
     def getOrLock(cfg: Config, write: ToWrite[_]): Either[CPromise[Counters], CFuture[Counters]] =
       toWriteCache.getOrPromise((cfg, write))
 
