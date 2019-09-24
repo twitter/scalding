@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.{ FileSystem, Path }
 import org.slf4j.LoggerFactory
 import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 import Execution.{ Writer, ToWrite }
 
@@ -68,15 +68,6 @@ object AsyncFlowDefRunner {
           case e: Throwable => LOG.warn(s"Unable to delete temp file $file", e)
         }
       }
-    }
-  }
-
-  case class FlowCancellationHandler(flow: Promise[Flow[_]]) extends CancellationHandler {
-    def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
-      println(">>>> stopping flow")
-      Future(flow.future.onComplete { flowTry =>
-        flowTry.map(_.stop())
-      })
     }
   }
 }
@@ -179,17 +170,14 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         case RunFlowDef(conf, fd, cpromise) =>
           try {
             val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
-            // should we move this logic to validateAndRun so we have access to flow?
             ctx.buildFlow match {
               case Success(Some(flow)) =>
-                println(">>>> Success")
                 val future = FlowListenerPromise
                   .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
                 // we want to stop the flow when the execution is cancelled
                 val cancel = new CancellationHandler {
                   def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
                     Future {
-                      println(">>>> stopping flow")
                       flow.stop()
                     }
                   }
@@ -197,11 +185,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
                 cpromise.completeWith(CFuture(future, cancel))
               case Success(None) =>
                 // These is nothing to do:
-                println(">>>> Success(None)")
                 sys.error("success none")
                 cpromise.promise.success((id, JobStats.empty))
               case Failure(err) =>
-                println(">>>> Failure")
                 cpromise.promise.failure(err)
             }
           } catch {
@@ -266,14 +252,19 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
    */
   def validateAndRun(conf: Config)(fn: Config => FlowDef)(
     implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
-    val fut = for {
-      flowDef <- Future(fn(conf))
-      _ = FlowStateMap.validateSources(flowDef, mode)
-      CFuture(resultFut, cancelHandler) = runFlowDef(conf, flowDef)
-      (id, jobStats) <- resultFut
-      _ = FlowStateMap.clear(flowDef)
-    } yield ((id, ExecutionCounters.fromJobStats(jobStats)), cancelHandler)
-    CFuture(fut.map(_._1), CancellationHandler.fromFuture(fut.map(_._2)))
+    Try(fn(conf)) match {
+      case Success(flowDef) =>
+        FlowStateMap.validateSources(flowDef, mode)
+        val cfuture = runFlowDef(conf, flowDef)
+        val fut = cfuture.future.map {
+          case (id, jobStats) =>
+            FlowStateMap.clear(flowDef)
+            (id, ExecutionCounters.fromJobStats(jobStats))
+        }
+        CFuture(fut, cfuture.cancellationHandler)
+      case Failure(e) =>
+        CFuture(Future.failed(e), CancellationHandler.empty)
+    }
   }
 
   def execute(

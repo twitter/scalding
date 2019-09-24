@@ -20,6 +20,7 @@ import com.twitter.scalding.serialization.OrderedSerialization
 import java.nio.file.Files
 import java.io.File
 import java.util
+import java.util.concurrent.CountDownLatch
 import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 import scala.concurrent.{ Future, Promise, ExecutionContext => ConcurrentExecutionContext }
@@ -255,57 +256,75 @@ class ExecutionTest extends WordSpec with Matchers {
 
   "If one write fails, the other gets cancelled" in {
     @volatile var cancelledEx: Option[Throwable] = None
-    @volatile var finished: Boolean = false
 
     val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
     val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
+
+    val mapCountDownLatch = new CountDownLatch(1)
+
     val blockingTp: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values.map { i =>
-      // sleep so we have time to cancel the resulting execution
-      Thread.sleep(10000)
+      // block until we are done
+      mapCountDownLatch.await()
       i
     }
 
-
+    val onCompleteCountDownLatch = new CountDownLatch(1)
     val otherEx: Execution[Iterable[Int]] = blockingTp.toIterableExecution.onComplete { t =>
-      println(">>>> complete")
-      println(s">>>> t: $t")
       if (t.isFailure) {
+        // capture the exception
         cancelledEx = t.failed.toOption
-      } else {
-        finished = true
       }
+      onCompleteCountDownLatch.countDown()
     }
 
     val zipped = failedEx.zip(otherEx)
-    println(s">>> zipped class: ${zipped.getClass}")
 
     zipped.shouldFail()
-    // execution should be cancelled
-    assert(cancelledEx.isDefined)
-    //      assert(finished)
-    //
-    //      // same on the other side
-    //      var cancelledEx2: Option[Throwable] = None
-    //      var finished2: Boolean = false
-    //      val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).map { _ => throw new Exception("oh no") }
-    //      val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
-    //      val blockingTp2: TypedPipe[Int] = TypedPipe.from(Seq(1)).map { i =>
-    //        // sleep so we have time to cancel the resulting execution
-    //        Thread.sleep(1000)
-    //        i
-    //      }
-    //      val otherEx2: Execution[Iterable[Int]] = blockingTp2.toIterableExecution.onComplete { t =>
-    //        if (t.isFailure) {
-    //          cancelledEx2 = t.failed.toOption
-    //        } else {
-    //          finished2 = true
-    //        }
-    //      }
-    //
-    //      otherEx2.zip(failedEx2).shouldFail()
-    //      // execution should be cancelled
-    //      assert(finished2)
-    ////      assert(cancelledEx2.isDefined)
+
+    // wait for onComplete to finish
+    onCompleteCountDownLatch.await()
+
+    // execution should be cancelled and the flow stopped
+    assert(cancelledEx.get.getMessage == "Flow was stopped")
+
+    // finish counting down on the map to release the thread
+    mapCountDownLatch.countDown()
+
+    // do the same on the other side
+    @volatile var cancelledEx2: Option[Throwable] = None
+
+    val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+    val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
+
+    val mapCountDownLatch2 = new CountDownLatch(1)
+
+    val blockingTp2: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values.map { i =>
+      // block until we are done
+      mapCountDownLatch2.await()
+      i
+    }
+
+    val onCompleteCountDownLatch2 = new CountDownLatch(1)
+    val otherEx2: Execution[Iterable[Int]] = blockingTp2.toIterableExecution.onComplete { t =>
+      if (t.isFailure) {
+        // capture the exception
+        cancelledEx2 = t.failed.toOption
+      }
+      onCompleteCountDownLatch2.countDown()
+    }
+
+    val zipped2 = otherEx2.zip(failedEx2)
+
+    zipped2.shouldFail()
+
+    // wait for onComplete to finish
+    onCompleteCountDownLatch2.await()
+
+    // execution should be cancelled and the flow stopped
+    assert(cancelledEx2.get.getMessage == "Flow was stopped")
+
+    // finish counting down on the map to release the thread
+    mapCountDownLatch2.countDown()
   }
 
   //    "Config transformer will isolate Configs" in {

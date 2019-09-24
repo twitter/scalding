@@ -160,7 +160,7 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
       writer.finished()
       if (t.isFailure) {
         // cancel running downstream executions if this was a failure
-        // TODO consider shorting the timeout
+        // TODO consider shortening the timeout
         Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration.Inf)
       }
     }
@@ -615,7 +615,8 @@ object Execution {
         val CFuture(f2, cancelHandler2) = futCancel2
         cache.getOrElseInsert(conf, this,
           CFuture(failFastZip(f1, f2)
-            .map { case ((s, ss), (t, st)) => ((s, t), ss ++ st) }, cancelHandler1.compose(cancelHandler2)))
+            .map { case ((s, ss), (t, st)) =>
+              ((s, t), ss ++ st) }, cancelHandler1.compose(cancelHandler2)))
       }
   }
   private[scalding] final case class UniqueIdExecution[T](fn: UniqueID => Execution[T]) extends Execution[T] {
@@ -796,30 +797,30 @@ object Execution {
 
         val otherResult = failFastSequence(someoneElseDoesOperation.map(_._2))
 
-        otherResult.future.value match {
-          case Some(Failure(e)) => CFuture(Future.failed(e), CancellationHandler.empty) // the future failed, so there's nothing to cancel
-          case _ => // Either successful or not completed yet
-            val localFlowDefCountersFuture: CFuture[Map[Long, ExecutionCounters]] =
-              weDoOperation match {
-                case all @ (h :: tail) =>
-                  val CFuture(fut, cancelHandler) = cache.writer
-                    .execute(conf, all.map(_._1))
+        val localFlowDefCountersFuture: CFuture[Map[Long, ExecutionCounters]] =
+          weDoOperation match {
+            case all @ (h :: tail) =>
+              val CFuture(fut, cancelHandler) = cache.writer
+                .execute(conf, all.map(_._1))
 
-                  val futCounters: Future[Map[Long, ExecutionCounters]] =
-                    fut.map(Map(_))
+              val futCounters: Future[Map[Long, ExecutionCounters]] =
+                fut.map(Map(_))
 
-                  // Complete all of the promises we put into the cache
-                  // with this future counters set
-                  all.foreach {
-                    case (toWrite, promise) =>
-                      promise.completeWith(CFuture(futCounters, cancelHandler))
-                  }
-                  CFuture(futCounters, cancelHandler)
-                case Nil =>
-                  // No work to do, provide a fulled set of 0 counters to operate on
-                  CFuture(Future.successful(Map.empty), CancellationHandler.empty)
+              // Complete all of the promises we put into the cache
+              // with this future counters set
+              all.foreach {
+                case (toWrite, cpromise) =>
+                  cpromise.completeWith(CFuture(futCounters, cancelHandler))
               }
+              CFuture(futCounters, cancelHandler)
+            case Nil =>
+              // No work to do, provide a fulled set of 0 counters to operate on
+              CFuture(Future.successful(Map.empty), CancellationHandler.empty)
+          }
 
+        otherResult.future.value match {
+          case Some(Failure(e)) => CFuture(Future.failed(e), localFlowDefCountersFuture.cancellationHandler) // the other future failed, we need to cancel the other side
+          case _ => // Either successful or not completed yet
             val bothFutures = failFastZip(otherResult.future, localFlowDefCountersFuture.future)
             // TODO potentially do this in failFastZip
             val cancelHandler = otherResult.cancellationHandler.compose(localFlowDefCountersFuture.cancellationHandler)

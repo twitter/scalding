@@ -142,7 +142,7 @@ object Op extends Serializable {
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       cache.getOrElseUpdate(session,
-        CFuture(input.run(session).map { rdd => fn(widen(rdd)) }, CancellationHandler.empty))._1
+        CFuture(input.run(session).map { rdd => fn(widen(rdd)) }, CancellationHandler.empty)).future
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
@@ -169,7 +169,7 @@ object Op extends Serializable {
               }
             }
         }
-      }, CancellationHandler.empty))._1
+      }, CancellationHandler.empty)).future
   }
 
   final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
@@ -202,7 +202,7 @@ object Op extends Serializable {
             }, preservesPartitioning = true)
           }
         }
-      }, CancellationHandler.empty))._1
+      }, CancellationHandler.empty)).future
 
   }
 }
