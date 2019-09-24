@@ -213,6 +213,6 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
     // now we run the actions:
-    CFuture(Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty)), CancellationHandler.empty)
+    CFuture.uncancellable(Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty)))
   }
 }

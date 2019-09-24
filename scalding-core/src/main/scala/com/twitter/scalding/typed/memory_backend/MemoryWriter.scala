@@ -112,7 +112,8 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
     val (id, acts) = idActs
     // now we run the actions:
     val fut = Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty))
-    CFuture(fut, CancellationHandler.empty)
+    // wrap the future in a CFuture -- this is uncancellable in memory mode
+    CFuture.uncancellable(fut)
   }
 
   /**

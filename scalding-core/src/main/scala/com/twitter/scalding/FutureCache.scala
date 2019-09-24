@@ -35,6 +35,10 @@ object CFuture {
     CFuture(f, CancellationHandler.empty)
   }
 
+  def uncancellable[T](fut: Future[T]): CFuture[T] = {
+    CFuture(fut, CancellationHandler.empty)
+  }
+
   /**
    * Use our internal faster failing zip function rather than the standard one due to waiting
    */
