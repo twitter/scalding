@@ -180,8 +180,10 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
               case Success(None) =>
                 // These is nothing to do:
                 cpromise.promise.success((id, JobStats.empty))
+                cpromise.cancellationHandler.success(CancellationHandler.empty)
               case Failure(err) =>
                 cpromise.promise.failure(err)
+                cpromise.cancellationHandler.success(CancellationHandler.empty)
             }
           } catch {
             case t: Throwable =>
@@ -194,6 +196,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
               // must forward all exceptions to threads that requested
               // this work be started.
               cpromise.promise.tryFailure(t)
+              cpromise.cancellationHandler.success(CancellationHandler.empty)
           }
           // Loop
           go(id + 1)
@@ -245,9 +248,13 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
    */
   def validateAndRun(conf: Config)(fn: Config => FlowDef)(
     implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
-    Try(fn(conf)) match {
+    val tFlowDef = Try(fn(conf)).map { flowDef =>
+      FlowStateMap.validateSources(flowDef, mode)
+      flowDef
+    }
+
+    tFlowDef match {
       case Success(flowDef) =>
-        FlowStateMap.validateSources(flowDef, mode)
         runFlowDef(conf, flowDef).map {
           case (id, jobStats) =>
             FlowStateMap.clear(flowDef)
