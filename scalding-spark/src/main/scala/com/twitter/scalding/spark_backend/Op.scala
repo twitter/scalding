@@ -4,9 +4,9 @@ import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.reflect.ClassTag
-import com.twitter.scalding.{Config, FutureCache, CFuture, CancellationHandler}
+import com.twitter.scalding.{Config, FutureCache, CancellationHandler}
 import com.twitter.scalding.typed.TypedSource
 import SparkPlanner.PartitionComputer
 
@@ -138,18 +138,17 @@ object Op extends Serializable {
     r.asInstanceOf[RDD[A]]
 
   final case class Transformed[Z, A](input: Op[Z], fn: RDD[Z] => RDD[A]) extends Op[A] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A], Promise, Future]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(session,
-        CFuture(input.run(session).map { rdd => fn(widen(rdd)) }, CancellationHandler.empty)).future
+      cache.getOrElseUpdate(session, input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A], Promise, Future]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(session, CFuture({
+      cache.getOrElseUpdate(session, {
         // start running in parallel
         val lrdd = left.run(session)
         val tailRunning = tail.map(_.run(session))
@@ -169,14 +168,14 @@ object Op extends Serializable {
               }
             }
         }
-      }, CancellationHandler.empty)).future
+      })
   }
 
   final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)]]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)], Promise, Future]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
-      cache.getOrElseUpdate(session, CFuture({
+      cache.getOrElseUpdate(session, {
         // start running in parallel
         val rrdd = right.run(session)
         val lrdd = left.run(session)
@@ -202,7 +201,7 @@ object Op extends Serializable {
             }, preservesPartitioning = true)
           }
         }
-      }, CancellationHandler.empty)).future
+      })
 
   }
 }

@@ -380,8 +380,8 @@ object Execution {
   private[scalding] class EvalCache(val writer: Execution.Writer)(implicit cec: ConcurrentExecutionContext) {
 
     type Counters = Map[Long, ExecutionCounters]
-    private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters)]
-    private[this] val toWriteCache = new FutureCache[(Config, ToWrite[_]), Counters]
+    private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters), CPromise, CFuture]
+    private[this] val toWriteCache = new FutureCache[(Config, ToWrite[_]), Counters, CPromise, CFuture]
 
     // This method with return a 'clean' cache, that shares
     // the underlying thread and message queue of the parent evalCache
