@@ -421,17 +421,18 @@ object Execution {
   private[scalding] final case class FlatMapped[S, T](prev: Execution[S], fn: S => Execution[T]) extends Execution[T] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut1, cancelHandler1) =>
-        lazy val uncachedFutCancel = for {
+        lazy val uncachedCFut = for {
           (s, st1) <- fut1
           next0 = fn(s)
           // next0 has not been optimized yet, we need to try
           next = optimize(conf, next0)
-          CFuture(fut, cancelHandler2) = Trampoline.call(next.runStats(conf, mode, cache)).get
-          (t, st2) <- fut
-        } yield ((t, st1 ++ st2), cancelHandler2)
+        } yield {
+          Trampoline.call(next.runStats(conf, mode, cache)).get.map { case (t, st2) =>
+            (t, st1 ++ st2)
+          }
+        }
 
-        val futCancel = cache.getOrElseInsert(conf, this,
-          CFuture(uncachedFutCancel.map(_._1), CancellationHandler.fromFuture(uncachedFutCancel.map(_._2))))
+        val futCancel = cache.getOrElseInsert(conf, this, CFuture.fromFuture(uncachedCFut))
 
         CFuture(futCancel.future, cancelHandler1.compose(futCancel.cancellationHandler))
       }

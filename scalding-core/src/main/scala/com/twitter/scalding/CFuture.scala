@@ -38,6 +38,10 @@ object CFuture {
     CFuture(fut, CancellationHandler.empty)
   }
 
+  def fromFuture[T](fut: Future[CFuture[T]])(implicit cec: ConcurrentExecutionContext): CFuture[T] = {
+    CFuture(fut.flatMap(_.future), CancellationHandler.fromFuture(fut.map(_.cancellationHandler)))
+  }
+
   /**
    * Use our internal faster failing zip function rather than the standard one due to waiting
    */
