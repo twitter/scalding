@@ -410,7 +410,7 @@ object Execution {
           t <- futt
         } yield (t, Map.empty[Long, ExecutionCounters])
 
-        lazy val cfut = CFuture(fut, CancellationHandler.empty)
+        lazy val cfut = CFuture.uncancellable(fut)
 
         cache.getOrElseInsert(conf, this, cfut)
       }
@@ -780,30 +780,29 @@ object Execution {
 
         val otherResult = CFuture.failFastSequence(someoneElseDoesOperation.map(_._2))
 
-        val localFlowDefCountersFuture: CFuture[Map[Long, ExecutionCounters]] =
-          weDoOperation match {
-            case all @ (h :: tail) =>
-              val CFuture(fut, cancelHandler) = cache.writer
-                .execute(conf, all.map(_._1))
-
-              val futCounters: Future[Map[Long, ExecutionCounters]] =
-                fut.map(Map(_))
-
-              // Complete all of the promises we put into the cache
-              // with this future counters set
-              all.foreach {
-                case (toWrite, cpromise) =>
-                  cpromise.completeWith(CFuture(futCounters, cancelHandler))
-              }
-              CFuture(futCounters, cancelHandler)
-            case Nil =>
-              // No work to do, provide a fulled set of 0 counters to operate on
-              CFuture(Future.successful(Map.empty), CancellationHandler.empty)
-          }
-
         otherResult.future.value match {
-          case Some(Failure(e)) => CFuture(Future.failed(e), localFlowDefCountersFuture.cancellationHandler) // the other future failed, we need to cancel the other side
+          case Some(Failure(e)) => CFuture.failed(e)
           case _ => // Either successful or not completed yet
+            val localFlowDefCountersFuture: CFuture[Map[Long, ExecutionCounters]] =
+              weDoOperation match {
+                case all @ (h :: tail) =>
+                  val CFuture(fut, cancelHandler) = cache.writer
+                    .execute(conf, all.map(_._1))
+
+                  val futCounters: Future[Map[Long, ExecutionCounters]] =
+                    fut.map(Map(_))
+
+                  // Complete all of the promises we put into the cache
+                  // with this future counters set
+                  all.foreach {
+                    case (toWrite, cpromise) =>
+                      cpromise.completeWith(CFuture(futCounters, cancelHandler))
+                  }
+                  CFuture(futCounters, cancelHandler)
+                case Nil =>
+                  // No work to do, provide a fulled set of 0 counters to operate on
+                  CFuture(Future.successful(Map.empty), CancellationHandler.empty)
+              }
             val bothFutures = otherResult.zip(localFlowDefCountersFuture)
 
             val fut = for {
@@ -853,7 +852,7 @@ object Execution {
    */
   private[scalding] case object ReaderExecution extends Execution[(Config, Mode)] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit cec: ConcurrentExecutionContext) =
-      Trampoline(CFuture(Future.successful(((conf, mode), Map.empty)), CancellationHandler.empty))
+      Trampoline(CFuture.successful(((conf, mode), Map.empty)))
 
     override def equals(that: Any): Boolean =
       that match {
