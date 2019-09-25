@@ -27,7 +27,7 @@ object PromiseLike {
  * This is a map for values that are produced in futures
  * as is common in Execution
  */
-class FutureCache[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
+class FutureCacheGeneric[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
   private[this] val cache = new ConcurrentHashMap[K, F[V]]()
 
   def get(k: K): Option[F[V]] = Option(cache.get(k))
@@ -65,3 +65,5 @@ class FutureCache[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
     }
   }
 }
+
+class FutureCache[-K, V] extends FutureCacheGeneric[K, V, Promise, Future]()(PromiseLike.PromiseLikePromise)

@@ -4,9 +4,9 @@ import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import com.twitter.scalding.{Config, FutureCache, CancellationHandler}
+import com.twitter.scalding.{Config, FutureCache}
 import com.twitter.scalding.typed.TypedSource
 import SparkPlanner.PartitionComputer
 
@@ -138,14 +138,14 @@ object Op extends Serializable {
     r.asInstanceOf[RDD[A]]
 
   final case class Transformed[Z, A](input: Op[Z], fn: RDD[Z] => RDD[A]) extends Op[A] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A], Promise, Future]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       cache.getOrElseUpdate(session, input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A], Promise, Future]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       cache.getOrElseUpdate(session, {
@@ -172,7 +172,7 @@ object Op extends Serializable {
   }
 
   final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
-    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)], Promise, Future]
+    @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
       cache.getOrElseUpdate(session, {
