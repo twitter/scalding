@@ -377,7 +377,7 @@ object Execution {
    * This is a mutable state that is kept internal to an execution
    * as it is evaluating.
    */
-  private[scalding] class EvalCache(val writer: Execution.Writer)(implicit cec: ConcurrentExecutionContext) {
+  private[scalding] class EvalCache(val writer: Execution.Writer) {
 
     type Counters = Map[Long, ExecutionCounters]
     private[this] val cache = new FutureCache[(Config, Execution[Any]), (Any, Counters), CPromise, CFuture]
