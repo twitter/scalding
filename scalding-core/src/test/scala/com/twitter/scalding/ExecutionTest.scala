@@ -287,6 +287,83 @@ class ExecutionTest extends WordSpec with Matchers {
       mapCountDownLatch2.countDown()
     }
 
+    "If one write fails, the flatmapped execution gets cancelled" in {
+      @volatile var cancelledEx: Option[Throwable] = None
+
+      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
+
+      val mapCountDownLatch = new CountDownLatch(1)
+
+      val otherTp: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values
+
+      val onCompleteCountDownLatch = new CountDownLatch(1)
+      val otherEx: Execution[Iterable[Int]] = otherTp.toIterableExecution.flatMap { _ =>
+        TypedPipe.from(Seq(2)).groupAll.sum.values.map { i =>
+          // block until we are done
+          mapCountDownLatch.await()
+          i
+        }.toIterableExecution
+      }.onComplete { t =>
+        if (t.isFailure) {
+          // capture the exception
+          cancelledEx = t.failed.toOption
+        }
+        onCompleteCountDownLatch.countDown()
+      }
+
+      val zipped = failedEx.zip(otherEx)
+
+      zipped.shouldFail()
+
+      // wait for onComplete to finish
+      onCompleteCountDownLatch.await()
+
+      // execution should be cancelled and the flow stopped
+      assert(cancelledEx.get.isInstanceOf[FlowStopException])
+
+      // finish counting down on the map to release the thread
+      mapCountDownLatch.countDown()
+
+      // do the same on the other side
+      @volatile var cancelledEx2: Option[Throwable] = None
+
+      val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
+
+      val mapCountDownLatch2 = new CountDownLatch(1)
+
+      val otherTp2: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values
+
+      val onCompleteCountDownLatch2 = new CountDownLatch(1)
+      val otherEx2: Execution[Iterable[Int]] = otherTp2.toIterableExecution.flatMap { _ =>
+        TypedPipe.from(Seq(2)).groupAll.sum.values.map { i =>
+          // block until we are done
+          mapCountDownLatch2.await()
+          i
+        }.toIterableExecution
+      }.onComplete { t =>
+        if (t.isFailure) {
+          // capture the exception
+          cancelledEx2 = t.failed.toOption
+        }
+        onCompleteCountDownLatch2.countDown()
+      }
+
+      val zipped2 = otherEx2.zip(failedEx2)
+
+      zipped2.shouldFail()
+
+      // wait for onComplete to finish
+      onCompleteCountDownLatch2.await()
+
+      // execution should be cancelled and the flow stopped
+      assert(cancelledEx2.get.isInstanceOf[FlowStopException])
+
+      // finish counting down on the map to release the thread
+      mapCountDownLatch2.countDown()
+    }
+
     "recover from failure" in {
       val tp = TypedPipe.from(Seq(1)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
       val recoveredTp = TypedPipe.from(Seq(2)).groupAll.sum.values
