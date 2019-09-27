@@ -90,6 +90,384 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
     }
   }
 
+  "ScroogeReadSupport resolving list format" should {
+    "resolve list legacy format: project x_tuple to legacy array" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated binary array (UTF8);
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated binary country_codes_tuple (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      // note optional of result, and field rename
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated binary array (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve list legacy format: project x_tuple to 3-level" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated binary country_codes_tuple (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      // note optional of result, and field rename
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve list legacy format: project nested x_tuple to nested legacy array" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group foo (LIST) {
+          |    repeated group array (LIST) {
+          |      repeated binary array (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |}
+      """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      // note optional of result, and field rename
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group array {
+          |      repeated binary array (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve list legacy format: project nested x_tuple to nested array" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group foo (LIST) {
+          |    repeated group array (LIST) {
+          |      repeated binary array (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |}
+      """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      // note optional of result, and field rename
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group array {
+          |      repeated binary array (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve list in group legacy format: project x_tuple to nested 3-level" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group foo (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve: binary array to 3-level nesting" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+
+      // inner list is `binary array`
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |     repeated binary array (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+
+    }
+
+    "resolve: identity 3-level" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, fileType)
+      projected shouldEqual fileType
+
+    }
+
+    "resolve nested list: project inner legacy array to 3-level nesting" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+
+      // inner list is `binary array`
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated binary array (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve projected struct in list: repeated group element to 3-level nesting" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        required binary foo (UTF8);
+          |        required binary bar (UTF8);
+          |        required binary zing (UTF8);
+          |      }
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated group element {
+          |      optional binary foo (UTF8);
+          |      required binary zing (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group country_codes (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        optional binary foo (UTF8);
+          |        required binary zing (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve standard 3-level list to 2-level" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message scalding_schema {
+          |  required group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated binary array (UTF8);
+          |      }
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group array_of_country_codes (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated binary array (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+  }
+
   "ScroogeReadSupport" should {
     "write using typedparquet and read using parquet scrooge" in {
       HadoopPlatformJobTest(new WriteToTypedParquetTupleJob(_), cluster)

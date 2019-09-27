@@ -37,9 +37,7 @@ import org.apache.parquet.thrift.projection.FieldProjectionFilter;
 import org.apache.parquet.thrift.projection.ThriftProjectionException;
 import org.apache.parquet.thrift.struct.ThriftType;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Read support for Scrooge
@@ -132,7 +130,8 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    */
   public static MessageType getSchemaForRead(MessageType fileMessageType, MessageType projectedMessageType) {
     assertGroupsAreCompatible(fileMessageType, projectedMessageType);
-    return projectedMessageType;
+    Type resolved = new ParquetListFormatForwardCompatibility().resolveTypeFormat(fileMessageType, projectedMessageType);
+    return new MessageType(projectedMessageType.getName(), resolved.asGroupType().getFields());
   }
 
   /**
