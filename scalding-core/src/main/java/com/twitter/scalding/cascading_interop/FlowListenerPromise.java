@@ -56,15 +56,15 @@ public class FlowListenerPromise {
               T toPut = (T) fn.apply(f);
               result.success(toPut);
             } catch (Throwable t) {
-              result.failure(t);
+              result.tryFailure(t);
             }
           } else {
-            result.failure(new Exception("Flow was not successfully finished"));
+            result.tryFailure(new Exception("Flow was not successfully finished"));
           }
         }
       }
       public boolean onThrowable(Flow f, Throwable t) {
-        result.failure(t);
+        result.tryFailure(t);
         // The exception is handled by the owner of the promise and should not be rethrown
         return true;
       }
@@ -75,7 +75,7 @@ public class FlowListenerPromise {
       public void onStepCompleted(FlowStep flowStep) { } // ignore
       public void onStepStopping(FlowStep f) { result.tryFailure(new FlowStopException("Flow step was stopped")); }
       public boolean onStepThrowable(FlowStep f, Throwable t) {
-        result.failure(t);
+        result.tryFailure(t);
         // The exception is handled by the owner of the promise and should not be rethrown
         return true;
       }
