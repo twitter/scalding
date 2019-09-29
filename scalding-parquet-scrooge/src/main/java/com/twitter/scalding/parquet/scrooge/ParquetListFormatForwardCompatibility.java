@@ -36,17 +36,9 @@ public class ParquetListFormatForwardCompatibility {
    * repeated type.
    */
   abstract static public class Rule {
-    public Type elementType(Type repeatedType) {
-      if (repeatedType.isPrimitive()) {
-        return repeatedType;
-      } else {
-        return firstField(repeatedType.asGroupType());
-      }
-    }
+    abstract public Type elementType(Type repeatedType);
 
-    public Boolean isElementRequired(Type repeatedType) {
-      return true;
-    }
+    abstract Boolean isElementRequired(Type repeatedType);
 
     public String elementName(Type repeatedType) {
       return this.elementType(repeatedType).getName();
@@ -63,9 +55,25 @@ public class ParquetListFormatForwardCompatibility {
   }
 
   static class RulePrimitiveElement extends Rule {
+    /**
+     * repeated int32 element;
+     */
 
     public String constantElementName() {
       return "element";
+    }
+
+    public Type elementType(Type repeatedType) {
+      return repeatedType;
+    }
+
+    @Override
+    Boolean isElementRequired(Type repeatedType) {
+      // According to Rule 1 from,
+      // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+      // "the repeated field is not a group,
+      // then its type is the element type and elements are required."
+      return true;
     }
 
     @Override
@@ -93,6 +101,10 @@ public class ParquetListFormatForwardCompatibility {
   }
 
   static class RulePrimitiveArray extends RulePrimitiveElement {
+    /**
+     * repeated binary array (UTF8);
+     */
+
     @Override
     public String constantElementName() {
       return "array";
@@ -100,8 +112,22 @@ public class ParquetListFormatForwardCompatibility {
   }
 
   static class RuleGroupElement extends Rule {
+    /**
+     * repeated group element {
+     *   required binary str (UTF8);
+     *   required int32 num;
+     * };
+     */
     public String constantElementName() {
       return "element";
+    }
+
+    public Boolean isElementRequired(Type repeatedType) {
+      // According Rule 2 from
+      // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+      // "If the repeated field is a group with multiple fields,
+      // then its type is the element type and elements are required."
+      return true;
     }
 
     public Type elementType(Type repeatedType) {
@@ -160,24 +186,45 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
+    Boolean isElementRequired(Type repeatedType) {
+      // According to Rule 3 from
+      // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+      return true;
+    }
+
+    @Override
     public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
-      if (!type.isPrimitive()) {
-        throw new IllegalArgumentException(String.format(
-            "Rule 3 can only take group type, but found %s", type));
-      }
+
       if (!name.endsWith("_tuple")) {
         name = name + "_tuple";
       }
-      return new PrimitiveType(
-          Type.Repetition.REPEATED,
-          type.asPrimitiveType().getPrimitiveTypeName(),
-          name,
-          originalType
-      );
+      if (type.isPrimitive()) {
+        return new PrimitiveType(
+            Type.Repetition.REPEATED,
+            type.asPrimitiveType().getPrimitiveTypeName(),
+            name,
+            originalType
+        );
+      } else {
+        return new GroupType(
+            Type.Repetition.REPEATED,
+            name,
+            OriginalType.LIST,
+            type.asGroupType().getFields()
+        );
+      }
     }
   }
 
   static class RuleStandardThreeLevel extends Rule {
+    /**
+     * <list-repetition> group <name> (LIST) {
+     *   repeated group list {
+     *     <element-repetition> <element-type> element;
+     *   }
+     * }
+     */
+
     @Override
     public Boolean check(Type repeatedField) {
       if (repeatedField.isPrimitive() || !repeatedField.getName().equals("list")) {
@@ -188,13 +235,24 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
+    public Type elementType(Type repeatedType) {
+      return firstField(repeatedType.asGroupType());
+    }
+
+    @Override
+    Boolean isElementRequired(Type repeatedType) {
+      return elementType(repeatedType).getRepetition() == Type.Repetition.REQUIRED;
+    }
+
+    @Override
     public String elementName(Type repeatedType) {
       return "element";
     }
 
     @Override
     public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
-      Type elementType = null;
+
+      Type elementType;
       if (type.isPrimitive()) {
         elementType = new PrimitiveType(
             isElementRequired ? Type.Repetition.REQUIRED : Type.Repetition.OPTIONAL,
@@ -203,9 +261,11 @@ public class ParquetListFormatForwardCompatibility {
             originalType
         );
       } else {
+
         elementType = new GroupType(
             isElementRequired ? Type.Repetition.REQUIRED : Type.Repetition.OPTIONAL,
             "element",
+            isGroupList(type) ? OriginalType.LIST: null,
             // we cannot flatten `list`
             type.asGroupType().getName().equals("list") ?
                 Arrays.asList(type) :
@@ -235,6 +295,23 @@ public class ParquetListFormatForwardCompatibility {
         groupProjection.getFields().get(0).isRepetition(Type.Repetition.REPEATED);
   }
 
+  public Type elementType(Type repeatedType, String debuggingTypeSource) {
+    Rule fileTypeRule = findFirstRule(repeatedType, debuggingTypeSource);
+    return fileTypeRule.elementType(repeatedType);
+  }
+
+  public Type wrap(Type repeatedType, Type elementType) {
+    Rule projectedTypeRule = findFirstRule(repeatedType, "projection");
+
+    return projectedTypeRule.createCompliantRepeatedType(
+        elementType,
+        elementType.getName(),
+        // if repeated or required, it is required
+        !elementType.isRepetition(Type.Repetition.OPTIONAL),
+        elementType.getOriginalType());
+  }
+
+
   /**
    * Resolve list format in forward compatible way.
    * @param fileType   file type which has new format
@@ -257,8 +334,26 @@ public class ParquetListFormatForwardCompatibility {
     Type repeatedProjection = unwrappedProjection.repeatedType;
 
     if (repeatedProjection != null && repeatedFile != null) {
-      // Recurse on the repeated content. This is to handle nested list
-      Type repeatedResolved = resolveTypeFormat(repeatedFile, repeatedProjection);
+      // Repeated types cannot be recursed yet, because file and projection might have
+      // format-specific wrappers. Instead, we need to extract its element type first.
+      // Eg. without unwrapping `repeated` layer, we will only find `element` field in the file type
+      // File type:                             |     Projection type:
+      // optional group foo (LIST) {            |     optional group foo (LIST) {
+      //   repeated group list {                |       repeated group foo_tuple {
+      //     required group element {           |         optional binary zing (UTF8);
+      //       required binary zing (UTF8);     |         optional binary bar (UTF8);
+      //       required binary bar (UTF8);      |       }
+      //     }                                  |     }
+      //   }
+      // }
+      Type elementFile = compatibility.elementType(repeatedFile, "file");
+      Type elementProjection = compatibility.elementType(repeatedProjection, "projection");
+
+      // Recurse on the element. This is to handle nested list
+      Type elementResolved = resolveTypeFormat(elementFile, elementProjection);
+      // Wrap
+      Type repeatedResolved = compatibility.wrap(repeatedProjection, elementResolved);
+
       // Make projected structure compatible with file type
       Type repeatedFormatted = compatibility
           .makeForwardCompatible(repeatedFile, repeatedResolved);
