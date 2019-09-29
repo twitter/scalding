@@ -260,7 +260,7 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
           |message SampleProjection {
           |  optional group foo (LIST) {
           |    repeated group list {
-          |      required group element {
+          |      required group element (LIST) {
           |        repeated group list {
           |          required binary element (UTF8);
           |        }
@@ -459,6 +459,101 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
           |    repeated group list {
           |      required group element (LIST) {
           |        repeated binary array (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve list in group containing list" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  optional group connect_delays (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        optional binary description (UTF8);
+          |        optional binary created_by (UTF8);
+          |        optional group currencies (LIST) {
+          |          repeated group list {
+          |            required binary element (UTF8);
+          |          }
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group connect_delays (LIST) {
+          |    repeated group connect_delays_tuple {
+          |      optional binary description (UTF8);
+          |      optional group currencies (LIST) {
+          |        repeated binary currencies_tuple (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group connect_delays (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        optional binary description (UTF8);
+          |        optional group currencies (LIST) {
+          |          repeated group list {
+          |            required binary element (UTF8);
+          |          }
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      projected shouldEqual expected
+    }
+
+    "resolve projection of different level" in {
+      val fileType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  optional group foo (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        required binary zing (UTF8);
+          |        required binary bar (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val requestedProjection = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        optional binary zing (UTF8);
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projected = ScroogeReadSupport.getSchemaForRead(fileType, requestedProjection)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleProjection {
+          |  optional group foo (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        optional binary zing (UTF8);
           |      }
           |    }
           |  }
