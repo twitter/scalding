@@ -55,6 +55,9 @@ private[scrooge] object ParquetListFormatRule extends ParquetCollectionFormatRul
     elementType.getOriginalType)
 }
 
+/**
+ * Helper to specify supported source/target conversion.
+ */
 private[scrooge] sealed trait SourceOrTarget {
   def rules: Seq[ParquetListFormatRule]
   def name: String
@@ -76,6 +79,16 @@ private[scrooge] object Target extends SourceOrTarget {
   override def name: String = "target"
 }
 
+/**
+ * Rule allowing conversion from one format to other format by
+ * 1) detect which format is the repeated list type.
+ * 2) decompose the repeated type into element and other info.
+ * 3) construct compliant repeated type from the given element and other info.
+ * For example,
+ * if source repeated type matches Rule 1, and target type matches Rule 2.
+ * Rule 1 will decompose the source type, and
+ * Rule 2 will take that information to construct repeated element in Rule 2 format.
+ */
 private[scrooge] sealed trait ParquetListFormatRule {
   def elementType(repeatedType: Type): Type
 
@@ -93,11 +106,11 @@ private[scrooge] sealed trait ParquetListFormatRule {
                                                    originalType: OriginalType): Type
 }
 
-/**
- * repeated int32 [element|array];
- */
-private[scrooge] sealed trait PrimitiveListRule extends ParquetListFormatRule {
 
+private[scrooge] sealed trait PrimitiveListRule extends ParquetListFormatRule {
+  /**
+   * repeated int32 [element|array];
+   */
   def constantElementName: String
 
   override def elementType(repeatedType: Type): Type = repeatedType
@@ -128,14 +141,13 @@ private[scrooge] object PrimitiveArrayRule extends PrimitiveListRule {
   override def constantElementName: String = "array"
 }
 
-/**
- * repeated group [element|array] {
- *   required binary str (UTF8);
- *   required int32 num;
- * }
- */
 private[scrooge] sealed trait GroupListRule extends ParquetListFormatRule {
-
+  /**
+   * repeated group [element|array] {
+   *   required binary str (UTF8);
+   *   required int32 num;
+   * }
+   */
   def constantElementName: String
 
   override def isElementRequired(repeatedType: Type): Boolean = {
