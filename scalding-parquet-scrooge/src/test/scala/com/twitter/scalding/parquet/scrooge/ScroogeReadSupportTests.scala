@@ -540,7 +540,8 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
           |  optional group foo (LIST) {
           |    repeated group list {
           |      required group element {
-          |        optional binary zing (UTF8);
+          |        optional binary bar (UTF8);
+          |        required binary zing (UTF8);
           |      }
           |    }
           |  }
@@ -553,7 +554,8 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
           |  optional group foo (LIST) {
           |    repeated group list {
           |      required group element {
-          |        optional binary zing (UTF8);
+          |        optional binary bar (UTF8);
+          |        required binary zing (UTF8);
           |      }
           |    }
           |  }

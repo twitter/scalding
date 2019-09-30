@@ -4,6 +4,7 @@ import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
+import org.apache.parquet.thrift.DecodingSchemaMismatchException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -367,13 +368,18 @@ public class ParquetListFormatForwardCompatibility {
     } else {
       List<Type> fields = new ArrayList<Type>();
       for (Type projected : groupProjection.getFields()) {
-        if (!projected.isPrimitive()) {
-          // The file type field must be a group type too
+        if (!groupFile.containsField(projected.getName())) {
+          if (!projected.isRepetition(Type.Repetition.OPTIONAL)) {
+            throw new DecodingSchemaMismatchException(
+                String.format("Found non-optional projection field:\n%s\n\n" +
+                        "not present in the given file type:\n%s",
+                    projected, groupFile));
+          }
+          fields.add(projected);
+        } else {
           int fieldIndex = groupFile.getFieldIndex(projected.getName());
           Type fileField = groupFile.getFields().get(fieldIndex);
-          fields.add(resolveTypeFormat(fileField.asGroupType(), projected.asGroupType()));
-        } else {
-          fields.add(projected);
+          fields.add(resolveTypeFormat(fileField, projected));
         }
       }
       return groupProjection.withNewFields(fields);
