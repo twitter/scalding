@@ -7,6 +7,8 @@ import org.apache.parquet.schema.{GroupType, MessageType, Type}
 import org.apache.parquet.thrift.DecodingSchemaMismatchException
 import org.slf4j.LoggerFactory
 
+import scala.collection.mutable
+
 object ParquetCollectionFormatForwardCompatibility {
 
   private val LOGGER = LoggerFactory.getLogger(getClass)
@@ -86,9 +88,8 @@ object ParquetCollectionFormatForwardCompatibility {
         val sourceGroup = sourceType.asGroupType
         val targetGroup = targetType.asGroupType
 
-        val resultFields = new util.ArrayList[Type]
-        import scala.collection.JavaConversions._
-        for (sourceField <- sourceGroup.getFields) {
+        import scala.collection.JavaConverters._
+        val resultFields = sourceGroup.getFields.asScala.map { sourceField =>
           if (!targetGroup.containsField(sourceField.getName)) {
             if (!sourceField.isRepetition(Repetition.OPTIONAL)) {
               throw new DecodingSchemaMismatchException(
@@ -96,15 +97,15 @@ object ParquetCollectionFormatForwardCompatibility {
                   s"not present in the given target type:\n${targetGroup}"
               )
             }
-            resultFields.add(sourceField)
+            sourceField
           }
           else {
             val fieldIndex = targetGroup.getFieldIndex(sourceField.getName)
             val targetField = targetGroup.getFields.get(fieldIndex)
-            resultFields.add(formatForwardCompatibleType(sourceField, targetField))
+            formatForwardCompatibleType(sourceField, targetField)
           }
         }
-        sourceGroup.withNewFields(resultFields)
+        sourceGroup.withNewFields(resultFields.asJava)
     }
   }
 

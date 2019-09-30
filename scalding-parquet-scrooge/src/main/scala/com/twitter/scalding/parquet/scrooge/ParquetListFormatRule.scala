@@ -19,25 +19,37 @@ private[scrooge] object ParquetListFormatRule extends ParquetCollectionFormatRul
   private val LOGGER = LoggerFactory.getLogger(getClass)
 
   def formatForwardCompatibleRepeatedType(repeatedSourceType: Type, repeatedTargetType: Type) = {
-    val sourceRuleMaybe = findFirstListRule(repeatedSourceType, Source)
-    val targetRuleMaybe = findFirstListRule(repeatedTargetType, Target)
-    if (sourceRuleMaybe == targetRuleMaybe || sourceRuleMaybe.isEmpty || targetRuleMaybe.isEmpty) repeatedSourceType else {
-      val sourceRule = sourceRuleMaybe.get
-      val targetRule = targetRuleMaybe.get
-      val elementType = sourceRule.elementType(repeatedSourceType)
-      targetRule.createCompliantRepeatedType(
-        typ= elementType,
-        name= elementType.getName,
-        isElementRequired= sourceRule.isElementRequired(repeatedSourceType),
-        originalType= sourceRule.elementOriginalType(repeatedSourceType)
-      )
+    (
+      findFirstListRule(repeatedSourceType, Source),
+      findFirstListRule(repeatedTargetType, Target)
+    ) match {
+      case (Some(sourceRule), Some(targetRule)) => {
+        if (sourceRule == targetRule) {
+          repeatedSourceType
+        } else {
+          val elementType = sourceRule.elementType(repeatedSourceType)
+          targetRule.createCompliantRepeatedType(
+            typ = elementType,
+            name = elementType.getName,
+            isElementRequired = sourceRule.isElementRequired(repeatedSourceType),
+            originalType = sourceRule.elementOriginalType(repeatedSourceType)
+          )
+        }
+      }
+      case _ => repeatedSourceType
     }
   }
 
   def isGroupList(projection: Type): Boolean = {
-    if (projection.isPrimitive) return false
-    val groupProjection = projection.asGroupType
-    (groupProjection.getOriginalType eq OriginalType.LIST) && groupProjection.getFieldCount == 1 && groupProjection.getFields.get(0).isRepetition(Type.Repetition.REPEATED)
+    if (projection.isPrimitive) {
+      false
+    } else {
+      val groupProjection = projection.asGroupType
+      groupProjection.getOriginalType == OriginalType.LIST &&
+        groupProjection.getFieldCount == 1 &&
+        groupProjection.getFields.get(0).isRepetition(Type.Repetition.REPEATED)
+    }
+
   }
 
   def findFirstListRule(repeatedType: Type,
@@ -222,7 +234,9 @@ private[scrooge] object StandardRule extends ParquetListFormatRule {
 
   override def elementType(repeatedType: Type): Type = firstField(repeatedType.asGroupType)
 
-  override private[scrooge] def isElementRequired(repeatedType: Type): Boolean = elementType(repeatedType).getRepetition eq Type.Repetition.REQUIRED
+  override private[scrooge] def isElementRequired(repeatedType: Type): Boolean = {
+    elementType(repeatedType).getRepetition == Type.Repetition.REQUIRED
+  }
 
   override def elementName(repeatedType: Type): String = "element"
 
