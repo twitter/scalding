@@ -7,7 +7,7 @@ import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopSharedPlatfor
 import com.twitter.scalding.typed.TypedPipe
 import com.twitter.scalding.{Args, Job}
 import org.apache.parquet.io.InvalidRecordException
-import org.apache.parquet.schema.{MessageTypeParser}
+import org.apache.parquet.schema.MessageTypeParser
 import org.scalatest.{Matchers, WordSpec}
 
 class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPlatformTest {
