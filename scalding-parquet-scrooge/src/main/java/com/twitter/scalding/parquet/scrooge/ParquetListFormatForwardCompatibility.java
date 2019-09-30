@@ -49,9 +49,9 @@ public class ParquetListFormatForwardCompatibility {
       return this.elementType(repeatedType).getOriginalType();
     }
 
-    abstract Boolean check(Type type);
+    abstract Boolean check(Type typ);
 
-    abstract Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType);
+    abstract Type createCompliantRepeatedType(Type typ, String name, Boolean isElementRequired, OriginalType originalType);
 
   }
 
@@ -83,17 +83,17 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
-    public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
+    public Type createCompliantRepeatedType(Type typ, String name, Boolean isElementRequired, OriginalType originalType) {
       if (!isElementRequired) {
         throw new IllegalArgumentException("Rule 1 can only take required element");
       }
-      if (!type.isPrimitive()) {
+      if (!typ.isPrimitive()) {
         throw new IllegalArgumentException(
-            String.format("Rule 1 cannot take primitive type, but is given %s", type));
+            String.format("Rule 1 cannot take primitive type, but is given %s", typ));
       }
       return new PrimitiveType(
           Type.Repetition.REPEATED,
-          type.asPrimitiveType().getPrimitiveTypeName(),
+          typ.asPrimitiveType().getPrimitiveTypeName(),
           this.constantElementName(),
           originalType
       );
@@ -151,18 +151,18 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
-    public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
-      if (type.isPrimitive()) {
+    public Type createCompliantRepeatedType(Type typ, String name, Boolean isElementRequired, OriginalType originalType) {
+      if (typ.isPrimitive()) {
         return new GroupType(
             Type.Repetition.REPEATED,
             this.constantElementName(),
-            type
+            typ
         );
       } else {
         return new GroupType(
             Type.Repetition.REPEATED,
             this.constantElementName(),
-            type.asGroupType().getFields()
+            typ.asGroupType().getFields()
         );
       }
     }
@@ -194,15 +194,14 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
-    public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
-
+    public Type createCompliantRepeatedType(Type typ, String name, Boolean isElementRequired, OriginalType originalType) {
       if (!name.endsWith("_tuple")) {
         name = name + "_tuple";
       }
-      if (type.isPrimitive()) {
+      if (typ.isPrimitive()) {
         return new PrimitiveType(
             Type.Repetition.REPEATED,
-            type.asPrimitiveType().getPrimitiveTypeName(),
+            typ.asPrimitiveType().getPrimitiveTypeName(),
             name,
             originalType
         );
@@ -211,7 +210,7 @@ public class ParquetListFormatForwardCompatibility {
             Type.Repetition.REPEATED,
             name,
             OriginalType.LIST,
-            type.asGroupType().getFields()
+            typ.asGroupType().getFields()
         );
       }
     }
@@ -251,29 +250,27 @@ public class ParquetListFormatForwardCompatibility {
     }
 
     @Override
-    public Type createCompliantRepeatedType(Type type, String name, Boolean isElementRequired, OriginalType originalType) {
+    public Type createCompliantRepeatedType(Type typ, String name, Boolean isElementRequired, OriginalType originalType) {
 
       Type elementType;
-      if (type.isPrimitive()) {
+      if (typ.isPrimitive()) {
         elementType = new PrimitiveType(
             isElementRequired ? Type.Repetition.REQUIRED : Type.Repetition.OPTIONAL,
-            type.asPrimitiveType().getPrimitiveTypeName(),
+            typ.asPrimitiveType().getPrimitiveTypeName(),
             "element",
             originalType
         );
       } else {
-
         elementType = new GroupType(
             isElementRequired ? Type.Repetition.REQUIRED : Type.Repetition.OPTIONAL,
             "element",
-            isGroupList(type) ? OriginalType.LIST: null,
+            isGroupList(typ) ? OriginalType.LIST: null,
             // we cannot flatten `list`
-            type.asGroupType().getName().equals("list") ?
-                Arrays.asList(type) :
-                type.asGroupType().getFields()
+            typ.asGroupType().getName().equals("list") ?
+                Arrays.asList(typ) :
+                typ.asGroupType().getFields()
         );
       }
-
       return new GroupType(
           Type.Repetition.REPEATED,
           "list",
@@ -296,6 +293,21 @@ public class ParquetListFormatForwardCompatibility {
         groupProjection.getFields().get(0).isRepetition(Type.Repetition.REPEATED);
   }
 
+  private static boolean isGroupMap(Type projection) {
+    if (projection.isPrimitive()) {
+      return false;
+    }
+    GroupType groupProjection = projection.asGroupType();
+    return groupProjection.getOriginalType() == OriginalType.MAP &&
+        groupProjection.getFieldCount() == 1 &&
+        groupProjection.getFields().get(0).isRepetition(Type.Repetition.REPEATED) &&
+        (
+            (groupProjection.getFields().get(0).getName().equals("map") &&
+                groupProjection.getFields().get(0).getOriginalType() == OriginalType.MAP_KEY_VALUE)
+            || groupProjection.getFields().get(0).getName().equals("key_value")
+        );
+  }
+
   public Type elementType(Type repeatedType, String debuggingTypeSource) {
     Rule fileTypeRule = findFirstRule(repeatedType, debuggingTypeSource);
     return fileTypeRule.elementType(repeatedType);
@@ -311,7 +323,6 @@ public class ParquetListFormatForwardCompatibility {
         !elementType.isRepetition(Type.Repetition.OPTIONAL),
         elementType.getOriginalType());
   }
-
 
   /**
    * Resolve list format in forward compatible way.
@@ -369,12 +380,10 @@ public class ParquetListFormatForwardCompatibility {
       List<Type> fields = new ArrayList<Type>();
       for (Type projected : groupProjection.getFields()) {
         if (!groupFile.containsField(projected.getName())) {
-          if (!projected.isRepetition(Type.Repetition.OPTIONAL)) {
-            throw new DecodingSchemaMismatchException(
-                String.format("Found non-optional projection field:\n%s\n\n" +
-                        "not present in the given file type:\n%s",
-                    projected, groupFile));
-          }
+          // This can happen when
+          // 1) projecting optional field over non-existent target schema
+          // 2) field is a part of legacy map format
+          // Make no assertions (separation of responsibility) and just include it
           fields.add(projected);
         } else {
           int fieldIndex = groupFile.getFieldIndex(projected.getName());
@@ -431,8 +440,8 @@ public class ParquetListFormatForwardCompatibility {
     }
   }
 
-  private static GroupUnwrapped unwrapGroup(Type type, Stack<GroupType> wrappers) {
-    Type ptr = type;
+  private static GroupUnwrapped unwrapGroup(Type typ, Stack<GroupType> wrappers) {
+    Type ptr = typ;
     // only wrapper for list with size one, so we can wrap repeated type later
     while (!ptr.isPrimitive()) {
       wrappers.push(ptr.asGroupType());
