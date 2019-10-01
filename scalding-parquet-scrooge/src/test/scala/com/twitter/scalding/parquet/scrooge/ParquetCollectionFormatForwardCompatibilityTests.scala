@@ -13,7 +13,7 @@ import org.scalatest.{Matchers, WordSpec}
 class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Matchers {
 
   "Format forward compat: resolving map format" should {
-    "map identity: " in {
+    "map identity" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -32,7 +32,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual targetType
     }
 
-    "map identity: string key, struct value" in {
+    "map identity from thrift struct: string key, struct value" in {
       val listType = new ListType(new ThriftField("list", 2, Requirement.REQUIRED, new ThriftType.StringType))
       val children = new ThriftField("foo", 3, Requirement.REQUIRED, listType)
       val mapValueType = new StructType(util.Arrays.asList(children),
@@ -58,7 +58,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual message
     }
 
-    "map identity: string kye, list string value" in {
+    "map identity from thrift struct: string kye, list string value" in {
       val listType = new ListType(new ThriftField("list", 2, Requirement.REQUIRED, new ThriftType.StringType))
       val message = schemaFromThriftMap(listType)
       message shouldEqual MessageTypeParser.parseMessageType(
@@ -80,7 +80,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual message
     }
 
-    "resolve map legacy format: original type (MAP_KEY_VALUE) to explicit name key_value" in {
+    "format map legacy: original type (MAP_KEY_VALUE) to standard format key_value" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -118,7 +118,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve map legacy format: map of map" in {
+    "format map legacy map of map" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -192,7 +192,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
   }
 
   "Format forward compat: resolving list format" should {
-    "resolve list legacy format: format x_tuple to legacy array" in {
+    "format x_tuple to primitive array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -211,7 +211,6 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
       val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
-      // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -223,7 +222,37 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve list legacy format: format x_tuple to 3-level" in {
+    "format x_tuple to primitive element" in {
+      val targetType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group country_codes (LIST) {
+          |    repeated binary element (UTF8);
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val sourceType = MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  optional group country_codes (LIST) {
+          |    repeated binary country_codes_tuple (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  optional group country_codes (LIST) {
+          |    repeated binary element (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+      solved shouldEqual expected
+    }
+
+    "format x_tuple to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -258,7 +287,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve list legacy format: format nested x_tuple to nested legacy array" in {
+    "format nested x_tuple to group array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -294,7 +323,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve list in group legacy format: format x_tuple to nested 3-level" in {
+    "format nested x_tuple to nested 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -337,7 +366,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve: binary array to 3-level nesting" in {
+    "format binary array to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -375,7 +404,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
 
     }
 
-    "resolve: identity 3-level" in {
+    "format 3-level to 3-level (identity)" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -389,10 +418,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(targetType, targetType)
       solved shouldEqual targetType
-
     }
 
-    "resolve nested list: format inner legacy array to 3-level nesting" in {
+    "format nested primitive array to nested 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -441,7 +469,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve solved struct in list: repeated group element to 3-level nesting" in {
+    "format element group to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -486,7 +514,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve standard 3-level list to 2-level" in {
+    "format 3-level to nested primitive array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message scalding_schema {
@@ -532,7 +560,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve list in group containing list" in {
+    "format x_tuple in group to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -585,50 +613,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve projection: format 2-level source to 3-level target" in {
-      val targetType = MessageTypeParser.parseMessageType(
-        """
-          |message spark_schema {
-          |  optional group foo (LIST) {
-          |    repeated group list {
-          |      required group element {
-          |        required binary zing (UTF8);
-          |        required binary bar (UTF8);
-          |        required binary baz (UTF8);
-          |      }
-          |    }
-          |  }
-          |}
-        """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
-        """
-          |message SampleSource {
-          |  optional group foo (LIST) {
-          |    repeated group element {
-          |      optional binary bar (UTF8);
-          |      required binary zing (UTF8);
-          |    }
-          |  }
-          |}
-        """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
-      val expected = MessageTypeParser.parseMessageType(
-        """
-          |message SampleSource {
-          |  optional group foo (LIST) {
-          |    repeated group list {
-          |      required group element {
-          |        optional binary bar (UTF8);
-          |        required binary zing (UTF8);
-          |      }
-          |    }
-          |  }
-          |}
-        """.stripMargin)
-      solved shouldEqual expected
-    }
-
-    "resolve does not support backward compat: format nested 3-level to x_tuple" in {
+    "does not format 3-level to x_tuple" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message scalding_schema {
