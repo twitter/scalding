@@ -294,42 +294,6 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "resolve list legacy format: format nested x_tuple to nested array" in {
-      val targetType = MessageTypeParser.parseMessageType(
-        """
-          |message spark_schema {
-          |  required group foo (LIST) {
-          |    repeated group array (LIST) {
-          |      repeated binary array (UTF8);
-          |    }
-          |  }
-          |}
-        """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
-        """
-          |message SampleSource {
-          |  optional group foo (LIST) {
-          |    repeated group foo_tuple (LIST) {
-          |      repeated binary foo_tuple_tuple (UTF8);
-          |    }
-          |  }
-          |}
-      """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
-      // note optional of result, and field rename
-      val expected = MessageTypeParser.parseMessageType(
-        """
-          |message SampleSource {
-          |  optional group foo (LIST) {
-          |    repeated group array {
-          |      repeated binary array (UTF8);
-          |    }
-          |  }
-          |}
-        """.stripMargin)
-      solved shouldEqual expected
-    }
-
     "resolve list in group legacy format: format x_tuple to nested 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
