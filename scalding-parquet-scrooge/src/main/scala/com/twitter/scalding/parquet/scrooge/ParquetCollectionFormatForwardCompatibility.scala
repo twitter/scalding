@@ -98,6 +98,6 @@ private[scrooge] sealed trait CollectionGroup {
   def repeatedType: Type
 }
 
-private[scrooge] case class MapGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
+private[scrooge] sealed case class MapGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
 
-private[scrooge] case class ListGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
+private[scrooge] sealed case class ListGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
