@@ -9,7 +9,7 @@ import org.apache.parquet.schema.{OriginalType, Type}
  * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps
  *
  * Source with legacy format created by
- * {@code org.apache.parquet.schema.ConversionPatterns} has repeated `map` field
+ * [[org.apache.parquet.schema.ConversionPatterns]] has repeated `map` field
  * annotated with (MAP_KEY_VALUE)
  */
 private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {

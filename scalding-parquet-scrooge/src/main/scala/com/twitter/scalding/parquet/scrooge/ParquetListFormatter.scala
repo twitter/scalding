@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
  * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists
  *
  * More specifically this handles converting from parquet file created by
- * {{@code org.apache.parquet.thrift.ThriftSchemaConvertVisitor}} which always suffix
+ * [[org.apache.parquet.thrift.ThriftSchemaConvertVisitor]] which always suffix
  * list element with "_tuple".
  */
 private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter {
@@ -208,7 +208,6 @@ private[scrooge] object TupleRule extends ParquetListFormatRule {
   override def appliesToType(repeatedType: Type): Boolean = repeatedType.getName.endsWith(tupleSuffix)
 
   override def elementName(repeatedType: Type): String = {
-    // Since `appliesToType`
     repeatedType.getName.substring(0, repeatedType.getName.length - tupleSuffix.length)
   }
 

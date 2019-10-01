@@ -8,7 +8,23 @@ import org.slf4j.LoggerFactory
 
 import scala.reflect.ClassTag
 
-object ParquetCollectionFormatForwardCompatibility {
+/**
+ * Format source parquet schema to have collection types--list and map--in the same structure
+ * as parquet schema. This is currently used in [[ScroogeReadSupport]] to format source projection
+ * schema to target file schema from parquet data.
+ * The sources with different collection format may come from:
+ * 1) Thrift struct via [[org.apache.parquet.thrift.ThriftSchemaConvertVisitor]] which always
+ * describe list with `_tuple` format, and map which has `MAP_KEY_VALUE` annotation.
+ * 2) User-supplied schema string via config key
+ * [[org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA]]
+ *
+ * The strategy of this class is to first assume that the source schema is a sub-graph of target
+ * schema in terms of field names. However, the data types for collection can differ in
+ * graph structure between the two schemas. We then need to:
+ * 1) traverse the two schemas until we find the collection type indicated by `repeated` type.
+ * 2) delegate the collection types found to respective list/map formatter.
+ */
+private[scrooge] object ParquetCollectionFormatForwardCompatibility {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -74,9 +90,9 @@ object ParquetCollectionFormatForwardCompatibility {
       sourceGroup.repeatedType,
       targetGroup.repeatedType,
       formatForwardCompatibleType(_, _))
-    // Wrapped the formatted repeated type in its original groups,
-    // describing field name and whether it's optional/required
-    sourceGroup.groupWrapper.withNewFields(formattedRepeated)
+    // Wrap the formatted repeated type in its original group.
+    // This maintains the field name, and optional/required information
+    sourceGroup.groupType.withNewFields(formattedRepeated)
   }
 
   private def findCollectionGroup(typ: Type): Option[CollectionGroup] = {
@@ -93,11 +109,22 @@ private[scrooge] trait ParquetCollectionFormatter {
 }
 
 private[scrooge] sealed trait CollectionGroup {
-  def groupWrapper: GroupType
+  /**
+   * Type for the collection.
+   * For example, given the schema,
+   * required group my_list (LIST) {
+   *   repeated group list {
+   *     optional binary element (UTF8);
+   *   }
+   * }
+   * [[groupType]] refers to this whole schema
+   * [[repeatedType]] refers to inner `repeated` schema
+   */
+  def groupType: GroupType
 
   def repeatedType: Type
 }
 
-private[scrooge] sealed case class MapGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
+private[scrooge] sealed case class MapGroup(groupType: GroupType, repeatedType: Type) extends CollectionGroup
 
-private[scrooge] sealed case class ListGroup(groupWrapper: GroupType, repeatedType: Type) extends CollectionGroup
+private[scrooge] sealed case class ListGroup(groupType: GroupType, repeatedType: Type) extends CollectionGroup
