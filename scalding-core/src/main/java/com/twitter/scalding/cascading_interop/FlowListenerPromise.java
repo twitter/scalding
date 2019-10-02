@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter.scalding.cascading_interop;
 
 import cascading.flow.FlowListener;
+import cascading.flow.FlowException;
 import cascading.flow.FlowStepListener;
 import cascading.flow.FlowStep;
 import cascading.flow.Flow;
@@ -75,7 +76,11 @@ public class FlowListenerPromise {
       public void onStepCompleted(FlowStep flowStep) { } // ignore
       public void onStepStopping(FlowStep f) { result.tryFailure(new FlowStopException("Flow step was stopped")); }
       public boolean onStepThrowable(FlowStep f, Throwable t) {
-        result.tryFailure(t);
+        if (t != null) {
+          result.tryFailure(t);
+        } else {
+          result.tryFailure(new FlowException("Flow step failed: " + f.getName()));
+        }
         // The exception is handled by the owner of the promise and should not be rethrown
         return true;
       }
