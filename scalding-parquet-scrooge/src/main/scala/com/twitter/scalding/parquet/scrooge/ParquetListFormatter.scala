@@ -21,7 +21,7 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
   private val rules: Seq[ParquetListFormatRule] = Seq(
     PrimitiveElementRule, PrimitiveArrayRule,
     GroupElementRule, GroupArrayRule,
-    TupleRule, StandardRule
+    TupleRule, StandardRule, SparkLegacyNullableElementRule
   )
 
   def formatForwardCompatibleRepeatedType(repeatedSourceType: Type,
@@ -208,17 +208,18 @@ private[scrooge] object TupleRule extends ParquetListFormatRule {
   }
 }
 
-private[scrooge] object StandardRule extends ParquetListFormatRule {
-  /**
-   * repeated group list {
-   *   <element-repetition> <element-type> element;
-   * }
-   */
+
+private[scrooge] sealed trait ThreeLevelRule extends ParquetListFormatRule {
+
+  def constantElementName: String
+
+  def constantRepeatedGroupName: String
+
   override def appliesToType(repeatedField: Type): Boolean = {
-    if (repeatedField.isPrimitive || !(repeatedField.getName == "list")) {
+    if (repeatedField.isPrimitive || !(repeatedField.getName == constantRepeatedGroupName)) {
       false
     } else {
-      elementType(repeatedField).getName == "element"
+      elementType(repeatedField).getName == constantElementName
     }
   }
 
@@ -228,25 +229,69 @@ private[scrooge] object StandardRule extends ParquetListFormatRule {
     elementType(repeatedType).getRepetition == Type.Repetition.REQUIRED
   }
 
-  override def elementName(repeatedType: Type): String = "element"
+  override def elementName(repeatedType: Type): String = constantElementName
 
   override def createCompliantRepeatedType(originalElementType: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
 
     val repetition = if (isElementRequired) Type.Repetition.REQUIRED else Type.Repetition.OPTIONAL
     val elementType = if (originalElementType.isPrimitive) {
-      new PrimitiveType(repetition, originalElementType.asPrimitiveType.getPrimitiveTypeName, "element", originalType)
+      new PrimitiveType(repetition, originalElementType.asPrimitiveType.getPrimitiveTypeName, constantElementName, originalType)
     } else {
       new GroupType(
         repetition,
-        "element",
+        constantElementName,
         originalType,
         originalElementType.asGroupType.getFields)
     }
 
-    new GroupType(Type.Repetition.REPEATED, "list", util.Arrays.asList(elementType))
+    new GroupType(Type.Repetition.REPEATED, constantRepeatedGroupName, util.Arrays.asList(elementType))
   }
 
   private def firstField(groupType: GroupType): Type = {
     groupType.getFields.get(0)
+  }
+}
+
+/**
+ * Standard parquet list format.
+ * repeated group list {
+ *   <element-repetition> <element-type> element;
+ * }
+ */
+private[scrooge] object StandardRule extends ThreeLevelRule {
+
+  def constantElementName = "element"
+
+  def constantRepeatedGroupName = "list"
+}
+
+/**
+ * Spark legacy format when element is nullable.
+ * repeated group bag {
+ *   optional <element-type> array;
+ * }
+ * Documentation on Spark is incorrect at the time of writing. It indicates `optional group bag`,
+ * but it should be `repeated group bag`, and optional element.
+ * https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/datasources/parquet/ParquetWriteSupport.scala#L345-L355
+ * Writing Dataset[Seq[List]] in Spark with default encoder and legacy mode on will give
+ *
+ * message spark_schema {
+ *   optional group value (LIST) {
+ *     repeated group bag {
+ *       optional binary array (UTF8);
+ *     }
+ *   }
+ * }
+ */
+private[scrooge] object SparkLegacyNullableElementRule extends ThreeLevelRule {
+  override def constantElementName: String = "array"
+
+  override def constantRepeatedGroupName: String = "bag"
+
+  override def createCompliantRepeatedType(originalElementType: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
+    if (isElementRequired) {
+      throw new IllegalArgumentException(s"Spark legacy mode for nullable element cannot take required element. Found: ${originalElementType}")
+    }
+    super.createCompliantRepeatedType(originalElementType, name, isElementRequired, originalType, fieldContext)
   }
 }
