@@ -28,7 +28,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(targetType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(targetType, targetType)
       solved shouldEqual targetType
     }
 
@@ -54,7 +54,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(message, message)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
       solved shouldEqual message
     }
 
@@ -76,7 +76,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin
       )
 
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(message, message)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
       solved shouldEqual message
     }
 
@@ -103,7 +103,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -156,7 +156,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -210,7 +210,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -240,7 +240,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -272,7 +272,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -308,7 +308,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
       """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -348,7 +348,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -388,7 +388,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -416,7 +416,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(targetType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(targetType, targetType)
       solved shouldEqual targetType
     }
 
@@ -450,7 +450,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -496,7 +496,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -543,7 +543,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -592,7 +592,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message SampleSource {
@@ -640,7 +640,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  optional int32 x;
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       solved shouldEqual sourceType
     }
   }
@@ -790,13 +790,13 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(
+        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
           sourceType,
           targetType
         )
       }
 
-      e.getMessage should include("non-optional source field map:")
+      e.getMessage should include("non-optional projected read field map:")
     }
 
     "throws on missing `repeated` causing projection of non-existent field" in {
@@ -824,10 +824,10 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(sourceType, targetType)
+        ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       }
 
-      e.getMessage should include("non-optional source field element:")
+      e.getMessage should include("non-optional projected read field element:")
     }
 
     "throws on required but non-existent in target" in {
@@ -856,13 +856,13 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(
+        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
           sourceType,
           targetType
         )
       }
 
-      e.getMessage should include("non-optional source field bogus_field:")
+      e.getMessage should include("non-optional projected read field bogus_field:")
     }
   }
 
@@ -889,7 +889,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(
+        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
           targetType,
           sourceType
         )

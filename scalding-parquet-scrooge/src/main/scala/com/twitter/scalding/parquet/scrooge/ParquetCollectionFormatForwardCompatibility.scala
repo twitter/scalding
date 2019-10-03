@@ -9,18 +9,19 @@ import org.slf4j.LoggerFactory
 import scala.reflect.ClassTag
 
 /**
- * Format source parquet schema to have collection types--list and map--in the same structure
- * as parquet schema. This is currently used in [[ScroogeReadSupport]] to format source projection
- * schema to target file schema from parquet data.
- * The sources with different collection format may come from:
+ * Project file schema to have collection types--list and map--in the same structure
+ * as projected read schema. This is currently used in [[ScroogeReadSupport]] where projected
+ * read schema can come from:
  * 1) Thrift struct via [[org.apache.parquet.thrift.ThriftSchemaConvertVisitor]] which always
  * describe list with `_tuple` format, and map which has `MAP_KEY_VALUE` annotation.
  * 2) User-supplied schema string via config key
  * [[org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA]]
  *
- * The strategy of this class is to first assume that the source schema is a sub-graph of target
- * schema in terms of field names. However, the data types for collection can differ in
- * graph structure between the two schemas. We then need to:
+ * The strategy of this class is to first assume that the projected read schema is a "sub-graph" of
+ * file schema in terms of field names. (We allow optional field in projected read schema to be in
+ * the projected file schema.) However, the data types for collection can differ in
+ * graph structure between the two schemas.
+ * We thus need to:
  * 1) traverse the two schemas until we find the collection type indicated by `repeated` type.
  * 2) delegate the collection types found to respective list/map formatter.
  */
@@ -29,87 +30,97 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
   private val logger = LoggerFactory.getLogger(getClass)
 
   /**
-   * Create a forward-compatible schema, using content from source type with format from target type.
+   * Project file schema to contain the same fields as the given projected read schema.
+   * The result projected file schema should have the same optional/required fields as the
+   * projected read schema, but maintain collection type format for the file schema.
    *
-   * @param sourceType source type with legacy format
-   * @param targetType target type to which source is converted to
+   * @param projectedReadSchema read schema specifying field projection
+   * @param fileSchema file schema to be projected
    */
-  def formatForwardCompatibleMessage(sourceType: MessageType, targetType: MessageType): MessageType = {
-    val groupResult = formatForwardCompatibleType(sourceType, targetType).asGroupType()
-    logger.debug("Making source schema to be compatible with target" +
-      s"\nSource:\n${sourceType}\nTarget:\n${targetType}\nResult:\n${groupResult}")
-    new MessageType(groupResult.getName, groupResult.getFields)
+  def projectFileSchema(projectedReadSchema: MessageType, fileSchema: MessageType): MessageType = {
+    val projectedFileSchema = projectFileType(projectedReadSchema, fileSchema).asGroupType()
+    logger.debug(s"Projected read schema:\n${projectedReadSchema}\n" +
+      s"File schema:\n${fileSchema}\n" +
+      s"Projected file schema:\n${projectedFileSchema}")
+    new MessageType(projectedFileSchema.getName, projectedFileSchema.getFields)
   }
 
   /**
-   * Traverse source/target schemas and format nodes of list or map.
-   * The formatting is not to one-to-one node swapping from source to target,
-   * this is because the subset fields of source node and its optional/required must
-   * be maintained in the formatted result.
+   * Traverse given schemas and format node for list or map of projected read type to structure
+   * of file schema. The formatting is not to one-to-one node swapping between the two schemas
+   * because of the projection requirement.
    */
-  private def formatForwardCompatibleType(sourceType: Type, targetType: Type): Type = {
-    (findCollectionGroup(sourceType), findCollectionGroup(targetType)) match {
-      case _ if sourceType.isPrimitive && targetType.isPrimitive =>
-        sourceType
-      case _ if sourceType.isPrimitive != targetType.isPrimitive =>
+  private def projectFileType(projectedReadType: Type, fileType: Type): Type = {
+    (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
+      case _ if projectedReadType.isPrimitive && fileType.isPrimitive =>
+        projectedReadType
+      case _ if projectedReadType.isPrimitive != fileType.isPrimitive =>
         throw new DecodingSchemaMismatchException(
-          s"Found schema mismatch between source type ${sourceType.getName}:\n$sourceType\n\n" +
-            s"and target type:\n${targetType}"
+          s"Found schema mismatch between projected read type:\n$projectedReadType\n" +
+            s"and file type:\n${fileType}"
         )
-      case (Some(sourceGroup: ListGroup), Some(targetGroup: ListGroup)) =>
-        formatForwardCompatibleCollectionGroup[ListGroup](sourceGroup, targetGroup)
-      case (Some(sourceGroup: MapGroup), Some(targetGroup: MapGroup)) =>
-        formatForwardCompatibleCollectionGroup[MapGroup](sourceGroup, targetGroup)
+      case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
+        projectFileGroup[ListGroup](projectedReadGroup, fileGroup)
+      case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
+        projectFileGroup[MapGroup](projectedReadGroup, fileGroup)
       case _ => // Field projection
-        val sourceGroup = sourceType.asGroupType
-        val targetGroup = targetType.asGroupType
-        val resultFields = sourceGroup.getFields.asScala.map { sourceField =>
-          if (!targetGroup.containsField(sourceField.getName)) {
-            if (!sourceField.isRepetition(Repetition.OPTIONAL)) {
+        val projectedReadGroupType = projectedReadType.asGroupType
+        val fileGroupType = fileType.asGroupType
+        val projectedReadFields = projectedReadGroupType.getFields.asScala.map { projectedReadField =>
+          if (!fileGroupType.containsField(projectedReadField.getName)) {
+            if (!projectedReadField.isRepetition(Repetition.OPTIONAL)) {
               throw new DecodingSchemaMismatchException(
-                s"Found non-optional source field ${sourceField.getName}:\n$sourceField\n\n" +
-                  s"not present in the given target type:\n${targetGroup}"
+                s"Found non-optional projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
+                  s"not present in the given file group type:\n${fileGroupType}"
               )
             }
-            sourceField
+            projectedReadField
           }
           else {
-            val fieldIndex = targetGroup.getFieldIndex(sourceField.getName)
-            val targetField = targetGroup.getFields.get(fieldIndex)
-            formatForwardCompatibleType(sourceField, targetField)
+            val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
+            val fileField = fileGroupType.getFields.get(fileFieldIndex)
+            projectFileType(projectedReadField, fileField)
           }
         }
-        sourceGroup.withNewFields(resultFields.asJava)
+        projectedReadGroupType.withNewFields(projectedReadFields.asJava)
     }
   }
 
-  private def formatForwardCompatibleCollectionGroup[T <: CollectionGroup](sourceGroup: T,
-                                                                           targetGroup: T)
-                                                                          (implicit t: ClassTag[T]): GroupType = {
+  private def projectFileGroup[T <: CollectionGroup](projectedReadGroup: T,
+                                                     fileGroup: T)(implicit t: ClassTag[T]): GroupType = {
 
     val formatter = t.runtimeClass.asInstanceOf[Class[T]] match {
       case c if c == classOf[MapGroup] => ParquetMapFormatter
       case c if c == classOf[ListGroup] => ParquetListFormatter
     }
-    val formattedRepeated = formatter.formatForwardCompatibleRepeatedType(
-      sourceGroup.repeatedType,
-      targetGroup.repeatedType,
-      formatForwardCompatibleType(_, _))
-    // Wrap the formatted repeated type in its original group.
-    // This maintains the field name, and optional/required information
-    sourceGroup.groupType.withNewFields(formattedRepeated)
+    val projectedFileRepeatedType = formatter.formatForwardCompatibleRepeatedType(
+      projectedReadGroup.repeatedType,
+      fileGroup.repeatedType,
+      projectFileType(_, _))
+    // Respect optional/required from the projected read group.
+    projectedReadGroup.groupType.withNewFields(projectedFileRepeatedType)
   }
 
-  private def findCollectionGroup(typ: Type): Option[CollectionGroup] = {
+  private def extractCollectionGroup(typ: Type): Option[CollectionGroup] = {
     ParquetListFormatter.extractGroup(typ).orElse(ParquetMapFormatter.extractGroup(typ))
   }
 }
 
 private[scrooge] trait ParquetCollectionFormatter {
-  def formatForwardCompatibleRepeatedType(sourceRepeatedMapType: Type,
-                                          targetRepeatedMapType: Type,
+  /**
+   * Format source repeated type in the structure of target repeated type.
+   * @param sourceRepeatedType repeated type from which the formatted result get content
+   * @param targetRepeatedType repeated type from which the formatted result get the structure
+   * @param recursiveSolver solver for the inner content of the repeated type
+   * @return formatted result
+   */
+  def formatForwardCompatibleRepeatedType(sourceRepeatedType: Type,
+                                          targetRepeatedType: Type,
                                           recursiveSolver: (Type, Type) => Type): Type
 
+  /**
+   * Extract collection group containing repeated type of different formats.
+   */
   def extractGroup(typ: Type): Option[CollectionGroup]
 }
 
