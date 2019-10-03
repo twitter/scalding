@@ -865,4 +865,37 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       e.getMessage should include("non-optional source field bogus_field:")
     }
   }
+
+  "Schema mismatch" should {
+    "throws exception" in {
+      val targetType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group foo {
+          |    repeated group bar {
+          |      required binary _id (UTF8);
+          |      required double created;
+          |     }
+          |  }
+          |}
+        """.stripMargin)
+      val sourceType = MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  required group foo {
+          |    required binary bar (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+
+      val e = intercept[DecodingSchemaMismatchException] {
+        ParquetCollectionFormatForwardCompatibility.formatForwardCompatibleMessage(
+          targetType,
+          sourceType
+        )
+      }
+
+      e.getMessage should include("Found schema mismatch")
+    }
+  }
 }

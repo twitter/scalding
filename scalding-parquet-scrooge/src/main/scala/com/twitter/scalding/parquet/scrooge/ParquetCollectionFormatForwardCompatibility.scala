@@ -49,12 +49,17 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
    */
   private def formatForwardCompatibleType(sourceType: Type, targetType: Type): Type = {
     (findCollectionGroup(sourceType), findCollectionGroup(targetType)) match {
+      case _ if sourceType.isPrimitive && targetType.isPrimitive =>
+        sourceType
+      case _ if sourceType.isPrimitive != targetType.isPrimitive =>
+        throw new DecodingSchemaMismatchException(
+          s"Found schema mismatch between source type ${sourceType.getName}:\n$sourceType\n\n" +
+            s"and target type:\n${targetType}"
+        )
       case (Some(sourceGroup: ListGroup), Some(targetGroup: ListGroup)) =>
         formatForwardCompatibleCollectionGroup[ListGroup](sourceGroup, targetGroup)
       case (Some(sourceGroup: MapGroup), Some(targetGroup: MapGroup)) =>
         formatForwardCompatibleCollectionGroup[MapGroup](sourceGroup, targetGroup)
-      case _ if sourceType.isPrimitive || targetType.isPrimitive => // Base case
-        sourceType
       case _ => // Field projection
         val sourceGroup = sourceType.asGroupType
         val targetGroup = targetType.asGroupType
