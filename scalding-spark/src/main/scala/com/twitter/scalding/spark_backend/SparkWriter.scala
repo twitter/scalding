@@ -5,7 +5,7 @@ import com.stripe.dagon.{ HMap, Rule }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox
-import com.twitter.scalding.{ Config, Execution, ExecutionCounters }
+import com.twitter.scalding.{ Config, Execution, ExecutionCounters, CancellationHandler, CFuture}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -144,7 +144,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
    */
   def execute(
     conf: Config,
-    writes: List[ToWrite[_]])(implicit cec: ExecutionContext): Future[(Long, ExecutionCounters)] = {
+    writes: List[ToWrite[_]])(implicit cec: ExecutionContext): CFuture[(Long, ExecutionCounters)] = {
 
     val planner = SparkPlanner.plan(conf, sparkMode.sources.orElse(state.get().sources))
 
@@ -213,6 +213,6 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
     // now we run the actions:
-    Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty))
+    CFuture.uncancellable(Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty)))
   }
 }

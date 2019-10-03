@@ -141,8 +141,7 @@ object Op extends Serializable {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(session,
-        input.run(session).map { rdd => fn(widen(rdd)) })
+      cache.getOrElseUpdate(session, input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {

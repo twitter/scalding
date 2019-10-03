@@ -16,6 +16,9 @@ limitations under the License.
 package com.twitter.scalding.cascading_interop;
 
 import cascading.flow.FlowListener;
+import cascading.flow.FlowException;
+import cascading.flow.FlowStepListener;
+import cascading.flow.FlowStep;
 import cascading.flow.Flow;
 import cascading.stats.CascadingStats;
 
@@ -28,6 +31,12 @@ import scala.concurrent.Future;
  * deal with in scala
  */
 public class FlowListenerPromise {
+  public static class FlowStopException extends Exception {
+    public FlowStopException(String message) {
+      super(message);
+    }
+  }
+
   /*
    * This starts the flow and applies a mapping function fn in
    * the same thread that completion happens
@@ -37,7 +46,7 @@ public class FlowListenerPromise {
     flow.addListener(new FlowListener() {
       public void onStarting(Flow f) { } // ignore
       public void onStopping(Flow f) { // in case of runtime exception cascading call onStopping
-        result.tryFailure(new Exception("Flow was stopped"));
+        result.tryFailure(new FlowStopException("Flow was stopped"));
       }
       public void onCompleted(Flow f) {
         // This is always called, but onThrowable is called first
@@ -48,15 +57,30 @@ public class FlowListenerPromise {
               T toPut = (T) fn.apply(f);
               result.success(toPut);
             } catch (Throwable t) {
-              result.failure(t);
+              result.tryFailure(t);
             }
           } else {
-            result.failure(new Exception("Flow was not successfully finished"));
+            result.tryFailure(new Exception("Flow was not successfully finished"));
           }
         }
       }
       public boolean onThrowable(Flow f, Throwable t) {
-        result.failure(t);
+        result.tryFailure(t);
+        // The exception is handled by the owner of the promise and should not be rethrown
+        return true;
+      }
+    });
+    flow.addStepListener(new FlowStepListener() {
+      public void onStepStarting(FlowStep flowStep) { } // ignore
+      public void onStepRunning(FlowStep flowStep) { } // ignore
+      public void onStepCompleted(FlowStep flowStep) { } // ignore
+      public void onStepStopping(FlowStep f) { result.tryFailure(new FlowStopException("Flow step was stopped")); }
+      public boolean onStepThrowable(FlowStep f, Throwable t) {
+        if (t != null) {
+          result.tryFailure(t);
+        } else {
+          result.tryFailure(new FlowException("Flow step failed: " + f.getName()));
+        }
         // The exception is handled by the owner of the promise and should not be rethrown
         return true;
       }

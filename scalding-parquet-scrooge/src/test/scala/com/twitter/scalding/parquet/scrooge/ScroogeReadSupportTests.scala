@@ -2,13 +2,13 @@ package com.twitter.scalding.parquet.scrooge
 
 import com.twitter.scalding.parquet.scrooge.thrift_scala.test.Address
 import com.twitter.scalding.parquet.tuple.macros.Macros._
-import com.twitter.scalding.parquet.tuple.{TypedParquet, TypedParquetSink}
-import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopSharedPlatformTest}
+import com.twitter.scalding.parquet.tuple.{ TypedParquet, TypedParquetSink }
+import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import com.twitter.scalding.typed.TypedPipe
-import com.twitter.scalding.{Args, Job}
+import com.twitter.scalding.{ Args, Job }
 import org.apache.parquet.io.InvalidRecordException
 import org.apache.parquet.schema.MessageTypeParser
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPlatformTest {
 
@@ -95,17 +95,17 @@ class ScroogeReadSupportTests extends WordSpec with Matchers with HadoopSharedPl
       HadoopPlatformJobTest(new WriteToTypedParquetTupleJob(_), cluster)
         .arg("output", "output1")
         .sink[AddressCaseClass](TypedParquet[AddressCaseClass](Seq("output1"))) {
-        in =>
-          in should contain theSameElementsAs TypedParquetTestSources.caseClassValues
-      }.run()
+          in =>
+            in should contain theSameElementsAs TypedParquetTestSources.caseClassValues
+        }.run()
 
       HadoopPlatformJobTest(new ReadWithParquetScrooge(_), cluster)
         .arg("input", "output1")
         .arg("output", "output2")
         .sink[Address](new FixedPathParquetScrooge[Address]("output2")) {
-        out =>
-          out should contain theSameElementsAs TypedParquetTestSources.thriftValues
-      }.run()
+          out =>
+            out should contain theSameElementsAs TypedParquetTestSources.thriftValues
+        }.run()
     }
   }
 
