@@ -12,6 +12,240 @@ import org.scalatest.{Matchers, WordSpec}
 
 class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Matchers {
 
+  /**
+   * Helper wrapper to specify repetition string for exhaustive tests
+   */
+  case class TestRepetitions(projectedReadRepetition1: String, projectedReadRepetition2: String,
+                             fileRepetition1: String, fileRepetition2: String)
+  def feasibleRepetitions = {
+    for {
+      projectedRepetition1 <- Seq("required", "optional")
+      projectedRepetition2 <- Seq("required", "optional")
+      fileRepetition1 <- Seq("required", "optional")
+      fileRepetition2 <- Seq("required", "optional")
+      // when file type is optional, required projected type is breaking
+      if !(fileRepetition1 == "optional" && projectedRepetition1 == "required")
+      if !(fileRepetition2 == "optional" && projectedRepetition2 == "required")
+    } yield {
+      TestRepetitions(projectedRepetition1, projectedRepetition2, fileRepetition1, fileRepetition2)
+    }
+  }
+
+  /**
+   * The following functions of different list formats are equivalent schemas to describe:
+   * {{
+   *   x: Int
+   *   foo_string_list: Seq[Int]
+   *   foo_struct_list: Option[Seq[Struct]]
+   *   foo_list_of_list: Seq[Seq[Long]]
+   *   y: Int
+   *   foo_optional_list:
+   * }}
+   */
+  def listElementRule(repetition1: String, repetition2: String) = (
+    s"""
+      |message schema {
+      |  $repetition1 int32 x;
+      |  required group foo_string_list (LIST) {
+      |    repeated int32 element;
+      |  }
+      |  optional group foo_struct_list (LIST) {
+      |    repeated group element {
+      |      required binary str (UTF8);
+      |      ${repetition2} int32 num;
+      |    }
+      |  }
+      |  required group foo_list_of_list (LIST) {
+      |    repeated group element (LIST) {
+      |      repeated int64 element;
+      |    }
+      |  }
+      |  $repetition2 int32 y;
+      |}
+        """.stripMargin)
+
+  def listArrayRule(repetition1: String, repetition2: String) = (
+    s"""
+       |message schema {
+       |  $repetition1 int32 x;
+       |  required group foo_string_list (LIST) {
+       |    repeated int32 array;
+       |  }
+       |  optional group foo_struct_list (LIST) {
+       |    repeated group array {
+       |      required binary str (UTF8);
+       |      ${repetition2} int32 num;
+       |    }
+       |  }
+       |  required group foo_list_of_list (LIST) {
+       |    repeated group array (LIST) {
+       |      repeated int64 array;
+       |    }
+       |  }
+       |  $repetition2 int32 y;
+       |}
+        """.stripMargin)
+
+  def listTupleRule(repetition1: String, repetition2: String) = (
+    s"""
+       |message schema {
+       |  $repetition1 int32 x;
+       |  required group foo_string_list (LIST) {
+       |    repeated int32 foo_string_list_tuple;
+       |  }
+       |  optional group foo_struct_list (LIST) {
+       |    repeated group foo_struct_list_tuple {
+       |      required binary str (UTF8);
+       |      ${repetition2} int32 num;
+       |    }
+       |  }
+       |  required group foo_list_of_list (LIST) {
+       |    repeated group foo_list_of_list_tuple (LIST) {
+       |      repeated int64 foo_list_of_list_tuple_tuple;
+       |    }
+       |  }
+       |  $repetition2 int32 y;
+       |}
+        """.stripMargin)
+
+  def listStandardRule(repetition1: String, repetition2: String, nullableElement:Boolean=false) = {
+    val requiredOrOptional = if (nullableElement) "optional" else "required"
+    (s"""
+       |message schema {
+       |  $repetition1 int32 x;
+       |  required group foo_string_list (LIST) {
+       |    repeated group list {
+       |      $requiredOrOptional int32 element;
+       |    }
+       |  }
+       |  optional group foo_struct_list (LIST) {
+       |    repeated group list {
+       |      $requiredOrOptional group element {
+       |        required binary str (UTF8);
+       |        ${repetition2} int32 num;
+       |      }
+       |    }
+       |  }
+       |  required group foo_list_of_list (LIST) {
+       |    repeated group list {
+       |      $requiredOrOptional group element (LIST) {
+       |        repeated group list {
+       |          $requiredOrOptional int64 element;
+       |        }
+       |      }
+       |    }
+       |  }
+       |  $repetition2 int32 y;
+       |}
+        """.stripMargin)
+  }
+
+  val requiredElementRules = Seq(
+    ("element", listElementRule(_, _)),
+    ("array", listArrayRule(_, _)),
+    ("tuple", listTupleRule(_, _)),
+    ("standard", (from: String, to: String) => listStandardRule(from, to, nullableElement = false))
+  )
+  for {
+    (projectedReadRuleName, projectedReadSchemaFunc) <- requiredElementRules
+    (fileRuleName, fileSchemaFunc) <- requiredElementRules
+  } yield {
+    s"Format from: [${projectedReadRuleName}] to: [${fileRuleName}]" should {
+      "take option/require specifications from projected read schema" in {
+        for {
+          feasibleRepetition <- feasibleRepetitions
+        } yield {
+          val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
+          val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
+          val projectedReadSchema = MessageTypeParser.parseMessageType(projectedReadSchemaFunc(projectedRepetition1, projectedRepetition2))
+
+          val fileRepetition1 = feasibleRepetition.fileRepetition1
+          val fileRepetition2 = feasibleRepetition.fileRepetition2
+          val fileSchema = MessageTypeParser.parseMessageType(fileSchemaFunc(fileRepetition1, fileRepetition2))
+
+          val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
+            fileSchemaFunc(projectedRepetition1, projectedRepetition2))
+
+          expectedProjectedFileSchema shouldEqual ParquetCollectionFormatForwardCompatibility
+            .projectFileSchema(projectedReadSchema, fileSchema)
+        }
+      }
+    }
+  }
+
+  def listSparkLegacyNullableElementRule(repetition1: String, repetition2: String) = (
+    s"""
+       |message schema {
+       |  $repetition1 int32 x;
+       |  required group foo_string_list (LIST) {
+       |    repeated group bag {
+       |      optional int32 array;
+       |    }
+       |  }
+       |  optional group foo_struct_list (LIST) {
+       |    repeated group bag {
+       |      optional group array {
+       |        required binary str (UTF8);
+       |        ${repetition2} int32 num;
+       |      }
+       |    }
+       |  }
+       |  required group foo_list_of_list (LIST) {
+       |    repeated group bag {
+       |      optional group array (LIST) {
+       |        repeated group bag {
+       |          optional int64 array;
+       |        }
+       |      }
+       |    }
+       |  }
+       |  $repetition2 int32 y;
+       |}
+        """.stripMargin)
+
+  "Format compat for list with nullable element" should {
+    "format from spark legacy write, with nullable elements, to standard" in {
+      for {
+        feasibleRepetition <- feasibleRepetitions
+      } yield {
+        val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
+        val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
+        val projectedReadSchema = MessageTypeParser.parseMessageType(listSparkLegacyNullableElementRule(projectedRepetition1, projectedRepetition2))
+
+        val fileRepetition1 = feasibleRepetition.fileRepetition1
+        val fileRepetition2 = feasibleRepetition.fileRepetition2
+        val fileSchema = MessageTypeParser.parseMessageType(listStandardRule(fileRepetition1,
+          fileRepetition2,
+          nullableElement = true)
+        )
+        val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(listStandardRule(projectedRepetition1, projectedRepetition2, nullableElement = true))
+        expectedProjectedFileSchema shouldEqual ParquetCollectionFormatForwardCompatibility
+          .projectFileSchema(projectedReadSchema, fileSchema)
+      }
+    }
+
+    "failed to format required element to spark legacy write with nullable element" in {
+      for {
+        feasibleRepetition <- feasibleRepetitions
+        (_, requiredElementSchemaFunc) <- requiredElementRules
+      } yield {
+        val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
+        val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
+        val fileSchema = MessageTypeParser.parseMessageType(listSparkLegacyNullableElementRule(projectedRepetition1, projectedRepetition2))
+
+        val fileRepetition1 = feasibleRepetition.fileRepetition1
+        val fileRepetition2 = feasibleRepetition.fileRepetition2
+        val projectedReadSchema = MessageTypeParser.parseMessageType(requiredElementSchemaFunc(fileRepetition1,
+          fileRepetition2)
+        )
+        val e = intercept[IllegalArgumentException] {
+          ParquetCollectionFormatForwardCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+        }
+        e.getMessage should include("Spark legacy mode for nullable element cannot take required element")
+      }
+    }
+  }
+
   "Format forward compat: resolving map format" should {
     "map identity" in {
       val targetType = MessageTypeParser.parseMessageType(
@@ -314,7 +548,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """
           |message SampleSource {
           |  optional group foo (LIST) {
-          |    repeated group array {
+          |    repeated group array (LIST) {
           |      repeated binary array (UTF8);
           |    }
           |  }
@@ -613,7 +847,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "does not format 3-level to x_tuple" in {
+    "format 3-level to x_tuple" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message scalding_schema {
@@ -641,11 +875,52 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
       val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
-      solved shouldEqual sourceType
+      solved shouldEqual MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  optional group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |  optional int32 x;
+          |}
+        """.stripMargin)
     }
   }
 
   "Format forward compat: resolving mixed collection" should {
+    "list of map identity from thrift struct" in {
+      val mapType = new MapType(
+        new ThriftField("NOT_USED_KEY", 4, Requirement.REQUIRED, new ThriftType.StringType),
+        new ThriftField("NOT_USED_VALUE", 5, Requirement.REQUIRED, new ThriftType.I64Type))
+      val message = new ThriftSchemaConverter().convert(
+        new StructType(util.Arrays.asList(
+          new ThriftField("list_of_map", 2, Requirement.REQUIRED, new ListType(
+            new ThriftField("NOT_USED_ELEMENT", 2, Requirement.REQUIRED, mapType))
+          )
+        ), StructOrUnionType.STRUCT))
+
+      message shouldEqual MessageTypeParser.parseMessageType(
+        """
+          |message ParquetSchema {
+          |  required group list_of_map (LIST) = 2 {
+          |    repeated group list_of_map_tuple (MAP) {
+          |      repeated group map (MAP_KEY_VALUE) {
+          |        required binary key (UTF8);
+          |        optional int64 value;
+          |      }
+          |    }
+          |  }
+          |}
+          |
+        """.stripMargin
+      )
+
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
+      solved shouldEqual message
+    }
+
     "format map of list" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
@@ -705,7 +980,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       solved shouldEqual expected
     }
 
-    "format list of map" in {
+    "format list of map: tuple_x to standard" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
           |message spark_schema {
@@ -752,6 +1027,60 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |          optional group value {
           |            optional double created;
           |          }
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      solved shouldEqual expected
+    }
+
+    "format list of map: standard to tuple_x" in {
+      val targetType = MessageTypeParser.parseMessageType(
+        """
+          |message spark_schema {
+          |  required group list_of_map (LIST) {
+          |    repeated group list_of_map_tuple (MAP) {
+          |      repeated group map (MAP_KEY_VALUE) {
+          |        required binary key (UTF8);
+          |        required group value {
+          |          required binary _id (UTF8);
+          |          required double created;
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val sourceType = MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  required group list_of_map (LIST) {
+          |    repeated group list {
+          |      required group element (MAP) {
+          |        repeated group key_value {
+          |          required binary key (UTF8);
+          |          optional group value {
+          |            optional double created;
+          |          }
+          |        }
+          |      }
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message SampleSource {
+          |  required group list_of_map (LIST) {
+          |    repeated group list_of_map_tuple (MAP) {
+          |      repeated group map (MAP_KEY_VALUE) {
+          |        required binary key (UTF8);
+          |        optional group value {
+          |          optional double created;
           |        }
           |      }
           |    }
