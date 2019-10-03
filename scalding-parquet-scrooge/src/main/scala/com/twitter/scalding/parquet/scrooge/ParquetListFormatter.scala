@@ -18,27 +18,31 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
 
   private val LOGGER = LoggerFactory.getLogger(getClass)
 
+  private val rules: Seq[ParquetListFormatRule] = Seq(
+    PrimitiveElementRule, PrimitiveArrayRule,
+    GroupElementRule, GroupArrayRule,
+    TupleRule, StandardRule
+  )
+
   def formatForwardCompatibleRepeatedType(repeatedSourceType: Type,
                                           repeatedTargetType: Type,
-                                          recursiveSolver: (Type, Type) => Type) = {
+                                          fieldContext: FieldContext,
+                                          recursiveSolver: (Type, Type, FieldContext) => Type) = {
     (
-      findRule(repeatedSourceType, Source),
-      findRule(repeatedTargetType, Target)
+      findRule(repeatedSourceType),
+      findRule(repeatedTargetType)
     ) match {
       case (Some(sourceRule), Some(targetRule)) => {
-
         val sourceElementType = sourceRule.elementType(repeatedSourceType)
-        val sourceElementIsRequired = sourceRule.isElementRequired(repeatedSourceType)
-        val sourceElementOriginalType = sourceRule.elementOriginalType(repeatedSourceType)
-
         val targetElementType = targetRule.elementType(repeatedTargetType)
-        val forwardCompatElementType = recursiveSolver(sourceElementType, targetElementType)
+        val forwardCompatElementType = recursiveSolver(sourceElementType, targetElementType, fieldContext)
 
         targetRule.createCompliantRepeatedType(
           elementType = forwardCompatElementType,
-          elementName = forwardCompatElementType.getName,
-          isElementRequired = sourceElementIsRequired,
-          elementOriginalType = sourceElementOriginalType
+          elementName = sourceRule.elementName(repeatedSourceType),
+          isElementRequired = sourceRule.isElementRequired(repeatedSourceType),
+          elementOriginalType = sourceRule.elementOriginalType(repeatedSourceType),
+          fieldContext=fieldContext
         )
       }
 
@@ -65,36 +69,11 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
     }
   }
 
-  private def findRule(repeatedType: Type,
-                       sourceOrTarget: SourceOrTarget): Option[ParquetListFormatRule] = {
-    val ruleFound = sourceOrTarget.rules.find(rule => rule.appliesToType(repeatedType))
-    if (ruleFound.isEmpty) LOGGER.warn(s"Unable to find matching rule for ${sourceOrTarget.name} schema:\n$repeatedType")
+  private def findRule(repeatedType: Type): Option[ParquetListFormatRule] = {
+    val ruleFound = rules.find(rule => rule.appliesToType(repeatedType))
+    if (ruleFound.isEmpty) logger.warn(s"Unable to find matching rule for repeated type:\n$repeatedType")
     ruleFound
   }
-}
-
-/**
- * Helper to specify supported source/target conversion.
- */
-private[scrooge] sealed trait SourceOrTarget {
-  def rules: Seq[ParquetListFormatRule]
-  def name: String
-}
-
-private[scrooge] object Source extends SourceOrTarget {
-  override val rules: Seq[ParquetListFormatRule] = Seq(
-    PrimitiveElementRule, PrimitiveArrayRule,
-    GroupElementRule, GroupArrayRule,
-    TupleRule, StandardRule
-  )
-
-  override def name: String = "source"
-}
-
-private[scrooge] object Target extends SourceOrTarget {
-  override def rules: Seq[ParquetListFormatRule] = Source.rules.filterNot(_ == TupleRule)
-
-  override def name: String = "target"
 }
 
 /**
@@ -121,7 +100,8 @@ private[scrooge] sealed trait ParquetListFormatRule {
   private[scrooge] def createCompliantRepeatedType(elementType: Type,
                                                    elementName: String,
                                                    isElementRequired: Boolean,
-                                                   elementOriginalType: OriginalType): Type
+                                                   elementOriginalType: OriginalType,
+                                                   fieldContext: FieldContext): Type
 }
 
 
@@ -144,9 +124,9 @@ private[scrooge] sealed trait PrimitiveListRule extends ParquetListFormatRule {
   override def appliesToType(repeatedType: Type): Boolean =
     repeatedType.isPrimitive && repeatedType.getName == this.constantElementName
 
-  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType): Type = {
-    if (!isElementRequired) throw new IllegalArgumentException("Primitive list format can only take required element")
-    if (!typ.isPrimitive) throw new IllegalArgumentException(String.format("Primitive list format cannot take group, but is given %s", typ))
+  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
+    if (!isElementRequired) throw new IllegalArgumentException(s"Primitive ${constantElementName} list format can only take required element")
+    if (!typ.isPrimitive) throw new IllegalArgumentException(s"Primitive list format cannot take group, but is given $typ")
     new PrimitiveType(Type.Repetition.REPEATED, typ.asPrimitiveType.getPrimitiveTypeName, this.constantElementName, originalType)
   }
 }
@@ -188,9 +168,10 @@ private[scrooge] sealed trait GroupListRule extends ParquetListFormatRule {
     }
   }
 
-  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType): Type = {
-    if (typ.isPrimitive) new GroupType(Type.Repetition.REPEATED, this.constantElementName, typ)
-    else new GroupType(Type.Repetition.REPEATED, this.constantElementName, typ.asGroupType.getFields)
+  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
+    if (!isElementRequired) throw new IllegalArgumentException(s"Group ${constantElementName} list format can only take required element")
+    if (typ.isPrimitive) throw new IllegalArgumentException(s"Group list format cannot take primitive type, but is given $typ")
+    else new GroupType(Type.Repetition.REPEATED, this.constantElementName, originalType, typ.asGroupType.getFields)
   }
 }
 
@@ -219,8 +200,9 @@ private[scrooge] object TupleRule extends ParquetListFormatRule {
     true
   }
 
-  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType): Type = {
-    val suffixed_name = name + tupleSuffix
+  override def createCompliantRepeatedType(typ: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
+    // nested list has type name of the form: `field_original_name_tuple_tuple..._tuple` for the depth of list
+    val suffixed_name = (List(fieldContext.name) ++ (1 to fieldContext.nestedListLevel).toList.map(_ => "tuple")).mkString("_")
     if (typ.isPrimitive) new PrimitiveType(Type.Repetition.REPEATED, typ.asPrimitiveType.getPrimitiveTypeName, suffixed_name, originalType)
     else new GroupType(Type.Repetition.REPEATED, suffixed_name, originalType, typ.asGroupType.getFields)
   }
@@ -248,7 +230,7 @@ private[scrooge] object StandardRule extends ParquetListFormatRule {
 
   override def elementName(repeatedType: Type): String = "element"
 
-  override def createCompliantRepeatedType(originalElementType: Type, name: String, isElementRequired: Boolean, originalType: OriginalType): Type = {
+  override def createCompliantRepeatedType(originalElementType: Type, name: String, isElementRequired: Boolean, originalType: OriginalType, fieldContext: FieldContext): Type = {
 
     val repetition = if (isElementRequired) Type.Repetition.REQUIRED else Type.Repetition.OPTIONAL
     val elementType = if (originalElementType.isPrimitive) {

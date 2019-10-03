@@ -15,7 +15,7 @@ import org.apache.parquet.schema.{OriginalType, Type}
 private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
 
   /**
-   * Handle legacy type when
+   * Handle map format compatibility
    * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps
    *
    * @param sourceRepeatedMapType
@@ -23,15 +23,11 @@ private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
    */
   def formatForwardCompatibleRepeatedType(sourceRepeatedMapType: Type,
                                           targetRepeatedMapType: Type,
-                                          recursiveSolver: (Type, Type) => Type) = {
+                                          fieldContext: FieldContext,
+                                          recursiveSolver: (Type, Type, FieldContext) => Type) = {
 
-    val solvedRepeatedType = recursiveSolver(sourceRepeatedMapType, targetRepeatedMapType)
-    if (isLegacyRepeatedType(sourceRepeatedMapType) &&
-      isStandardRepeatedType(targetRepeatedMapType)) {
-      targetRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
-    } else {
-      solvedRepeatedType
-    }
+    val solvedRepeatedType = recursiveSolver(sourceRepeatedMapType, targetRepeatedMapType, fieldContext)
+    targetRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
   }
 
   def extractGroup(typ: Type): Option[MapGroup] = {
