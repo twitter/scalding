@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
  */
 private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter {
 
-  private val LOGGER = LoggerFactory.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private val rules: Seq[ParquetListFormatRule] = Seq(
     PrimitiveElementRule, PrimitiveArrayRule,
@@ -104,19 +104,20 @@ private[scrooge] sealed trait ParquetListFormatRule {
                                                    fieldContext: FieldContext): Type
 }
 
-
+/**
+ * Rule 1 in https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+ * Although documentation only mentions `element` primitive and not for `array`,
+ * Spark does write out with primitive `array` when legacy write format is enabled.
+ * repeated int32 [element|array];
+ */
 private[scrooge] sealed trait PrimitiveListRule extends ParquetListFormatRule {
-  /**
-   * repeated int32 [element|array];
-   */
+
   def constantElementName: String
 
   override def elementType(repeatedType: Type): Type = repeatedType
 
   override private[scrooge] def isElementRequired(repeatedType: Type) = {
-    // According to Rule 1 from,
-    // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
-    // "the repeated field is not a group,
+    // According to rule 1, "the repeated field is not a group,
     // then its type is the element type and elements are required."
     true
   }
@@ -139,18 +140,21 @@ private[scrooge] object PrimitiveArrayRule extends PrimitiveListRule {
   override def constantElementName: String = "array"
 }
 
+/**
+ * Rule 2 in https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+ * Although documentation only mentions `element` group and not for `array`,
+ * Spark does write out with group `array` when legacy write format is enabled.
+ * repeated group [element|array] {
+ *   required binary str (UTF8);
+ *   required int32 num;
+ * }
+ */
 private[scrooge] sealed trait GroupListRule extends ParquetListFormatRule {
-  /**
-   * repeated group [element|array] {
-   *   required binary str (UTF8);
-   *   required int32 num;
-   * }
-   */
+
   def constantElementName: String
 
   override def isElementRequired(repeatedType: Type): Boolean = {
-    // According Rule 2 from
-    // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+    // According Rule 2,
     // "If the repeated field is a group with multiple fields,
     // then its type is the element type and elements are required."
     true
@@ -183,7 +187,18 @@ private[scrooge] object GroupArrayRule extends GroupListRule {
   override def constantElementName: String = "array"
 }
 
+/**
+ * Rule 3 in https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
+ * Although the documentation only mentions group with one field, the generated schema from thrift struct
+ * does write out both primitive type and group type with multiple fields.
+ * repeated group my_list_field_tuple {
+ *   required binary str (UTF8);
+ * }
+ * This repeated type implies the field name is `my_list_field`. This is the only format where
+ * info is not fully self-contained.
+ */
 private[scrooge] object TupleRule extends ParquetListFormatRule {
+
   private val tupleSuffix = "_tuple"
 
   override def appliesToType(repeatedType: Type): Boolean = repeatedType.getName.endsWith(tupleSuffix)
@@ -195,8 +210,6 @@ private[scrooge] object TupleRule extends ParquetListFormatRule {
   override def elementType(repeatedType: Type): Type = repeatedType
 
   override private[scrooge] def isElementRequired(repeatedType: Type) = {
-    // According to Rule 3 from
-    // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#backward-compatibility-rules
     true
   }
 
