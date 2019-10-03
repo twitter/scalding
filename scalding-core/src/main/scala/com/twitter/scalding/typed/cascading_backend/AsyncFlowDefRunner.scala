@@ -39,6 +39,7 @@ object AsyncFlowDefRunner {
   private final case class RunFlowDef(conf: Config,
     fd: FlowDef,
     result: CPromise[(Long, JobStats)]) extends FlowDefAction
+  private final case class StopFlow(flow: Flow[_]) extends FlowDefAction
   private case object Stop extends FlowDefAction
 
   /**
@@ -167,6 +168,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       @annotation.tailrec
       def go(id: Long): Unit = messageQueue.take match {
         case Stop => ()
+        case StopFlow(flow) =>
+          flow.stop()
+          go(id)
         case RunFlowDef(conf, fd, cpromise) =>
           try {
             val ctx = ExecutionContext.newContext(conf.setScaldingFlowCounterValue(id))(fd, mode)
@@ -175,7 +179,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
                 val future = FlowListenerPromise
                   .start(flow, { f: Flow[_] => (id, JobStats(f.getFlowStats)) })
                 // we want to stop the flow when the execution is cancelled
-                val cancel = CancellationHandler.fromFn(() => flow.stop())
+                val cancel = CancellationHandler.fromFn(() => messageQueue.put(StopFlow(flow)))
                 cpromise.completeWith(CFuture(future, cancel))
               case Success(None) =>
                 // These is nothing to do:
