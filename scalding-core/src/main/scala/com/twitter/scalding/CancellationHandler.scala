@@ -16,10 +16,8 @@ object CancellationHandler {
     def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future.successful(())
   }
 
-  def fromFn(fn: () => Unit): CancellationHandler = new CancellationHandler {
-    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = Future {
-      fn()
-    }
+  def fromFn(fn: ConcurrentExecutionContext => Future[Unit]): CancellationHandler = new CancellationHandler {
+    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = fn(ec)
   }
 
   def fromFuture(f: Future[CancellationHandler]): CancellationHandler = new CancellationHandler {
