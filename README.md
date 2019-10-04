@@ -1,7 +1,7 @@
 # Scalding
 
 [![Build status](https://img.shields.io/travis/twitter/scalding/develop.svg)](http://travis-ci.org/twitter/scalding)
-[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+[![Coverage Status](https://img.shields.io/codecov/c/github/twitter/scalding/develop.svg?maxAge=3600)](https://codecov.io/github/twitter/scalding)
 [![Latest version](https://index.scala-lang.org/twitter/scalding/scalding-core/latest.svg?color=orange)](https://index.scala-lang.org/twitter/scalding/scalding-core)
 [![Chat](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -92,8 +92,8 @@ Please refer to [FAQ page](https://github.com/twitter/scalding/wiki/Frequently-a
 We use [Travis CI](http://travis-ci.org/) to verify the build:
 [![Build Status](https://travis-ci.org/twitter/scalding.svg?branch=develop)](http://travis-ci.org/twitter/scalding)
 
-We use [Coveralls](https://coveralls.io/r/twitter/scalding) for code coverage results:
-[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+We use [Codecov](https://codecov.io/github/twitter/scalding) for code coverage results:
+[![Coverage Status](https://img.shields.io/codecov/c/github/twitter/scalding/develop.svg?maxAge=3600)](https://codecov.io/github/twitter/scalding)
 
 Scalding modules are available from maven central.
 
