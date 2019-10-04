@@ -2,7 +2,7 @@ package com.twitter.scalding.parquet.scrooge
 
 import java.util
 
-import org.apache.parquet.schema.MessageTypeParser
+import org.apache.parquet.schema.{MessageType, MessageTypeParser}
 import org.apache.parquet.thrift.{DecodingSchemaMismatchException, ThriftSchemaConverter}
 import org.apache.parquet.thrift.struct.ThriftField.Requirement
 import org.apache.parquet.thrift.struct.{ThriftField, ThriftType}
@@ -11,6 +11,13 @@ import org.apache.parquet.thrift.struct.ThriftType.{ListType, MapType, StructTyp
 import org.scalatest.{Matchers, WordSpec}
 
 class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
+
+  private def testProjectAndAssertCompatibility(fileSchema: MessageType,
+                                                projectedReadSchema: MessageType) = {
+    val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, projectedReadSchema)
+    ScroogeReadSupport.assertGroupsAreCompatible(fileSchema, projectedFileSchema)
+    projectedFileSchema
+  }
 
   /**
    * Helper wrapper to specify repetition string for exhaustive tests
@@ -168,8 +175,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
             fileSchemaFunc(projectedRepetition1, projectedRepetition2))
 
-          expectedProjectedFileSchema shouldEqual ParquetCollectionFormatCompatibility
-            .projectFileSchema(projectedReadSchema, fileSchema)
+          expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
         }
       }
     }
@@ -221,8 +227,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           nullableElement = true)
         )
         val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(listStandardRule(projectedRepetition1, projectedRepetition2, nullableElement = true))
-        expectedProjectedFileSchema shouldEqual ParquetCollectionFormatCompatibility
-          .projectFileSchema(projectedReadSchema, fileSchema)
+        expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       }
     }
 
@@ -241,7 +246,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           fileRepetition2)
         )
         val e = intercept[IllegalArgumentException] {
-          ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+          testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
         }
         e.getMessage should include("Spark legacy mode for nullable element cannot take required element")
       }
@@ -264,7 +269,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, fileSchema)
       fileSchema shouldEqual projectedFileSchema
     }
 
@@ -290,7 +295,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |}
         """.stripMargin)
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      val projectedFileSchema = testProjectAndAssertCompatibility(message, message)
       message shouldEqual projectedFileSchema
     }
 
@@ -312,7 +317,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin
       )
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      val projectedFileSchema = testProjectAndAssertCompatibility(message, message)
       message shouldEqual projectedFileSchema
     }
 
@@ -339,7 +344,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -377,7 +382,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -430,7 +435,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -484,7 +489,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -514,7 +519,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -546,7 +551,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -582,7 +587,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
       """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -622,7 +627,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -662,7 +667,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -689,7 +694,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  required int32 x;
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, fileSchema)
       fileSchema shouldEqual projectedFileSchema
     }
 
@@ -723,7 +728,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -769,7 +774,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -816,7 +821,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -865,7 +870,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -913,7 +918,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  optional int32 x;
           |}
         """.stripMargin)
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -956,7 +961,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin
       )
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      val projectedFileSchema = testProjectAndAssertCompatibility(message, message)
       message shouldEqual projectedFileSchema
     }
 
@@ -997,7 +1002,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |}
         """.stripMargin)
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ParquetSchema {
@@ -1054,7 +1059,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |}
         """.stripMargin)
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -1110,7 +1115,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |}
         """.stripMargin)
 
-      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -1158,10 +1163,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatCompatibility.projectFileSchema(
-          projectedReadSchema,
-          fileSchema
-        )
+        testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       }
 
       e.getMessage should include("non-optional projected read field map:")
@@ -1192,7 +1194,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+        testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       }
 
       e.getMessage should include("non-optional projected read field element:")
@@ -1224,10 +1226,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatCompatibility.projectFileSchema(
-          projectedReadSchema,
-          fileSchema
-        )
+        testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       }
 
       e.getMessage should include("non-optional projected read field bogus_field:")
@@ -1257,10 +1256,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatCompatibility.projectFileSchema(
-          fileSchema,
-          projectedReadSchema
-        )
+        testProjectAndAssertCompatibility(projectedReadSchema, fileSchema)
       }
 
       e.getMessage should include("Found schema mismatch")
