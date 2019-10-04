@@ -10,7 +10,7 @@ import org.apache.parquet.thrift.struct.ThriftType.StructType.StructOrUnionType
 import org.apache.parquet.thrift.struct.ThriftType.{ListType, MapType, StructType}
 import org.scalatest.{Matchers, WordSpec}
 
-class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Matchers {
+class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
 
   /**
    * Helper wrapper to specify repetition string for exhaustive tests
@@ -146,11 +146,13 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     ("tuple", listTupleRule(_, _)),
     ("standard", (from: String, to: String) => listStandardRule(from, to, nullableElement = false))
   )
+
+  // All possible format pairs of non-nullable list
   for {
     (projectedReadRuleName, projectedReadSchemaFunc) <- requiredElementRules
     (fileRuleName, fileSchemaFunc) <- requiredElementRules
   } yield {
-    s"Format from: [${projectedReadRuleName}] to: [${fileRuleName}]" should {
+    s"Format compat for list with non-nullable element from: [${projectedReadRuleName}] to: [${fileRuleName}]" should {
       "take option/require specifications from projected read schema" in {
         for {
           feasibleRepetition <- feasibleRepetitions
@@ -166,7 +168,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
             fileSchemaFunc(projectedRepetition1, projectedRepetition2))
 
-          expectedProjectedFileSchema shouldEqual ParquetCollectionFormatForwardCompatibility
+          expectedProjectedFileSchema shouldEqual ParquetCollectionFormatCompatibility
             .projectFileSchema(projectedReadSchema, fileSchema)
         }
       }
@@ -219,7 +221,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           nullableElement = true)
         )
         val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(listStandardRule(projectedRepetition1, projectedRepetition2, nullableElement = true))
-        expectedProjectedFileSchema shouldEqual ParquetCollectionFormatForwardCompatibility
+        expectedProjectedFileSchema shouldEqual ParquetCollectionFormatCompatibility
           .projectFileSchema(projectedReadSchema, fileSchema)
       }
     }
@@ -239,16 +241,16 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           fileRepetition2)
         )
         val e = intercept[IllegalArgumentException] {
-          ParquetCollectionFormatForwardCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+          ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
         }
         e.getMessage should include("Spark legacy mode for nullable element cannot take required element")
       }
     }
   }
 
-  "Format forward compat: resolving map format" should {
+  "Format compat for map" should {
     "map identity" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map (MAP) {
@@ -262,8 +264,8 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(targetType, targetType)
-      solved shouldEqual targetType
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, fileSchema)
+      fileSchema shouldEqual projectedFileSchema
     }
 
     "map identity from thrift struct: string key, struct value" in {
@@ -288,8 +290,8 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
-      solved shouldEqual message
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      message shouldEqual projectedFileSchema
     }
 
     "map identity from thrift struct: string kye, list string value" in {
@@ -310,12 +312,12 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin
       )
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
-      solved shouldEqual message
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      message shouldEqual projectedFileSchema
     }
 
-    "format map legacy: original type (MAP_KEY_VALUE) to standard format key_value" in {
-      val targetType = MessageTypeParser.parseMessageType(
+    "format map legacy (MAP_KEY_VALUE) to standard format key_value" in {
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map_field (MAP) {
@@ -326,9 +328,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_field (MAP) {
           |    repeated group map (MAP_KEY_VALUE) {
           |      required binary key (UTF8);
@@ -337,10 +339,10 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -349,11 +351,49 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
+    }
+
+    "format map standard key_value to legacy (MAP_KEY_VALUE)" in {
+      val fileSchema = MessageTypeParser.parseMessageType(
+        """
+          |message FileSchema {
+          |  required group map_field (MAP) {
+          |    repeated group map (MAP_KEY_VALUE) {
+          |      required binary key (UTF8);
+          |      required int32 value;
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  required group map_field (MAP) {
+          |    repeated group key_value {
+          |      required binary key (UTF8);
+          |      optional int32 value;
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  required group map_field (MAP) {
+          |    repeated group map (MAP_KEY_VALUE) {
+          |      required binary key (UTF8);
+          |      optional int32 value;
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      expected shouldEqual projectedFileSchema
     }
 
     "format map legacy map of map" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map_of_map_field (MAP) {
@@ -372,9 +412,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_of_map_field (MAP) {
           |    repeated group map (MAP_KEY_VALUE) {
           |      required binary key (UTF8);
@@ -390,10 +430,10 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_of_map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -409,7 +449,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     def schemaFromThriftMap(mapValueType: ThriftType) = {
@@ -425,9 +465,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     }
   }
 
-  "Format forward compat: resolving list format" should {
+  "Format compat for list" should {
     "format x_tuple to primitive array" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -436,28 +476,28 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated binary country_codes_tuple (UTF8);
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated binary array (UTF8);
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format x_tuple to primitive element" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -466,28 +506,28 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated binary country_codes_tuple (UTF8);
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated binary element (UTF8);
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format x_tuple to 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -498,19 +538,19 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated binary country_codes_tuple (UTF8);
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated group list {
           |      required binary element (UTF8);
@@ -518,11 +558,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format nested x_tuple to group array" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group foo (LIST) {
@@ -532,9 +572,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group foo_tuple (LIST) {
           |      repeated binary foo_tuple_tuple (UTF8);
@@ -542,11 +582,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
       """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       // note optional of result, and field rename
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group array (LIST) {
           |      repeated binary array (UTF8);
@@ -554,11 +594,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format nested x_tuple to nested 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group foo (LIST) {
@@ -572,9 +612,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group foo_tuple (LIST) {
           |      repeated binary foo_tuple_tuple (UTF8);
@@ -582,10 +622,10 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -597,11 +637,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format binary array to 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -614,19 +654,19 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       // inner list is `binary array`
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |     repeated binary array (UTF8);
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated group list {
           |      required binary element (UTF8);
@@ -634,12 +674,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
-
+      expected shouldEqual projectedFileSchema
     }
 
     "format 3-level to 3-level (identity)" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -650,12 +689,12 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(targetType, targetType)
-      solved shouldEqual targetType
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, fileSchema)
+      fileSchema shouldEqual projectedFileSchema
     }
 
     "format nested primitive array to nested 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group array_of_country_codes (LIST) {
@@ -672,9 +711,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       // inner list is `binary array`
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -684,11 +723,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -700,11 +739,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format element group to 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group country_codes (LIST) {
@@ -719,9 +758,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated group element {
           |      optional binary foo (UTF8);
@@ -730,11 +769,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group country_codes (LIST) {
           |    repeated group list {
           |      required group element {
@@ -745,11 +784,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format 3-level to nested primitive array" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group array_of_country_codes (LIST) {
@@ -763,7 +802,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  optional group array_of_country_codes (LIST) {
@@ -777,7 +816,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
 
       val expected = MessageTypeParser.parseMessageType(
         """
@@ -791,11 +830,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format x_tuple in group to 3-level" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  optional group connect_delays (LIST) {
@@ -813,7 +852,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  optional group connect_delays (LIST) {
@@ -826,7 +865,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -844,11 +883,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format 3-level to x_tuple" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group foo (LIST) {
@@ -859,7 +898,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  required int32 x;
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  optional group foo (LIST) {
@@ -874,8 +913,8 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  optional int32 x;
           |}
         """.stripMargin)
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
-      solved shouldEqual MessageTypeParser.parseMessageType(
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
+      MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  optional group foo (LIST) {
@@ -885,11 +924,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |  optional int32 x;
           |}
-        """.stripMargin)
+        """.stripMargin) shouldEqual projectedFileSchema
     }
   }
 
-  "Format forward compat: resolving mixed collection" should {
+  "Format compat for mixed collection" should {
     "list of map identity from thrift struct" in {
       val mapType = new MapType(
         new ThriftField("NOT_USED_KEY", 4, Requirement.REQUIRED, new ThriftType.StringType),
@@ -917,12 +956,12 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin
       )
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(message, message)
-      solved shouldEqual message
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(message, message)
+      message shouldEqual projectedFileSchema
     }
 
     "format map of list" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map_field (MAP) {
@@ -941,7 +980,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
           |
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ParquetSchema {
           |  required group map_field (MAP) {
@@ -958,7 +997,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ParquetSchema {
@@ -977,11 +1016,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format list of map: tuple_x to standard" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group list_of_map (LIST) {
@@ -999,7 +1038,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
@@ -1015,7 +1054,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -1033,11 +1072,11 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
 
     "format list of map: standard to tuple_x" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group list_of_map (LIST) {
@@ -1053,7 +1092,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
@@ -1071,7 +1110,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+      val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
@@ -1087,13 +1126,13 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      solved shouldEqual expected
+      expected shouldEqual projectedFileSchema
     }
   }
 
-  "Format forward compat: check extra non-optional field projection" should {
+  "Format compat: check extra non-optional field projection" should {
     "throws on missing (MAP_KEY_VALUE) annotation causing projection of non-existent field" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map_field (MAP) {
@@ -1106,7 +1145,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       // `map` isn't annotated with `MAP_KEY_VALUE`, and is thus treated as
       // an actual field which then fails projection
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  required group map_field (MAP) {
@@ -1119,9 +1158,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
-          sourceType,
-          targetType
+        ParquetCollectionFormatCompatibility.projectFileSchema(
+          projectedReadSchema,
+          fileSchema
         )
       }
 
@@ -1129,7 +1168,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     }
 
     "throws on missing `repeated` causing projection of non-existent field" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  optional group foo (LIST) {
@@ -1141,7 +1180,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  optional group foo (LIST) {
@@ -1153,14 +1192,14 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
+        ParquetCollectionFormatCompatibility.projectFileSchema(projectedReadSchema, fileSchema)
       }
 
       e.getMessage should include("non-optional projected read field element:")
     }
 
     "throws on required but non-existent in target" in {
-      val targetType = MessageTypeParser.parseMessageType(
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group map_field (MAP) {
@@ -1171,7 +1210,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  required group map_field (MAP) {
@@ -1185,9 +1224,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
-          sourceType,
-          targetType
+        ParquetCollectionFormatCompatibility.projectFileSchema(
+          projectedReadSchema,
+          fileSchema
         )
       }
 
@@ -1196,8 +1235,8 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
   }
 
   "Schema mismatch" should {
-    "throws exception" in {
-      val targetType = MessageTypeParser.parseMessageType(
+    "throws exception on inconsistent type between primitive and group" in {
+      val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
           |  required group foo {
@@ -1208,7 +1247,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |  }
           |}
         """.stripMargin)
-      val sourceType = MessageTypeParser.parseMessageType(
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
         """
           |message ProjectedReadSchema {
           |  required group foo {
@@ -1218,9 +1257,9 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
 
       val e = intercept[DecodingSchemaMismatchException] {
-        ParquetCollectionFormatForwardCompatibility.projectFileSchema(
-          targetType,
-          sourceType
+        ParquetCollectionFormatCompatibility.projectFileSchema(
+          fileSchema,
+          projectedReadSchema
         )
       }
 
