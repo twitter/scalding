@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
  * 3) wrap back the formatted repeated type with group type from projected read schema. This
  * means the optional/required remains the same as that from projected read schema.
  */
-private[scrooge] object ParquetCollectionFormatForwardCompatibility {
+private[scrooge] object ParquetCollectionFormatCompatibility {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
