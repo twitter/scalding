@@ -250,7 +250,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "map identity" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -317,7 +317,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format map legacy: original type (MAP_KEY_VALUE) to standard format key_value" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -355,7 +355,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format map legacy map of map" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map_of_map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -429,7 +429,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format x_tuple to primitive array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated binary array (UTF8);
           |  }
@@ -459,7 +459,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format x_tuple to primitive element" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated binary element (UTF8);
           |  }
@@ -489,7 +489,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format x_tuple to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated group list {
           |      required binary element (UTF8);
@@ -524,7 +524,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format nested x_tuple to group array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group foo (LIST) {
           |    repeated group array (LIST) {
           |      repeated binary array (UTF8);
@@ -560,7 +560,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format nested x_tuple to nested 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group foo (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -603,7 +603,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format binary array to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated group list {
           |      required binary element (UTF8);
@@ -641,7 +641,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format 3-level to 3-level (identity)" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated group list {
           |      required binary element (UTF8);
@@ -657,7 +657,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format nested primitive array to nested 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -706,7 +706,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format element group to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group country_codes (LIST) {
           |    repeated group list {
           |      required group element {
@@ -751,7 +751,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format 3-level to nested primitive array" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message scalding_schema {
+          |message FileSchema {
           |  required group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -765,7 +765,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
 
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -781,7 +781,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
 
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group array_of_country_codes (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -797,7 +797,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format x_tuple in group to 3-level" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  optional group connect_delays (LIST) {
           |    repeated group list {
           |      required group element {
@@ -815,7 +815,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group connect_delays (LIST) {
           |    repeated group connect_delays_tuple {
           |      optional binary description (UTF8);
@@ -829,7 +829,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group connect_delays (LIST) {
           |    repeated group list {
           |      required group element {
@@ -850,7 +850,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format 3-level to x_tuple" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message scalding_schema {
+          |message FileSchema {
           |  required group foo (LIST) {
           |    repeated group foo_tuple (LIST) {
           |      repeated binary foo_tuple_tuple (UTF8);
@@ -861,7 +861,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group list {
           |      required group element (LIST) {
@@ -877,7 +877,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       solved shouldEqual MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    repeated group foo_tuple (LIST) {
           |      repeated binary foo_tuple_tuple (UTF8);
@@ -924,7 +924,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format map of list" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -958,7 +958,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ScroogeReadSupport.getSchemaForRead(targetType, sourceType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
           |message ParquetSchema {
@@ -983,7 +983,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format list of map: tuple_x to standard" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group list_of_map (LIST) {
           |    repeated group list {
           |      required group element (MAP) {
@@ -1001,7 +1001,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
           |    repeated group element_tuple (MAP) {
           |      repeated group map (MAP_KEY_VALUE) {
@@ -1015,10 +1015,10 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
           |}
         """.stripMargin)
 
-      val solved = ScroogeReadSupport.getSchemaForRead(targetType, sourceType)
+      val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
           |    repeated group list {
           |      required group element (MAP) {
@@ -1039,7 +1039,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "format list of map: standard to tuple_x" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group list_of_map (LIST) {
           |    repeated group list_of_map_tuple (MAP) {
           |      repeated group map (MAP_KEY_VALUE) {
@@ -1055,7 +1055,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
           |    repeated group list {
           |      required group element (MAP) {
@@ -1074,7 +1074,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       val solved = ParquetCollectionFormatForwardCompatibility.projectFileSchema(sourceType, targetType)
       val expected = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group list_of_map (LIST) {
           |    repeated group list_of_map_tuple (MAP) {
           |      repeated group map (MAP_KEY_VALUE) {
@@ -1095,7 +1095,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "throws on missing (MAP_KEY_VALUE) annotation causing projection of non-existent field" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -1108,7 +1108,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
       // an actual field which then fails projection
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_field (MAP) {
           |    repeated group map {
           |      required binary key (UTF8);
@@ -1131,7 +1131,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "throws on missing `repeated` causing projection of non-existent field" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  optional group foo (LIST) {
           |    repeated group list {
           |      required group element {
@@ -1143,7 +1143,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  optional group foo (LIST) {
           |    required group element {
           |      optional binary zing (UTF8);
@@ -1162,7 +1162,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "throws on required but non-existent in target" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group map_field (MAP) {
           |    repeated group key_value {
           |      required binary key (UTF8);
@@ -1173,7 +1173,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group map_field (MAP) {
           |    repeated group map (MAP_KEY_VALUE) {
           |      required binary key (UTF8);
@@ -1199,7 +1199,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
     "throws exception" in {
       val targetType = MessageTypeParser.parseMessageType(
         """
-          |message spark_schema {
+          |message FileSchema {
           |  required group foo {
           |    repeated group bar {
           |      required binary _id (UTF8);
@@ -1210,7 +1210,7 @@ class ParquetCollectionFormatForwardCompatibilityTests extends WordSpec with Mat
         """.stripMargin)
       val sourceType = MessageTypeParser.parseMessageType(
         """
-          |message SampleSource {
+          |message ProjectedReadSchema {
           |  required group foo {
           |    required binary bar (UTF8);
           |  }
