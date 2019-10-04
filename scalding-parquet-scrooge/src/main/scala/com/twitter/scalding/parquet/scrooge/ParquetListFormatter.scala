@@ -24,10 +24,10 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
     TupleRule, StandardRule, SparkLegacyNullableElementRule
   )
 
-  def formatForwardCompatibleRepeatedType(repeatedSourceType: Type,
-                                          repeatedTargetType: Type,
-                                          fieldContext: FieldContext,
-                                          recursiveSolver: (Type, Type, FieldContext) => Type) = {
+  def formatCompatibleRepeatedType(repeatedSourceType: Type,
+                                   repeatedTargetType: Type,
+                                   fieldContext: FieldContext,
+                                   recursiveSolver: (Type, Type, FieldContext) => Type) = {
     (
       findRule(repeatedSourceType),
       findRule(repeatedTargetType)

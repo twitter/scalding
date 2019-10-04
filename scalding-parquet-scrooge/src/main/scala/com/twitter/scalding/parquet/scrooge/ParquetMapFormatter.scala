@@ -21,10 +21,10 @@ private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
    * @param sourceRepeatedMapType
    * @param targetRepeatedMapType
    */
-  def formatForwardCompatibleRepeatedType(sourceRepeatedMapType: Type,
-                                          targetRepeatedMapType: Type,
-                                          fieldContext: FieldContext,
-                                          recursiveSolver: (Type, Type, FieldContext) => Type) = {
+  def formatCompatibleRepeatedType(sourceRepeatedMapType: Type,
+                                   targetRepeatedMapType: Type,
+                                   fieldContext: FieldContext,
+                                   recursiveSolver: (Type, Type, FieldContext) => Type) = {
 
     val solvedRepeatedType = recursiveSolver(sourceRepeatedMapType, targetRepeatedMapType, fieldContext)
     targetRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)

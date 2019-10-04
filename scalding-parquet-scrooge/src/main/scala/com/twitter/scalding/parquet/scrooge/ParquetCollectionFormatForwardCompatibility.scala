@@ -6,8 +6,6 @@ import org.apache.parquet.schema.{GroupType, MessageType, Type}
 import org.apache.parquet.thrift.DecodingSchemaMismatchException
 import org.slf4j.LoggerFactory
 
-import scala.reflect.ClassTag
-
 /**
  * Project file schema based on projected read schema which may contain different format
  * of collection group--list and map. This is currently used in [[ScroogeReadSupport]] where
@@ -65,10 +63,20 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
             s"and file type:\n${fileType}"
         )
       case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
-        projectFileGroup[ListGroup](projectedReadGroup, fileGroup, fieldContext)
+        projectFileGroup(
+          projectedReadGroup,
+          fileGroup,
+          fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1),
+          formatter=ParquetListFormatter
+        )
       case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
-        projectFileGroup[MapGroup](projectedReadGroup, fileGroup, fieldContext)
-      case _ => // Field projection
+        projectFileGroup(
+          projectedReadGroup,
+          fileGroup,
+          fieldContext,
+          formatter=ParquetMapFormatter
+        )
+      case _ => // Struct projection
         val projectedReadGroupType = projectedReadType.asGroupType
         val fileGroupType = fileType.asGroupType
         val projectedReadFields = projectedReadGroupType.getFields.asScala.map { projectedReadField =>
@@ -80,8 +88,7 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
               )
             }
             projectedReadField
-          }
-          else {
+          } else {
             val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
             val fileField = fileGroupType.getFields.get(fileFieldIndex)
             projectFileType(projectedReadField, fileField, FieldContext(projectedReadField.getName))
@@ -91,21 +98,14 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
     }
   }
 
-  private def projectFileGroup[T <: CollectionGroup](projectedReadGroup: T,
-                                                     fileGroup: T,
-                                                     fieldContext: FieldContext)(implicit t: ClassTag[T]): GroupType = {
-
-    val (formatter, updatedFieldContext) = t.runtimeClass.asInstanceOf[Class[T]] match {
-      case c if c == classOf[MapGroup] =>
-        (ParquetMapFormatter, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1))
-      case c if c == classOf[ListGroup] =>
-        (ParquetListFormatter, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1))
-    }
-
-    val projectedFileRepeatedType = formatter.formatForwardCompatibleRepeatedType(
+  private def projectFileGroup(projectedReadGroup: CollectionGroup,
+                               fileGroup: CollectionGroup,
+                               fieldContext: FieldContext,
+                               formatter: ParquetCollectionFormatter): GroupType = {
+    val projectedFileRepeatedType = formatter.formatCompatibleRepeatedType(
       projectedReadGroup.repeatedType,
       fileGroup.repeatedType,
-      updatedFieldContext,
+      fieldContext,
       projectFileType(_, _, _))
     // Respect optional/required from the projected read group.
     projectedReadGroup.groupType.withNewFields(projectedFileRepeatedType)
@@ -124,10 +124,10 @@ private[scrooge] trait ParquetCollectionFormatter {
    * @param recursiveSolver solver for the inner content of the repeated type
    * @return formatted result
    */
-  def formatForwardCompatibleRepeatedType(sourceRepeatedType: Type,
-                                          targetRepeatedType: Type,
-                                          fieldContext: FieldContext,
-                                          recursiveSolver: (Type, Type, FieldContext) => Type): Type
+  def formatCompatibleRepeatedType(sourceRepeatedType: Type,
+                                   targetRepeatedType: Type,
+                                   fieldContext: FieldContext,
+                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type
 
   /**
    * Extract collection group containing repeated type of different formats.
