@@ -9,21 +9,25 @@ import org.slf4j.LoggerFactory
 import scala.reflect.ClassTag
 
 /**
- * Project file schema to have collection types--list and map--in the same structure
- * as projected read schema. This is currently used in [[ScroogeReadSupport]] where projected
- * read schema can come from:
+ * Project file schema based on projected read schema which may contain different format
+ * of collection group--list and map. This is currently used in [[ScroogeReadSupport]] where
+ * projected read schema can come from:
  * 1) Thrift struct via [[org.apache.parquet.thrift.ThriftSchemaConvertVisitor]] which always
  * describe list with `_tuple` format, and map which has `MAP_KEY_VALUE` annotation.
  * 2) User-supplied schema string via config key
  * [[org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA]]
  *
- * The strategy of this class is to first assume that the projected read schema is a "sub-graph" of
- * file schema in terms of field names. (We allow optional field in projected read schema to be in
- * the projected file schema.) However, the data types for collection can differ in
- * graph structure between the two schemas.
- * We thus need to:
- * 1) traverse the two schemas until we find the collection type indicated by `repeated` type.
- * 2) delegate the collection types found to respective list/map formatter.
+ * By definition, the projected read schema is a "sub-graph" of file schema in terms of field names.
+ * (We do allow optional field in projected read schema to be in
+ * the projected file schema, even if file schema may not originally contain it.)
+ * The graphs of the two schemas may, however, differ for list and map type because of multiple
+ * legacy formats and the canonical one. This class supports all directions of conversion.
+ *
+ * The projection strategy is:
+ * 1) traverse the two schemas and maintain only the fields in the read schema.
+ * 2) find collection type indicated by `repeated` type, and delegate it to respective list/map formatter.
+ * 3) wrap back the formatted repeated type with group type from projected read schema. This
+ * means the optional/required remains the same as that from projected read schema.
  */
 private[scrooge] object ParquetCollectionFormatForwardCompatibility {
 
@@ -31,8 +35,8 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
 
   /**
    * Project file schema to contain the same fields as the given projected read schema.
-   * The result projected file schema should have the same optional/required fields as the
-   * projected read schema, but maintain collection type format for the file schema.
+   * The result is projected file schema with the same optional/required fields as the
+   * projected read schema, but collection type format as the file schema.
    *
    * @param projectedReadSchema read schema specifying field projection
    * @param fileSchema file schema to be projected
@@ -46,9 +50,10 @@ private[scrooge] object ParquetCollectionFormatForwardCompatibility {
   }
 
   /**
-   * Traverse given schemas and format node for list or map of projected read type to structure
-   * of file schema. The formatting is not to one-to-one node swapping between the two schemas
-   * because of the projection requirement.
+   * Main recursion to get projected file type. Traverse given schemas, filter out unneeded
+   * fields, and format read schema's list/map node to file schema's structure.
+   * The formatting of repeated type is not to one-to-one node swapping because we also have to
+   * handle projection and possible nested collection types in the repeated type.
    */
   private def projectFileType(projectedReadType: Type, fileType: Type, fieldContext: FieldContext): Type = {
     (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
