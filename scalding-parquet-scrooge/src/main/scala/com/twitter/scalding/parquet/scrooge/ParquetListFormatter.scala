@@ -1,16 +1,16 @@
 package com.twitter.scalding.parquet.scrooge
 
-import java.util
-
 import org.apache.parquet.schema.{GroupType, OriginalType, PrimitiveType, Type}
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
+
 /**
- * Formatter parquet schema of legacy list type to standard one
- * namely 3-level list structure as recommended in
- * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#lists
+ * Format parquet list schema of read type to structure of file type.
+ * The supported formats are in `rules` of [[ParquetListFormatRule]].
+ * Please see documentation for each rule.
  *
- * More specifically this handles converting from parquet file created by
+ * In a common use case, read schema form thrift struct has tuple format created by
  * [[org.apache.parquet.thrift.ThriftSchemaConvertVisitor]] which always suffix
  * list element with "_tuple".
  */
@@ -24,29 +24,29 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
     TupleRule, StandardRule, SparkLegacyNullableElementRule
   )
 
-  def formatCompatibleRepeatedType(repeatedSourceType: Type,
-                                   repeatedTargetType: Type,
+  def formatCompatibleRepeatedType(fileRepeatedType: Type,
+                                   readRepeatedType: Type,
                                    fieldContext: FieldContext,
-                                   recursiveSolver: (Type, Type, FieldContext) => Type) = {
+                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
     (
-      findRule(repeatedSourceType),
-      findRule(repeatedTargetType)
+      findRule(fileRepeatedType),
+      findRule(readRepeatedType)
     ) match {
-      case (Some(sourceRule), Some(targetRule)) => {
-        val sourceElementType = sourceRule.elementType(repeatedSourceType)
-        val targetElementType = targetRule.elementType(repeatedTargetType)
-        val forwardCompatElementType = recursiveSolver(sourceElementType, targetElementType, fieldContext)
+      case (Some(fileRule), Some(readRule)) => {
+        val readElementType = readRule.elementType(readRepeatedType)
+        val fileElementType = fileRule.elementType(fileRepeatedType)
+        val solvedElementType = recursiveSolver(fileElementType, readElementType, fieldContext)
 
-        targetRule.createCompliantRepeatedType(
-          elementType = forwardCompatElementType,
-          elementName = sourceRule.elementName(repeatedSourceType),
-          isElementRequired = sourceRule.isElementRequired(repeatedSourceType),
-          elementOriginalType = sourceRule.elementOriginalType(repeatedSourceType),
+        fileRule.createCompliantRepeatedType(
+          elementType = solvedElementType,
+          elementName = readRule.elementName(readRepeatedType),
+          isElementRequired = readRule.isElementRequired(readRepeatedType),
+          elementOriginalType = readRule.elementOriginalType(readRepeatedType),
           fieldContext=fieldContext
         )
       }
 
-      case _ => repeatedSourceType
+      case _ => readRepeatedType
     }
   }
 
@@ -82,9 +82,9 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
  * 2) decompose the repeated type into element and other info.
  * 3) construct compliant repeated type from the given element and other info.
  * For example,
- * if source repeated type matches Rule 1, and target type matches Rule 2.
- * Rule 1 will decompose the source type, and
- * Rule 2 will take that information to construct repeated element in Rule 2 format.
+ * if read repeated type matches Rule 1, and file type matches Rule 2.
+ * Rule 1 will decompose the read type, and
+ * Rule 2 will take that information to construct repeated element in Rule 2 of file type format.
  */
 private[scrooge] sealed trait ParquetListFormatRule {
   def elementType(repeatedType: Type): Type
@@ -257,7 +257,7 @@ private[scrooge] sealed trait ThreeLevelRule extends ParquetListFormatRule {
         originalElementType.asGroupType.getFields)
     }
 
-    new GroupType(Type.Repetition.REPEATED, constantRepeatedGroupName, util.Arrays.asList(elementType))
+    new GroupType(Type.Repetition.REPEATED, constantRepeatedGroupName, Seq(elementType).asJava)
   }
 
   private def firstField(groupType: GroupType): Type = {

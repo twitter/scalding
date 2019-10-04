@@ -3,31 +3,23 @@ package com.twitter.scalding.parquet.scrooge
 import org.apache.parquet.schema.{OriginalType, Type}
 
 /**
- * Format parquet schema of legacy map type to standard target
- * with repeated type of `key_value` without annotation
- * as recommended in
+ * Format parquet map schema of read type to structure of file type.
+ * The supported formats are:
+ * 1) Standard repeated type of `key_value` without annotation
+ * 2) Legacy repeated `map field annotated with (MAP_KEY_VALUE)
+ * as described in
  * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps
  *
- * Source with legacy format created by
- * [[org.apache.parquet.schema.ConversionPatterns]] has repeated `map` field
- * annotated with (MAP_KEY_VALUE)
+ * In a common use case, read schema from thrift struct has legacy format 2) created by
+ * [[org.apache.parquet.schema.ConversionPatterns]]
  */
 private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
 
-  /**
-   * Handle map format compatibility
-   * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps
-   *
-   * @param sourceRepeatedMapType
-   * @param targetRepeatedMapType
-   */
-  def formatCompatibleRepeatedType(sourceRepeatedMapType: Type,
-                                   targetRepeatedMapType: Type,
-                                   fieldContext: FieldContext,
-                                   recursiveSolver: (Type, Type, FieldContext) => Type) = {
-
-    val solvedRepeatedType = recursiveSolver(sourceRepeatedMapType, targetRepeatedMapType, fieldContext)
-    targetRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
+  def formatCompatibleRepeatedType(fileRepeatedMapType: Type,
+                                   readRepeatedMapType: Type,
+                                   fieldContext: FieldContext, recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
+    val solvedRepeatedType = recursiveSolver(fileRepeatedMapType, readRepeatedMapType, fieldContext)
+    fileRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
   }
 
   def extractGroup(typ: Type): Option[MapGroup] = {

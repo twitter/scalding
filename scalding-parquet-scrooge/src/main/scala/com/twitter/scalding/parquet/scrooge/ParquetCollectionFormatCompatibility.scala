@@ -1,10 +1,11 @@
 package com.twitter.scalding.parquet.scrooge
 
-import scala.collection.JavaConverters._
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{GroupType, MessageType, Type}
 import org.apache.parquet.thrift.DecodingSchemaMismatchException
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConverters._
 
 /**
  * Project file schema based on projected read schema which may contain different format
@@ -39,8 +40,8 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
    * @param projectedReadSchema read schema specifying field projection
    * @param fileSchema file schema to be projected
    */
-  def projectFileSchema(projectedReadSchema: MessageType, fileSchema: MessageType): MessageType = {
-    val projectedFileSchema = projectFileType(projectedReadSchema, fileSchema, FieldContext()).asGroupType()
+  def projectFileSchema(fileSchema: MessageType, projectedReadSchema: MessageType): MessageType = {
+    val projectedFileSchema = projectFileType(fileSchema, projectedReadSchema, FieldContext()).asGroupType()
     logger.debug(s"Projected read schema:\n${projectedReadSchema}\n" +
       s"File schema:\n${fileSchema}\n" +
       s"Projected file schema:\n${projectedFileSchema}")
@@ -53,7 +54,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
    * The formatting of repeated type is not to one-to-one node swapping because we also have to
    * handle projection and possible nested collection types in the repeated type.
    */
-  private def projectFileType(projectedReadType: Type, fileType: Type, fieldContext: FieldContext): Type = {
+  private def projectFileType(fileType: Type, projectedReadType: Type, fieldContext: FieldContext): Type = {
     (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
       case _ if projectedReadType.isPrimitive && fileType.isPrimitive =>
         projectedReadType
@@ -63,19 +64,9 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
             s"and file type:\n${fileType}"
         )
       case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
-        projectFileGroup(
-          projectedReadGroup,
-          fileGroup,
-          fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1),
-          formatter=ParquetListFormatter
-        )
+        projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter=ParquetListFormatter)
       case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
-        projectFileGroup(
-          projectedReadGroup,
-          fileGroup,
-          fieldContext,
-          formatter=ParquetMapFormatter
-        )
+        projectFileGroup(fileGroup, projectedReadGroup, fieldContext, formatter=ParquetMapFormatter)
       case _ => // Struct projection
         val projectedReadGroupType = projectedReadType.asGroupType
         val fileGroupType = fileType.asGroupType
@@ -91,22 +82,23 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
           } else {
             val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
             val fileField = fileGroupType.getFields.get(fileFieldIndex)
-            projectFileType(projectedReadField, fileField, FieldContext(projectedReadField.getName))
+            projectFileType(fileField, projectedReadField, FieldContext(projectedReadField.getName))
           }
         }
         projectedReadGroupType.withNewFields(projectedReadFields.asJava)
     }
   }
 
-  private def projectFileGroup(projectedReadGroup: CollectionGroup,
-                               fileGroup: CollectionGroup,
+  private def projectFileGroup(fileGroup: CollectionGroup,
+                               projectedReadGroup: CollectionGroup,
                                fieldContext: FieldContext,
-                               formatter: ParquetCollectionFormatter): GroupType = {
+                               formatter: ParquetCollectionFormatter) = {
     val projectedFileRepeatedType = formatter.formatCompatibleRepeatedType(
-      projectedReadGroup.repeatedType,
       fileGroup.repeatedType,
+      projectedReadGroup.repeatedType,
       fieldContext,
-      projectFileType(_, _, _))
+      projectFileType
+    )
     // Respect optional/required from the projected read group.
     projectedReadGroup.groupType.withNewFields(projectedFileRepeatedType)
   }
@@ -119,13 +111,14 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
 private[scrooge] trait ParquetCollectionFormatter {
   /**
    * Format source repeated type in the structure of target repeated type.
-   * @param sourceRepeatedType repeated type from which the formatted result get content
-   * @param targetRepeatedType repeated type from which the formatted result get the structure
+ *
+   * @param readRepeatedType repeated type from which the formatted result get content
+   * @param fileRepeatedType repeated type from which the formatted result get the structure
    * @param recursiveSolver solver for the inner content of the repeated type
    * @return formatted result
    */
-  def formatCompatibleRepeatedType(sourceRepeatedType: Type,
-                                   targetRepeatedType: Type,
+  def formatCompatibleRepeatedType(fileRepeatedType: Type,
+                                   readRepeatedType: Type,
                                    fieldContext: FieldContext,
                                    recursiveSolver: (Type, Type, FieldContext) => Type): Type
 
