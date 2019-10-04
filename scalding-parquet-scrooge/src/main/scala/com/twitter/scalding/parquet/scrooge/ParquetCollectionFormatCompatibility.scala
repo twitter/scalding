@@ -82,6 +82,12 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
           } else {
             val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
             val fileField = fileGroupType.getFields.get(fileFieldIndex)
+            if (fileField.isRepetition(Repetition.OPTIONAL) && projectedReadField.isRepetition(Repetition.REQUIRED)) {
+              throw new DecodingSchemaMismatchException(
+                s"Found required projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
+                  s"on optional file field:\n${fileField}"
+              )
+            }
             projectFileType(fileField, projectedReadField, FieldContext(projectedReadField.getName))
           }
         }
@@ -111,7 +117,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
 private[scrooge] trait ParquetCollectionFormatter {
   /**
    * Format source repeated type in the structure of target repeated type.
- *
+   *
    * @param readRepeatedType repeated type from which the formatted result get content
    * @param fileRepeatedType repeated type from which the formatted result get the structure
    * @param recursiveSolver solver for the inner content of the repeated type

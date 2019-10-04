@@ -147,35 +147,28 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
   }
 
-  val requiredElementRules = Seq(
+  val listRequiredElementRules = Seq(
     ("element", listElementRule(_, _)),
     ("array", listArrayRule(_, _)),
     ("tuple", listTupleRule(_, _)),
     ("standard", (from: String, to: String) => listStandardRule(from, to, nullableElement = false))
   )
 
-  // All possible format pairs of non-nullable list
+  // All possible format pairs of list with non-nullable element
   for {
-    (projectedReadRuleName, projectedReadSchemaFunc) <- requiredElementRules
-    (fileRuleName, fileSchemaFunc) <- requiredElementRules
+    (projectedReadRuleName, projectedReadSchemaFunc) <- listRequiredElementRules
+    (fileRuleName, fileSchemaFunc) <- listRequiredElementRules
   } yield {
-    s"Format compat for list with non-nullable element from: [${projectedReadRuleName}] to: [${fileRuleName}]" should {
+    s"Project for list with non-nullable element file: [${fileRuleName}] read: [${projectedReadRuleName}]" should {
       "take option/require specifications from projected read schema" in {
         for {
           feasibleRepetition <- feasibleRepetitions
         } yield {
-          val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
-          val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
-          val projectedReadSchema = MessageTypeParser.parseMessageType(projectedReadSchemaFunc(projectedRepetition1, projectedRepetition2))
-
-          val fileRepetition1 = feasibleRepetition.fileRepetition1
-          val fileRepetition2 = feasibleRepetition.fileRepetition2
-          val fileSchema = MessageTypeParser.parseMessageType(fileSchemaFunc(fileRepetition1, fileRepetition2))
-
-          val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
-            fileSchemaFunc(projectedRepetition1, projectedRepetition2))
-
-          expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
+          testProjectedFileSchemaHasReadSchemaRepetitions(
+            fileSchemaFunc,
+            projectedReadSchemaFunc,
+            feasibleRepetition
+          )
         }
       }
     }
@@ -211,50 +204,61 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
        |}
         """.stripMargin)
 
-  "Format compat for list with nullable element" should {
-    "format from spark legacy write, with nullable elements, to standard" in {
+  private def testProjectedFileSchemaHasReadSchemaRepetitions(
+                                                               fileSchemaFunc: (String, String) => String,
+                                                               projectedReadSchemaFunc: (String, String) => String,
+                                                               feasibleRepetition: TestRepetitions): Any = {
+
+    val projectedReadSchema = MessageTypeParser.parseMessageType(
+      projectedReadSchemaFunc(
+        feasibleRepetition.projectedReadRepetition1,
+        feasibleRepetition.projectedReadRepetition2)
+    )
+    val fileSchema = MessageTypeParser.parseMessageType(
+      fileSchemaFunc(
+        feasibleRepetition.fileRepetition1,
+        feasibleRepetition.fileRepetition2)
+    )
+    val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
+      fileSchemaFunc(
+        feasibleRepetition.projectedReadRepetition1,
+        feasibleRepetition.projectedReadRepetition2)
+    )
+    expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
+  }
+
+  "Project for list with nullable element" should {
+    "file: standard, read: spark legacy write, with nullable elements" in {
       for {
         feasibleRepetition <- feasibleRepetitions
       } yield {
-        val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
-        val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
-        val projectedReadSchema = MessageTypeParser.parseMessageType(listSparkLegacyNullableElementRule(projectedRepetition1, projectedRepetition2))
-
-        val fileRepetition1 = feasibleRepetition.fileRepetition1
-        val fileRepetition2 = feasibleRepetition.fileRepetition2
-        val fileSchema = MessageTypeParser.parseMessageType(listStandardRule(fileRepetition1,
-          fileRepetition2,
-          nullableElement = true)
+        testProjectedFileSchemaHasReadSchemaRepetitions(
+          fileSchemaFunc = listStandardRule(_, _, nullableElement = true),
+          projectedReadSchemaFunc = listSparkLegacyNullableElementRule,
+          feasibleRepetition
         )
-        val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(listStandardRule(projectedRepetition1, projectedRepetition2, nullableElement = true))
-        expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
       }
     }
 
-    "failed to format required element to spark legacy write with nullable element" in {
+    "failed to format file: required element, read: legacy write with nullable element" in {
       for {
         feasibleRepetition <- feasibleRepetitions
-        (_, requiredElementSchemaFunc) <- requiredElementRules
+        (_, requiredElementSchemaFunc) <- listRequiredElementRules
       } yield {
-        val projectedRepetition1 = feasibleRepetition.projectedReadRepetition1
-        val projectedRepetition2 = feasibleRepetition.projectedReadRepetition2
-        val fileSchema = MessageTypeParser.parseMessageType(listSparkLegacyNullableElementRule(projectedRepetition1, projectedRepetition2))
-
-        val fileRepetition1 = feasibleRepetition.fileRepetition1
-        val fileRepetition2 = feasibleRepetition.fileRepetition2
-        val projectedReadSchema = MessageTypeParser.parseMessageType(requiredElementSchemaFunc(fileRepetition1,
-          fileRepetition2)
-        )
         val e = intercept[IllegalArgumentException] {
-          testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
+          testProjectedFileSchemaHasReadSchemaRepetitions(
+            fileSchemaFunc = listSparkLegacyNullableElementRule,
+            projectedReadSchemaFunc = requiredElementSchemaFunc,
+            feasibleRepetition
+          )
         }
         e.getMessage should include("Spark legacy mode for nullable element cannot take required element")
       }
     }
   }
 
-  "Format compat for map" should {
-    "map identity" in {
+  "Project for map" should {
+    "file/read identity" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -273,7 +277,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       fileSchema shouldEqual projectedFileSchema
     }
 
-    "map identity from thrift struct: string key, struct value" in {
+    "file/read identity from thrift struct (string key, struct value)" in {
       val listType = new ListType(new ThriftField("list", 2, Requirement.REQUIRED, new ThriftType.StringType))
       val children = new ThriftField("foo", 3, Requirement.REQUIRED, listType)
       val mapValueType = new StructType(util.Arrays.asList(children),
@@ -299,7 +303,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       message shouldEqual projectedFileSchema
     }
 
-    "map identity from thrift struct: string kye, list string value" in {
+    "file/read identity from thrift struct (string key, list string value)" in {
       val listType = new ListType(new ThriftField("list", 2, Requirement.REQUIRED, new ThriftType.StringType))
       val message = schemaFromThriftMap(listType)
       message shouldEqual MessageTypeParser.parseMessageType(
@@ -321,7 +325,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       message shouldEqual projectedFileSchema
     }
 
-    "format map legacy (MAP_KEY_VALUE) to standard format key_value" in {
+    "file: standard key_value, read: legacy (MAP_KEY_VALUE)" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -359,7 +363,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format map standard key_value to legacy (MAP_KEY_VALUE)" in {
+    "file: legacy (MAP_KEY_VALUE), read: standard key_value" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -397,7 +401,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format map legacy map of map" in {
+    "map of map, file: standard key_value, read: legacy (MAP_KEY_VALUE)" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -471,7 +475,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
   }
 
   "Format compat for list" should {
-    "format x_tuple to primitive array" in {
+    "file: primitive array, read: x_tuple" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -501,7 +505,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format x_tuple to primitive element" in {
+    "file: primitive element, read: x_tuple" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -531,7 +535,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format x_tuple to 3-level" in {
+    "file: 3-level, read: x_tuple" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -566,7 +570,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format nested x_tuple to group array" in {
+    "file: group array, read: nested x_tuple" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -602,7 +606,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format nested x_tuple to nested 3-level" in {
+    "file: nested 3-level, read: nested x_tuple" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -645,7 +649,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format binary array to 3-level" in {
+    "file: 3-level, read: binary array" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -682,7 +686,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format 3-level to 3-level (identity)" in {
+    "file: 3-level (identity), read: 3-level" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -698,7 +702,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       fileSchema shouldEqual projectedFileSchema
     }
 
-    "format nested primitive array to nested 3-level" in {
+    "file: nested 3-level, read: nested primitive array" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -747,7 +751,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format element group to 3-level" in {
+    "file: 3-level, read: element group" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -792,7 +796,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format 3-level to nested primitive array" in {
+    "file: nested primitive array, read: 3-level" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -838,7 +842,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format x_tuple in group to 3-level" in {
+    "file: 3-level, read: x_tuple in group" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -891,7 +895,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format 3-level to x_tuple" in {
+    "file: x_tuple, read: 3-level" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -934,7 +938,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
   }
 
   "Format compat for mixed collection" should {
-    "list of map identity from thrift struct" in {
+    "list of map: file/read identity from thrift struct" in {
       val mapType = new MapType(
         new ThriftField("NOT_USED_KEY", 4, Requirement.REQUIRED, new ThriftType.StringType),
         new ThriftField("NOT_USED_VALUE", 5, Requirement.REQUIRED, new ThriftType.I64Type))
@@ -965,7 +969,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       message shouldEqual projectedFileSchema
     }
 
-    "format map of list" in {
+    "map of list, file: standard, read: thrift-generated" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -1024,7 +1028,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format list of map: tuple_x to standard" in {
+    "file: standard, read: list of map: tuple_x" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -1080,7 +1084,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       expected shouldEqual projectedFileSchema
     }
 
-    "format list of map: standard to tuple_x" in {
+    "file: tuple_x, read: list of map: standard" in {
       val fileSchema = MessageTypeParser.parseMessageType(
         """
           |message FileSchema {
@@ -1260,6 +1264,35 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       }
 
       e.getMessage should include("Found schema mismatch")
+    }
+
+    "throws exception optional group in file schema but required group in read schema" in {
+      val fileSchema = MessageTypeParser.parseMessageType(
+        """
+          |message FileSchema {
+          |  required group foo {
+          |    repeated group bar {
+          |      required binary _id (UTF8);
+          |      required double created;
+          |     }
+          |  }
+          |}
+        """.stripMargin)
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  optional group foo {
+          |    required binary bar (UTF8);
+          |  }
+          |}
+        """.stripMargin)
+
+      val e = intercept[DecodingSchemaMismatchException] {
+        testProjectAndAssertCompatibility(projectedReadSchema, fileSchema)
+      }
+
+      e.getMessage should include ("Found required projected read field foo")
+      e.getMessage should include ("on optional file field")
     }
   }
 }
