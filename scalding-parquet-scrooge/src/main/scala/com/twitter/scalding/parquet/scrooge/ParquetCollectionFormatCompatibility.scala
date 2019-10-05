@@ -69,7 +69,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
       }
     } else {
       // Recursive cases to handle non-primitives (lists, maps, and structs):
-      (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
+      (extractCollectionGroup(projectedReadType.asGroupType()), extractCollectionGroup(fileType.asGroupType())) match {
         case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
           projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter=ParquetListFormatter)
         case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
@@ -129,7 +129,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
     projectedReadGroup.groupType.withNewFields(projectedFileRepeatedType)
   }
 
-  private def extractCollectionGroup(typ: Type): Option[CollectionGroup] = {
+  private def extractCollectionGroup(typ: GroupType): Option[CollectionGroup] = {
     ParquetListFormatter.extractGroup(typ).orElse(ParquetMapFormatter.extractGroup(typ))
   }
 }
@@ -151,7 +151,7 @@ private[scrooge] trait ParquetCollectionFormatter {
   /**
    * Extract collection group containing repeated type of different formats.
    */
-  def extractGroup(typ: Type): Option[CollectionGroup]
+  def extractGroup(typ: GroupType): Option[CollectionGroup]
 }
 
 /**

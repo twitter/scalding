@@ -228,15 +228,26 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
   }
 
   "Project for list with nullable element" should {
-    "file: standard, read: spark legacy write, with nullable elements" in {
-      for {
-        feasibleRepetition <- feasibleRepetitions
-      } yield {
-        testProjectedFileSchemaHasReadSchemaRepetitions(
-          fileSchemaFunc = listStandardRule(_, _, nullableElement = true),
-          projectedReadSchemaFunc = listSparkLegacyNullableElementRule,
-          feasibleRepetition
-        )
+    val listNullableElementRules = Seq(
+      ("spark-legacy", listSparkLegacyNullableElementRule(_, _)),
+      ("standard-with", (from: String, to: String) => listStandardRule(from, to, nullableElement = true))
+    )
+    for {
+      (projectedReadRuleName, projectedReadSchemaFunc) <- listNullableElementRules
+      (fileRuleName, fileSchemaFunc) <- listNullableElementRules
+    } yield {
+      s"file: [${fileRuleName}] read: [${projectedReadRuleName}]" should {
+        "take option/require specifications from projected read schema" in {
+          for {
+            feasibleRepetition <- feasibleRepetitions
+          } yield {
+            testProjectedFileSchemaHasReadSchemaRepetitions(
+              fileSchemaFunc,
+              projectedReadSchemaFunc,
+              feasibleRepetition
+            )
+          }
+        }
       }
     }
 
@@ -934,6 +945,96 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  optional int32 x;
           |}
         """.stripMargin) shouldEqual projectedFileSchema
+    }
+
+    "file: absent, read: optional list " in {
+      val fileSchema = MessageTypeParser.parseMessageType(
+        """
+          |message FileSchema {
+          |  required group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  optional group foo (LIST) {
+          |    repeated group list {
+          |      required group element (LIST) {
+          |        repeated group list {
+          |          required binary element (UTF8);
+          |        }
+          |      }
+          |    }
+          |  }
+          |  optional group foo_optional (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |  optional int32 x;
+          |}
+        """.stripMargin)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
+      MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  optional group foo (LIST) {
+          |    repeated group foo_tuple (LIST) {
+          |      repeated binary foo_tuple_tuple (UTF8);
+          |    }
+          |  }
+          |  optional group foo_optional (LIST) {
+          |    repeated group list {
+          |      required binary element (UTF8);
+          |    }
+          |  }
+          |  optional int32 x;
+          |}
+        """.stripMargin) shouldEqual projectedFileSchema
+    }
+
+    "file: 3-level, read: unknown to return read type" in {
+      val fileSchema = MessageTypeParser.parseMessageType(
+        """
+          |message FileSchema {
+          |  required group country_codes (LIST) {
+          |    repeated group list {
+          |      required group element {
+          |        required binary foo (UTF8);
+          |      }
+          |    }
+          |  }
+          |  required int32 x;
+          |}
+        """.stripMargin)
+      val projectedReadSchema = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  optional group country_codes (LIST) {
+          |    repeated group unknown_element_format {
+          |      optional binary foo (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      val projectedFileSchema = testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
+
+      val expected = MessageTypeParser.parseMessageType(
+        """
+          |message ProjectedReadSchema {
+          |  optional group country_codes (LIST) {
+          |    repeated group unknown_element_format {
+          |      optional binary foo (UTF8);
+          |    }
+          |  }
+          |}
+        """.stripMargin)
+      expected shouldEqual projectedFileSchema
     }
   }
 

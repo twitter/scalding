@@ -51,23 +51,18 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
     }
   }
 
-  def extractGroup(typ: Type) : Option[ListGroup] = {
-    if (isListGroup(typ)) {
-      Some(ListGroup(typ.asGroupType(), typ.asGroupType().getFields.get(0)))
+  def extractGroup(groupType: GroupType) : Option[ListGroup] = {
+    if (isListGroup(groupType)) {
+      Some(ListGroup(groupType, groupType.getFields.get(0)))
     } else {
       None
     }
   }
 
-  private def isListGroup(typ: Type): Boolean = {
-    if (typ.isPrimitive) {
-      false
-    } else {
-      val groupProjection = typ.asGroupType
-      groupProjection.getOriginalType == OriginalType.LIST &&
-        groupProjection.getFieldCount == 1 &&
-        groupProjection.getFields.get(0).isRepetition(Type.Repetition.REPEATED)
-    }
+  private def isListGroup(groupType: GroupType): Boolean = {
+    groupType.getOriginalType == OriginalType.LIST &&
+      groupType.getFieldCount == 1 &&
+      groupType.getFields.get(0).isRepetition(Type.Repetition.REPEATED)
   }
 
   private def findRule(repeatedType: Type): Option[ParquetListFormatRule] = {
