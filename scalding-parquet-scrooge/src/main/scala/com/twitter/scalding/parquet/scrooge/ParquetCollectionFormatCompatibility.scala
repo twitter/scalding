@@ -37,8 +37,8 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
    * The result is projected file schema with the same optional/required fields as the
    * projected read schema, but collection type format as the file schema.
    *
-   * @param projectedReadSchema read schema specifying field projection
    * @param fileSchema file schema to be projected
+   * @param projectedReadSchema read schema specifying field projection
    */
   def projectFileSchema(fileSchema: MessageType, projectedReadSchema: MessageType): MessageType = {
     val projectedFileSchema = projectFileType(fileSchema, projectedReadSchema, FieldContext()).asGroupType()
@@ -55,50 +55,70 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
    * handle projection and possible nested collection types in the repeated type.
    */
   private def projectFileType(fileType: Type, projectedReadType: Type, fieldContext: FieldContext): Type = {
-    (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
-      case _ if projectedReadType.isPrimitive && fileType.isPrimitive =>
+    if (projectedReadType.isPrimitive || fileType.isPrimitive) {
+      // Base-cases to handle primitive types:
+      if (projectedReadType.isPrimitive && fileType.isPrimitive) {
+        // The field is a primitive in both schemas
         projectedReadType
-      case _ if projectedReadType.isPrimitive != fileType.isPrimitive =>
+      } else {
+        // The field is primitive in one schema but non-primitive in the othe other
         throw new DecodingSchemaMismatchException(
           s"Found schema mismatch between projected read type:\n$projectedReadType\n" +
             s"and file type:\n${fileType}"
         )
-      case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
-        projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter=ParquetListFormatter)
-      case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
-        projectFileGroup(fileGroup, projectedReadGroup, fieldContext, formatter=ParquetMapFormatter)
-      case _ => // Struct projection
-        val projectedReadGroupType = projectedReadType.asGroupType
-        val fileGroupType = fileType.asGroupType
-        val projectedReadFields = projectedReadGroupType.getFields.asScala.map { projectedReadField =>
-          if (!fileGroupType.containsField(projectedReadField.getName)) {
-            if (!projectedReadField.isRepetition(Repetition.OPTIONAL)) {
-              throw new DecodingSchemaMismatchException(
-                s"Found non-optional projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
-                  s"not present in the given file group type:\n${fileGroupType}"
-              )
+      }
+    } else {
+      // Recursive cases to handle non-primitives (lists, maps, and structs):
+      (extractCollectionGroup(projectedReadType), extractCollectionGroup(fileType)) match {
+        case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
+          projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter=ParquetListFormatter)
+        case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
+          projectFileGroup(fileGroup, projectedReadGroup, fieldContext, formatter=ParquetMapFormatter)
+        case _ => // Struct projection
+          val projectedReadGroupType = projectedReadType.asGroupType
+          val fileGroupType = fileType.asGroupType
+          val projectedReadFields = projectedReadGroupType.getFields.asScala.map { projectedReadField =>
+            if (!fileGroupType.containsField(projectedReadField.getName)) {
+              // The projected read schema includes a field which is missing from the file schema.
+              if (projectedReadField.isRepetition(Repetition.OPTIONAL)) {
+                // The missing field is optional in the projected read schema. Since the file schema
+                // doesn't contain this field there are no collection compatibility concerns to worry
+                // about and we can simply use the supplied schema:
+                projectedReadField
+              } else {
+                // The missing field is repeated or required, which is an error:
+                throw new DecodingSchemaMismatchException(
+                  s"Found non-optional projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
+                    s"not present in the given file group type:\n${fileGroupType}"
+                )
+              }
+            } else {
+              // The field is present in both schemas, so first check that the schemas specify compatible repetition
+              // values for the field, then recursively process the fields:
+              val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
+              val fileField = fileGroupType.getFields.get(fileFieldIndex)
+              if (fileField.isRepetition(Repetition.OPTIONAL) && projectedReadField.isRepetition(Repetition.REQUIRED)) {
+                // The field is optional in the file schema but required in the projected read schema; this is an error:
+                throw new DecodingSchemaMismatchException(
+                  s"Found required projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
+                    s"on optional file field:\n${fileField}"
+                )
+              } else {
+                // The field's repetitions are compatible in both schemas (e.g. optional in both schemas or required
+                // in both), so recursively process the field:
+                projectFileType(fileField, projectedReadField, FieldContext(projectedReadField.getName))
+              }
             }
-            projectedReadField
-          } else {
-            val fileFieldIndex = fileGroupType.getFieldIndex(projectedReadField.getName)
-            val fileField = fileGroupType.getFields.get(fileFieldIndex)
-            if (fileField.isRepetition(Repetition.OPTIONAL) && projectedReadField.isRepetition(Repetition.REQUIRED)) {
-              throw new DecodingSchemaMismatchException(
-                s"Found required projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
-                  s"on optional file field:\n${fileField}"
-              )
-            }
-            projectFileType(fileField, projectedReadField, FieldContext(projectedReadField.getName))
           }
-        }
-        projectedReadGroupType.withNewFields(projectedReadFields.asJava)
+          projectedReadGroupType.withNewFields(projectedReadFields.asJava)
+      }
     }
   }
 
   private def projectFileGroup(fileGroup: CollectionGroup,
                                projectedReadGroup: CollectionGroup,
                                fieldContext: FieldContext,
-                               formatter: ParquetCollectionFormatter) = {
+                               formatter: ParquetCollectionFormatter): GroupType = {
     val projectedFileRepeatedType = formatter.formatCompatibleRepeatedType(
       fileGroup.repeatedType,
       projectedReadGroup.repeatedType,
@@ -118,8 +138,8 @@ private[scrooge] trait ParquetCollectionFormatter {
   /**
    * Format source repeated type in the structure of target repeated type.
    *
-   * @param readRepeatedType repeated type from which the formatted result get content
    * @param fileRepeatedType repeated type from which the formatted result get the structure
+   * @param readRepeatedType repeated type from which the formatted result get content
    * @param recursiveSolver solver for the inner content of the repeated type
    * @return formatted result
    */

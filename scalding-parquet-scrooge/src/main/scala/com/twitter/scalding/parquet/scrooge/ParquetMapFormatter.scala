@@ -6,7 +6,7 @@ import org.apache.parquet.schema.{OriginalType, Type}
  * Format parquet map schema of read type to structure of file type.
  * The supported formats are:
  * 1) Standard repeated type of `key_value` without annotation
- * 2) Legacy repeated `map field annotated with (MAP_KEY_VALUE)
+ * 2) Legacy repeated `map` field annotated with (MAP_KEY_VALUE)
  * as described in
  * https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps
  *
@@ -17,7 +17,8 @@ private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
 
   def formatCompatibleRepeatedType(fileRepeatedMapType: Type,
                                    readRepeatedMapType: Type,
-                                   fieldContext: FieldContext, recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
+                                   fieldContext: FieldContext,
+                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
     val solvedRepeatedType = recursiveSolver(fileRepeatedMapType, readRepeatedMapType, fieldContext)
     fileRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
   }
