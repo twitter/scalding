@@ -1,7 +1,7 @@
 package com.twitter.scalding.parquet.scrooge
 
 import org.apache.parquet.schema.Type.Repetition
-import org.apache.parquet.schema.{GroupType, MessageType, Type}
+import org.apache.parquet.schema.{ GroupType, MessageType, Type }
 import org.apache.parquet.thrift.DecodingSchemaMismatchException
 import org.slf4j.LoggerFactory
 
@@ -64,16 +64,15 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
         // The field is primitive in one schema but non-primitive in the othe other
         throw new DecodingSchemaMismatchException(
           s"Found schema mismatch between projected read type:\n$projectedReadType\n" +
-            s"and file type:\n${fileType}"
-        )
+            s"and file type:\n${fileType}")
       }
     } else {
       // Recursive cases to handle non-primitives (lists, maps, and structs):
       (extractCollectionGroup(projectedReadType.asGroupType()), extractCollectionGroup(fileType.asGroupType())) match {
         case (Some(projectedReadGroup: ListGroup), Some(fileGroup: ListGroup)) =>
-          projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter=ParquetListFormatter)
+          projectFileGroup(fileGroup, projectedReadGroup, fieldContext.copy(nestedListLevel = fieldContext.nestedListLevel + 1), formatter = ParquetListFormatter)
         case (Some(projectedReadGroup: MapGroup), Some(fileGroup: MapGroup)) =>
-          projectFileGroup(fileGroup, projectedReadGroup, fieldContext, formatter=ParquetMapFormatter)
+          projectFileGroup(fileGroup, projectedReadGroup, fieldContext, formatter = ParquetMapFormatter)
         case _ => // Struct projection
           val projectedReadGroupType = projectedReadType.asGroupType
           val fileGroupType = fileType.asGroupType
@@ -89,8 +88,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
                 // The missing field is repeated or required, which is an error:
                 throw new DecodingSchemaMismatchException(
                   s"Found non-optional projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
-                    s"not present in the given file group type:\n${fileGroupType}"
-                )
+                    s"not present in the given file group type:\n${fileGroupType}")
               }
             } else {
               // The field is present in both schemas, so first check that the schemas specify compatible repetition
@@ -101,8 +99,7 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
                 // The field is optional in the file schema but required in the projected read schema; this is an error:
                 throw new DecodingSchemaMismatchException(
                   s"Found required projected read field ${projectedReadField.getName}:\n$projectedReadField\n\n" +
-                    s"on optional file field:\n${fileField}"
-                )
+                    s"on optional file field:\n${fileField}")
               } else {
                 // The field's repetitions are compatible in both schemas (e.g. optional in both schemas or required
                 // in both), so recursively process the field:
@@ -116,15 +113,14 @@ private[scrooge] object ParquetCollectionFormatCompatibility {
   }
 
   private def projectFileGroup(fileGroup: CollectionGroup,
-                               projectedReadGroup: CollectionGroup,
-                               fieldContext: FieldContext,
-                               formatter: ParquetCollectionFormatter): GroupType = {
+    projectedReadGroup: CollectionGroup,
+    fieldContext: FieldContext,
+    formatter: ParquetCollectionFormatter): GroupType = {
     val projectedFileRepeatedType = formatter.formatCompatibleRepeatedType(
       fileGroup.repeatedType,
       projectedReadGroup.repeatedType,
       fieldContext,
-      projectFileType
-    )
+      projectFileType)
     // Respect optional/required from the projected read group.
     projectedReadGroup.groupType.withNewFields(projectedFileRepeatedType)
   }
@@ -144,9 +140,9 @@ private[scrooge] trait ParquetCollectionFormatter {
    * @return formatted result
    */
   def formatCompatibleRepeatedType(fileRepeatedType: Type,
-                                   readRepeatedType: Type,
-                                   fieldContext: FieldContext,
-                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type
+    readRepeatedType: Type,
+    fieldContext: FieldContext,
+    recursiveSolver: (Type, Type, FieldContext) => Type): Type
 
   /**
    * Extract collection group containing repeated type of different formats.
@@ -159,7 +155,7 @@ private[scrooge] trait ParquetCollectionFormatter {
  * @param name      field name
  * @param nestedListLevel li
  */
-private[scrooge] case class FieldContext(name: String="", nestedListLevel: Int=0)
+private[scrooge] case class FieldContext(name: String = "", nestedListLevel: Int = 0)
 
 private[scrooge] sealed trait CollectionGroup {
   /**

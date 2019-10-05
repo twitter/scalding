@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.scrooge
 
-import org.apache.parquet.schema.{GroupType, OriginalType, Type}
+import org.apache.parquet.schema.{ GroupType, OriginalType, Type }
 
 /**
  * Format parquet map schema of read type to structure of file type.
@@ -16,9 +16,9 @@ import org.apache.parquet.schema.{GroupType, OriginalType, Type}
 private[scrooge] object ParquetMapFormatter extends ParquetCollectionFormatter {
 
   def formatCompatibleRepeatedType(fileRepeatedMapType: Type,
-                                   readRepeatedMapType: Type,
-                                   fieldContext: FieldContext,
-                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
+    readRepeatedMapType: Type,
+    fieldContext: FieldContext,
+    recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
     val solvedRepeatedType = recursiveSolver(fileRepeatedMapType, readRepeatedMapType, fieldContext)
     fileRepeatedMapType.asGroupType().withNewFields(solvedRepeatedType.asGroupType().getFields)
   }

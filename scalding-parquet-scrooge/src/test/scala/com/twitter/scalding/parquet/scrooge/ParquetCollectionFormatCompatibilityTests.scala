@@ -2,18 +2,18 @@ package com.twitter.scalding.parquet.scrooge
 
 import java.util
 
-import org.apache.parquet.schema.{MessageType, MessageTypeParser}
-import org.apache.parquet.thrift.{DecodingSchemaMismatchException, ThriftSchemaConverter}
+import org.apache.parquet.schema.{ MessageType, MessageTypeParser }
+import org.apache.parquet.thrift.{ DecodingSchemaMismatchException, ThriftSchemaConverter }
 import org.apache.parquet.thrift.struct.ThriftField.Requirement
-import org.apache.parquet.thrift.struct.{ThriftField, ThriftType}
+import org.apache.parquet.thrift.struct.{ ThriftField, ThriftType }
 import org.apache.parquet.thrift.struct.ThriftType.StructType.StructOrUnionType
-import org.apache.parquet.thrift.struct.ThriftType.{ListType, MapType, StructType}
-import org.scalatest.{Matchers, WordSpec}
+import org.apache.parquet.thrift.struct.ThriftType.{ ListType, MapType, StructType }
+import org.scalatest.{ Matchers, WordSpec }
 
 class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
 
   private def testProjectAndAssertCompatibility(fileSchema: MessageType,
-                                                projectedReadSchema: MessageType) = {
+    projectedReadSchema: MessageType) = {
     val projectedFileSchema = ParquetCollectionFormatCompatibility.projectFileSchema(fileSchema, projectedReadSchema)
     ScroogeReadSupport.assertGroupsAreCompatible(fileSchema, projectedFileSchema)
     projectedFileSchema
@@ -23,7 +23,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
    * Helper wrapper to specify repetition string for exhaustive tests
    */
   case class TestRepetitions(projectedReadRepetition1: String, projectedReadRepetition2: String,
-                             fileRepetition1: String, fileRepetition2: String)
+    fileRepetition1: String, fileRepetition2: String)
   def feasibleRepetitions = {
     for {
       projectedRepetition1 <- Seq("required", "optional")
@@ -115,7 +115,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
        |}
         """.stripMargin)
 
-  def listStandardRule(repetition1: String, repetition2: String, nullableElement:Boolean=false) = {
+  def listStandardRule(repetition1: String, repetition2: String, nullableElement: Boolean = false) = {
     val requiredOrOptional = if (nullableElement) "optional" else "required"
     (s"""
        |message schema {
@@ -151,8 +151,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
     ("element", listElementRule(_, _)),
     ("array", listArrayRule(_, _)),
     ("tuple", listTupleRule(_, _)),
-    ("standard", (from: String, to: String) => listStandardRule(from, to, nullableElement = false))
-  )
+    ("standard", (from: String, to: String) => listStandardRule(from, to, nullableElement = false)))
 
   // All possible format pairs of list with non-nullable element
   for {
@@ -167,8 +166,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           testProjectedFileSchemaHasReadSchemaRepetitions(
             fileSchemaFunc,
             projectedReadSchemaFunc,
-            feasibleRepetition
-          )
+            feasibleRepetition)
         }
       }
     }
@@ -205,33 +203,29 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
         """.stripMargin)
 
   private def testProjectedFileSchemaHasReadSchemaRepetitions(
-                                                               fileSchemaFunc: (String, String) => String,
-                                                               projectedReadSchemaFunc: (String, String) => String,
-                                                               feasibleRepetition: TestRepetitions): Any = {
+    fileSchemaFunc: (String, String) => String,
+    projectedReadSchemaFunc: (String, String) => String,
+    feasibleRepetition: TestRepetitions): Any = {
 
     val projectedReadSchema = MessageTypeParser.parseMessageType(
       projectedReadSchemaFunc(
         feasibleRepetition.projectedReadRepetition1,
-        feasibleRepetition.projectedReadRepetition2)
-    )
+        feasibleRepetition.projectedReadRepetition2))
     val fileSchema = MessageTypeParser.parseMessageType(
       fileSchemaFunc(
         feasibleRepetition.fileRepetition1,
-        feasibleRepetition.fileRepetition2)
-    )
+        feasibleRepetition.fileRepetition2))
     val expectedProjectedFileSchema = MessageTypeParser.parseMessageType(
       fileSchemaFunc(
         feasibleRepetition.projectedReadRepetition1,
-        feasibleRepetition.projectedReadRepetition2)
-    )
+        feasibleRepetition.projectedReadRepetition2))
     expectedProjectedFileSchema shouldEqual testProjectAndAssertCompatibility(fileSchema, projectedReadSchema)
   }
 
   "Project for list with nullable element" should {
     val listNullableElementRules = Seq(
       ("spark-legacy", listSparkLegacyNullableElementRule(_, _)),
-      ("standard-with", (from: String, to: String) => listStandardRule(from, to, nullableElement = true))
-    )
+      ("standard-with", (from: String, to: String) => listStandardRule(from, to, nullableElement = true)))
     for {
       (projectedReadRuleName, projectedReadSchemaFunc) <- listNullableElementRules
       (fileRuleName, fileSchemaFunc) <- listNullableElementRules
@@ -244,8 +238,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
             testProjectedFileSchemaHasReadSchemaRepetitions(
               fileSchemaFunc,
               projectedReadSchemaFunc,
-              feasibleRepetition
-            )
+              feasibleRepetition)
           }
         }
       }
@@ -260,8 +253,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           testProjectedFileSchemaHasReadSchemaRepetitions(
             fileSchemaFunc = listSparkLegacyNullableElementRule,
             projectedReadSchemaFunc = requiredElementSchemaFunc,
-            feasibleRepetition
-          )
+            feasibleRepetition)
         }
         e.getMessage should include("Spark legacy mode for nullable element cannot take required element")
       }
@@ -329,8 +321,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |    }
           |  }
           |}
-        """.stripMargin
-      )
+        """.stripMargin)
 
       val projectedFileSchema = testProjectAndAssertCompatibility(message, message)
       message shouldEqual projectedFileSchema
@@ -476,12 +467,10 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       val mapType = new MapType(
         new ThriftField("NOT_USED_KEY", 4, Requirement.REQUIRED, new ThriftType.StringType),
         new ThriftField("NOT_USED_VALUE", 5, Requirement.REQUIRED,
-          mapValueType)
-      )
+          mapValueType))
       new ThriftSchemaConverter().convert(
         new StructType(util.Arrays.asList(
-          new ThriftField("map_field", 6, Requirement.REQUIRED, mapType)
-        ), StructOrUnionType.STRUCT))
+          new ThriftField("map_field", 6, Requirement.REQUIRED, mapType)), StructOrUnionType.STRUCT))
     }
   }
 
@@ -1046,9 +1035,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
       val message = new ThriftSchemaConverter().convert(
         new StructType(util.Arrays.asList(
           new ThriftField("list_of_map", 2, Requirement.REQUIRED, new ListType(
-            new ThriftField("NOT_USED_ELEMENT", 2, Requirement.REQUIRED, mapType))
-          )
-        ), StructOrUnionType.STRUCT))
+            new ThriftField("NOT_USED_ELEMENT", 2, Requirement.REQUIRED, mapType)))), StructOrUnionType.STRUCT))
 
       message shouldEqual MessageTypeParser.parseMessageType(
         """
@@ -1063,8 +1050,7 @@ class ParquetCollectionFormatCompatibilityTests extends WordSpec with Matchers {
           |  }
           |}
           |
-        """.stripMargin
-      )
+        """.stripMargin)
 
       val projectedFileSchema = testProjectAndAssertCompatibility(message, message)
       message shouldEqual projectedFileSchema

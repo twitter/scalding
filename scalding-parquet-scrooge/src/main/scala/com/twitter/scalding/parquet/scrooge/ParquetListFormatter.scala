@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.scrooge
 
-import org.apache.parquet.schema.{GroupType, OriginalType, PrimitiveType, Type}
+import org.apache.parquet.schema.{ GroupType, OriginalType, PrimitiveType, Type }
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -25,13 +25,12 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
     GroupArrayRule,
     TupleRule,
     StandardRule,
-    SparkLegacyNullableElementRule
-  )
+    SparkLegacyNullableElementRule)
 
   def formatCompatibleRepeatedType(fileRepeatedType: Type,
-                                   readRepeatedType: Type,
-                                   fieldContext: FieldContext,
-                                   recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
+    readRepeatedType: Type,
+    fieldContext: FieldContext,
+    recursiveSolver: (Type, Type, FieldContext) => Type): Type = {
     (findRule(fileRepeatedType), findRule(readRepeatedType)) match {
       case (Some(fileRule), Some(readRule)) => {
         val readElementType = readRule.elementType(readRepeatedType)
@@ -43,15 +42,14 @@ private[scrooge] object ParquetListFormatter extends ParquetCollectionFormatter 
           elementName = readRule.elementName(readRepeatedType),
           isElementRequired = readRule.isElementRequired(readRepeatedType),
           elementOriginalType = readRule.elementOriginalType(readRepeatedType),
-          fieldContext = fieldContext
-        )
+          fieldContext = fieldContext)
       }
 
       case _ => readRepeatedType
     }
   }
 
-  def extractGroup(groupType: GroupType) : Option[ListGroup] = {
+  def extractGroup(groupType: GroupType): Option[ListGroup] = {
     if (isListGroup(groupType)) {
       Some(ListGroup(groupType, groupType.getFields.get(0)))
     } else {
@@ -94,10 +92,10 @@ private[scrooge] sealed trait ParquetListFormatRule {
   private[scrooge] def appliesToType(repeatedType: Type): Boolean
 
   private[scrooge] def createCompliantRepeatedType(elementType: Type,
-                                                   elementName: String,
-                                                   isElementRequired: Boolean,
-                                                   elementOriginalType: OriginalType,
-                                                   fieldContext: FieldContext): Type
+    elementName: String,
+    isElementRequired: Boolean,
+    elementOriginalType: OriginalType,
+    fieldContext: FieldContext): Type
 }
 
 /**
@@ -220,7 +218,6 @@ private[scrooge] object TupleRule extends ParquetListFormatRule {
     }
   }
 }
-
 
 private[scrooge] sealed trait ThreeLevelRule extends ParquetListFormatRule {
 
