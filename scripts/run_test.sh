@@ -28,8 +28,8 @@ kill -9 $PROGRESS_REPORTER_PID
 
 export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=128m -XX:+TieredCompilation -XX:MaxPermSize=256m -Xms256m -Xmx768m -Xss2m"
 echo "calling ... "
-echo "time ./sbt ++$TRAVIS_SCALA_VERSION $(withCmd test)"
-time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION "$(withCmd test)"
+echo "time ./sbt ++$TRAVIS_SCALA_VERSION coverage $(withCmd test) coverageReport"
+time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION coverage "$(withCmd test)" coverageReport
 TST_EXIT_CODE=$?
 
 echo "Running mima checks ... "
@@ -43,6 +43,9 @@ time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA
 COMPILE_DOC_EXIT_CODE=$?
 
 echo "all done"
+
+time ./sbt -Dhttp.keepAlive=false -Dsbt.repository.secure=false  ++$TRAVIS_SCALA_VERSION coverageAggregate
+bash <(curl -s https://codecov.io/bash)
 
 $BASE_DIR/scripts/packDeps.sh
 exit $(( $TST_EXIT_CODE || $MIMA_EXIT_CODE || $COMPILE_DOC_EXIT_CODE ))
