@@ -315,7 +315,7 @@ class Job(val args: Args) extends FieldConversions with java.io.Serializable {
     FlowStateMap.validateSources(flowDef, mode)
   }
 
-  // called after successfull run
+  // called after successful run
   // only override if you do not use flowDef
   def clear(): Unit = {
     FlowStateMap.clear(flowDef)

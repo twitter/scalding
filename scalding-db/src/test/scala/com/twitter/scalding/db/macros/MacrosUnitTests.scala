@@ -216,7 +216,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
   }
 
   "Produces the DBTypeDescriptor" should {
-    // explictly just call this to get a compiler error
+    // explicitly just call this to get a compiler error
     DBMacro.toDBTypeDescriptor[User]
     // ensure the implicit fires
     isJDBCTypeInfoAvailable[User]
@@ -271,7 +271,7 @@ class JdbcMacroUnitTests extends WordSpec with Matchers with MockitoSugar {
 
     isColumnDefinitionAvailable[ExhaustiveJdbcCaseClass]
 
-    // explictly just call this to get a compiler error
+    // explicitly just call this to get a compiler error
     DBMacro.toDBTypeDescriptor[ExhaustiveJdbcCaseClass]
     // ensure the implicit fires
     isJDBCTypeInfoAvailable[ExhaustiveJdbcCaseClass]

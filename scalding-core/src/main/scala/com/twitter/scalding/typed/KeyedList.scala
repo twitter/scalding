@@ -62,7 +62,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
   def bufferedTake(n: Int): This[K, T]
   /*
     Here is an example implementation, but since each subclass of
-    KeyedListLike has its own constaints, this is always to be
+    KeyedListLike has its own constraints, this is always to be
     overriden.
 
     {@code

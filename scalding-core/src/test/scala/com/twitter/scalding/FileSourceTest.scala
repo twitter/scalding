@@ -266,7 +266,7 @@ class FileSourceTest extends WordSpec with Matchers {
       TestFixedPathSource("test_data/2013/06/").hdfsWritePath shouldBe "test_data/2013/06/"
     }
 
-    "leave path as-is when it ends in * without a preceeding /" in {
+    "leave path as-is when it ends in * without a preceding /" in {
       TestFixedPathSource("test_data/2013/06*").hdfsWritePath shouldBe "test_data/2013/06*"
     }
   }

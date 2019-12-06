@@ -34,7 +34,7 @@ import org.slf4j.{ Logger, LoggerFactory => LogManager }
 object Tracing {
   private val LOG: Logger = LogManager.getLogger(this.getClass)
 
-  // TODO: remove this once we no longer want backwards compatiblity
+  // TODO: remove this once we no longer want backwards compatibility
   // with cascading versions pre 2.6
   private val traceUtilClassName = "cascading.util.TraceUtil"
 

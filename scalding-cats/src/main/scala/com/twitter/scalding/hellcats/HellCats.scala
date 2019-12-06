@@ -16,7 +16,7 @@ object HellCats {
       def empty[A] = TypedPipe.empty
       def map[A, B](ta: TypedPipe[A])(fn: A => B) = ta.map(fn)
       def combineK[A](left: TypedPipe[A], right: TypedPipe[A]) = left ++ right
-      // we could impliment Applicative[TypedPipe], but cross is very dangerous
+      // we could implement Applicative[TypedPipe], but cross is very dangerous
       // on map-reduce, so I hesitate to add it at this point
     }
 

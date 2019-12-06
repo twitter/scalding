@@ -134,7 +134,7 @@ object TypedPipeGen {
     Gen.lzy(Gen.frequency((1, srcGen), (1, mapped(srcGen))))
 
   /**
-   * This generates a TypedPipe that can't neccesarily
+   * This generates a TypedPipe that can't necessarily
    * be run because it has fake sources
    */
   val genWithFakeSources: Gen[TypedPipe[Int]] = tpGen(srcGen)

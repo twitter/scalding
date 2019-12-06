@@ -63,7 +63,7 @@ class SideEffectTest extends WordSpec with Matchers with FieldConversions {
 }
 
 /*
- * ZipBuffer uses (unneccessary) side effect to construct zipped.
+ * ZipBuffer uses (unnecessary) side effect to construct zipped.
  */
 class ZipBuffer(args: Args) extends Job(args) {
 
