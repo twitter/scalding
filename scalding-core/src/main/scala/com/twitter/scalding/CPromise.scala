@@ -14,7 +14,7 @@ case class CPromise[T](promise: Promise[T], cancellationHandler: Promise[Cancell
   }
 
   def completeWith(other: CFuture[T]): this.type = {
-    // fullfill the main and cancellation handler promises
+    // fulfill the main and cancellation handler promises
     promise.completeWith(other.future)
     cancellationHandler.completeWith(Future.successful(other.cancellationHandler))
     this

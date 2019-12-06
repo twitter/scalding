@@ -154,7 +154,7 @@ class JobTest(cons: (Args) => Job) {
     this
   }
 
-  // Simulates the existance of a file so that mode.fileExists returns true.  We
+  // Simulates the existence of a file so that mode.fileExists returns true.  We
   // do not simulate the file contents; that should be done through mock
   // sources.
   def registerFile(filename: String) = {

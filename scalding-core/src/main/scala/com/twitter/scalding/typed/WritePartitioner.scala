@@ -43,7 +43,7 @@ object WritePartitioner {
 
   /**
    * This enables us to write the partitioning in terms of this
-   * applicative type that is equiped with two extra operations:
+   * applicative type that is equipped with two extra operations:
    * materialized and write, but not a general flatMap
    *
    * so the only sequencing power we have is to materialize

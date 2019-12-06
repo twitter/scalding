@@ -88,7 +88,7 @@ class InvalidSourceTap(val e: Throwable) extends SourceTap[JobConf, RecordReader
 }
 
 /**
- * Better error messaging for the occassion where an InvalidSourceTap does not
+ * Better error messaging for the occasion where an InvalidSourceTap does not
  * fail in validation.
  */
 private[scalding] class InvalidInputFormat extends InputFormat[Nothing, Nothing] {

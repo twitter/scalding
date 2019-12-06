@@ -96,7 +96,7 @@ This is the first Scalding release that publishes artifacts for Scala 2.12!
 * Update Build.scala  : #1361
 * Allow overriding of hadoop configuration options for a single source/sink  : #1362
 * Missing an extends Serializable, causes issues if capture Config's anywhere : #1365
-* Fix TypedPipe.limit to be correct, if slighly slower  : #1366
+* Fix TypedPipe.limit to be correct, if slightly slower  : #1366
 * Fix scala.Function2 showing up in line numbers : #1367
 * Drop with MacroGenerated from Fields macros  : #1370
 * Fix deprecation warnings in TypedDelimited  : #1371

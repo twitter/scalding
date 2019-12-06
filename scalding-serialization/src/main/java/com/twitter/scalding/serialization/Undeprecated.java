@@ -20,7 +20,7 @@ public class Undeprecated {
    * This method is faster for ASCII data, but unsafe otherwise
    * it is used by our macros AFTER checking that the string is ASCII
    * following a pattern seen in Kryo, which benchmarking showed helped.
-   * Scala cannot supress warnings like this so we do it here
+   * Scala cannot suppress warnings like this so we do it here
    */
   @SuppressWarnings("deprecation")
   public static void getAsciiBytes(String element, int charStart, int charLen, byte[] bytes, int byteOffset) {
