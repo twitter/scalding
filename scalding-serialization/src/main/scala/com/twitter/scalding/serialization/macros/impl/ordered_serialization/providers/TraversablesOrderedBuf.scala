@@ -120,8 +120,8 @@ object TraversablesOrderedBuf {
     val innerOrd = q"""
       new _root_.scala.math.Ordering[${innerBuf.tpe}] {
         def compare(a: ${innerBuf.tpe}, b: ${innerBuf.tpe}) = {
-          val $ioa = a
-          val $iob = b
+          val $ioa: ${innerBuf.tpe} = a
+          val $iob: ${innerBuf.tpe} = b
           ${innerBuf.compare(ioa, iob)}
         }
       }
@@ -136,8 +136,8 @@ object TraversablesOrderedBuf {
         val b = freshT("b")
         q"""
         val $innerCompareFn = { (a: _root_.java.io.InputStream, b: _root_.java.io.InputStream) =>
-          val $a = a
-          val $b = b
+          val $a: _root_.java.io.InputStream = a
+          val $b: _root_.java.io.InputStream = b
           ${innerBuf.compareBinary(a, b)}
         };
         _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.TraversableHelpers.rawCompare($inputStreamA, $inputStreamB)($innerCompareFn)
