@@ -1,6 +1,9 @@
 import ReleaseTransformations._
 import scala.collection.JavaConverters._
 
+// Some artifacts can't be resolved in `scalding-hraven` with coursier for some unknown reason.
+ThisBuild / useCoursier := false
+
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.11" => "2.11"
   case version if version startsWith "2.12" => "2.12"
