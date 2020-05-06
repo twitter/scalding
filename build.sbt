@@ -1,12 +1,8 @@
-import AssemblyKeys._
 import ReleaseTransformations._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import com.typesafe.sbt.SbtScalariform._
-import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-import sbtassembly.Plugin._
-import sbtunidoc.Plugin.UnidocKeys._
 import scala.collection.JavaConverters._
-import scalariform.formatter.preferences._
+
+// Some artifacts can't be resolved in `scalding-hraven` with coursier for some unknown reason.
+ThisBuild / useCoursier := false
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.11" => "2.11"
@@ -29,7 +25,7 @@ val hbaseVersion = "1.2.4"
 val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
-val paradiseVersion = "2.1.0"
+val paradiseVersion = "2.1.1"
 val parquetVersion = "1.10.0"
 val protobufVersion = "2.4.1"
 val scalameterVersion = "0.8.2"
@@ -44,14 +40,16 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
+val mimaSettings = Seq(
+    mimaPreviousArtifacts := youngestForwardCompatible(name.value)
+)
+
+val sharedSettings = Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.12",
 
   crossScalaVersions := Seq(scalaVersion.value, "2.12.8"),
-
-  ScalariformKeys.preferences := formattingPreferences,
 
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -153,7 +151,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     ),
 
   // Janino includes a broken signature, and is not needed:
-  excludedJars in assembly := {
+  assemblyExcludedJars in assembly := {
     val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
         "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
       (fullClasspath in assembly).value filter {
@@ -161,7 +159,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
       }
   },
   // Some of these files have duplicates, let's ignore:
-  mergeStrategy in assembly :=  {
+  assemblyMergeStrategy in assembly :=  {
     case s if s.endsWith(".class") => MergeStrategy.last
     case s if s.endsWith("project.clj") => MergeStrategy.concat
     case s if s.endsWith(".html") => MergeStrategy.last
@@ -173,7 +171,7 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
     case s if s.endsWith("jansi.dll") => MergeStrategy.rename
     case s if s.endsWith("libjansi.so") => MergeStrategy.rename
     case s if s.endsWith("properties") => MergeStrategy.filterDistinctLines
-    case x => (mergeStrategy in assembly).value(x)
+    case x => (assemblyMergeStrategy in assembly).value(x)
   },
 
   pomExtra := (
@@ -207,71 +205,63 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
           <url>https://twitter.com/argyris</url>
         </developer>
       </developers>)
-) ++ mimaDefaultSettings
-
-lazy val scalding = Project(
-  id = "scalding",
-  base = file("."),
-  settings = sharedSettings)
- .settings(noPublishSettings)
- .aggregate(
-  scaldingArgs,
-  scaldingDate,
-  scaldingQuotation,
-  scaldingCats,
-  scaldingCore,
-  scaldingCommons,
-  scaldingAvro,
-  scaldingParquet,
-  scaldingParquetScrooge,
-  scaldingHRaven,
-  scaldingRepl,
-  scaldingJson,
-  scaldingJdbc,
-  scaldingHadoopTest,
-  scaldingEstimatorsTest,
-  scaldingDb,
-  maple,
-  executionTutorial,
-  scaldingSerialization,
-  scaldingSpark,
-  scaldingThriftMacros
 )
 
-lazy val scaldingAssembly = Project(
-  id = "scalding-assembly",
-  base = file("assembly"),
-  settings = sharedSettings)
- .settings(noPublishSettings)
- .aggregate(
-  scaldingArgs,
-  scaldingDate,
-  scaldingQuotation,
-  scaldingCore,
-  scaldingCommons,
-  scaldingAvro,
-  scaldingParquet,
-  scaldingParquetScrooge,
-  scaldingHRaven,
-  scaldingRepl,
-  scaldingJson,
-  scaldingJdbc,
-  maple,
-  scaldingSerialization
-)
+lazy val scalding = project
+  .in(file("."))
+  .settings(
+    sharedSettings,
+    noPublishSettings
+  )
+  .aggregate(
+    `scalding-args`,
+    `scalding-date`,
+    `scalding-quotation`,
+    `scalding-cats`,
+    `scalding-core`,
+    `scalding-commons`,
+    `scalding-avro`,
+    `scalding-parquet`,
+    `scalding-parquet-scrooge`,
+    `scalding-hraven`,
+    `scalding-repl`,
+    `scalding-json`,
+    `scalding-jdbc`,
+    `scalding-hadoop-test`,
+    `scalding-estimators-test`,
+    `scalding-db`,
+    maple,
+    `execution-tutorial`,
+    `scalding-serialization`,
+    `scalding-spark`,
+    `scalding-thrift-macros`
+ )
 
-lazy val formattingPreferences = {
-  import scalariform.formatter.preferences._
-  FormattingPreferences().
-    setPreference(AlignParameters, false).
-    setPreference(PreserveSpaceBeforeArguments, true)
-}
+lazy val `scalding-assembly` = project
+  .in(file("assembly"))
+  .settings(
+    sharedSettings,
+    noPublishSettings
+  )
+  .aggregate(
+    `scalding-args`,
+    `scalding-date`,
+    `scalding-quotation`,
+    `scalding-core`,
+    `scalding-commons`,
+    `scalding-avro`,
+    `scalding-parquet`,
+    `scalding-parquet-scrooge`,
+    `scalding-hraven`,
+    `scalding-repl`,
+    `scalding-json`,
+    `scalding-jdbc`,
+    maple,
+    `scalding-serialization`
+  )
 
 lazy val noPublishSettings = Seq(
-    publish := (),
-    publishLocal := (),
-    test := (),
-    publishArtifact := false
+    skip in publish := true
   )
 
 /**
@@ -280,8 +270,8 @@ lazy val noPublishSettings = Seq(
  */
 val ignoredModules = Set[String]("benchmarks")
 
-def youngestForwardCompatible(subProj: String) =
-  None
+def youngestForwardCompatible(subProj: String): Set[ModuleID] =
+  Set.empty
 // Enable mima binary check back after releasing 0.18.0
 //  Some(subProj)
 //    .filterNot(ignoredModules.contains(_))
@@ -289,17 +279,22 @@ def youngestForwardCompatible(subProj: String) =
 //    s => "com.twitter" %% (s"scalding-$s") % "0.17.0"
 //  }
 
-def module(name: String) = {
-  val id = "scalding-%s".format(name)
-  Project(id = id, base = file(id), settings = sharedSettings ++ Seq(
-    Keys.name := id,
-    mimaPreviousArtifacts := youngestForwardCompatible(name).toSet)
-  )
-}
 
-lazy val scaldingArgs = module("args")
+lazy val `scalding-args` = project
+    .in(file("scalding-args"))
+    .settings(
+        name := "scalding-args",
+        sharedSettings,
+        mimaSettings,
+    )
 
-lazy val scaldingDate = module("date")
+lazy val `scalding-date` = project
+    .in(file("scalding-date"))
+    .settings(
+        name := "scalding-date",
+        sharedSettings,
+        mimaSettings,
+    )
 
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
@@ -307,131 +302,185 @@ lazy val cascadingVersion =
 lazy val cascadingJDBCVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
-lazy val scaldingBenchmarks = module("benchmarks")
+lazy val `scalding-benchmarks` = project
+  .in(file("scalding-benchmarks"))
   .settings(
+    name := "scalding-benchmarks",
+    sharedSettings,
+    mimaSettings,
     libraryDependencies ++= Seq(
         "com.storm-enroute" %% "scalameter" % scalameterVersion % "test",
         "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
       ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     parallelExecution in Test := false
-  ).dependsOn(scaldingCore)
+  ).dependsOn(`scalding-core`)
 
-lazy val scaldingQuotation = module("quotation").settings(
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
-  )
-)
-
-lazy val scaldingCore = module("core").settings(
-  libraryDependencies ++= Seq(
-    "cascading" % "cascading-core" % cascadingVersion,
-    "cascading" % "cascading-hadoop" % cascadingVersion,
-    "cascading" % "cascading-local" % cascadingVersion,
-    "com.stripe" %% "dagon-core" % dagonVersion,
-    "com.twitter" % "chill-hadoop" % chillVersion,
-    "com.twitter" % "chill-java" % chillVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter" %% "algebird-core" % algebirdVersion,
-    "com.twitter" %% "algebird-test" % algebirdVersion % "test",
-    "com.twitter" %% "bijection-core" % bijectionVersion,
-    "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" %% "chill" % chillVersion,
-    "com.twitter" %% "chill-algebird" % chillVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "org.scala-lang" % "scala-library" % scalaVersion.value,
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
-
-lazy val scaldingCats = module("cats").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "org.typelevel" %% "cats-core" % catsVersion,
-    "org.typelevel" %% "cats-laws" % catsVersion % "test",
-    "org.typelevel" %% "cats-effect" % catsEffectVersion,
-    "org.typelevel" %% "cats-effect-laws" % catsEffectVersion % "test"
-  )).dependsOn(scaldingArgs, scaldingDate, scaldingCore)
-
-
-lazy val scaldingSpark = module("spark").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.spark" %% "spark-core" % sparkVersion,
-    "org.apache.spark" %% "spark-sql" % sparkVersion
-    )
-  ).dependsOn(scaldingCore)
-
-lazy val scaldingCommons = module("commons").settings(
-  libraryDependencies ++= Seq(
-    // TODO: split into scalding-protobuf
-    "com.google.protobuf" % "protobuf-java" % protobufVersion,
-    "com.twitter" %% "bijection-core" % bijectionVersion,
-    "com.twitter" %% "algebird-core" % algebirdVersion,
-    "com.twitter" %% "chill" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
-    "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
-    // TODO: split this out into scalding-thrift
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "org.apache.thrift" % "libthrift" % thriftVersion,
-    // TODO: split this out into a scalding-scrooge
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
-      exclude("com.google.guava", "guava"),
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
-    "junit" % "junit" % junitVersion % "test"
-  )
-).dependsOn(scaldingArgs, scaldingDate, scaldingCore, scaldingHadoopTest % "test")
-
-lazy val scaldingAvro = module("avro").settings(
-  libraryDependencies ++= Seq(
-    "cascading.avro" % "avro-scheme" % cascadingAvroVersion,
-    "org.apache.avro" % "avro" % avroVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
-  )
-).dependsOn(scaldingCore)
-
-lazy val scaldingParquetFixtures = module("parquet-fixtures")
-   .settings(
-     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-     scroogeLanguages in Test := Seq("java", "scala"),
-     libraryDependencies ++= Seq(
-       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
-         exclude("com.google.guava", "guava"),
-       "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
-       "org.apache.thrift" % "libthrift" % thriftVersion
-     )
-   )
-
-lazy val scaldingParquet = module("parquet").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.parquet" % "parquet-column" % parquetVersion,
-    "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
-    "org.apache.parquet" % "parquet-thrift" % parquetVersion
-    // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
-      exclude("org.apache.parquet", "parquet-pig")
-      exclude("com.twitter.elephantbird", "elephant-bird-pig")
-      exclude("com.twitter.elephantbird", "elephant-bird-core"),
-    "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    "org.apache.thrift" % "libthrift" % thriftVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" %% "chill-bijection" % chillVersion,
-    "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
-    ),
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full))
-  .dependsOn(scaldingCore, scaldingHadoopTest % "test", scaldingParquetFixtures % "test->test")
-
-
-
-lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
+lazy val `scalding-quotation` = project
+  .in(file("scalding-quotation"))
   .settings(
+    name := "scalding-quotation",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
+    )
+  )
+
+lazy val `scalding-core` = project
+  .in(file("scalding-core"))
+  .dependsOn(`scalding-args`, `scalding-date`, `scalding-serialization`, maple, `scalding-quotation`)
+  .settings(
+    name := "scalding-core",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "cascading" % "cascading-core" % cascadingVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion,
+      "cascading" % "cascading-local" % cascadingVersion,
+      "com.stripe" %% "dagon-core" % dagonVersion,
+      "com.twitter" % "chill-hadoop" % chillVersion,
+      "com.twitter" % "chill-java" % chillVersion,
+      "com.twitter" %% "chill-bijection" % chillVersion,
+      "com.twitter" %% "algebird-core" % algebirdVersion,
+      "com.twitter" %% "algebird-test" % algebirdVersion % "test",
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter" %% "chill-algebird" % chillVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
+
+lazy val `scalding-cats` = project
+  .in(file("scalding-cats"))
+  .dependsOn(`scalding-args`, `scalding-date`, `scalding-core`)
+  .settings(
+    name := "scalding-cats",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.typelevel" %% "cats-core" % catsVersion,
+      "org.typelevel" %% "cats-laws" % catsVersion % "test",
+      "org.typelevel" %% "cats-effect" % catsEffectVersion,
+      "org.typelevel" %% "cats-effect-laws" % catsEffectVersion % "test"
+    )
+  )
+
+
+lazy val `scalding-spark` = project
+  .in(file("scalding-spark"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-spark",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.spark" %% "spark-core" % sparkVersion,
+      "org.apache.spark" %% "spark-sql" % sparkVersion
+    )
+  )
+
+lazy val `scalding-commons` = project
+  .in(file("scalding-commons"))
+  .dependsOn(`scalding-args`, `scalding-date`, `scalding-core`, `scalding-hadoop-test` % "test")
+  .settings(
+    name := "scalding-commons",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      // TODO: split into scalding-protobuf
+      "com.google.protobuf" % "protobuf-java" % protobufVersion,
+      "com.twitter" %% "bijection-core" % bijectionVersion,
+      "com.twitter" %% "algebird-core" % algebirdVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion,
+      "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion,
+      "com.hadoop.gplcompression" % "hadoop-lzo" % hadoopLzoVersion,
+      // TODO: split this out into scalding-thrift
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.apache.thrift" % "libthrift" % thriftVersion,
+      // TODO: split this out into a scalding-scrooge
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+        exclude("com.google.guava", "guava"),
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
+      "junit" % "junit" % junitVersion % "test"
+    )
+  )
+
+lazy val `scalding-avro` = project
+  .in(file("scalding-avro"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-avro",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "cascading.avro" % "avro-scheme" % cascadingAvroVersion,
+      "org.apache.avro" % "avro" % avroVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
+    )
+  )
+
+lazy val `scalding-parquet-fixtures` = project
+  .in(file("scalding-parquet-fixtures"))
+  .settings(
+    name := "scalding-parquet-fixtures",
+    sharedSettings,
+    mimaSettings,
+    scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
+    scroogeLanguages in Test := Seq("java", "scala"),
+    libraryDependencies ++= Seq(
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+        exclude("com.google.guava", "guava"),
+      "commons-lang" % "commons-lang" % apacheCommonsVersion, // needed for HashCodeBuilder used in thriftjava
+      "org.apache.thrift" % "libthrift" % thriftVersion
+    )
+  )
+
+lazy val `scalding-parquet` = project
+  .in(file("scalding-parquet"))
+  .dependsOn(`scalding-core`, `scalding-hadoop-test` % "test", `scalding-parquet-fixtures` % "test->test")
+  .settings(
+    name := "scalding-parquet",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.parquet" % "parquet-column" % parquetVersion,
+      "org.apache.parquet" % "parquet-hadoop" % parquetVersion,
+      "org.apache.parquet" % "parquet-thrift" % parquetVersion
+      // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
+        exclude("org.apache.parquet", "parquet-pig")
+        exclude("com.twitter.elephantbird", "elephant-bird-pig")
+        exclude("com.twitter.elephantbird", "elephant-bird-core"),
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+      "org.apache.thrift" % "libthrift" % thriftVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" %% "chill-bijection" % chillVersion,
+      "com.twitter.elephantbird" % "elephant-bird-core" % elephantbirdVersion % "test"
+      ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
+
+
+
+lazy val `scalding-parquet-scrooge-fixtures` = project
+  .in(file("scalding-parquet-scrooge-fixtures"))
+  .settings(
+    name := "scalding-parquet-scrooge-fixtures",
+    sharedSettings,
+    mimaSettings,
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     scroogeLanguages in Test := Seq("java", "scala"),
     libraryDependencies ++= Seq(
@@ -442,8 +491,14 @@ lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   )
 )
 
-lazy val scaldingParquetScrooge = module("parquet-scrooge")
+lazy val `scalding-parquet-scrooge` = project
+  .in(file("scalding-parquet-scrooge"))
+  .dependsOn(`scalding-core`, `scalding-parquet` % "compile->compile;test->test",
+  `scalding-parquet-scrooge-fixtures` % "test->test")
   .settings(
+    name := "scalding-parquet-scrooge",
+    sharedSettings,
+    mimaSettings,
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       // see https://issues.apache.org/jira/browse/PARQUET-143 for exclusions
@@ -456,35 +511,40 @@ lazy val scaldingParquetScrooge = module("parquet-scrooge")
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
       "com.novocode" % "junit-interface" % "0.11" % "test",
       "junit" % "junit" % junitVersion % "test"
-
     )
-).dependsOn(scaldingCore, scaldingParquet % "compile->compile;test->test", scaldingParquetScroogeFixtures % "test->test")
-
-lazy val scaldingHRaven = module("hraven").settings(
-  libraryDependencies ++= Seq(
-    "com.twitter.hraven" % "hraven-core" % hravenVersion
-      // These transitive dependencies cause sbt to give a ResolveException
-      // because they're not available on Maven. We don't need them anyway.
-      // See https://github.com/twitter/cassie/issues/13
-      exclude("javax.jms", "jms")
-      exclude("com.sun.jdmk", "jmxtools")
-      exclude("com.sun.jmx", "jmxri")
-
-      // These transitive dependencies of hRaven cause conflicts when
-      // running scalding-hraven/*assembly and aren't needed
-      // for the part of the hRaven API that we use anyway
-      exclude("com.twitter.common", "application-module-log")
-      exclude("com.twitter.common", "application-module-stats")
-      exclude("com.twitter.common", "args")
-      exclude("com.twitter.common", "application"),
-    "org.apache.hbase" % "hbase" % hbaseVersion,
-    "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
-    "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
-    "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
   )
-).dependsOn(scaldingCore)
+
+lazy val `scalding-hraven` = project
+  .in(file("scalding-hraven"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-hraven",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "com.twitter.hraven" % "hraven-core" % hravenVersion
+        // These transitive dependencies cause sbt to give a ResolveException
+        // because they're not available on Maven. We don't need them anyway.
+        // See https://github.com/twitter/cassie/issues/13
+        exclude("javax.jms", "jms")
+        exclude("com.sun.jdmk", "jmxtools")
+        exclude("com.sun.jmx", "jmxri")
+
+        // These transitive dependencies of hRaven cause conflicts when
+        // running scalding-hraven/*assembly and aren't needed
+        // for the part of the hRaven API that we use anyway
+        exclude("com.twitter.common", "application-module-log")
+        exclude("com.twitter.common", "application-module-stats")
+        exclude("com.twitter.common", "args")
+        exclude("com.twitter.common", "application"),
+      "org.apache.hbase" % "hbase" % hbaseVersion,
+      "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
+      "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
+      "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
+    )
+  )
 
 // create new configuration which will hold libs otherwise marked as 'provided'
 // so that we can re-include them in 'run'. unfortunately, we still have to
@@ -492,9 +552,14 @@ lazy val scaldingHRaven = module("hraven").settings(
 // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
 val Unprovided = config("unprovided") extend Runtime
 
-lazy val scaldingRepl = module("repl")
+lazy val `scalding-repl` = project
+  .in(file("scalding-repl"))
+  .dependsOn(`scalding-core`)
   .configs(Unprovided) // include 'unprovided' as config option
   .settings(
+    name := "scalding-repl",
+    sharedSettings,
+    mimaSettings,
     initialCommands in console := """
       import com.twitter.scalding._
       import com.twitter.scalding.ReplImplicits._
@@ -509,124 +574,160 @@ lazy val scaldingRepl = module("repl")
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
-    )
-).dependsOn(scaldingCore)
-// run with 'unprovided' config includes libs marked 'unprovided' in classpath
-.settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
-  run := Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
-)): _*)
-.settings(
-  // make scalding-repl/run use 'unprovided' config
-  run := (run in Unprovided)
-)
+    ),
+    // run with 'unprovided' config includes libs marked 'unprovided' in classpath
+    inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
+      run := Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
+    )),
+    // make scalding-repl/run use 'unprovided' config
+    run := run in Unprovided
+  )
 
 // zero dependency serialization module
-lazy val scaldingSerialization = module("serialization").settings(
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  ),
-addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-)
+lazy val `scalding-serialization` = project
+  .in(file("scalding-serialization"))
+  .settings(
+    name := "scalding-serialization",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
 
-lazy val scaldingJson = module("json").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
-    "org.json4s" %% "json4s-native" % json4SVersion,
-    "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
+lazy val `scalding-json` = project
+  .in(file("scalding-json"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-json",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+      "org.json4s" %% "json4s-native" % json4SVersion,
+      "com.twitter.elephantbird" % "elephant-bird-cascading2" % elephantbirdVersion % "provided"
     )
-).dependsOn(scaldingCore)
-
-lazy val scaldingJdbc = module("jdbc").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
-    "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
   )
-).dependsOn(scaldingCore)
 
-lazy val scaldingHadoopTest = module("hadoop-test").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
-    "com.twitter" %% "chill-algebird" % chillVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion
+lazy val `scalding-jdbc` = project
+  .in(file("scalding-jdbc"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-jdbc",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
+      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
+    )
   )
-).dependsOn(scaldingCore, scaldingSerialization)
 
-lazy val scaldingEstimatorsTest = module("estimators-test").settings(
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
-    "com.twitter" %% "chill-algebird" % chillVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
-    "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion
+lazy val `scalding-hadoop-test` = project
+  .in(file("scalding-hadoop-test"))
+  .dependsOn(`scalding-core`, `scalding-serialization`)
+  .settings(
+    name := "scalding-hadoop-test",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+      "com.twitter" %% "chill-algebird" % chillVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+      "org.scalatest" %% "scalatest" % scalaTestVersion
+    )
   )
-).dependsOn(scaldingHadoopTest % "test")
+
+lazy val `scalding-estimators-test` = project
+  .in(file("scalding-estimators-test"))
+  .dependsOn(`scalding-hadoop-test` % "test")
+  .settings(
+    name := "scalding-estimators-test",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion,
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests",
+      "com.twitter" %% "chill-algebird" % chillVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+      "org.scalatest" %% "scalatest" % scalaTestVersion
+    )
+  )
 
 // This one uses a different naming convention
-lazy val maple = Project(
-  id = "maple",
-  base = file("maple"),
-  settings = sharedSettings
-).settings(
-  name := "maple",
-  mimaPreviousArtifacts := Set.empty,
-  crossPaths := false,
-  autoScalaLibrary := false,
-  publishArtifact := true,
-  libraryDependencies ++= Seq(
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-    "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
-    "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
-    "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
-    "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
-    "cascading" % "cascading-hadoop" % cascadingVersion
-  )
-)
-
-lazy val executionTutorial = Project(
-  id = "execution-tutorial",
-  base = file("tutorial/execution-tutorial"),
-  settings = sharedSettings
-).settings(
-  name := "execution-tutorial",
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-library" % scalaVersion.value,
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-    "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
-    "cascading" % "cascading-hadoop" % cascadingVersion
-  )
-).dependsOn(scaldingCore)
-
-lazy val scaldingDb = module("db").settings(
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-library" % scalaVersion.value,
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "com.twitter" %% "bijection-macros" % bijectionVersion
-  ),
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(scaldingCore)
-
-lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
+lazy val maple = project
+  .in(file("maple"))
   .settings(
+    name := "maple",
+    sharedSettings,
+    mimaPreviousArtifacts := Set.empty,
+    crossPaths := false,
+    autoScalaLibrary := false,
+    publishArtifact := true,
+    libraryDependencies ++= Seq(
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+      "org.apache.hbase" % "hbase" % hbaseVersion % "provided",
+      "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
+      "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
+      "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
+      "cascading" % "cascading-hadoop" % cascadingVersion
+    )
+  )
+
+lazy val `execution-tutorial` = project
+  .in(file("tutorial") / "execution-tutorial")
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "execution-tutorial",
+    sharedSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "cascading" % "cascading-hadoop" % cascadingVersion
+    )
+  )
+
+lazy val `scalding-db` = project
+  .in(file("scalding-db"))
+  .dependsOn(`scalding-core`)
+  .settings(
+    name := "scalding-db",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "com.twitter" %% "bijection-macros" % bijectionVersion
+    ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
+
+lazy val `scalding-thrift-macros-fixtures` = project
+  .in(file("scalding-thrift-macros-fixtures"))
+  .settings(
+    name := "scalding-thrift-macros-fixtures",
+    sharedSettings,
+    mimaSettings,
     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
     libraryDependencies ++= Seq(
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
@@ -635,49 +736,54 @@ lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
     )
 )
 
-lazy val scaldingThriftMacros = module("thrift-macros")
+lazy val `scalding-thrift-macros` = project
+  .in(file("scalding-thrift-macros"))
+  .dependsOn(
+     `scalding-core`,
+     `scalding-hadoop-test` % "test",
+     `scalding-serialization`,
+     `scalding-thrift-macros-fixtures` % "test->test")
   .settings(
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "com.twitter" %% "bijection-macros" % bijectionVersion,
-    "com.twitter" % "chill-thrift" % chillVersion % "test",
-    "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
-      exclude("com.google.guava", "guava"),
-    "org.apache.thrift" % "libthrift" % thriftVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
-    "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion  % "test",
-    "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
-    "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
-    "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
-  ),
-  addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
-).dependsOn(
-    scaldingCore,
-    scaldingHadoopTest % "test",
-    scaldingSerialization,
-    scaldingThriftMacrosFixtures % "test->test")
+    name := "scalding-thrift-macros",
+    sharedSettings,
+    mimaSettings,
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "com.twitter" %% "bijection-macros" % bijectionVersion,
+      "com.twitter" % "chill-thrift" % chillVersion % "test",
+      "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
+        exclude("com.google.guava", "guava"),
+      "org.apache.thrift" % "libthrift" % thriftVersion,
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion  % "test",
+      "org.apache.hadoop" % "hadoop-yarn-server-tests" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-yarn-server" % hadoopVersion % "test",
+      "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-common" % hadoopVersion classifier "tests",
+      "org.apache.hadoop" % "hadoop-mapreduce-client-jobclient" % hadoopVersion classifier "tests"
+    ),
+    addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full)
+  )
 
 def docsSourcesAndProjects(sv: String): Seq[ProjectReference] =
     Seq(
-      scaldingArgs,
-      scaldingDate,
-      scaldingCore
-      // scaldingCommons,
-      // scaldingAvro,
-      // scaldingParquet,
-      // scaldingParquetScrooge,
-      // scaldingHRaven,
-      // scaldingRepl,
-      // scaldingJson,
-      // scaldingJdbc,
-      // scaldingDb,
+      `scalding-args`,
+      `scalding-date`,
+      `scalding-core`
+      // `scalding-commons`,
+      // `scalding-avro`,
+      // `scalding-parquet`,
+      // `scalding-parquet-scrooge`,
+      // `scalding-hraven`,
+      // `scalding-repl`,
+      // `scalding-json`,
+      // `scalding-jdbc`,
+      // `scalding-db`,
       // maple,
-      // scaldingSerialization,
-      // scaldingThriftMacros
+      // `scalding-serialization`,
+      // `scalding-thrift-macros`
     )
 
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
@@ -691,7 +797,8 @@ lazy val docSettings = Seq(
   micrositeBaseUrl := "scalding",
   micrositeDocumentationUrl := "api",
   micrositeGithubOwner := "twitter",
-  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> "contributing.md"),
+  micrositeCompilingDocsTool := WithTut,
+  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> microsites.ExtraMdFileConfig("contributing.md", "page")),
   micrositeGithubRepo := "scalding",
     micrositePalette := Map(
     "brand-primary" -> "#5B5988",
@@ -723,12 +830,10 @@ lazy val docSettings = Seq(
 // Documentation is generated for projects defined in
 // `docsSourcesAndProjects`.
 lazy val docs = project
-  .enablePlugins(MicrositesPlugin)
+  .enablePlugins(MicrositesPlugin, ScalaUnidocPlugin, GhpagesPlugin)
   .settings(moduleName := "scalding-docs")
   .settings(sharedSettings)
   .settings(noPublishSettings)
-  .settings(unidocSettings)
-  .settings(ghpages.settings)
   .settings(docSettings)
-  .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
-  .dependsOn(scaldingCore)
+  .settings(scalacOptions in Tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .dependsOn(`scalding-core`)
