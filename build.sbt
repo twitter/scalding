@@ -695,7 +695,7 @@ lazy val `execution-tutorial` = project
   .in(file("tutorial") / "execution-tutorial")
   .dependsOn(`scalding-core`)
   .settings(
-    name := "execution-tutorials",
+    name := "execution-tutorial",
     sharedSettings,
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-library" % scalaVersion.value,
