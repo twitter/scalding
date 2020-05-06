@@ -797,6 +797,7 @@ lazy val docSettings = Seq(
   micrositeBaseUrl := "scalding",
   micrositeDocumentationUrl := "api",
   micrositeGithubOwner := "twitter",
+  micrositeCompilingDocsTool := WithTut,
   micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> microsites.ExtraMdFileConfig("contributing.md", "page")),
   micrositeGithubRepo := "scalding",
     micrositePalette := Map(
