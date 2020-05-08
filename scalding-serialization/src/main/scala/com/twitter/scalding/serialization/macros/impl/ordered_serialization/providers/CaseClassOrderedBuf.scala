@@ -64,7 +64,7 @@ object CaseClassOrderedBuf {
           case (tpe, accessorSymbol, tBuf) =>
             val curR = freshT("curR")
             val builderTree = q"""
-          val $curR = {
+          val $curR: ${tBuf.tpe} = {
             ${tBuf.get(inputStream)}
           }
         """
