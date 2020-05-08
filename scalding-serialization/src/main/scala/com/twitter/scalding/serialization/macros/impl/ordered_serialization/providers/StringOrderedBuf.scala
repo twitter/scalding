@@ -41,8 +41,8 @@ object StringOrderedBuf {
         val lenB = freshT("lenB")
 
         q"""
-        val $lenA = $inputStreamA.readPosVarInt
-        val $lenB = $inputStreamB.readPosVarInt
+        val $lenA: _root_.scala.Int = $inputStreamA.readPosVarInt
+        val $lenB: _root_.scala.Int = $inputStreamB.readPosVarInt
         _root_.com.twitter.scalding.serialization.StringOrderedSerialization.binaryIntCompare($lenA,
           $inputStreamA,
           $lenB,
@@ -61,7 +61,7 @@ object StringOrderedBuf {
          // Ascii is very common, so if the string is short,
          // we check if it is ascii:
          def isShortAscii(size: _root_.scala.Int, str: _root_.java.lang.String): _root_.scala.Boolean = (size < 65) && {
-           var pos = 0
+           var pos: _root_.scala.Int = 0
            var ascii: _root_.scala.Boolean = true
            while((pos < size) && ascii) {
              ascii = (str.charAt(pos) < 128)
@@ -70,12 +70,12 @@ object StringOrderedBuf {
            ascii
          }
 
-         val $charLen = $element.length
+         val $charLen: _root_.scala.Int = $element.length
          if ($charLen == 0) {
            $inputStream.writePosVarInt(0)
          }
          else if (isShortAscii($charLen, $element)) {
-           val $bytes = new _root_.scala.Array[Byte]($charLen)
+           val $bytes: _root_.scala.Array[_root_.scala.Byte] = new _root_.scala.Array[_root_.scala.Byte]($charLen)
            // This deprecated gets ascii bytes out, but is incorrect
            // for non-ascii data.
            _root_.com.twitter.scalding.serialization.Undeprecated.getAsciiBytes($element, 0, $charLen, $bytes, 0)
@@ -88,8 +88,8 @@ object StringOrderedBuf {
            // the bug that makes string Charsets faster than using Charset instances.
            // see for instance:
            // http://psy-lob-saw.blogspot.com/2012/12/encode-utf-8-string-to-bytebuffer-faster.html
-           val $bytes = $element.getBytes("UTF-8")
-           val $len = $bytes.length
+           val $bytes: _root_.scala.Array[_root_.scala.Byte] = $element.getBytes("UTF-8")
+           val $len: _root_.scala.Int = $bytes.length
            $inputStream.writePosVarInt($len)
            $inputStream.write($bytes)
          }
@@ -99,9 +99,9 @@ object StringOrderedBuf {
         val len = freshT("len")
         val strBytes = freshT("strBytes")
         q"""
-        val $len = $inputStream.readPosVarInt
+        val $len: _root_.scala.Int = $inputStream.readPosVarInt
         if($len > 0) {
-          val $strBytes = new _root_.scala.Array[Byte]($len)
+          val $strBytes: _root_.scala.Array[_root_.scala.Byte] = new _root_.scala.Array[_root_.scala.Byte]($len)
           $inputStream.readFully($strBytes)
           new _root_.java.lang.String($strBytes, "UTF-8")
         } else {
