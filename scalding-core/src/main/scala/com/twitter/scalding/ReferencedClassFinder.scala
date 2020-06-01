@@ -4,6 +4,7 @@ import com.twitter.scalding.typed.CoGroupable
 import org.slf4j.LoggerFactory
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.{ NullaryMethodType, RuntimeMirror, Symbol, Type, TypeRef }
+import java.lang.{reflect => jReflect}
 
 object ReferencedClassFinder {
 
@@ -44,7 +45,7 @@ object ReferencedClassFinder {
         (for {
           field <- outerClass.getDeclaredFields
           if baseContainers.exists(_.isAssignableFrom(field.getType))
-          scalaSignature = scalaType.member(universe.stringToTermName(field.getName)).typeSignature
+          scalaSignature <- getFieldType(outerClass, scalaType, field).toSeq
           clazz <- getClassesForType(mirror, scalaSignature)
           /* The scala root package contains a lot of shady stuff, eg compile-time wrappers (scala.Int/Array etc),
            * which reflection will present as type parameters. Skip the whole package - chill-hadoop already ensures most
@@ -58,9 +59,19 @@ object ReferencedClassFinder {
     }
   }
 
-  private def getClassType(outerClass: Class[_], mirror: universe.Mirror): Option[universe.Type] = {
+  private def getFieldType(outerClass: Class[_], scalaType: universe.Type, field: jReflect.Field): Option[universe.Type] =
+    safeScalaReflectionCall(outerClass) {
+      scalaType.member(universe.stringToTermName(field.getName)).typeSignature
+    }
+
+  private def getClassType(outerClass: Class[_], mirror: universe.Mirror): Option[universe.Type] =
+    safeScalaReflectionCall(outerClass) {
+      mirror.classSymbol(outerClass).toType
+    }
+
+  private def safeScalaReflectionCall[T](outerClass: Class[_])(call: => T): Option[T] =
     try {
-      Some(mirror.classSymbol(outerClass).toType)
+      Some(call)
     } catch {
       // In some cases we fail to find references classes, it shouldn't be fatal.
       case r: RuntimeException if r.getMessage.contains("error reading Scala signature") =>
@@ -76,7 +87,6 @@ object ReferencedClassFinder {
         None
       case t: Throwable => throw t
     }
-  }
 
   private def getClassesForType(mirror: RuntimeMirror, typeSignature: Type): Seq[Class[_]] = typeSignature match {
     case TypeRef(_, _, args) =>
