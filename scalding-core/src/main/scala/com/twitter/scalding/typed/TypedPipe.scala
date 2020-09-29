@@ -22,7 +22,7 @@ import com.twitter.algebird.{ Aggregator, Batched, Monoid, Semigroup }
 import com.twitter.scalding.TupleConverter.singleConverter
 import com.twitter.scalding._
 import com.twitter.scalding.typed.functions.{ AsLeft, AsRight, Constant, ConstantKey, DropValue1, Identity, MakeKey, GetKey, GetValue, RandomFilter, RandomNextInt, Swap, TuplizeFunction, WithConstant, PartialFunctionToFilter, SubTypes }
-import com.twitter.scalding.serialization.{ OrderedSerialization, UnitOrderedSerialization }
+import com.twitter.scalding.serialization.{ EquivSerialization, OrderedSerialization, UnitOrderedSerialization }
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
@@ -143,17 +143,16 @@ object TypedPipe extends Serializable {
       }
   }
 
-  private val identityOrdering: OrderedSerialization[Int] = {
+  private case object IdentityOrdering extends OrderedSerialization[Int] with EquivSerialization[Int] {
     val delegate = BinaryOrdering.ordSer[Int]
-    new OrderedSerialization[Int] {
-      override def compareBinary(a: InputStream, b: InputStream): Result = delegate.compareBinary(a, b)
-      override def compare(x: Int, y: Int): Int = delegate.compare(x, y)
-      override def dynamicSize(t: Int): Option[Int] = delegate.dynamicSize(t)
-      override def write(out: OutputStream, t: Int): Try[Unit] = delegate.write(out, t)
-      override def read(in: InputStream): Try[Int] = delegate.read(in)
-      override def staticSize: Option[Int] = delegate.staticSize
-      override def hash(x: Int): Int = x
-    }
+    
+    override def compareBinary(a: InputStream, b: InputStream): Result = delegate.compareBinary(a, b)
+    override def compare(x: Int, y: Int): Int = delegate.compare(x, y)
+    override def dynamicSize(t: Int): Option[Int] = delegate.dynamicSize(t)
+    override def write(out: OutputStream, t: Int): Try[Unit] = delegate.write(out, t)
+    override def read(in: InputStream): Try[Int] = delegate.read(in)
+    override def staticSize: Option[Int] = delegate.staticSize
+    override def hash(x: Int): Int = x
   }
 
    final case class CoGroupedPipe[K, V](@transient cogrouped: CoGrouped[K, V]) extends TypedPipe[(K, V)]
@@ -737,7 +736,7 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    * You probably want shard if you are just forcing a shuffle.
    */
   def groupRandomly(partitions: Int): Grouped[Int, T] =
-    groupBy(RandomNextInt(123, partitions))(TypedPipe.identityOrdering)
+    groupBy(RandomNextInt(123, partitions))(TypedPipe.IdentityOrdering)
       .withReducers(partitions)
 
   /**
