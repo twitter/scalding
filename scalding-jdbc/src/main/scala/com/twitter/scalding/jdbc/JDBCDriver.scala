@@ -28,7 +28,7 @@ trait JdbcDriver {
 }
 
 trait MysqlDriver extends JdbcDriver with MysqlTableCreationImplicits {
-  override val driver = DriverClass("com.mysql.jdbc.Driver")
+  override val driver = DriverClass("com.mysql.cj.jdbc.Driver")
   override def getTableDesc(
     tableName: TableName,
     columnNames: Array[ColumnName],

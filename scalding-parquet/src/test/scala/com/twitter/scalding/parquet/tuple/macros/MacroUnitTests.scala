@@ -1,6 +1,6 @@
 package com.twitter.scalding.parquet.tuple.macros
 
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{ Matchers, WordSpec }
 import org.apache.parquet.io.api.{ Binary, RecordConsumer }
 import org.apache.parquet.schema.MessageTypeParser

@@ -6,9 +6,9 @@ import com.twitter.scalding.source.{ TypedText, NullSink }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import com.stripe.dagon.Dag
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class WritePartitionerTest extends FunSuite with PropertyChecks {
+class WritePartitionerTest extends FunSuite with ScalaCheckPropertyChecks {
   def fakeSource[T](id: Int): TypedSource[T] =
     TypedText.tsv[String](s"source_$id").asInstanceOf[TypedSource[T]]
 

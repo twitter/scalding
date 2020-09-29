@@ -3,9 +3,9 @@ package typed
 
 import com.twitter.algebird.Monoid.{ plus, sum, zero }
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class TypedPipeMonoidTest extends FunSuite with PropertyChecks {
+class TypedPipeMonoidTest extends FunSuite with ScalaCheckPropertyChecks {
 
   def run[A](t: TypedPipe[A]): List[A] =
     t.toIterableExecution.map(_.toList).waitFor(Config.empty, Local(true)).get

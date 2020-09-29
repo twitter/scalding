@@ -3,7 +3,7 @@ package com.twitter.scalding.db.macros
 import org.mockito.Mockito.when
 import org.scalatest.{ Matchers, WordSpec }
 import org.scalatest.exceptions.TestFailedException
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 import cascading.tuple.{ Fields, Tuple, TupleEntry }
 

@@ -17,10 +17,10 @@ package com.twitter.scalding.thrift.macros
 
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.thrift.macros.scalathrift._
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.{ Matchers, WordSpec }
 
-class ScroogeMacrosUnitTests extends WordSpec with Matchers with PropertyChecks {
+class ScroogeMacrosUnitTests extends WordSpec with Matchers with ScalaCheckPropertyChecks {
   import ScroogeGenerators._
   import TestHelper._
   import Macros._

@@ -2,7 +2,7 @@ package com.twitter.scalding.typed
 
 import org.scalacheck.{ Arbitrary, Prop }
 import org.scalatest.{ FunSuite, PropSpec }
-import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalatestplus.scalacheck.{ Checkers, ScalaCheckPropertyChecks }
 import scala.reflect.ClassTag
 
 object HashArrayEqualsWrapperLaws {
@@ -46,7 +46,7 @@ object HashArrayEqualsWrapperLaws {
     }
 }
 
-class HashArrayEqualsWrapperProps extends PropSpec with PropertyChecks with Checkers {
+class HashArrayEqualsWrapperProps extends PropSpec with ScalaCheckPropertyChecks with Checkers {
 
   property("Specialized orderings obey all laws for Arrays") {
     check(HashArrayEqualsWrapperLaws.check(HashEqualsArrayWrapper.longArrayOrd))

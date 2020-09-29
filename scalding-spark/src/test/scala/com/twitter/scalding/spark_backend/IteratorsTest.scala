@@ -1,12 +1,12 @@
 package com.twitter.scalding.spark_backend
 
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.PropSpec
 
 import Arbitrary.arbitrary
 
-class IteratorsTest extends PropSpec with PropertyChecks {
+class IteratorsTest extends PropSpec with ScalaCheckPropertyChecks {
 
   class Elem[K: Ordering, V](input: List[(K, V)]) {
     val elems = input.sortBy(_._1)

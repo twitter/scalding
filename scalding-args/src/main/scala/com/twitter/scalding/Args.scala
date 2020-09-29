@@ -25,6 +25,8 @@ case class ArgsException(message: String) extends RuntimeException(message)
  * following.
  */
 object Args {
+  def empty = new Args(Map.empty)
+
   /**
    * Split on whitespace and then parse.
    */
@@ -37,7 +39,6 @@ object Args {
    * empty string: ""
    */
   def apply(args: Iterable[String]): Args = {
-    def startingDashes(word: String) = word.takeWhile { _ == '-' }.length
     new Args(
       //Fold into a list of (arg -> List[values])
       args
@@ -84,7 +85,7 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
    * does not mean the key is absent, it could be a key without
    * a value.  Use boolean() to check existence.
    */
-  def list(key: String): List[String] = m.get(key).getOrElse(List())
+  def list(key: String): List[String] = m.getOrElse(key, List())
 
   /**
    * This is a synonym for required
@@ -110,10 +111,9 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
   def apply(position: Int): String = required(position)
 
   override def equals(other: Any): Boolean = {
-    if (other.isInstanceOf[Args]) {
-      other.asInstanceOf[Args].m.equals(m)
-    } else {
-      false
+    other match {
+      case args: Args => args.m.equals(m)
+      case _ => false
     }
   }
 
@@ -140,7 +140,7 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
       val values = kvlist._2
       if (k != "") {
         //Make sure positional args are first
-        args ++ ((("--" + k) :: values))
+        args ++ (("--" + k) :: values)
       } else {
         // These are positional args (no key), put them first:
         values ++ args
@@ -154,7 +154,7 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
    */
   def restrictTo(acceptedArgs: Set[String]): Unit = {
     val invalidArgs = m.keySet.filter(!_.startsWith("scalding.")) -- (acceptedArgs + "" + "tool.graph" + "hdfs" + "local")
-    if (!invalidArgs.isEmpty) throw ArgsException("Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
+    if (invalidArgs.nonEmpty) throw ArgsException("Invalid args: " + invalidArgs.map("--" + _).mkString(", "))
   }
 
   // TODO: if there are spaces in the keys or values, this will not round-trip
@@ -172,53 +172,53 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
 
   def int(key: String, default: Int): Int = {
     optional(key).map(value => try value.toInt catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }).getOrElse(default)
   }
 
   def int(key: String): Int = {
     val value = required(key)
     try value.toInt catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }
   }
 
   def long(key: String, default: Long): Long = {
     optional(key).map(value => try value.toLong catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }).getOrElse(default)
   }
 
   def long(key: String): Long = {
     val value = required(key)
     try value.toLong catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }
   }
 
   def float(key: String, default: Float): Float = {
     optional(key).map(value => try value.toFloat catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }).getOrElse(default)
   }
 
   def float(key: String): Float = {
     val value = required(key)
     try value.toFloat catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }
   }
 
   def double(key: String, default: Double): Double = {
     optional(key).map(value => try value.toDouble catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }).getOrElse(default)
   }
 
   def double(key: String): Double = {
     val value = required(key)
     try value.toDouble catch {
-      case NonFatal(_) => throw ArgsException(s"Invalid value ${value} for -- ${key}")
+      case NonFatal(_) => throw ArgsException(s"Invalid value $value for -- $key")
     }
   }
 }

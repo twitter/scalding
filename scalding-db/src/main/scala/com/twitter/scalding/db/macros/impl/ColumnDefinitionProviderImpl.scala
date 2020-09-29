@@ -58,6 +58,8 @@ object ColumnDefinitionProviderImpl {
       oTpe match {
         // String handling
         case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
+        case tpe if tpe =:= typeOf[Array[Byte]] => BlobTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
+        case tpe if tpe =:= typeOf[Byte] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "TINYINT")
         case tpe if tpe =:= typeOf[Short] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "SMALLINT")
         case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "INT")
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
@@ -208,6 +210,7 @@ object ColumnDefinitionProviderImpl {
           case "BIGINT" =>
             q"""List("INTEGER", "INT", "BIGINT", "INT8", "SMALLINT",
                "TINYINT", "SMALLINT", "MEDIUMINT").contains($typeNameTerm)"""
+          case "DATETIME" => q"""List("DATE","DATETIME","TIMESTAMP").contains($typeNameTerm)"""
           case f => q"""$f == $typeNameTerm"""
         }
         val typeAssert = q"""
@@ -240,8 +243,10 @@ object ColumnDefinitionProviderImpl {
         val (box: Option[Tree], primitiveGetter: Tree) = cf.fieldType match {
           case "VARCHAR" | "TEXT" =>
             (None, q"""$rsTerm.getString($fieldName)""")
-          case "BOOLEAN" | "TINYINT" =>
+          case "BOOLEAN" =>
             (Some(q"""_root_.java.lang.Boolean.valueOf"""), q"""$rsTerm.getBoolean($fieldName)""")
+          case "TINYINT" =>
+            (Some(q"""_root_.java.lang.Byte.valueOf"""), q"""$rsTerm.getByte($fieldName)""")
           case "DATE" | "DATETIME" =>
             (None, q"""Option($rsTerm.getTimestamp($fieldName)).map { ts => new java.util.Date(ts.getTime) }.orNull""")
           // dates set to null are populated as None by tuple converter
@@ -252,6 +257,8 @@ object ColumnDefinitionProviderImpl {
             (Some(q"""_root_.java.lang.Long.valueOf"""), q"""$rsTerm.getLong($fieldName)""")
           case "INT" | "SMALLINT" =>
             (Some(q"""_root_.java.lang.Integer.valueOf"""), q"""$rsTerm.getInt($fieldName)""")
+          case "BLOB" =>
+            (None, q"""Option($rsTerm.getBlob($fieldName)).map ( blob => blob.getBytes(1,blob.length().toInt)).orNull """)
           case f =>
             (None, q"""sys.error("Invalid format " + $f + " for " + $fieldName)""")
         }

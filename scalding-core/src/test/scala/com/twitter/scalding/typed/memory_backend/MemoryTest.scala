@@ -1,11 +1,11 @@
 package com.twitter.scalding.typed.memory_backend
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import com.twitter.scalding.{ TypedPipe, Execution, Config, Local }
 import com.twitter.scalding.typed.TypedPipeGen
 
-class MemoryTest extends FunSuite with PropertyChecks {
+class MemoryTest extends FunSuite with ScalaCheckPropertyChecks {
 
   private def mapMatch[K, V](ex: Execution[Iterable[(K, V)]]) = {
     val mm = MemoryMode.empty

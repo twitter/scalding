@@ -9,7 +9,7 @@ import org.apache.hadoop.conf.Configuration
 import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalacheck.{ Arbitrary, Gen }
 import scala.util.{ Failure, Success, Try }
 
@@ -228,7 +228,7 @@ class ConstantOptimizer extends OptimizationPhases {
 
 // we need to extend PropertyChecks, it seems, to control the number of successful runs
 // for optimization rules, we want to do many tests
-class OptimizationRulesTest extends FunSuite with PropertyChecks {
+class OptimizationRulesTest extends FunSuite with ScalaCheckPropertyChecks {
   import OptimizationRules.toLiteral
   import TypedPipeGen.optimizedSteps
 

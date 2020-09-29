@@ -23,7 +23,7 @@ import com.twitter.scalding.source.DailySuffixTsv
 import com.twitter.scalding.typed.TypedPipeGen
 import java.lang.{Integer => JInt}
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class NumberJoinerJob(args: Args) extends Job(args) {
   val in0 = TypedTsv[(Int, Int)]("input0").read.rename((0, 1) -> ('x0, 'y0))
@@ -268,7 +268,7 @@ class JoinJob(args: Args) extends Job(args) {
     .write(Tsv(args("output")))
 }
 
-class JoinTest extends WordSpec with Matchers with PropertyChecks {
+class JoinTest extends WordSpec with Matchers with ScalaCheckPropertyChecks {
   "A JoinJob" should {
     val input1 = List("a" -> 1, "b" -> 2, "c" -> 3)
     val input2 = List("b" -> -1, "c" -> 5, "d" -> 4)

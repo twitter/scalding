@@ -30,7 +30,7 @@ import com.twitter.scalding.serialization.{
 }
 import org.scalacheck.Arbitrary.{ arbitrary => arb }
 import org.scalacheck.{ Arbitrary, Gen, Prop }
-import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalatestplus.scalacheck.{ Checkers, ScalaCheckPropertyChecks }
 import org.scalatest.FunSuite //, ShouldMatchers }
 import com.twitter.scalding.some.other.space.space._
 import scala.collection.immutable.Queue
@@ -277,7 +277,7 @@ object Container {
 }
 class MacroOrderingProperties
   extends FunSuite
-  with PropertyChecks
+  with ScalaCheckPropertyChecks
   with BinaryOrdering {
   type SetAlias = Set[Double]
 

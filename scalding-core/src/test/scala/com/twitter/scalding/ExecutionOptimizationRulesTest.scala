@@ -12,11 +12,11 @@ import java.io.{InputStream, OutputStream}
 import java.util.UUID
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 
-class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
+class ExecutionOptimizationRulesTest extends FunSuite with ScalaCheckPropertyChecks {
   class MemorySource[T: TupleConverter](inFields: Fields = Fields.NONE) extends Mappable[T] with TypedSink[T] {
     private[this] val buf = Buffer[Tuple]()
     private[this] val name: String = UUID.randomUUID.toString

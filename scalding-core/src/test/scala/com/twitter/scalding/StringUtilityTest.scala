@@ -2,7 +2,7 @@ package com.twitter.scalding
 
 import org.scalatest.{ PropSpec, Matchers, WordSpec }
 import org.scalacheck.Prop.forAll
-import org.scalatest.prop.Checkers
+import org.scalatestplus.scalacheck.Checkers
 import org.scalacheck.Gen
 
 class StringUtilityTest extends WordSpec with Matchers {

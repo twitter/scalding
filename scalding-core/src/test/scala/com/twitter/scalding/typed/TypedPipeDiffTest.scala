@@ -3,7 +3,7 @@ package com.twitter.scalding.typed
 import com.twitter.algebird.MapAlgebra
 import com.twitter.scalding.TypedPipeChecker.InMemoryToListEnrichment
 import org.scalacheck.{ Arbitrary, Prop }
-import org.scalatest.prop.{ Checkers, PropertyChecks }
+import org.scalatestplus.scalacheck.{ Checkers, ScalaCheckPropertyChecks }
 import org.scalatest.{ FunSuite, PropSpec }
 
 import scala.reflect.ClassTag
@@ -140,7 +140,7 @@ object TypedPipeDiffLaws {
 
 }
 
-class TypedPipeDiffLaws extends PropSpec with PropertyChecks with Checkers {
+class TypedPipeDiffLaws extends PropSpec with ScalaCheckPropertyChecks with Checkers {
   override implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 5)
 
   property("diffLaws") {
