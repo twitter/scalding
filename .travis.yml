@@ -1,7 +1,7 @@
 os: linux
 dist: xenial
 language: scala
-jdk: oraclejdk7
+jdk: oraclejdk11
 before_install: umask 0022
 cache:
   directories:
