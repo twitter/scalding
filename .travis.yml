@@ -1,6 +1,7 @@
+os: linux
+dist: xenial
 language: scala
 jdk: oraclejdk7
-sudo: false
 before_install: umask 0022
 cache:
   directories:
@@ -11,7 +12,7 @@ addons:
   apt:
     packages:
     - md5deep
-matrix:
+jobs:
   include:
 #BASE TESTS
     - scala: 2.10.6
