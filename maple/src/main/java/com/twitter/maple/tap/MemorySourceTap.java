@@ -48,7 +48,6 @@ public class MemorySourceTap extends SourceTap<JobConf, RecordReader<TupleWrappe
         @Override
         public void sourceConfInit(FlowProcess<JobConf> flowProcess,
             Tap<JobConf, RecordReader<TupleWrapper, NullWritable>, Void> tap, JobConf conf) {
-            FileInputFormat.setInputPaths(conf, this.id);
             conf.setInputFormat(TupleMemoryInputFormat.class);
             TupleMemoryInputFormat.storeTuples(conf, TupleMemoryInputFormat.TUPLES_PROPERTY, this.tuples);
         }
