@@ -1,5 +1,7 @@
 package com.twitter.scalding.parquet.tuple;
 
+import com.twitter.scalding.parquet.ScaldingDeprecatedParquetInputFormat;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -23,7 +25,6 @@ import org.apache.parquet.hadoop.Footer;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.parquet.hadoop.mapred.Container;
-import org.apache.parquet.hadoop.mapred.DeprecatedParquetInputFormat;
 import org.apache.parquet.hadoop.mapred.DeprecatedParquetOutputFormat;
 import org.apache.parquet.schema.MessageType;
 
@@ -90,7 +91,7 @@ public class ParquetTupleScheme extends Scheme<JobConf, RecordReader, OutputColl
       ParquetInputFormat.setFilterPredicate(jobConf, filterPredicate);
     }
 
-    jobConf.setInputFormat(DeprecatedParquetInputFormat.class);
+    jobConf.setInputFormat(ScaldingDeprecatedParquetInputFormat.class);
     ParquetInputFormat.setReadSupportClass(jobConf, TupleReadSupport.class);
     TupleReadSupport.setRequestedFields(jobConf, getSourceFields());
  }
@@ -128,7 +129,7 @@ public class ParquetTupleScheme extends Scheme<JobConf, RecordReader, OutputColl
 
    private List<Footer> getFooters(FlowProcess<JobConf> flowProcess, Hfs hfs) throws IOException {
      JobConf jobConf = flowProcess.getConfigCopy();
-     DeprecatedParquetInputFormat format = new DeprecatedParquetInputFormat();
+     ScaldingDeprecatedParquetInputFormat format = new ScaldingDeprecatedParquetInputFormat();
      format.addInputPath(jobConf, hfs.getPath());
      return format.getFooters(jobConf);
    }
