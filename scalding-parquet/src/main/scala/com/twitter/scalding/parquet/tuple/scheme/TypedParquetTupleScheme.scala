@@ -1,5 +1,7 @@
 package com.twitter.scalding.parquet.tuple.scheme
 
+import com.twitter.scalding.parquet.ScaldingDeprecatedParquetInputFormat
+
 import java.util.{ HashMap => JHashMap, Map => JMap }
 
 import org.apache.parquet.filter2.predicate.FilterPredicate
@@ -15,7 +17,7 @@ import com.twitter.bijection.{ Injection, GZippedBase64String }
 import com.twitter.chill.KryoInjection
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred._
-import org.apache.parquet.hadoop.mapred.{ Container, DeprecatedParquetOutputFormat, DeprecatedParquetInputFormat }
+import org.apache.parquet.hadoop.mapred.{ Container, DeprecatedParquetOutputFormat }
 import org.apache.parquet.hadoop.{ ParquetInputFormat, ParquetOutputFormat }
 import org.apache.parquet.schema._
 
@@ -142,7 +144,7 @@ class TypedParquetTupleScheme[T](val readSupport: ParquetReadSupport[T], val wri
 
   override def sourceConfInit(flowProcess: FlowProcess[JobConf], tap: TapType, jobConf: JobConf): Unit = {
     fp.map(ParquetInputFormat.setFilterPredicate(jobConf, _))
-    jobConf.setInputFormat(classOf[DeprecatedParquetInputFormat[T]])
+    jobConf.setInputFormat(classOf[ScaldingDeprecatedParquetInputFormat[T]])
     jobConf.set(ParquetInputOutputFormat.READ_SUPPORT_INSTANCE, ParquetInputOutputFormat.injection(readSupport))
     ParquetInputFormat.setReadSupportClass(jobConf, classOf[ReadSupportInstanceProxy[_]])
   }
