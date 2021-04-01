@@ -155,9 +155,8 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     val exec = Execution.optimize(conf, this)
     // get on Trampoline
     val CFuture(fut, cancelHandler) = exec.runStats(confWithId, mode, ec)(cec).get
-    val result = fut.map(_._1)
     // When the final future in complete we stop the submit thread
-    result.onComplete { t =>
+    val result = fut.map(_._1).andThen { case t =>
       if (t.isFailure) {
         // cancel running executions if this was a failure
         Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration(30, scala.concurrent.duration.SECONDS))
