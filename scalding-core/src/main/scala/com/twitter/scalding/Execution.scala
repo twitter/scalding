@@ -27,7 +27,7 @@ import com.stripe.dagon.{Memoize, RefPair}
 import java.io.Serializable
 import java.util.UUID
 import scala.collection.mutable
-import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise, duration }
 import scala.util.{ Failure, Success, Try }
 import scala.util.hashing.MurmurHash3
 
@@ -159,9 +159,10 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
       }
 
     // get on Trampoline
-    val result = exec.runStats(confWithId, mode, ec)(cec).get.map(_._1)
     // When the final future in complete we stop the submit thread
-    result.onComplete { _ => writer.finished() }
+    val result = exec.runStats(confWithId, mode, ec)(cec).get.map(_._1).andThen { case _ =>
+      writer.finished()
+    }
     // wait till the end to start the thread in case the above throws
     writer.start()
     result
@@ -192,7 +193,7 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
    */
   def waitFor(conf: Config, mode: Mode): Try[T] =
     Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
-      scala.concurrent.duration.Duration.Inf))
+      duration.Duration.Inf))
 
   /**
    * This is here to silence warnings in for comprehensions, but is
