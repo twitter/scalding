@@ -15,21 +15,22 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import cascading.flow.{ FlowDef, Flow }
-import com.stripe.dagon.{ Dag, Id, Rule }
+import cascading.flow.{Flow, FlowDef}
+import com.stripe.dagon.{Dag, Id, Rule}
 import com.twitter.algebird.monad.Trampoline
-import com.twitter.algebird.{ Monoid, Monad, Semigroup }
+import com.twitter.algebird.{Monad, Monoid, Semigroup}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
-import com.twitter.scalding.typed.functions.{ ConsList, ReverseList }
+import com.twitter.scalding.typed.functions.{ConsList, ReverseList}
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
 import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import com.stripe.dagon.{Memoize, RefPair}
 import java.io.Serializable
 import java.util.UUID
 import scala.collection.mutable
-import scala.concurrent.{ Await, Future, ExecutionContext => ConcurrentExecutionContext, Promise }
-import scala.util.{ Failure, Success, Try }
+import scala.concurrent.duration.SECONDS
+import scala.concurrent.{Await, Future, Promise, blocking, duration, ExecutionContext => ConcurrentExecutionContext}
+import scala.util.{Failure, Success, Try}
 import scala.util.hashing.MurmurHash3
 
 /**
@@ -155,12 +156,13 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
     val exec = Execution.optimize(conf, this)
     // get on Trampoline
     val CFuture(fut, cancelHandler) = exec.runStats(confWithId, mode, ec)(cec).get
-    val result = fut.map(_._1)
     // When the final future in complete we stop the submit thread
-    result.onComplete { t =>
+    val result = fut.map(_._1).andThen { case t =>
       if (t.isFailure) {
-        // cancel running executions if this was a failure
-        Await.ready(cancelHandler.stop(), scala.concurrent.duration.Duration(30, scala.concurrent.duration.SECONDS))
+        blocking {
+          // cancel running executions if this was a failure
+          Await.ready(cancelHandler.stop(), duration.Duration(30, SECONDS))
+        }
       }
       writer.finished()
     }
@@ -194,7 +196,7 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
    */
   def waitFor(conf: Config, mode: Mode): Try[T] =
     Try(Await.result(run(conf, mode)(ConcurrentExecutionContext.global),
-      scala.concurrent.duration.Duration.Inf))
+      duration.Duration.Inf))
 
   /**
    * This is here to silence warnings in for comprehensions, but is
