@@ -138,7 +138,7 @@ make_url () {
       0.10.* ) echo "$base/org.scala-tools.sbt/sbt-launch/$version/sbt-launch.jar" ;;
     0.11.[12]) echo "$base/org.scala-tools.sbt/sbt-launch/$version/sbt-launch.jar" ;;
           0.*) echo "$base/org.scala-sbt/sbt-launch/$version/sbt-launch.jar" ;;
-            *) echo "$base/org/scala-sbt/sbt-launch/$version/sbt-launch.jar" ;;
+            *) echo "$base/org/scala-sbt/sbt-launch/$version/sbt-launch-$version.jar" ;;
   esac
 }
 
