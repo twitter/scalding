@@ -3,6 +3,7 @@ import com.typesafe.sbt.SbtScalariform.scalariformSettings
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import scala.collection.JavaConverters._
+import scalariform.formatter.preferences._
 import microsites.ExtraMdFileConfig
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
