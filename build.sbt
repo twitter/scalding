@@ -707,7 +707,6 @@ lazy val docSettings = Seq(
   docsMappingsAPIDir := "api",
   addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), docsMappingsAPIDir),
   ghpagesNoJekyll := false,
-  fork in tut := true,
   fork in (ScalaUnidoc, unidoc) := true,
   scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "-doc-source-url", "https://github.com/twitter/scalding/tree/develop€{FILE_PATH}.scala",
@@ -719,7 +718,6 @@ lazy val docSettings = Seq(
   )
 
 
-/*
 // Documentation is generated for projects defined in
 // `docsSourcesAndProjects`.
 lazy val docs = project
@@ -730,6 +728,6 @@ lazy val docs = project
   .settings(sharedSettings)
   .settings(noPublishSettings)
   .settings(docSettings)
-  .settings(scalacOptions in Tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+// TODO: migrate tut to mdoc https://scalameta.org/mdoc/docs/tut.html
+//  .settings(Tut / scalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
   .dependsOn(scaldingCore)
-*/
