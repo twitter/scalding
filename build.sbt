@@ -471,7 +471,8 @@ lazy val scaldingHRaven = module("hraven").settings(
       exclude("com.twitter.common", "application-module-stats")
       exclude("com.twitter.common", "args")
       exclude("com.twitter.common", "application")
-      // Adding this dependencies explicitly because otherwise they are broken
+      // Excluding this dependencies because they get resolved to incorrect version,
+      // and not needed during compilation.
       exclude("com.twitter", "util-registry_2.10")
       exclude("com.twitter", "util-core_2.10")
       exclude("com.twitter", "util-jvm_2.10"),
@@ -481,10 +482,6 @@ lazy val scaldingHRaven = module("hraven").settings(
     "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-
-    "com.twitter" % "util-registry_2.10" % "6.34.0",
-    "com.twitter" % "util-core_2.10" % "6.34.0",
-    "com.twitter" % "util-jvm_2.10" % "6.34.0", 
   )
 ).dependsOn(scaldingCore)
 
