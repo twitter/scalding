@@ -1,7 +1,8 @@
 import ReleaseTransformations._
+import com.typesafe.sbt.SbtScalariform.scalariformSettings
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import scala.collection.JavaConverters._
-import scalariform.formatter.preferences._
 import microsites.ExtraMdFileConfig
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
@@ -40,14 +41,14 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = com.typesafe.sbt.SbtScalariform.scalariformSettings ++ Seq(
+val sharedSettings = scalariformSettings ++ Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.12",
 
   crossScalaVersions := Seq(scalaVersion.value, "2.12.8"),
 
-  com.typesafe.sbt.SbtScalariform.ScalariformKeys.preferences := formattingPreferences,
+  ScalariformKeys.preferences := formattingPreferences,
 
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
