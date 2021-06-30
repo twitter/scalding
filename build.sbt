@@ -1,12 +1,8 @@
-import AssemblyKeys._
 import ReleaseTransformations._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import com.typesafe.sbt.SbtScalariform._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
-import sbtassembly.Plugin._
-import sbtunidoc.Plugin.UnidocKeys._
 import scala.collection.JavaConverters._
 import scalariform.formatter.preferences._
+import microsites.ExtraMdFileConfig
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
   case version if version startsWith "2.11" => "2.11"
@@ -44,14 +40,14 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
+val sharedSettings = com.typesafe.sbt.SbtScalariform.scalariformSettings ++ Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.12",
 
   crossScalaVersions := Seq(scalaVersion.value, "2.12.8"),
 
-  ScalariformKeys.preferences := formattingPreferences,
+  com.typesafe.sbt.SbtScalariform.ScalariformKeys.preferences := formattingPreferences,
 
   javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -211,9 +207,8 @@ val sharedSettings = assemblySettings ++ scalariformSettings ++ Seq(
 
 lazy val scalding = Project(
   id = "scalding",
-  base = file("."),
-  settings = sharedSettings)
- .settings(noPublishSettings)
+  base = file("."))
+ .settings(sharedSettings ++ noPublishSettings)
  .aggregate(
   scaldingArgs,
   scaldingDate,
@@ -240,9 +235,8 @@ lazy val scalding = Project(
 
 lazy val scaldingAssembly = Project(
   id = "scalding-assembly",
-  base = file("assembly"),
-  settings = sharedSettings)
- .settings(noPublishSettings)
+  base = file("assembly"))
+ .settings(sharedSettings ++ noPublishSettings)
  .aggregate(
   scaldingArgs,
   scaldingDate,
@@ -291,7 +285,7 @@ def youngestForwardCompatible(subProj: String) =
 
 def module(name: String) = {
   val id = "scalding-%s".format(name)
-  Project(id = id, base = file(id), settings = sharedSettings ++ Seq(
+  Project(id = id, base = file(id)).settings(sharedSettings ++ Seq(
     Keys.name := id,
     mimaPreviousArtifacts := youngestForwardCompatible(name).toSet)
   )
@@ -476,13 +470,21 @@ lazy val scaldingHRaven = module("hraven").settings(
       exclude("com.twitter.common", "application-module-log")
       exclude("com.twitter.common", "application-module-stats")
       exclude("com.twitter.common", "args")
-      exclude("com.twitter.common", "application"),
+      exclude("com.twitter.common", "application")
+      // Adding this dependencies explicitly because otherwise they are broken
+      exclude("com.twitter", "util-registry_2.10")
+      exclude("com.twitter", "util-core_2.10")
+      exclude("com.twitter", "util-jvm_2.10"),
     "org.apache.hbase" % "hbase" % hbaseVersion,
     "org.apache.hbase" % "hbase-client" % hbaseVersion % "provided",
     "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
     "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+
+    "com.twitter" % "util-registry_2.10" % "6.34.0",
+    "com.twitter" % "util-core_2.10" % "6.34.0",
+    "com.twitter" % "util-jvm_2.10" % "6.34.0", 
   )
 ).dependsOn(scaldingCore)
 
@@ -582,9 +584,9 @@ lazy val scaldingEstimatorsTest = module("estimators-test").settings(
 // This one uses a different naming convention
 lazy val maple = Project(
   id = "maple",
-  base = file("maple"),
-  settings = sharedSettings
+  base = file("maple")
 ).settings(
+  sharedSettings ++ Seq(
   name := "maple",
   mimaPreviousArtifacts := Set.empty,
   crossPaths := false,
@@ -597,14 +599,14 @@ lazy val maple = Project(
     "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
     "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "cascading" % "cascading-hadoop" % cascadingVersion
-  )
+  ))
 )
 
 lazy val executionTutorial = Project(
   id = "execution-tutorial",
-  base = file("tutorial/execution-tutorial"),
-  settings = sharedSettings
+  base = file("tutorial/execution-tutorial")
 ).settings(
+  sharedSettings ++ Seq(
   name := "execution-tutorial",
   libraryDependencies ++= Seq(
     "org.scala-lang" % "scala-library" % scalaVersion.value,
@@ -613,7 +615,7 @@ lazy val executionTutorial = Project(
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
     "cascading" % "cascading-hadoop" % cascadingVersion
-  )
+  ))
 ).dependsOn(scaldingCore)
 
 lazy val scaldingDb = module("db").settings(
@@ -691,7 +693,7 @@ lazy val docSettings = Seq(
   micrositeBaseUrl := "scalding",
   micrositeDocumentationUrl := "api",
   micrositeGithubOwner := "twitter",
-  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> "contributing.md"),
+  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> ExtraMdFileConfig("contributing.md", "home")),
   micrositeGithubRepo := "scalding",
     micrositePalette := Map(
     "brand-primary" -> "#5B5988",
@@ -720,15 +722,17 @@ lazy val docSettings = Seq(
   )
 
 
+/*
 // Documentation is generated for projects defined in
 // `docsSourcesAndProjects`.
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
+  .enablePlugins(ScalaUnidocPlugin)
+  .enablePlugins(GhpagesPlugin)
   .settings(moduleName := "scalding-docs")
   .settings(sharedSettings)
   .settings(noPublishSettings)
-  .settings(unidocSettings)
-  .settings(ghpages.settings)
   .settings(docSettings)
-  .settings(tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(scalacOptions in Tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
   .dependsOn(scaldingCore)
+*/
