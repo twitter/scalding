@@ -66,7 +66,6 @@ val sharedSettings = com.typesafe.sbt.SbtScalariform.scalariformSettings ++ Seq(
   ),
 
   resolvers ++= Seq(
-    Opts.resolver.mavenLocalFile,
     Opts.resolver.sonatypeSnapshots,
     Opts.resolver.sonatypeReleases,
     "Concurrent Maven Repo" at "https://conjars.org/repo",
