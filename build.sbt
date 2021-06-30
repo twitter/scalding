@@ -482,7 +482,7 @@ lazy val scaldingHRaven = module("hraven").settings(
     "org.apache.hbase" % "hbase-common" % hbaseVersion % "provided",
     "org.apache.hbase" % "hbase-server" % hbaseVersion % "provided",
     "org.slf4j" % "slf4j-api" % slf4jVersion,
-    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
   )
 ).dependsOn(scaldingCore)
 
