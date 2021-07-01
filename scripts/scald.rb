@@ -163,7 +163,8 @@ def find_dependencies(org, dep, version, scala_version=SCALA_VERSION)
     if (m == " => ")
       removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
       removeExtraBraces = removedSome.sub(/ .*/, '') # In 2.10.4 for resolution for some reason there is a " ()" at the end
-      mapVer[removeExtraBraces] = r
+      removeExtraQualifiers = removeExtraBraces.split(":").first(3).join(":") # sbt adds qualifier for some of artifacts
+      mapVer[removeExtraQualifiers] = r
     else
       []
     end
