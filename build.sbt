@@ -486,14 +486,7 @@ lazy val scaldingHRaven = module("hraven").settings(
   )
 ).dependsOn(scaldingCore)
 
-// create new configuration which will hold libs otherwise marked as 'provided'
-// so that we can re-include them in 'run'. unfortunately, we still have to
-// explicitly add them to both 'provided' and 'unprovided', as below
-// solution borrowed from: http://stackoverflow.com/a/18839656/1404395
-val Unprovided = config("unprovided") extend Runtime
-
 lazy val scaldingRepl = module("repl")
-  .configs(Unprovided) // include 'unprovided' as config option
   .settings(
     initialCommands in console := """
       import com.twitter.scalding._
@@ -504,21 +497,20 @@ lazy val scaldingRepl = module("repl")
       "jline" % "jline" % jlineVersion,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "unprovided",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided",
-      "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "unprovided"
     )
 ).dependsOn(scaldingCore)
-// run with 'unprovided' config includes libs marked 'unprovided' in classpath
-.settings(inConfig(Unprovided)(Classpaths.configSettings ++ Seq(
-  run := Defaults.runTask(fullClasspath, mainClass in (Runtime, run), runner in (Runtime, run))
+.settings(inConfig(Compile)(Classpaths.configSettings ++ Seq(
+  // This is needed to make "provided" dependencies presented in repl,
+  // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
+  run := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
+  run / fork := true,
+  run / connectInput := true,
+  run / outputStrategy := Some(OutputStrategy.StdoutOutput)
 )): _*)
-.settings(
-  // make scalding-repl/run use 'unprovided' config
-  run := (run in Unprovided)
-)
 
 // zero dependency serialization module
 lazy val scaldingSerialization = module("serialization").settings(
