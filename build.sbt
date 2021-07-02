@@ -507,6 +507,7 @@ lazy val scaldingRepl = module("repl")
   // This is needed to make "provided" dependencies presented in repl,
   // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
   run := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
+  // we need to fork repl task, because scala repl doesn't work well with sbt classloaders.
   run / fork := true,
   run / connectInput := true,
   run / outputStrategy := Some(OutputStrategy.StdoutOutput)
