@@ -23,9 +23,8 @@ System.exit(1)
 
 # Test running repl from sbt.
 cd $BASE_DIR
-echo "
-System.exit(0)
-" | ./sbt ++$TRAVIS_SCALA_VERSION 'scalding-repl/run --local'
+# We need to clean SBT_OPTS, because on travis default SBT_OPTS enable sbt batch mode, which finishes repl process immediately before passing `System.exit`.
+echo 'System.exit(0)' | SBT_OPTS='' ./sbt ++$TRAVIS_SCALA_VERSION 'scalding-repl/run --local'
 
 # restore stty
 SCALA_EXIT_STATUS=0
