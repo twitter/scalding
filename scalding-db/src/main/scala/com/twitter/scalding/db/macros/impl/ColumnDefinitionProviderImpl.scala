@@ -2,10 +2,9 @@ package com.twitter.scalding.db.macros.impl
 
 import scala.annotation.tailrec
 import scala.reflect.macros.Context
-import scala.util.{ Success, Failure }
-
+import scala.util.{Failure, Success}
 import com.twitter.bijection.macros.impl.IsCaseClassImpl
-import com.twitter.scalding.db.{ ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor }
+import com.twitter.scalding.db.{ColumnDefinition, ColumnDefinitionProvider, ResultSetExtractor, TINYINT}
 import com.twitter.scalding.db.macros.impl.handler._
 
 // Simple wrapper to pass around the string name format of fields
@@ -58,6 +57,7 @@ object ColumnDefinitionProviderImpl {
       oTpe match {
         // String handling
         case tpe if tpe =:= typeOf[String] => StringTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
+        case tpe if tpe =:= typeOf[Array[Byte]] => BlobTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable)
         case tpe if tpe =:= typeOf[Short] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "SMALLINT")
         case tpe if tpe =:= typeOf[Int] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "INT")
         case tpe if tpe =:= typeOf[Long] => NumericTypeHandler(c)(accessorTree, fieldName, defaultValOpt, annotationInfo, nullable, "BIGINT")
@@ -252,6 +252,8 @@ object ColumnDefinitionProviderImpl {
             (Some(q"""_root_.java.lang.Long.valueOf"""), q"""$rsTerm.getLong($fieldName)""")
           case "INT" | "SMALLINT" =>
             (Some(q"""_root_.java.lang.Integer.valueOf"""), q"""$rsTerm.getInt($fieldName)""")
+          case "BLOB" =>
+            (None, q"""Option($rsTerm.getBlob($fieldName)).map ( blob => blob.getBytes(1,blob.length().toInt)).orNull """)
           case f =>
             (None, q"""sys.error("Invalid format " + $f + " for " + $fieldName)""")
         }
