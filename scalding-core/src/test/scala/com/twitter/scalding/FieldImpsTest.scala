@@ -19,6 +19,8 @@ import cascading.tuple.Fields
 
 import org.scalatest.{ Matchers, WordSpec }
 
+import DeprecatedFieldConversions._
+
 class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
   def setAndCheck[T <: Comparable[_]](v: T)(implicit conv: (T) => Fields): Unit = {
     conv(v) shouldBe (new Fields(v))
