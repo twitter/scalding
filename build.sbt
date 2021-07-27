@@ -35,6 +35,7 @@ val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "18.9.0"
 val sparkVersion = "2.4.0"
+val beamVersion = "2.29.0"
 val slf4jVersion = "1.6.6"
 val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
@@ -231,6 +232,7 @@ lazy val scalding = Project(
   executionTutorial,
   scaldingSerialization,
   scaldingSpark,
+  scaldingBeam,
   scaldingThriftMacros
 )
 
@@ -358,6 +360,17 @@ lazy val scaldingSpark = module("spark").settings(
     "org.apache.spark" %% "spark-sql" % sparkVersion
     )
   ).dependsOn(scaldingCore)
+
+lazy val scaldingBeam = module("beam").settings(
+  libraryDependencies ++= Seq(
+    "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
+    "org.apache.beam" % "beam-sdks-java-extensions-google-cloud-platform-core" % beamVersion,
+    "org.apache.beam" % "beam-sdks-java-extensions-sorter" % beamVersion,
+    "org.apache.beam" % "beam-runners-direct-java" % beamVersion % "test",
+    // Including this dependency since scalding configuration depends on hadoop
+    "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
+  )
+).dependsOn(scaldingCore)
 
 lazy val scaldingCommons = module("commons").settings(
   libraryDependencies ++= Seq(
