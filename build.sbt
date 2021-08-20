@@ -52,9 +52,9 @@ val sharedSettings = scalariformSettings ++ Seq(
 
   ScalariformKeys.preferences := formattingPreferences,
 
-  javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
 
-  javacOptions in doc := Seq("-source", "1.6"),
+  javacOptions in doc := Seq("-source", "1.8"),
 
   wartremoverErrors in (Compile, compile) ++= Seq(
     Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
