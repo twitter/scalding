@@ -714,6 +714,7 @@ lazy val docSettings = Seq(
     "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath,
     "-diagrams"
   ),
+  mdocIn := new File(baseDirectory.in(LocalRootProject).value, "docs/src"),
   git.remoteRepo := "git@github.com:twitter/scalding.git",
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
   )
