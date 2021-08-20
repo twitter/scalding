@@ -27,7 +27,7 @@ val hbaseVersion = "1.2.4"
 val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
-val paradiseVersion = "2.1.0"
+val paradiseVersion = "2.1.1"
 val parquetVersion = "1.10.0"
 val protobufVersion = "2.4.1"
 val scalameterVersion = "0.8.2"
@@ -48,7 +48,7 @@ val sharedSettings = scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.12",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.8"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
