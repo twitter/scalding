@@ -109,12 +109,6 @@ val sharedSettings = scalariformSettings ++ Seq(
     case _ => Seq()
   },
 
-  /**
-   * add linter for common scala issues:
-   * https://github.com/HairyFotr/linter
-   */
-  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
-
   // Enables full stack traces in scalatest
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 
