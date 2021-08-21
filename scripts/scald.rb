@@ -156,7 +156,7 @@ end
 
 def find_dependencies(org, dep, version, scala_version=SCALA_VERSION)
   # We need to set scalaVersion because otherwise resolving of scala artifacts fails if version of artifact differs from scalaVersion.
-  res = %x[#{CONFIG["repo_root"]}/sbt '++#{scala_version}' 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
+  res = %x[cd #{CONFIG["repo_root"]} && ./sbt '++#{scala_version}' 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
   mapVer = {}
   res.map { |l|
     l,m,r = l.partition(" => ")
