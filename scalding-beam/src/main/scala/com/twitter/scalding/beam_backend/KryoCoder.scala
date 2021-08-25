@@ -3,8 +3,9 @@ package com.twitter.scalding.beam_backend
 import com.esotericsoftware.kryo.io.Input
 import com.twitter.chill.{ KryoInstantiator, KryoPool }
 import com.twitter.scalding.serialization.JavaStreamEnrichments.{ RichInputStream, RichOutputStream }
+import com.twitter.scalding.serialization.OrderedSerialization
 import java.io.{ InputStream, OutputStream }
-import org.apache.beam.sdk.coders.AtomicCoder
+import org.apache.beam.sdk.coders.{ AtomicCoder, Coder }
 import scala.language.implicitConversions
 
 final class KryoCoder(kryoInstantiator: KryoInstantiator) extends AtomicCoder[Any] {
@@ -26,4 +27,16 @@ final class KryoCoder(kryoInstantiator: KryoInstantiator) extends AtomicCoder[An
 object KryoCoder {
   implicit def castType[T](kryoCoder: KryoCoder): AtomicCoder[T] =
     kryoCoder.asInstanceOf[AtomicCoder[T]]
+}
+
+case class OrderedSerializationCoder[T](ordSer: OrderedSerialization[T]) extends AtomicCoder[T] {
+  override def encode(value: T, outStream: OutputStream): Unit = ordSer.write(outStream, value)
+  override def decode(inStream: InputStream): T = ordSer.read(inStream).get
+}
+object OrderedSerializationCoder {
+  def apply[T](ord: Ordering[T], fallback: Coder[T]): Coder[T] =
+    ord match {
+      case ordSer: OrderedSerialization[T] @unchecked => OrderedSerializationCoder(ordSer)
+      case _ => fallback
+    }
 }

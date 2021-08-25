@@ -186,20 +186,8 @@ checkJava() {
   fi
 }
 
-java_version () {
-  local version=$(getJavaVersion "$java_cmd")
-  vlog "Detected Java version: $version"
-  echo "${version:2:1}"
-}
-
-# MaxPermSize critical on pre-8 JVMs but incurs noisy warning on 8+
 default_jvm_opts () {
-  local v="$(java_version)"
-  if [[ $v -ge 8 ]]; then
-    echo "$default_jvm_opts_common"
-  else
-    echo "-XX:MaxPermSize=384m $default_jvm_opts_common"
-  fi
+  echo "$default_jvm_opts_common"
 }
 
 build_props_scala () {

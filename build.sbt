@@ -27,13 +27,13 @@ val hbaseVersion = "1.2.4"
 val hravenVersion = "1.0.1"
 val jacksonVersion = "2.8.7"
 val json4SVersion = "3.5.0"
-val paradiseVersion = "2.1.0"
+val paradiseVersion = "2.1.1"
 val parquetVersion = "1.10.0"
 val protobufVersion = "2.4.1"
 val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
-val scroogeVersion = "18.9.0"
+val scroogeVersion = "19.8.0"
 val sparkVersion = "2.4.0"
 val beamVersion = "2.29.0"
 val slf4jVersion = "1.6.6"
@@ -48,13 +48,13 @@ val sharedSettings = scalariformSettings ++ Seq(
 
   scalaVersion := "2.11.12",
 
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.8"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
 
   ScalariformKeys.preferences := formattingPreferences,
 
-  javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
 
-  javacOptions in doc := Seq("-source", "1.6"),
+  javacOptions in doc := Seq("-source", "1.8"),
 
   wartremoverErrors in (Compile, compile) ++= Seq(
     Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
@@ -108,12 +108,6 @@ val sharedSettings = scalariformSettings ++ Seq(
     case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
     case _ => Seq()
   },
-
-  /**
-   * add linter for common scala issues:
-   * https://github.com/HairyFotr/linter
-   */
-  addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"),
 
   // Enables full stack traces in scalatest
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),

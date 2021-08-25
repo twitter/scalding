@@ -1,6 +1,6 @@
 package com.twitter.scalding.beam_backend
 
-import com.twitter.algebird.AveragedValue
+import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.{Config, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
@@ -14,12 +14,13 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
   private var pipelineOptions: PipelineOptions = _
   private var testPath: String = _
 
-  def beamMatchesSeq[A](t: TypedPipe[A], expectedResult: Seq[A]) = {
+  def beamMatchesSeq[A](t: TypedPipe[A], expectedResult: Seq[A], config: Config = Config.empty) = {
     val bmode = BeamMode.default(pipelineOptions)
     val outRoute = tmpPath("out")
-    t.map(_.toString).writeExecution(TextLine(outRoute)).waitFor(Config.empty, bmode).get
+    t.map(_.toString).writeExecution(TextLine(outRoute)).waitFor(config, bmode).get
     val result = getContents(testPath, outRoute).sorted
     assert(result == expectedResult.map(_.toString).sorted)
+
   }
 
   before {
@@ -96,24 +97,13 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       TypedPipe
         .from(Seq(5, 3, 2, 6, 1, 4))
         .groupBy(_ % 2)
-        .sorted
+        .sorted(Ordering[Int].reverse)
         .foldLeft(0)((a, b) => a * 10 + b),
-      Seq((0, 246), (1, 135))
+      Seq((0, 642), (1, 531))
     )
   }
 
-  test("sorted"){
-    beamMatchesSeq(
-      TypedPipe
-        .from(Seq(5, 3, 2, 0, 1, 4))
-        .groupAll
-        .sorted
-        .limit(3),
-      Seq(((),0), ((),1), ((),2))
-    )
-  }
-
-  test("test"){
+  test("priorityQueue operations"){
     /**
      * @note we are not extending support for `sortedTake` and `sortedReverseTake`, since both of them uses
      *       [[com.twitter.algebird.mutable.PriorityQueueMonoid.plus]] which mutates input value in pipeline
@@ -132,11 +122,25 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     assert(test.isFailure)
   }
 
+  test("SumByLocalKeys"){
+    beamMatchesSeq(
+      TypedPipe
+        .from(0 to 5)
+        .map(x => (x, x))
+        .flatMapValues(x => 0 to x)
+        .sumByLocalKeys(new Semigroup[Int] {
+          override def plus(x: Int, y: Int): Int = x + y
+        }),
+      Seq((0, 0), (1, 1), (2, 3), (3, 6), (4, 10), (5, 15)),
+      Config.empty.setMapSideAggregationThreshold(5)
+    )
+  }
+
   private def getContents(path: String, prefix: String): List[String] = {
     new File(path).listFiles.flatMap(file => {
-      if (file.getPath.startsWith(prefix)) {
+      if(file.getPath.startsWith(prefix)){
         Source.fromFile(file).getLines().flatMap(line => line.split("\\s+").toList)
-      } else List.empty[String]
+      }else List.empty[String]
     }).toList
   }
 

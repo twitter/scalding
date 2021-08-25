@@ -5,8 +5,8 @@ import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
 import com.twitter.scalding.serialization.KryoHadoop
-import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, FlatMapValuesToFlatMap, MapValuesToMap }
 import com.twitter.scalding.typed._
+import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, FlatMapValuesToFlatMap, MapValuesToMap }
 
 object BeamPlanner {
   def plan(config: Config, srcs: Resolver[TypedSource, BeamSource]): FunctionK[TypedPipe, BeamOp] = {
@@ -52,8 +52,13 @@ object BeamPlanner {
           BeamOp.FromIterable(iterable, kryoCoder)
         case (wd: WithDescriptionTypedPipe[a], rec) =>
           rec[a](wd.input)
-        case (SumByLocalKeys(pipe, _), rec) =>
-          rec(pipe)
+        case (SumByLocalKeys(pipe, sg), rec) =>
+          val op = rec(pipe)
+          config.getMapSideAggregationThreshold match {
+            case None => op
+            case Some(count) =>
+              op.mapSideAggregator(count, sg)
+          }
         case (ReduceStepPipe(ir @ IdentityReduce(_, _, _, _, _)), rec) =>
           def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): BeamOp[(K, V2)] = {
             type BeamOpT[V] = BeamOp[(K, V)]
