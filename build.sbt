@@ -54,9 +54,9 @@ val sharedSettings = scalariformSettings ++ Seq(
 
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
 
-  javacOptions in doc := Seq("-source", "1.8"),
+  doc / javacOptions := Seq("-source", "1.8"),
 
-  wartremoverErrors in (Compile, compile) ++= Seq(
+  Compile / compile / wartremoverErrors ++= Seq(
     Wart.OptionPartial, Wart.ExplicitImplicitTypes, Wart.LeakingSealed,
     Wart.Return, Wart.EitherProjectionPartial),
 
@@ -77,23 +77,23 @@ val sharedSettings = scalariformSettings ++ Seq(
   ),
 
   printDependencyClasspath := {
-    val cp = (dependencyClasspath in Compile).value
+    val cp = (Compile / dependencyClasspath).value
     cp.foreach(f => println(s"${f.metadata.get(moduleID.key)} => ${f.data}"))
   },
 
-  fork in Test := true,
+  Test / fork := true,
 
   updateOptions := updateOptions.value.withCachedResolution(true),
 
-  aggregate in update := false,
+  update / aggregate  := false,
 
-  javaOptions in Test ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m", "-XX:MaxPermSize=384m"),
+  Test / javaOptions ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m", "-XX:MaxPermSize=384m"),
 
-  concurrentRestrictions in Global := Seq(
+  Global / concurrentRestrictions := Seq(
     Tags.limitAll(1)
   ),
 
-  parallelExecution in Test := false,
+  Test / parallelExecution := false,
 
   scalacOptions ++= Seq(
       "-unchecked",
@@ -104,24 +104,24 @@ val sharedSettings = scalariformSettings ++ Seq(
       "-Ywarn-unused-import"
     ),
 
-  scalacOptions in(Compile, doc) ++= Seq(scalaVersion.value).flatMap {
+  Compile / doc / scalacOptions ++= Seq(scalaVersion.value).flatMap {
     case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
     case _ => Seq()
   },
 
   // Enables full stack traces in scalatest
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
+  Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 
   // Uncomment if you don't want to run all the tests before building assembly
   // test in assembly := {},
-  logLevel in assembly := Level.Warn,
+  assembly / logLevel := Level.Warn,
 
   // Publishing options:
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseVersionBump := sbtrelease.Version.Bump.Minor, // need to tweak based on mima results
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
 
   releaseProcess := Seq[ReleaseStep](
@@ -145,15 +145,15 @@ val sharedSettings = scalariformSettings ++ Seq(
     ),
 
   // Janino includes a broken signature, and is not needed:
-  excludedJars in assembly := {
+  assembly / assemblyExcludedJars  := {
     val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
         "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar")
-      (fullClasspath in assembly).value filter {
+      (assembly / fullClasspath).value filter {
         jar => excludes(jar.data.getName)
       }
   },
   // Some of these files have duplicates, let's ignore:
-  mergeStrategy in assembly :=  {
+  assembly / assemblyMergeStrategy :=  {
     case s if s.endsWith(".class") => MergeStrategy.last
     case s if s.endsWith("project.clj") => MergeStrategy.concat
     case s if s.endsWith(".html") => MergeStrategy.last
@@ -165,7 +165,7 @@ val sharedSettings = scalariformSettings ++ Seq(
     case s if s.endsWith("jansi.dll") => MergeStrategy.rename
     case s if s.endsWith("libjansi.so") => MergeStrategy.rename
     case s if s.endsWith("properties") => MergeStrategy.filterDistinctLines
-    case x => (mergeStrategy in assembly).value(x)
+    case x => (assembly / assemblyMergeStrategy).value(x)
   },
 
   pomExtra := (
@@ -259,9 +259,9 @@ lazy val formattingPreferences = {
 }
 
 lazy val noPublishSettings = Seq(
-    publish := (),
-    publishLocal := (),
-    test := (),
+    publish := (()),
+    publishLocal := (()),
+    test := (()),
     publishArtifact := false
   )
 
@@ -305,7 +305,7 @@ lazy val scaldingBenchmarks = module("benchmarks")
         "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
       ),
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   ).dependsOn(scaldingCore)
 
 lazy val scaldingQuotation = module("quotation").settings(
@@ -399,8 +399,8 @@ lazy val scaldingAvro = module("avro").settings(
 
 lazy val scaldingParquetFixtures = module("parquet-fixtures")
    .settings(
-     scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-     scroogeLanguages in Test := Seq("java", "scala"),
+     Test / scroogeThriftSourceFolder := baseDirectory.value / "src/test/resources",
+     Test / scroogeLanguages := Seq("java", "scala"),
      libraryDependencies ++= Seq(
        "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
          exclude("com.google.guava", "guava"),
@@ -434,8 +434,8 @@ lazy val scaldingParquet = module("parquet").settings(
 
 lazy val scaldingParquetScroogeFixtures = module("parquet-scrooge-fixtures")
   .settings(
-    scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
-    scroogeLanguages in Test := Seq("java", "scala"),
+    Test / scroogeThriftSourceFolder := baseDirectory.value / "src/test/resources",
+    Test / scroogeLanguages := Seq("java", "scala"),
     libraryDependencies ++= Seq(
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
         exclude("com.google.guava", "guava"),
@@ -495,7 +495,7 @@ lazy val scaldingHRaven = module("hraven").settings(
 
 lazy val scaldingRepl = module("repl")
   .settings(
-    initialCommands in console := """
+    console / initialCommands := """
       import com.twitter.scalding._
       import com.twitter.scalding.ReplImplicits._
       import com.twitter.scalding.ReplImplicitContext._
@@ -513,7 +513,7 @@ lazy val scaldingRepl = module("repl")
 .settings(inConfig(Compile)(Classpaths.configSettings ++ Seq(
   // This is needed to make "provided" dependencies presented in repl,
   // solution borrowed from: http://stackoverflow.com/a/18839656/1404395
-  run := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
+  run := Defaults.runTask(Compile / fullClasspath, Compile / run / mainClass, Compile / run / runner).evaluated,
   // we need to fork repl task, because scala repl doesn't work well with sbt classloaders.
   run / fork := true,
   run / connectInput := true,
@@ -627,7 +627,7 @@ lazy val scaldingDb = module("db").settings(
 
 lazy val scaldingThriftMacrosFixtures = module("thrift-macros-fixtures")
   .settings(
-    scroogeThriftSourceFolder in Test := baseDirectory.value / "src/test/resources",
+    Test / scroogeThriftSourceFolder := baseDirectory.value / "src/test/resources",
     libraryDependencies ++= Seq(
       "com.twitter" %% "scrooge-serializer" % scroogeVersion % "provided"
         exclude("com.google.guava", "guava"),
@@ -703,20 +703,20 @@ lazy val docSettings = Seq(
     "gray-lighter" -> "#F4F3F4",
     "white-color" -> "#FFFFFF"),
   autoAPIMappings := true,
-  unidocProjectFilter in (ScalaUnidoc, unidoc) :=
+  ScalaUnidoc / unidoc / unidocProjectFilter :=
     inProjects(docsSourcesAndProjects(scalaVersion.value):_*),
   docsMappingsAPIDir := "api",
-  addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), docsMappingsAPIDir),
+  addMappingsToSiteDir(ScalaUnidoc / packageDoc / mappings, docsMappingsAPIDir),
   ghpagesNoJekyll := false,
-  fork in (ScalaUnidoc, unidoc) := true,
-  scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
+  ScalaUnidoc / unidoc / fork := true,
+  ScalaUnidoc / unidoc / scalacOptions ++= Seq(
     "-doc-source-url", "https://github.com/twitter/scalding/tree/develop€{FILE_PATH}.scala",
-    "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath,
+    "-sourcepath", (LocalRootProject / baseDirectory).value.getAbsolutePath,
     "-diagrams"
   ),
-  mdocIn := new File(baseDirectory.in(LocalRootProject).value, "docs/src"),
+  mdocIn := new File((LocalRootProject / baseDirectory).value, "docs/src"),
   git.remoteRepo := "git@github.com:twitter/scalding.git",
-  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
+  makeSite / includeFilter := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
   )
 
 
