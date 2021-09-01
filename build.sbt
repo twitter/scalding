@@ -714,6 +714,7 @@ lazy val docSettings = Seq(
     "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath,
     "-diagrams"
   ),
+  mdocIn := new File(baseDirectory.in(LocalRootProject).value, "docs/src"),
   git.remoteRepo := "git@github.com:twitter/scalding.git",
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
   )
@@ -722,6 +723,7 @@ lazy val docSettings = Seq(
 // Documentation is generated for projects defined in
 // `docsSourcesAndProjects`.
 lazy val docs = project
+  .enablePlugins(MdocPlugin)
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(ScalaUnidocPlugin)
   .enablePlugins(GhpagesPlugin)
@@ -729,6 +731,5 @@ lazy val docs = project
   .settings(sharedSettings)
   .settings(noPublishSettings)
   .settings(docSettings)
-// TODO: migrate tut to mdoc https://scalameta.org/mdoc/docs/tut.html
-//  .settings(Tut / scalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
+  .settings(Compile / scalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code"))))
   .dependsOn(scaldingCore)
