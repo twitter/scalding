@@ -5,8 +5,8 @@ import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
 import com.twitter.scalding.serialization.KryoHadoop
+import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, FlatMapValuesToFlatMap, MapValuesToMap }
-import com.twitter.scalding.typed.{ OptimizationRules, Resolver, TypedPipe, TypedSource }
 
 object BeamPlanner {
   def plan(config: Config, srcs: Resolver[TypedSource, BeamSource]): FunctionK[TypedPipe, BeamOp] = {
@@ -52,6 +52,41 @@ object BeamPlanner {
           BeamOp.FromIterable(iterable, kryoCoder)
         case (wd: WithDescriptionTypedPipe[a], rec) =>
           rec[a](wd.input)
+        case (SumByLocalKeys(pipe, sg), rec) =>
+          val op = rec(pipe)
+          config.getMapSideAggregationThreshold match {
+            case None => op
+            case Some(count) =>
+              op.mapSideAggregator(count, sg)
+          }
+        case (ReduceStepPipe(ir @ IdentityReduce(_, _, _, _, _)), rec) =>
+          def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): BeamOp[(K, V2)] = {
+            type BeamOpT[V] = BeamOp[(K, V)]
+            val op = rec(ir.mapped)
+            ir.evidence.subst[BeamOpT](op)
+          }
+          go(ir)
+        case (ReduceStepPipe(uir @ UnsortedIdentityReduce(_, _, _, _, _)), rec) =>
+          def go[K, V1, V2](uir: UnsortedIdentityReduce[K, V1, V2]): BeamOp[(K, V2)] = {
+            type BeamOpT[V] = BeamOp[(K, V)]
+            val op = rec(uir.mapped)
+            uir.evidence.subst[BeamOpT](op)
+          }
+          go(uir)
+        case (ReduceStepPipe(ivsr @ IdentityValueSortedReduce(_, _, _, _, _, _)), rec) =>
+          def go[K, V1, V2](uir: IdentityValueSortedReduce[K, V1, V2]): BeamOp[(K, V2)] = {
+            type BeamOpT[V] = BeamOp[(K, V)]
+            val op = rec(uir.mapped)
+            val sortedOp = op.sorted(uir.keyOrdering, uir.valueSort, kryoCoder)
+            uir.evidence.subst[BeamOpT](sortedOp)
+          }
+          go(ivsr)
+        case (ReduceStepPipe(ValueSortedReduce(keyOrdering, pipe, valueSort, reduceFn, _, _)), rec) =>
+          val op = rec(pipe)
+          op.sortedMapGroup(reduceFn)(keyOrdering, valueSort, kryoCoder)
+        case (ReduceStepPipe(IteratorMappedReduce(keyOrdering, pipe, reduceFn, _, _)), rec) =>
+          val op = rec(pipe)
+          op.mapGroup(reduceFn)(keyOrdering, kryoCoder)
       }
     })
   }
