@@ -20,7 +20,6 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     t.map(_.toString).writeExecution(TextLine(outRoute)).waitFor(config, bmode).get
     val result = getContents(testPath, outRoute).sorted
     assert(result == expectedResult.map(_.toString).sorted)
-
   }
 
   before {
@@ -134,6 +133,103 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       Seq((0, 0), (1, 1), (2, 3), (3, 6), (4, 10), (5, 15)),
       Config.empty.setMapSideAggregationThreshold(5)
     )
+  }
+
+  test("HashJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.hashJoin(rightPipe)
+    },
+      Seq((0, (0, 0)), (0, (0, 3)), (0, (1, 0)), (0, (1, 3)))
+    )
+  }
+
+  test("HashLeftJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.hashLeftJoin(rightPipe)
+    },
+      Seq(
+        (0, (0, Some(0))),
+        (0, (0, Some(3))),
+        (0, (1, Some(0))),
+        (0, (1, Some(3))),
+        (1, (1, None)),
+        (3, (3, None))
+      )
+    )
+  }
+
+  test("InnerJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.join(rightPipe)
+    },
+      Seq((0, (0, 0)), (0, (0, 3)), (0, (1, 0)), (0, (1, 3)))
+    )
+  }
+
+  test("LeftJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.leftJoin(rightPipe)
+    }, Seq(
+      (0, (0, Some(0))),
+      (0, (0, Some(3))),
+      (0, (1, Some(0))),
+      (0, (1, Some(3))),
+      (1, (1, None)),
+      (3, (3, None))
+    ))
+  }
+
+  test("RightJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.rightJoin(rightPipe)
+    }, Seq(
+      (0, (Some(0), 0)),
+      (0, (Some(0), 3)),
+      (0, (Some(1), 0)),
+      (0, (Some(1), 3)),
+      (2, (None, 2)),
+      (2, (None, 3))
+    ))
+  }
+
+  test("OuterJoin"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.outerJoin(rightPipe)
+    }, Seq(
+      (0, (Some(0), Some(0))),
+      (0, (Some(0), Some(3))),
+      (0, (Some(1), Some(0))),
+      (0, (Some(1), Some(3))),
+      (1, (Some(1), None)),
+      (3, (Some(3), None)),
+      (2, (None, Some(2))),
+      (2, (None, Some(3)))
+    ))
+  }
+
+  test("CoGroup"){
+    beamMatchesSeq({
+      val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+      val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+      leftPipe.cogroup(rightPipe)((_, iter1, iter2) => Seq((iter1 ++ iter2).toSeq.sum).toIterator)
+    }, Seq(
+      (0, 4),
+      (1, 1),
+      (2, 5),
+      (3, 3)
+    ))
   }
 
   private def getContents(path: String, prefix: String): List[String] = {
