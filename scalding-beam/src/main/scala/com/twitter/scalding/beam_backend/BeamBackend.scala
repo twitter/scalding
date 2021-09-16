@@ -1,15 +1,23 @@
 package com.twitter.scalding.beam_backend
 
-import com.stripe.dagon.{ FunctionK, Memoize, Rule }
+import com.stripe.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
+import com.twitter.scalding.beam_backend.BeamOp.CoGroupedOp
 import com.twitter.scalding.serialization.KryoHadoop
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.functions.{ FilterKeysToFilter, FlatMapValuesToFlatMap, MapValuesToMap }
+import com.twitter.scalding.typed.functions.{
+  FilterKeysToFilter,
+  FlatMapValuesToFlatMap,
+  MapValuesToMap
+}
 
 object BeamPlanner {
-  def plan(config: Config, srcs: Resolver[TypedSource, BeamSource]): FunctionK[TypedPipe, BeamOp] = {
+  def plan(
+    config: Config,
+    srcs: Resolver[TypedSource, BeamSource]
+  ): FunctionK[TypedPipe, BeamOp] = {
     implicit val kryoCoder: KryoCoder = new KryoCoder(defaultKryoCoderConfiguration(config))
     Memoize.functionK(f = new Memoize.RecursiveK[TypedPipe, BeamOp] {
 
@@ -87,6 +95,20 @@ object BeamPlanner {
         case (ReduceStepPipe(IteratorMappedReduce(keyOrdering, pipe, reduceFn, _, _)), rec) =>
           val op = rec(pipe)
           op.mapGroup(reduceFn)(keyOrdering, kryoCoder)
+        case (hcg @ HashCoGroup(_, _, _), rec) =>
+          def go[K, V1, V2, W](hcg: HashCoGroup[K, V1, V2, W]): BeamOp[(K, W)] = {
+            val leftOp = rec(hcg.left)
+            implicit val orderingK: Ordering[K] = hcg.right.keyOrdering
+            val rightOp = rec(ReduceStepPipe(HashJoinable.toReduceStep(hcg.right)))
+            leftOp.hashJoin(rightOp, hcg.joiner)
+          }
+          go(hcg)
+        case (CoGroupedPipe(cg), rec) =>
+          def go[K, V](cg: CoGrouped[K, V]): BeamOp[(K, V)] = {
+            val ops: Seq[BeamOp[(K, Any)]] = cg.inputs.map(tp => rec(tp))
+            CoGroupedOp(cg, ops)
+          }
+          go(cg)
       }
     })
   }
