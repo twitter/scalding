@@ -107,7 +107,8 @@ object BeamOp extends Serializable {
     kryoCoder: KryoCoder
   ) extends BeamOp[B] {
     def run(pipeline: Pipeline): PCollection[B] = {
-      source.run(pipeline).asInstanceOf[PCollection[A]].apply(f).setCoder(kryoCoder)
+      val pCollection: PCollection[A] = widenPCollection(source.run(pipeline))
+      pCollection.apply(f).setCoder(kryoCoder)
     }
   }
 
@@ -165,9 +166,10 @@ object BeamOp extends Serializable {
         )((keyed, colWithTag) => keyed.and[Any](colWithTag._2, colWithTag._1))
 
       keyedPCollectionTuple
-        .apply(CoGroupByKey.create()).setCoder(KvCoder.of(kryoCoder, coGroupResultCoder))
-        .apply(ParDo.of(new CoGroupDoFn[K, V](cg, tupleTags))).setCoder(kryoCoder)
-        .apply(KVToTuple[K, V]).setCoder(TupleCoder(keyCoder, kryoCoder))
+        .apply(CoGroupByKey.create()).setCoder(KvCoder.of(keyCoder, coGroupResultCoder))
+        .apply(ParDo.of(new CoGroupDoFn[K, V](cg, tupleTags)))
+        .setCoder(KvCoder.of(keyCoder, kryoCoder))
+        .apply(KVToTuple[K, V](keyCoder, kryoCoder))
     }
   }
 
@@ -201,19 +203,18 @@ object BeamOp extends Serializable {
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, U)]]() {
           override def expand(input: PCollection[(K, V)]): PCollection[(K, U)] = {
+            val keyCoder: Coder[K] = OrderedSerializationCoder(ordK, kryoCoder)
+
             val groupedValues = input
-              .apply(TupleToKV[K, V](OrderedSerializationCoder(ordK, kryoCoder), kryoCoder))
+              .apply(TupleToKV[K, V](keyCoder, kryoCoder))
               .apply(GroupByKey.create[K, V]())
-              .setCoder(KvCoder.of(
-                OrderedSerializationCoder(ordK, kryoCoder),
-                IterableCoder.of(kryoCoder))
-              )
+              .setCoder(KvCoder.of(keyCoder, IterableCoder.of(kryoCoder)))
 
             planMapGroup[K, V, U](groupedValues, reduceFn)
               .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]]{ elem =>
                 elem.getValue.asScala.map(KV.of(elem.getKey, _))
-              })).setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), kryoCoder))
-              .apply(KVToTuple[K, U])
+              })).setCoder(KvCoder.of(keyCoder, kryoCoder))
+              .apply(KVToTuple[K, U](keyCoder, kryoCoder))
           }
         },
         kryoCoder)
@@ -226,23 +227,20 @@ object BeamOp extends Serializable {
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, U)]]() {
           override def expand(input: PCollection[(K, V)]): PCollection[(K, U)] = {
+            val keyCoder: Coder[K] = OrderedSerializationCoder(ordK, kryoCoder)
+            val valueCoder: Coder[V] = OrderedSerializationCoder(ordV, kryoCoder)
+
             val groupedSortedValues = input
-              .apply(TupleToKV[K, V](
-                OrderedSerializationCoder(ordK, kryoCoder),
-                OrderedSerializationCoder(ordV, kryoCoder))
-              )
+              .apply(TupleToKV[K, V](keyCoder, valueCoder))
               .apply(GroupByKey.create[K, V]())
-              .setCoder(KvCoder.of(
-                OrderedSerializationCoder(ordK, kryoCoder),
-                IterableCoder.of(OrderedSerializationCoder(ordV, kryoCoder)))
-              )
+              .setCoder(KvCoder.of(keyCoder, IterableCoder.of(valueCoder)))
               .apply(SortGroupedValues[K, V])
 
             planMapGroup[K, V, U](groupedSortedValues, reduceFn)
               .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]]{ elem =>
                 elem.getValue.asScala.map(KV.of(elem.getKey, _))
-              })).setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), kryoCoder))
-              .apply(KVToTuple[K, U])
+              })).setCoder(KvCoder.of(keyCoder, kryoCoder))
+              .apply(KVToTuple[K, U](keyCoder, kryoCoder))
           }
         },
         kryoCoder)
@@ -253,25 +251,18 @@ object BeamOp extends Serializable {
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, V)]]() {
           override def expand(input: PCollection[(K, V)]): PCollection[(K, V)] = {
+            val keyCoder: Coder[K] = OrderedSerializationCoder(ordK, kryoCoder)
+            val valueCoder: Coder[V] = OrderedSerializationCoder(ordV, kryoCoder)
             input
-              .apply(TupleToKV[K, V](
-                OrderedSerializationCoder(ordK, kryoCoder),
-                OrderedSerializationCoder(ordV, kryoCoder))
-              )
+              .apply(TupleToKV[K, V](keyCoder, valueCoder))
               .apply(GroupByKey.create[K, V]())
-              .setCoder(KvCoder.of(
-                OrderedSerializationCoder(ordK, kryoCoder),
-                IterableCoder.of(OrderedSerializationCoder(ordV, kryoCoder)))
-              )
+              .setCoder(KvCoder.of(keyCoder, IterableCoder.of(valueCoder)))
               .apply(SortGroupedValues[K, V])
               .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[V]], KV[K, V]] { elem =>
                 elem.getValue.asScala.map(x => KV.of(elem.getKey, x))
               }))
-              .setCoder(KvCoder.of(
-                OrderedSerializationCoder(ordK, kryoCoder),
-                OrderedSerializationCoder(ordV, kryoCoder))
-              )
-              .apply(KVToTuple[K, V])
+              .setCoder(KvCoder.of(keyCoder, valueCoder))
+              .apply(KVToTuple[K, V](keyCoder, valueCoder))
           }
         },
         kryoCoder)
@@ -332,13 +323,14 @@ object BeamOp extends Serializable {
   }
 
   case class KVToTuple[K, V](
-    implicit kryoCoder: KryoCoder
+    coderK: Coder[K],
+    coderV: Coder[V]
   ) extends PTransform[PCollection[KV[K, V]], PCollection[(K, V)]] {
     override def expand(input: PCollection[KV[K, V]]): PCollection[(K, V)] = {
       input
         .apply(MapElements.via[KV[K, V], (K, V)](new SimpleFunction[KV[K, V], (K, V)]() {
           override def apply(input: KV[K, V]): (K, V) = (input.getKey, input.getValue)
-        })).setCoder(kryoCoder)
+        })).setCoder(TupleCoder(coderK, coderV))
     }
   }
 }
