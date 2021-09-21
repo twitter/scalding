@@ -25,6 +25,8 @@ case class ArgsException(message: String) extends RuntimeException(message)
  * following.
  */
 object Args {
+  val empty: Args = new Args(Map.empty)
+
   /**
    * Split on whitespace and then parse.
    */
