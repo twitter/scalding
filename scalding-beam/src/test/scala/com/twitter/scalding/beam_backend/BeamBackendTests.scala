@@ -7,7 +7,6 @@ import java.nio.file.Paths
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scala.io.Source
-import scala.util.Try
 
 class BeamBackendTests extends FunSuite with BeforeAndAfter {
 
@@ -102,23 +101,16 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     )
   }
 
-  test("priorityQueue operations"){
-    /**
-     * @note we are not extending support for `sortedTake` and `sortedReverseTake`, since both of them uses
-     *       [[com.twitter.algebird.mutable.PriorityQueueMonoid.plus]] which mutates input value in pipeline
-     *       and Beam does not allow mutations to input during transformation
-     */
-    val test = Try {
-      beamMatchesSeq(
-        TypedPipe
-          .from(Seq(5, 3, 2, 0, 1, 4))
-          .map(x => x.toDouble)
-          .groupAll
-          .sortedReverseTake(3),
-        Seq(5, 4, 3)
+  test("sortedTake"){
+    beamMatchesSeq(
+      TypedPipe
+        .from(Seq(5, 3, 2, 0, 1, 4))
+        .map(x => x.toDouble)
+        .groupAll
+        .sortedReverseTake(3)
+        .flatMap(_._2),
+        Seq(5.0, 4.0, 3.0)
       )
-    }
-    assert(test.isFailure)
   }
 
   test("SumByLocalKeys"){
