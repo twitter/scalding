@@ -1,9 +1,11 @@
 package com.twitter.scalding.beam_backend
 
+import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.{Config, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
+import java.util.PriorityQueue
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scala.io.Source
@@ -111,6 +113,18 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
         .flatMap(_._2),
         Seq(5.0, 4.0, 3.0)
       )
+  }
+
+  test("bufferedTake"){
+    beamMatchesSeq(
+      TypedPipe
+        .from(1 to 50)
+        .groupAll
+        .bufferedTake(100)
+        .map(_._2),
+      1 to 50,
+      Config(Map("cascading.aggregateby.threshold" -> "100"))
+    )
   }
 
   test("SumByLocalKeys"){

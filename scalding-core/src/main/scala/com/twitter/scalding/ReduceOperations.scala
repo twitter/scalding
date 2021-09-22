@@ -28,7 +28,7 @@ import com.twitter.algebird.{
   Aggregator
 }
 
-import com.twitter.algebird.mutable.PriorityQueueMonoid
+import com.twitter.scalding.typed.functions.ScaldingPriorityQueueMonoid
 
 import java.util.PriorityQueue
 
@@ -391,7 +391,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   def sortedTake[T](f: (Fields, Fields), k: Int)(implicit conv: TupleConverter[T], ord: Ordering[T]): Self = {
 
     assert(f._2.size == 1, "output field size must be 1")
-    implicit val mon: PriorityQueueMonoid[T] = new PriorityQueueMonoid[T](k)
+    implicit val mon: ScaldingPriorityQueueMonoid[T] = new ScaldingPriorityQueueMonoid[T](k)
     mapPlusMap(f) { (tup: T) => mon.build(tup) } {
       (lout: PriorityQueue[T]) => lout.iterator.asScala.toList.sorted
     }

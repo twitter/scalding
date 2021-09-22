@@ -10,7 +10,8 @@ import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{
   FilterKeysToFilter,
   FlatMapValuesToFlatMap,
-  MapValuesToMap
+  MapValuesToMap,
+  ScaldingPriorityQueueMonoid
 }
 
 object BeamPlanner {
@@ -65,7 +66,12 @@ object BeamPlanner {
           config.getMapSideAggregationThreshold match {
             case None => op
             case Some(count) =>
-              op.mapSideAggregator(count, sg)
+              // Semigroup is invariant on T. We cannot pattern match as it is a Semigroup[PriorityQueue[T]]
+              if (sg.isInstanceOf[ScaldingPriorityQueueMonoid[_]]) {
+                op
+              } else {
+                op.mapSideAggregator(count, sg)
+              }
           }
         case (ReduceStepPipe(ir @ IdentityReduce(_, _, _, _, _)), rec) =>
           def go[K, V1, V2](ir: IdentityReduce[K, V1, V2]): BeamOp[(K, V2)] = {

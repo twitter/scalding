@@ -1,17 +1,22 @@
 package com.twitter.scalding.beam_backend
 
 import com.twitter.algebird.Semigroup
-import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamFunctions._
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
-import com.twitter.scalding.typed.functions.{EmptyGuard, MapValueStream, SumAll}
+import com.twitter.scalding.typed.functions.{
+  EmptyGuard,
+  MapValueStream,
+  ScaldingPriorityQueueMonoid,
+  SumAll
+}
 import com.twitter.scalding.typed.{CoGrouped, TypedSource}
 import java.lang
-import java.util.PriorityQueue
+import java.util.{Comparator, PriorityQueue}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.{Coder, IterableCoder, KvCoder}
 import org.apache.beam.sdk.transforms.DoFn.ProcessElement
+import org.apache.beam.sdk.transforms.Top.TopCombineFn
 import org.apache.beam.sdk.transforms._
 import org.apache.beam.sdk.transforms.join.{
   CoGbkResult,
@@ -52,6 +57,10 @@ sealed abstract class BeamOp[+A] {
     parDo(FlatMapFn(f))
 }
 
+private final case class SerializableComparator[T](comp: Comparator[T]) extends Comparator[T] {
+  override def compare(o1: T, o2: T): Int = comp.compare(o1, o2)
+}
+
 object BeamOp extends Serializable {
   implicit private def fakeClassTag[A]: ClassTag[A] = ClassTag(classOf[AnyRef]).asInstanceOf[ClassTag[A]]
 
@@ -61,19 +70,24 @@ object BeamOp extends Serializable {
   )(implicit ordK: Ordering[K], kryoCoder: KryoCoder): PCollection[KV[K, java.lang.Iterable[U]]] = {
     reduceFn match {
       case ComposedMapGroup(f, g) => planMapGroup(planMapGroup(pcoll, f), g)
-      case EmptyGuard(MapValueStream(SumAll(pqm: PriorityQueueMonoid[V]))) =>
-        pcoll.apply(MapElements.via(
-          new SimpleFunction[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[U]]]() {
-            override def apply(input: KV[K, lang.Iterable[V]]): KV[K, java.lang.Iterable[U]] = {
-              // We are not using plus method defined in PriorityQueueMonoid as it is mutating
-              // input Priority Queues. We create a new PQ from the individual ones.
-              // We didn't use Top PTransformation in beam as it is not needed, also
-              // we cannot access `max` defined in PQ monoid.
-              val flattenedValues = input.getValue.asScala.flatMap { value =>
-                value.asInstanceOf[PriorityQueue[V]].iterator().asScala
-              }
-              val mergedPQ = pqm.build(flattenedValues)
-              KV.of(input.getKey, Iterable(mergedPQ.asInstanceOf[U]).asJava)
+      case EmptyGuard(MapValueStream(SumAll(pqm: ScaldingPriorityQueueMonoid[v]))) =>
+        val vCollection = pcoll.asInstanceOf[PCollection[KV[K, java.lang.Iterable[PriorityQueue[v]]]]]
+
+        vCollection.apply(MapElements.via(
+          new SimpleFunction[KV[K, java.lang.Iterable[PriorityQueue[v]]], KV[K, java.lang.Iterable[U]]]() {
+            override def apply(input: KV[K, lang.Iterable[PriorityQueue[v]]]): KV[K, java.lang.Iterable[U]] = {
+
+              val topCombineFn = new TopCombineFn[v, SerializableComparator[v]](
+                pqm.count,
+                SerializableComparator[v](pqm.ordering.reverse)
+              )
+
+              @inline def flattenedValues: Stream[v] =
+                input.getValue.asScala.toStream.flatMap(_.asScala.toStream)
+
+              val outputs: java.util.List[v] = topCombineFn.apply(flattenedValues.asJava)
+              val pqs = pqm.build(outputs.asScala)
+              KV.of(input.getKey, Iterable(pqs.asInstanceOf[U]).asJava)
             }
           })
         ).setCoder(KvCoder.of(
