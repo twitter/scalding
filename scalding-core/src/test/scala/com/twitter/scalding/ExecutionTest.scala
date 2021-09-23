@@ -364,6 +364,18 @@ class ExecutionTest extends WordSpec with Matchers {
       mapCountDownLatch2.countDown()
     }
 
+    "recoverWith may fail to match" in {
+      val exception = new RuntimeException()
+
+      val result = Execution.from[Unit] {
+        throw exception
+      }.recoverWith {
+        case _: NullPointerException => Execution.unit
+      }.waitFor(Config.default, Local(true))
+
+      result shouldBe Failure(exception)
+    }
+
     "recover from failure" in {
       val tp = TypedPipe.from(Seq(1)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
       val recoveredTp = TypedPipe.from(Seq(2)).groupAll.sum.values

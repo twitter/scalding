@@ -521,16 +521,17 @@ object Execution {
             fut
               .map {v => (v, CancellationHandler.empty) } // map this to the right shape
               .recoverWith {
-                case t: FlowStopException => // do not recover when the flow was stopped
-                  Future.failed(t)
-                case t =>
-                  val chainedFn = fn.andThen { ex0 =>
-                    // we haven't optimized ex0 yet
-                    val ex = optimize(conf, ex0)
-                    val CFuture(f, c) = ex.runStats(conf, mode, cache).get
-                    f.map { v => (v, c) }
-                  }
-                chainedFn(t)
+                val flowStop: PartialFunction[Throwable, Future[Nothing]] = {
+                  case t: FlowStopException => // do not recover when the flow was stopped
+                    Future.failed(t)
+                }
+
+                flowStop orElse fn.andThen { ex0 =>
+                  // we haven't optimized ex0 yet
+                  val ex = optimize(conf, ex0)
+                  val CFuture(f, c) = ex.runStats(conf, mode, cache).get
+                  f.map { v => (v, c) }
+                }
               }
         }
 
