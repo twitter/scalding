@@ -7,16 +7,12 @@ import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamOp.CoGroupedOp
 import com.twitter.scalding.serialization.KryoHadoop
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.functions.{
-  FilterKeysToFilter,
-  FlatMapValuesToFlatMap,
-  MapValuesToMap
-}
+import com.twitter.scalding.typed.functions.{FilterKeysToFilter, FlatMapValuesToFlatMap, MapValuesToMap}
 
 object BeamPlanner {
   def plan(
-    config: Config,
-    srcs: Resolver[TypedSource, BeamSource]
+      config: Config,
+      srcs: Resolver[TypedSource, BeamSource]
   ): FunctionK[TypedPipe, BeamOp] = {
     implicit val kryoCoder: KryoCoder = new KryoCoder(defaultKryoCoderConfiguration(config))
     Memoize.functionK(f = new Memoize.RecursiveK[TypedPipe, BeamOp] {
@@ -113,23 +109,21 @@ object BeamPlanner {
     })
   }
 
-  def defaultKryoCoderConfiguration(config: Config): KryoInstantiator = {
+  def defaultKryoCoderConfiguration(config: Config): KryoInstantiator =
     config.getKryo match {
       case Some(kryoInstantiator) => kryoInstantiator
-      case None => new KryoHadoop(new ScalaMapConfig(Map.empty))
+      case None                   => new KryoHadoop(new ScalaMapConfig(Map.empty))
     }
-  }
 
   def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
     def std(forceHash: Rule[TypedPipe]) =
-      (OptimizationRules.standardMapReduceRules :::
+      OptimizationRules.standardMapReduceRules :::
         List(
           OptimizationRules.FilterLocally, // after filtering, we may have filtered to nothing, lets see
           OptimizationRules.simplifyEmpty,
           // add any explicit forces to the optimized graph
-          Rule.orElse(List(
-            forceHash,
-            OptimizationRules.RemoveDuplicateForceFork))))
+          Rule.orElse(List(forceHash, OptimizationRules.RemoveDuplicateForceFork))
+        )
 
     config.getOptimizationPhases match {
       case Some(tryPhases) => tryPhases.get.phases
@@ -141,4 +135,3 @@ object BeamPlanner {
     }
   }
 }
-

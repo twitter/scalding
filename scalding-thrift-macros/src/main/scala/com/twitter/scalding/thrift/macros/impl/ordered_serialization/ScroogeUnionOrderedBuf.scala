@@ -22,18 +22,25 @@ import com.twitter.scrooge.ThriftUnion
 import scala.reflect.macros.Context
 
 object ScroogeUnionOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if tpe <:< typeOf[ThriftUnion] &&
-        (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isTrait) &&
-        !tpe.typeSymbol.asClass.knownDirectSubclasses.isEmpty => ScroogeUnionOrderedBuf(c)(buildDispatcher, tpe)
+      case tpe
+          if tpe <:< typeOf[ThriftUnion] &&
+            (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isTrait) &&
+            !tpe.typeSymbol.asClass.knownDirectSubclasses.isEmpty =>
+        ScroogeUnionOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(s"$id"))
 
@@ -41,28 +48,35 @@ object ScroogeUnionOrderedBuf {
 
     val subClasses: List[Type] = StableKnownDirectSubclasses(c)(outerType).map(_.toType)
 
-    val subData: List[(Int, Type, Option[TreeOrderedBuf[c.type]])] = subClasses.map { t =>
-      if (t.typeSymbol.name.toString == "UnknownUnionField") {
-        (t, None)
-      } else {
-        (t, Some(dispatcher(t)))
+    val subData: List[(Int, Type, Option[TreeOrderedBuf[c.type]])] = subClasses
+      .map { t =>
+        if (t.typeSymbol.name.toString == "UnknownUnionField") {
+          (t, None)
+        } else {
+          (t, Some(dispatcher(t)))
+        }
       }
-    }.zipWithIndex.map { case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }
+      .zipWithIndex
+      .map { case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }
 
     require(subData.nonEmpty, "Must have some sub types on a union?")
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
       override val tpe = outerType
-      override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) = UnionLike.compareBinary(c)(inputStreamA, inputStreamB)(subData)
+      override def compareBinary(inputStreamA: ctx.TermName, inputStreamB: ctx.TermName) =
+        UnionLike.compareBinary(c)(inputStreamA, inputStreamB)(subData)
       override def hash(element: ctx.TermName): ctx.Tree =
         UnionLike.hash(c)(element)(subData)
-      override def put(inputStream: ctx.TermName, element: ctx.TermName) = UnionLike.put(c)(inputStream, element)(subData)
+      override def put(inputStream: ctx.TermName, element: ctx.TermName) =
+        UnionLike.put(c)(inputStream, element)(subData)
       override def get(inputStream: ctx.TermName): ctx.Tree = UnionLike.get(c)(inputStream)(subData)
-      override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree = UnionLike.compare(c)(outerType, elementA, elementB)(subData)
-      override def length(element: Tree): CompileTimeLengthTypes[c.type] = UnionLike.length(c)(element)(subData)
-      override val lazyOuterVariables: Map[String, ctx.Tree] = subData.flatMap(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
+      override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
+        UnionLike.compare(c)(outerType, elementA, elementB)(subData)
+      override def length(element: Tree): CompileTimeLengthTypes[c.type] =
+        UnionLike.length(c)(element)(subData)
+      override val lazyOuterVariables: Map[String, ctx.Tree] =
+        subData.flatMap(_._3).map(_.lazyOuterVariables).reduce(_ ++ _)
     }
   }
 }
-

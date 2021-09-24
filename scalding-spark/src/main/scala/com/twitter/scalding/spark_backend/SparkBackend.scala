@@ -1,13 +1,13 @@
 package com.twitter.scalding.spark_backend
 
-import com.stripe.dagon.{ FunctionK, Memoize }
+import com.stripe.dagon.{FunctionK, Memoize}
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.functions.{ DebugFn, FilterKeysToFilter }
-import java.util.{ LinkedHashMap => JLinkedHashMap, Map => JMap }
+import com.twitter.scalding.typed.functions.{DebugFn, FilterKeysToFilter}
+import java.util.{LinkedHashMap => JLinkedHashMap, Map => JMap}
 import org.apache.spark.storage.StorageLevel
-import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
+import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 
 object SparkPlanner {
   import SparkMode.SparkConfigMethods
@@ -20,18 +20,18 @@ object SparkPlanner {
   }
 
   /**
-   * A PartitionComputer which returns the desired number of partitions given the configured
-   * max partition count, reducer scaling factor, number of scalding reducers, and current number of partitions.
-   * We calculate the desired number of partitions in two stages:
-   * 1. If the number of scalding reducers is provided, we scale this number by the reducer scaling factor.
-   *    If it is <= 0 or missing, we use the current number of partitions.
-   * 2. If we have a configured a max number of partitions, we cap the result of 1 by this number. Otherwise,
-   *    just return the result of 1.
+   * A PartitionComputer which returns the desired number of partitions given the configured max partition
+   * count, reducer scaling factor, number of scalding reducers, and current number of partitions. We
+   * calculate the desired number of partitions in two stages:
+   *   1. If the number of scalding reducers is provided, we scale this number by the reducer scaling factor.
+   *      If it is <= 0 or missing, we use the current number of partitions. 2. If we have a configured a max
+   *      number of partitions, we cap the result of 1 by this number. Otherwise, just return the result of 1.
    */
-  final case class ConfigPartitionComputer(config: Config, scaldingReducers: Option[Int]) extends PartitionComputer {
+  final case class ConfigPartitionComputer(config: Config, scaldingReducers: Option[Int])
+      extends PartitionComputer {
     def apply(currentNumPartitions: Int): Int = {
       val maxPartitions = config.getMaxPartitionCount
-      val getReducerScaling = config.getReducerScaling.getOrElse(1.0D)
+      val getReducerScaling = config.getReducerScaling.getOrElse(1.0d)
       val candidate = scaldingReducers match {
         case None =>
           currentNumPartitions
@@ -52,7 +52,9 @@ object SparkPlanner {
         // we probably always want at least 1 partition
         1
       } else {
-        throw new IllegalArgumentException("Got a negative partition count. Check configured maxPartitionCount or reducerScaling.")
+        throw new IllegalArgumentException(
+          "Got a negative partition count. Check configured maxPartitionCount or reducerScaling."
+        )
       }
     }
   }
@@ -67,9 +69,8 @@ object SparkPlanner {
       def toFunction[A] = {
         case (cp @ CounterPipe(_), rec) =>
           // TODO: counters not yet supported
-          def go[A](p: CounterPipe[A]): Op[A] = {
+          def go[A](p: CounterPipe[A]): Op[A] =
             rec(p.pipe).map(_._1)
-          }
           go(cp)
         case (cp @ CrossPipe(_, _), rec) =>
           def go[A, B](cp: CrossPipe[A, B]): Op[(A, B)] =
@@ -112,7 +113,7 @@ object SparkPlanner {
           val sparkPipe = rec(pipe)
           config.getForceToDiskPersistMode.getOrElse(StorageLevel.DISK_ONLY) match {
             case StorageLevel.NONE => sparkPipe
-            case notNone => sparkPipe.persist(notNone)
+            case notNone           => sparkPipe.persist(notNone)
           }
         case (Fork(pipe), rec) =>
           val sparkPipe = rec(pipe)
@@ -122,7 +123,7 @@ object SparkPlanner {
           // or be careful about using forceToDisk
           config.getForkPersistMode.getOrElse(StorageLevel.NONE) match {
             case StorageLevel.NONE => sparkPipe
-            case notNone => sparkPipe.persist(notNone)
+            case notNone           => sparkPipe.persist(notNone)
           }
         case (IterablePipe(iterable), _) =>
           Op.FromIterable(iterable)
@@ -138,7 +139,7 @@ object SparkPlanner {
           // but won't otherwise optimize if not given in
           // one batch
           OptimizationRules.unrollMerge(m) match {
-            case Nil => rec(EmptyTypedPipe)
+            case Nil      => rec(EmptyTypedPipe)
             case h :: Nil => rec(h)
             case h :: rest =>
               val pc = ConfigPartitionComputer(config, None)
@@ -228,7 +229,8 @@ object SparkPlanner {
     def next = it.next
   }
 
-  case class CachingSum[K, V](capacity: Int, semigroup: Semigroup[V]) extends Function1[Iterator[(K, V)], Iterator[(K, V)]] {
+  case class CachingSum[K, V](capacity: Int, semigroup: Semigroup[V])
+      extends Function1[Iterator[(K, V)], Iterator[(K, V)]] {
     def newCache(evicted: MMap[K, V]): JMap[K, V] = new JLinkedHashMap[K, V](capacity + 1, 0.75f, true) {
       override protected def removeEldestEntry(eldest: JMap.Entry[K, V]) =
         if (super.size > capacity) {
@@ -247,7 +249,7 @@ object SparkPlanner {
 
         def hasNext = kvs.hasNext || resultIterator.hasNext
         @annotation.tailrec
-        def next: (K, V) = {
+        def next: (K, V) =
           if (resultIterator.hasNext) {
             resultIterator.next
           } else if (kvs.hasNext) {
@@ -268,11 +270,10 @@ object SparkPlanner {
           } else {
             // time to flush the cache
             import scala.collection.JavaConverters._
-            val cacheIter = currentCache.entrySet.iterator.asScala.map { e => (e.getKey, e.getValue) }
+            val cacheIter = currentCache.entrySet.iterator.asScala.map(e => (e.getKey, e.getValue))
             resultIterator = OnEmptyIterator(cacheIter, () => currentCache.clear())
             next
           }
-        }
       }
     }
   }
@@ -280,7 +281,11 @@ object SparkPlanner {
   private def planHashJoinable[K, V](hj: HashJoinable[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] =
     rec(TypedPipe.ReduceStepPipe(HashJoinable.toReduceStep(hj)))
 
-  private def planCoGroup[K, V](config: Config, cg: CoGrouped[K, V], rec: FunctionK[TypedPipe, Op]): Op[(K, V)] = {
+  private def planCoGroup[K, V](
+      config: Config,
+      cg: CoGrouped[K, V],
+      rec: FunctionK[TypedPipe, Op]
+  ): Op[(K, V)] = {
     import CoGrouped._
 
     cg match {
@@ -301,7 +306,7 @@ object SparkPlanner {
         def planSide[A, B](cg: CoGroupable[A, B]): Op[(A, B)] =
           cg match {
             case hg: HashJoinable[A, B] => planHashJoinable(hg, rec)
-            case cg: CoGrouped[A, B] => planCoGroup(config, cg, rec)
+            case cg: CoGrouped[A, B]    => planCoGroup(config, cg, rec)
           }
 
         def planPair[A, B, C, D](p: Pair[A, B, C, D]): Op[(A, D)] = {
@@ -310,14 +315,14 @@ object SparkPlanner {
           val joinFn = p.fn
           val pc = ConfigPartitionComputer(config, p.reducers)
           // we repartition in sorted, so no need to repartition in merge
-          (eleft.merge(IdentityPartitionComputer, eright))
+          (eleft
+            .merge(IdentityPartitionComputer, eright))
             .sorted(pc)(p.keyOrdering, JoinOrdering())
             .mapPartitions { it =>
               val grouped = Iterators.groupSequential(it)
-              grouped.flatMap {
-                case (k, eithers) =>
-                  val kfn: Function2[Iterator[B], Iterable[C], Iterator[D]] = joinFn(k, _, _)
-                  JoinIterator[B, C, D](kfn)(eithers).map((k, _))
+              grouped.flatMap { case (k, eithers) =>
+                val kfn: Function2[Iterator[B], Iterable[C], Iterator[D]] = joinFn(k, _, _)
+                JoinIterator[B, C, D](kfn)(eithers).map((k, _))
               }
             }
         }
@@ -340,20 +345,20 @@ object SparkPlanner {
       else 0
   }
 
-  case class JoinIterator[A, B, C](fn: (Iterator[A], Iterable[B]) => Iterator[C]) extends Function1[Iterator[Either[A, B]], Iterator[C]] {
+  case class JoinIterator[A, B, C](fn: (Iterator[A], Iterable[B]) => Iterator[C])
+      extends Function1[Iterator[Either[A, B]], Iterator[C]] {
     @SuppressWarnings(Array("org.wartremover.warts.EitherProjectionPartial"))
     def apply(eitherIter: Iterator[Either[A, B]]) = {
       val buffered = eitherIter.buffered
       val bs: Iterable[B] = {
         @annotation.tailrec
-        def loop(buf: ArrayBuffer[B]): Iterable[B] = {
+        def loop(buf: ArrayBuffer[B]): Iterable[B] =
           if (buffered.isEmpty) buf
           else if (buffered.head.isLeft) buf
           else {
             buf += buffered.next.right.get
             loop(buf)
           }
-        }
         loop(ArrayBuffer())
       }
       val iterA: Iterator[A] = buffered.map(_.left.get)

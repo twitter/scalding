@@ -50,21 +50,16 @@ trait TextMacro {
       val firstParamStart = start(firstParam)
 
       val newStart =
-        paramsStartPosition(
-          fileContent.take(firstParamStart).reverse,
-          firstParamStart)
+        paramsStartPosition(fileContent.take(firstParamStart).reverse, firstParamStart)
 
       fileContent.drop(newStart).toList
     }
 
     val blockDelimiters =
-      Map(
-        '(' -> ')',
-        '{' -> '}',
-        '[' -> ']')
+      Map('(' -> ')', '{' -> '}', '[' -> ']')
 
     /*
-     * Reads the parameters block. It takes in consideration nested blocks like `map(v => { ... })` 
+     * Reads the parameters block. It takes in consideration nested blocks like `map(v => { ... })`
      */
     def readParams(chars: List[Char], open: List[Char], acc: List[Char] = Nil): (List[Char], List[Char]) =
       chars match {

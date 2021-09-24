@@ -18,29 +18,31 @@ package com.twitter.scalding.macros.impl
 import scala.reflect.macros.Context
 
 import com.twitter.scalding._
+
 /**
- * This class contains the core macro implementations. This is in a separate module to allow it to be in
- * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+ * This class contains the core macro implementations. This is in a separate module to allow it to be in a
+ * separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 object TypeDescriptorProviderImpl {
 
   def caseClassTypeDescriptorImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
     caseClassTypeDescriptorCommonImpl(c, false)(T)
 
-  def caseClassTypeDescriptorWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] =
+  def caseClassTypeDescriptorWithUnknownImpl[T](c: Context)(implicit
+      T: c.WeakTypeTag[T]
+  ): c.Expr[TypeDescriptor[T]] =
     caseClassTypeDescriptorCommonImpl(c, true)(T)
 
   /**
-   * When flattening a nested structure with Options, the evidentColumn is a column, relative to the
-   * the first 0-offset column, that represents evidence of this T, and hence set of columns, are
-   * present or absent. This is to handle Option types in text files such as CSV and TSV.
-   * a type T is evident if it the evidentColumn.exists
+   * When flattening a nested structure with Options, the evidentColumn is a column, relative to the the first
+   * 0-offset column, that represents evidence of this T, and hence set of columns, are present or absent.
+   * This is to handle Option types in text files such as CSV and TSV. a type T is evident if it the
+   * evidentColumn.exists
    *
-   * primitive numbers are evident
-   * case classes are evident if they have at least one evident member.
+   * primitive numbers are evident case classes are evident if they have at least one evident member.
    *
-   * Strings are not evident (we can't distinguish Empty from "")
-   * Option[T] is not evident (we can't tell Some(None) from None).
+   * Strings are not evident (we can't distinguish Empty from "") Option[T] is not evident (we can't tell
+   * Some(None) from None).
    */
   def evidentColumn(c: Context, allowUnknown: Boolean = false)(tpe: c.universe.Type): Option[Int] = {
     import c.universe._
@@ -61,17 +63,17 @@ object TypeDescriptorProviderImpl {
           if (allowUnknown) thisColumn
           else (offset + 1, None)
         case tpe if tpe =:= typeOf[Boolean] => thisColumn
-        case tpe if tpe =:= typeOf[Short] => thisColumn
-        case tpe if tpe =:= typeOf[Int] => thisColumn
-        case tpe if tpe =:= typeOf[Long] => thisColumn
-        case tpe if tpe =:= typeOf[Float] => thisColumn
-        case tpe if tpe =:= typeOf[Double] => thisColumn
+        case tpe if tpe =:= typeOf[Short]   => thisColumn
+        case tpe if tpe =:= typeOf[Int]     => thisColumn
+        case tpe if tpe =:= typeOf[Long]    => thisColumn
+        case tpe if tpe =:= typeOf[Float]   => thisColumn
+        case tpe if tpe =:= typeOf[Double]  => thisColumn
         // We recurse on Option and case classes
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerTpe = optionInner(c)(tpe).get
           // we have no evidentColumn, but we need to compute the next index
           (go(innerTpe, offset)._1, None)
-        case tpe if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) =>
+        case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass =>
           val flattened = flattenOnce(tpe)
             .scanLeft((offset, Option.empty[Int])) { case ((off, _), t) => go(t, off) }
 
@@ -80,7 +82,7 @@ object TypeDescriptorProviderImpl {
           (nextPos, ev)
         case _ if allowUnknown => thisColumn
         case t =>
-          c.abort(c.enclosingPosition, s"Case class ${tpe} at $t is not pure primitives or nested case classes")
+          c.abort(c.enclosingPosition, s"Case class $tpe at $t is not pure primitives or nested case classes")
       }
     }
     go(tpe, 0)._2
@@ -93,7 +95,8 @@ object TypeDescriptorProviderImpl {
 
   def isTuple[T](c: Context)(implicit T: c.WeakTypeTag[T]): Boolean = {
     import c.universe._
-    val tupleTypes = List(typeOf[Tuple1[Any]],
+    val tupleTypes = List(
+      typeOf[Tuple1[Any]],
       typeOf[Tuple2[Any, Any]],
       typeOf[Tuple3[Any, Any, Any]],
       typeOf[Tuple4[Any, Any, Any, Any]],
@@ -110,15 +113,88 @@ object TypeDescriptorProviderImpl {
       typeOf[Tuple15[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple16[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
       typeOf[Tuple17[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple20[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple21[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]],
-      typeOf[Tuple22[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]])
-    (tupleTypes.exists { _ =:= T.tpe.erasure })
+      typeOf[
+        Tuple18[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]
+      ],
+      typeOf[
+        Tuple19[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]
+      ],
+      typeOf[Tuple20[
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any
+      ]],
+      typeOf[Tuple21[
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any
+      ]],
+      typeOf[Tuple22[
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any,
+        Any
+      ]]
+    )
+    tupleTypes.exists { _ =:= T.tpe.erasure }
   }
 
-  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[TypeDescriptor[T]] = {
+  def caseClassTypeDescriptorCommonImpl[T](c: Context, allowUnknownTypes: Boolean)(implicit
+      T: c.WeakTypeTag[T]
+  ): c.Expr[TypeDescriptor[T]] = {
     import c.universe._
 
     val converter = TupleConverterImpl.caseClassTupleConverterCommonImpl[T](c, allowUnknownTypes)

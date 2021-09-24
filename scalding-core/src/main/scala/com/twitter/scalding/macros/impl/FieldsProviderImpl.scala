@@ -29,8 +29,7 @@ sealed trait NamingScheme
 case object Indexed extends NamingScheme
 
 /**
- * Uses prefixes for naming nested fields.
- * For e.g. for the following nested case class:
+ * Uses prefixes for naming nested fields. For e.g. for the following nested case class:
  * {{{
  *   case class Outer(id: Long, name: String, details: Inner)
  *   case class Inner(phone: Int)
@@ -40,8 +39,7 @@ case object Indexed extends NamingScheme
 case object NamedWithPrefix extends NamingScheme
 
 /**
- * No prefixes for naming nested fields.
- * For e.g. for the following nested case class:
+ * No prefixes for naming nested fields. For e.g. for the following nested case class:
  * {{{
  *   case class Outer(id: Long, name: String, details: Inner)
  *   case class Inner(phone: Int)
@@ -53,8 +51,8 @@ case object NamedWithPrefix extends NamingScheme
 case object NamedNoPrefix extends NamingScheme
 
 /**
- * This class contains the core macro implementations. This is in a separate module to allow it to be in
- * a separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
+ * This class contains the core macro implementations. This is in a separate module to allow it to be in a
+ * separate compilation unit, which makes it easier to provide helper methods interfacing with macros.
  */
 object FieldsProviderImpl {
   def toFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
@@ -63,16 +61,22 @@ object FieldsProviderImpl {
   def toFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
     toFieldsCommonImpl(c, NamedWithPrefix, true)(T)
 
-  def toFieldsWithUnknownNoPrefixImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+  def toFieldsWithUnknownNoPrefixImpl[T](c: Context)(implicit
+      T: c.WeakTypeTag[T]
+  ): c.Expr[cascading.tuple.Fields] =
     toFieldsCommonImpl(c, NamedNoPrefix, true)(T)
 
   def toIndexedFieldsImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
     toFieldsCommonImpl(c, Indexed, false)(T)
 
-  def toIndexedFieldsWithUnknownImpl[T](c: Context)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] =
+  def toIndexedFieldsWithUnknownImpl[T](c: Context)(implicit
+      T: c.WeakTypeTag[T]
+  ): c.Expr[cascading.tuple.Fields] =
     toFieldsCommonImpl(c, Indexed, true)(T)
 
-  def toFieldsCommonImpl[T](c: Context, namingScheme: NamingScheme, allowUnknownTypes: Boolean)(implicit T: c.WeakTypeTag[T]): c.Expr[cascading.tuple.Fields] = {
+  def toFieldsCommonImpl[T](c: Context, namingScheme: NamingScheme, allowUnknownTypes: Boolean)(implicit
+      T: c.WeakTypeTag[T]
+  ): c.Expr[cascading.tuple.Fields] = {
     import c.universe._
 
     import TypeDescriptorProviderImpl.optionInner
@@ -81,18 +85,19 @@ object FieldsProviderImpl {
     def isNumbered(t: Type): Boolean =
       t match {
         case tpe if tpe =:= typeOf[Boolean] => true
-        case tpe if tpe =:= typeOf[Short] => true
-        case tpe if tpe =:= typeOf[Int] => true
-        case tpe if tpe =:= typeOf[Long] => true
-        case tpe if tpe =:= typeOf[Float] => true
-        case tpe if tpe =:= typeOf[Double] => true
-        case tpe if tpe =:= typeOf[String] => true
-        case tpe => optionInner(c)(tpe) match { // linter:disable:UseOptionExistsNotPatMatch
-          case Some(t) =>
-            // we need this match style to do tailrec
-            isNumbered(t)
-          case None => false
-        }
+        case tpe if tpe =:= typeOf[Short]   => true
+        case tpe if tpe =:= typeOf[Int]     => true
+        case tpe if tpe =:= typeOf[Long]    => true
+        case tpe if tpe =:= typeOf[Float]   => true
+        case tpe if tpe =:= typeOf[Double]  => true
+        case tpe if tpe =:= typeOf[String]  => true
+        case tpe =>
+          optionInner(c)(tpe) match { // linter:disable:UseOptionExistsNotPatMatch
+            case Some(t) =>
+              // we need this match style to do tailrec
+              isNumbered(t)
+            case None => false
+          }
       }
 
     object FieldBuilder {
@@ -136,17 +141,17 @@ object FieldsProviderImpl {
      */
     def matchField(fieldType: Type, name: String): FieldBuilder =
       fieldType match {
-        case tpe if tpe =:= typeOf[String] => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[String]  => Primitive(name, tpe)
         case tpe if tpe =:= typeOf[Boolean] => Primitive(name, tpe)
-        case tpe if tpe =:= typeOf[Short] => Primitive(name, tpe)
-        case tpe if tpe =:= typeOf[Int] => Primitive(name, tpe)
-        case tpe if tpe =:= typeOf[Long] => Primitive(name, tpe)
-        case tpe if tpe =:= typeOf[Float] => Primitive(name, tpe)
-        case tpe if tpe =:= typeOf[Double] => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[Short]   => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[Int]     => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[Long]    => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[Float]   => Primitive(name, tpe)
+        case tpe if tpe =:= typeOf[Double]  => Primitive(name, tpe)
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           OptionBuilder(matchField(innerType, name))
-        case tpe if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) =>
+        case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass =>
           CaseClassBuilder(name, expandMethod(tpe).map { case (t, s) => matchField(t, s) })
         case tpe if allowUnknownTypes => Primitive(name, tpe)
         case tpe =>
@@ -154,14 +159,14 @@ object FieldsProviderImpl {
       }
 
     def expandMethod(outerTpe: Type): Vector[(Type, String)] =
-      outerTpe
-        .declarations
+      outerTpe.declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
           val fieldName = accessorMethod.name.toString
           val fieldType = accessorMethod.returnType.asSeenFrom(outerTpe, outerTpe.typeSymbol.asClass)
           (fieldType, fieldName)
-        }.toVector
+        }
+        .toVector
 
     val builder = matchField(T.tpe, "")
     if (builder.columnTypes.isEmpty)

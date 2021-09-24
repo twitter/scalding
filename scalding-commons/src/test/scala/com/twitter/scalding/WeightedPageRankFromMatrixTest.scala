@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.examples
 
 import scala.collection._
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import com.twitter.scalding._
 
@@ -32,14 +32,8 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
     // 0.5 0.0 0.0 0.0 0.0
     // 0.0 1.0 0.5 0.0 0.0
     // 0.0 0.0 0.5 1.0 0.0
-    val edges = List(
-      (0, 4, 1.0),
-      (1, 0, 0.5),
-      (2, 0, 0.5),
-      (3, 1, 1.0),
-      (3, 2, 0.5),
-      (4, 2, 0.5),
-      (4, 3, 1.0))
+    val edges =
+      List((0, 4, 1.0), (1, 0, 0.5), (2, 0, 0.5), (3, 1, 1.0), (3, 2, 0.5), (4, 2, 0.5), (4, 3, 1.0))
 
     val d = 0.4d // damping factor
     val n = 5 // number of nodes
@@ -72,49 +66,38 @@ class WeightedPageRankFromMatrixSpec extends WordSpec with Matchers {
       .sink[(Int, Double)](Tsv("root/constants/priorVector")) { outputBuffer =>
         outputBuffer should have size 5
         val expectedValue = ((1 - d) / 2) * d
-        assertVectorsEqual(
-          new Array[Double](5).map { v => expectedValue },
-          outputBuffer.map(_._2).toArray)
+        assertVectorsEqual(new Array[Double](5).map(v => expectedValue), outputBuffer.map(_._2).toArray)
       }
       .sink[(Int, Double)](Tsv("root/iterations/1")) { outputBuffer =>
         outputBuffer should have size 5
-        assertVectorsEqual(
-          expectedSolution,
-          outputBuffer.map(_._2).toArray,
-          0.00001)
+        assertVectorsEqual(expectedSolution, outputBuffer.map(_._2).toArray, 0.00001)
       }
       .typedSink(TypedTsv[Double]("root/diff")) { outputBuffer =>
         outputBuffer should have size 1
 
         val expectedDiff =
-          expectedSolution.zip(iterationZeroVector.map(_._2)).
-            map { case (a, b) => math.abs(a - b) }.
-            sum
+          expectedSolution.zip(iterationZeroVector.map(_._2)).map { case (a, b) => math.abs(a - b) }.sum
         outputBuffer.head shouldBe expectedDiff +- 0.00001
       }
       .run
       .finish()
   }
 
-  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double], variance: Double): Unit = {
-    actual.zipWithIndex.foreach {
-      case (value, i) =>
-        value shouldBe (expected(i)) +- variance
+  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double], variance: Double): Unit =
+    actual.zipWithIndex.foreach { case (value, i) =>
+      value shouldBe (expected(i)) +- variance
     }
-  }
 
-  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double]): Unit = {
-    actual.zipWithIndex.foreach {
-      case (value, i) =>
-        value shouldBe (expected(i))
+  private def assertVectorsEqual(expected: Array[Double], actual: Array[Double]): Unit =
+    actual.zipWithIndex.foreach { case (value, i) =>
+      value shouldBe (expected(i))
     }
-  }
 }
 
 object WeightedPageRankFromMatrixSpec {
 
   def toSparseMap[Row, Col, V](iterable: Iterable[(Row, Col, V)]): Map[(Row, Col), V] =
-    iterable.map { entry => ((entry._1, entry._2), entry._3) }.toMap
+    iterable.map(entry => ((entry._1, entry._2), entry._3)).toMap
 
   def filledColumnVector(value: Double, size: Int): List[(Int, Double)] = {
     val vector = mutable.ListBuffer[(Int, Double)]()
@@ -127,42 +110,30 @@ object WeightedPageRankFromMatrixSpec {
 }
 
 /**
- * Octave/Matlab implementations to provide the expected ranks. This comes from
- * the Wikipedia page on PageRank:
- * http://en.wikipedia.org/wiki/PageRank#Computation
+ * Octave/Matlab implementations to provide the expected ranks. This comes from the Wikipedia page on
+ * PageRank: http://en.wikipedia.org/wiki/PageRank#Computation
  *
  * function [v] = iterate(A, sv, d)
  *
- * N = size(A, 2)
- * M = (spdiags(1 ./ sum(A, 2), 0, N, N) * A)';
- * v = (d * M * sv) + (((1 - d) / N) .* ones(N, 1));
+ * N = size(A, 2) M = (spdiags(1 ./ sum(A, 2), 0, N, N) * A)'; v = (d * M * sv) + (((1 - d) / N) .* ones(N,
+ * 1));
  *
  * endfunction
  *
  * iterate([0 0 0 0 1; 0.5 0 0 0 0; 0.5 0 0 0 0; 0 1 0.5 0 0; 0 0 0.5 1 0], [0.2; 0.2; 0.2; 0.2; 0.2], 0.4)
  *
- * % Parameter M adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j' sum(i, M_i,j) = 1
- * % Parameter d damping factor
- * % Parameter v_quadratic_error quadratic error for v
- * % Return v, a vector of ranks such that v_i is the i-th rank from [0, 1]
+ * % Parameter M adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j'
+ * sum(i, M_i,j) = 1 % Parameter d damping factor % Parameter v_quadratic_error quadratic error for v % Return
+ * v, a vector of ranks such that v_i is the i-th rank from [0, 1]
  *
  * function [v] = rank(M, d, v_quadratic_error)
  *
- * N = size(M, 2); % N is equal to half the size of M
- * v = rand(N, 1);
- * v = v ./ norm(v, 2);
- * last_v = ones(N, 1) * inf;
- * M_hat = (d .* M) + (((1 - d) / N) .* ones(N, N));
+ * N = size(M, 2); % N is equal to half the size of M v = rand(N, 1); v = v ./ norm(v, 2); last_v = ones(N, 1)
+ * * inf; M_hat = (d .* M) + (((1 - d) / N) .* ones(N, N));
  *
- * while(norm(v - last_v, 2) > v_quadratic_error)
- * last_v = v;
- * v = M_hat * v;
- * v = v ./ norm(v, 2);
- * end
+ * while(norm(v - last_v, 2) > v_quadratic_error) last_v = v; v = M_hat * v; v = v ./ norm(v, 2); end
  *
  * endfunction
  *
- * M = [0 0 0 0 1 ; 0.5 0 0 0 0 ; 0.5 0 0 0 0 ; 0 1 0.5 0 0 ; 0 0 0.5 1 0];
- * rank(M, 0.4, 0.001)
- *
+ * M = [0 0 0 0 1 ; 0.5 0 0 0 0 ; 0.5 0 0 0 0 ; 0 1 0.5 0 0 ; 0 0 0.5 1 0]; rank(M, 0.4, 0.001)
  */

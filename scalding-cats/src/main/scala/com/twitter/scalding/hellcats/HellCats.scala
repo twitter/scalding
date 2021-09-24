@@ -1,11 +1,11 @@
 package com.twitter.scalding.hellcats
 
-import cats.{ Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad }
-import cats.effect.{ Async, Effect, ExitCase, SyncIO, IO }
-import com.twitter.scalding.{ Config, Mode, TypedPipe, Execution }
+import cats.{Functor, FunctorFilter, MonoidK, Semigroupal, StackSafeMonad}
+import cats.effect.{Async, Effect, ExitCase, IO, SyncIO}
+import com.twitter.scalding.{Config, Execution, Mode, TypedPipe}
 import com.twitter.scalding.typed.CoGroupable
-import com.twitter.scalding.typed.functions.{ Identity, MapOptionToFlatMap }
-import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import com.twitter.scalding.typed.functions.{Identity, MapOptionToFlatMap}
+import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
 
 /**
  * Instances for cats types when working with Scalding
@@ -41,15 +41,15 @@ object HellCats {
     }
 
   /**
-   * Async[Execution] includes MonadError[Throwable, Execution] and Defer[Execution]
-   * which together are the most commonly used typeclasses
+   * Async[Execution] includes MonadError[Throwable, Execution] and Defer[Execution] which together are the
+   * most commonly used typeclasses
    */
   implicit val asyncExecution: Async[Execution] with StackSafeMonad[Execution] =
     new AsyncExecution
 
   /**
-   * To use Execution as an Effect, which is to say, we can run it, we need the Config, Mode
-   * and ExecutionContext to use
+   * To use Execution as an Effect, which is to say, we can run it, we need the Config, Mode and
+   * ExecutionContext to use
    */
   def executionEffect(c: Config, m: Mode)(implicit cec: ConcurrentExecutionContext): Effect[Execution] =
     new ExecutionEffect(c, m)
@@ -82,18 +82,20 @@ object HellCats {
 
     def asyncF[A](k: (Either[Throwable, A] => Unit) => Execution[Unit]): Execution[A] =
       delay(Promise[A]()).flatMap { p =>
-        val asyncEx = Execution.withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
-          Future {
-            k {
-              case Right(a) =>
-                p.success(a)
-                ()
-              case Left(err) =>
-                p.failure(err)
-                ()
+        val asyncEx = Execution
+          .withNewCache(Execution.fromFuture { implicit cec: ConcurrentExecutionContext =>
+            Future {
+              k {
+                case Right(a) =>
+                  p.success(a)
+                  ()
+                case Left(err) =>
+                  p.failure(err)
+                  ()
+              }
             }
-          }
-        }).flatten
+          })
+          .flatten
 
         val result = Execution.fromFuture(_ => p.future)
 
@@ -113,7 +115,9 @@ object HellCats {
       }
 
     // Members declared in cats.effect.Bracket
-    def bracketCase[A, B](acquire: Execution[A])(use: A => Execution[B])(release: (A, ExitCase[Throwable]) => Execution[Unit]): Execution[B] =
+    def bracketCase[A, B](
+        acquire: Execution[A]
+    )(use: A => Execution[B])(release: (A, ExitCase[Throwable]) => Execution[Unit]): Execution[B] =
       acquire.flatMap { a =>
         attempt(use(a)).flatMap {
           case Right(b) =>
@@ -147,23 +151,27 @@ object HellCats {
 
     def raiseError[A](t: Throwable): Execution[A] = Execution.failed(t)
 
-    override def recoverWith[A](ea: Execution[A])(fn: PartialFunction[Throwable, Execution[A]]): Execution[A] =
+    override def recoverWith[A](ea: Execution[A])(
+        fn: PartialFunction[Throwable, Execution[A]]
+    ): Execution[A] =
       ea.recoverWith(fn)
 
     def suspend[A](ea: => Execution[A]): Execution[A] =
       delay(ea).flatten
   }
 
-  class ExecutionEffect(c: Config, m: Mode)(implicit cec: ConcurrentExecutionContext) extends AsyncExecution with Effect[Execution] {
-    def runAsync[A](ea: Execution[A])(cb: Either[Throwable, A] => IO[Unit]): SyncIO[Unit] = {
+  class ExecutionEffect(c: Config, m: Mode)(implicit cec: ConcurrentExecutionContext)
+      extends AsyncExecution
+      with Effect[Execution] {
+    def runAsync[A](ea: Execution[A])(cb: Either[Throwable, A] => IO[Unit]): SyncIO[Unit] =
       SyncIO {
-        val funit = ea.run(c, m)
-          .map { a => Right(a) }
+        val funit = ea
+          .run(c, m)
+          .map(a => Right(a))
           .recover { case t => Left(t) }
-          .map { e => cb(e).unsafeRunSync }
+          .map(e => cb(e).unsafeRunSync)
         // we can discard this future, since we have started the work
         ()
       }
-    }
   }
 }

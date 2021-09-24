@@ -2,22 +2,22 @@ package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
-import com.stripe.dagon.{ Dag, Rule }
+import com.stripe.dagon.{Dag, Rule}
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.source.{ TypedText, NullSink }
+import com.twitter.scalding.source.{NullSink, TypedText}
 import org.apache.hadoop.conf.Configuration
-import com.twitter.scalding.{ Config, ExecutionContext, Local, Hdfs, FlowState, FlowStateMap, IterableSource }
+import com.twitter.scalding.{Config, ExecutionContext, FlowState, FlowStateMap, Hdfs, IterableSource, Local}
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import com.twitter.scalding.typed.memory_backend.MemoryMode
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
-import org.scalacheck.{ Arbitrary, Gen }
-import scala.util.{ Failure, Success, Try }
+import org.scalacheck.{Arbitrary, Gen}
+import scala.util.{Failure, Success, Try}
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
     val g1 = Gen.listOf(Arbitrary.arbitrary[Int]).map(TypedPipe.from(_))
-    val src = Gen.identifier.map { f => TypedPipe.from(TypedText.tsv[Int](f)) }
+    val src = Gen.identifier.map(f => TypedPipe.from(TypedText.tsv[Int](f)))
     Gen.oneOf(g1, src, Gen.const(TypedPipe.empty))
   }
 
@@ -25,33 +25,66 @@ object TypedPipeGen {
     val commonFreq = 10
     val next1: Gen[TypedPipe[Int] => TypedPipe[Int]] =
       Gen.frequency(
-        (1, tpGen(srcGen).map { p: TypedPipe[Int] =>
-          { x: TypedPipe[Int] => x.cross(p).keys }
-        }),
-        (2, tpGen(srcGen).map { p: TypedPipe[Int] =>
-          { x: TypedPipe[Int] => x.cross(ValuePipe(2)).values }
-        }),
+        (
+          1,
+          tpGen(srcGen).map {
+            p: TypedPipe[Int] =>
+              x: TypedPipe[Int] => x.cross(p).keys
+          }
+        ),
+        (
+          2,
+          tpGen(srcGen).map {
+            p: TypedPipe[Int] =>
+              x: TypedPipe[Int] => x.cross(ValuePipe(2)).values
+          }
+        ),
         //Gen.const({ t: TypedPipe[Int] => t.debug }), debug spews a lot to the terminal
-        (commonFreq, Arbitrary.arbitrary[Int => Boolean].map { fn =>
-          { t: TypedPipe[Int] => t.filter(fn) }
-        }),
-        (commonFreq, Arbitrary.arbitrary[Int => Int].map { fn =>
-          { t: TypedPipe[Int] => t.map(fn) }
-        }),
-        (commonFreq, Arbitrary.arbitrary[Int => List[Int]].map { fn =>
-          { t: TypedPipe[Int] => t.flatMap(fn.andThen(_.take(4))) } // the take is to not get too big
-        }),
-        (2, Gen.const({ t: TypedPipe[Int] => t.forceToDisk })),
-        (2, Gen.const({ t: TypedPipe[Int] => t.fork })),
-        (5, tpGen(srcGen).map { p: TypedPipe[Int] =>
-          { x: TypedPipe[Int] => x ++ p }
-        }),
-        (1, Gen.identifier.map { id =>
-          { t: TypedPipe[Int] => t.addTrap(TypedText.tsv[Int](id)) }
-        }),
-        (1, Gen.identifier.map { id =>
-          { t: TypedPipe[Int] => t.withDescription(id) }
-        }))
+        (
+          commonFreq,
+          Arbitrary.arbitrary[Int => Boolean].map {
+            fn =>
+              t: TypedPipe[Int] => t.filter(fn)
+          }
+        ),
+        (
+          commonFreq,
+          Arbitrary.arbitrary[Int => Int].map {
+            fn =>
+              t: TypedPipe[Int] => t.map(fn)
+          }
+        ),
+        (
+          commonFreq,
+          Arbitrary.arbitrary[Int => List[Int]].map {
+            fn =>
+              t: TypedPipe[Int] => t.flatMap(fn.andThen(_.take(4))) // the take is to not get too big
+          }
+        ),
+        (2, Gen.const { t: TypedPipe[Int] => t.forceToDisk }),
+        (2, Gen.const { t: TypedPipe[Int] => t.fork }),
+        (
+          5,
+          tpGen(srcGen).map {
+            p: TypedPipe[Int] =>
+              x: TypedPipe[Int] => x ++ p
+          }
+        ),
+        (
+          1,
+          Gen.identifier.map {
+            id =>
+              t: TypedPipe[Int] => t.addTrap(TypedText.tsv[Int](id))
+          }
+        ),
+        (
+          1,
+          Gen.identifier.map {
+            id =>
+              t: TypedPipe[Int] => t.withDescription(id)
+          }
+        )
+      )
 
     val one = for {
       n <- next1
@@ -60,8 +93,9 @@ object TypedPipeGen {
 
     val next2: Gen[TypedPipe[(Int, Int)] => TypedPipe[Int]] =
       Gen.oneOf(
-        Gen.const({ p: TypedPipe[(Int, Int)] => p.values }),
-        Gen.const({ p: TypedPipe[(Int, Int)] => p.keys }))
+        Gen.const { p: TypedPipe[(Int, Int)] => p.values },
+        Gen.const { p: TypedPipe[(Int, Int)] => p.keys }
+      )
 
     val two = for {
       n <- next2
@@ -82,7 +116,7 @@ object TypedPipeGen {
         single <- tpGen(srcGen)
         fn <- Arbitrary.arbitrary[Int => List[(Int, Int)]]
       } yield single.flatMap(fn.andThen(_.take(4))) // take to not get too big
-      )
+    )
 
     val two = Gen.oneOf(
       for {
@@ -105,13 +139,13 @@ object TypedPipeGen {
       } yield pair.sumByLocalKeys,
       for {
         pair <- keyRec
-      } yield pair.group.mapGroup { (k, its) => its }.toTypedPipe,
+      } yield pair.group.mapGroup((k, its) => its).toTypedPipe,
       for {
         pair <- keyRec
-      } yield pair.group.sorted.mapGroup { (k, its) => its }.toTypedPipe,
+      } yield pair.group.sorted.mapGroup((k, its) => its).toTypedPipe,
       for {
         pair <- keyRec
-      } yield pair.group.sorted.withReducers(2).mapGroup { (k, its) => its }.toTypedPipe,
+      } yield pair.group.sorted.withReducers(2).mapGroup((k, its) => its).toTypedPipe,
       for {
         p1 <- keyRec
         p2 <- keyRec
@@ -123,7 +157,8 @@ object TypedPipeGen {
       for {
         p1 <- keyRec
         p2 <- keyRec
-      } yield p1.join(p2).mapValues { case (a, b) => a + 31 * b }.toTypedPipe)
+      } yield p1.join(p2).mapValues { case (a, b) => a + 31 * b }.toTypedPipe
+    )
 
     // bias to consuming Int, since the we can stack overflow with the (Int, Int)
     // cases
@@ -134,17 +169,16 @@ object TypedPipeGen {
     Gen.lzy(Gen.frequency((1, srcGen), (1, mapped(srcGen))))
 
   /**
-   * This generates a TypedPipe that can't necessarily
-   * be run because it has fake sources
+   * This generates a TypedPipe that can't necessarily be run because it has fake sources
    */
   val genWithFakeSources: Gen[TypedPipe[Int]] = tpGen(srcGen)
 
   /**
-   * This can always be run because all the sources are
-   * Iterable sources
+   * This can always be run because all the sources are Iterable sources
    */
   val genWithIterableSources: Gen[TypedPipe[Int]] =
-    Gen.choose(0, 16) // don't make giant lists which take too long to evaluate
+    Gen
+      .choose(0, 16) // don't make giant lists which take too long to evaluate
       .flatMap { sz =>
         tpGen(Gen.listOfN(sz, Arbitrary.arbitrary[Int]).map(TypedPipe.from(_)))
       }
@@ -177,7 +211,8 @@ object TypedPipeGen {
     EmptyIterableIsEmpty,
     HashToShuffleCoGroup,
     ForceToDiskBeforeHashJoin,
-    MapValuesInReducers)
+    MapValuesInReducers
+  )
 
   def genRuleFrom(rs: List[Rule[TypedPipe]]): Gen[Rule[TypedPipe]] =
     for {
@@ -216,8 +251,7 @@ class ThrowingOptimizer extends OptimizationPhases {
 }
 
 /**
- * Just convert everything to a constant
- *  so we can check that the optimization was applied
+ * Just convert everything to a constant so we can check that the optimization was applied
  */
 class ConstantOptimizer extends OptimizationPhases {
   def phases = List(new Rule[TypedPipe] {
@@ -243,9 +277,10 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("optimization rules are reproducible") {
-    import TypedPipeGen.{ genWithFakeSources, genRule }
+    import TypedPipeGen.{genWithFakeSources, genRule}
 
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithFakeSources, genRule) { (t, rule) =>
       val optimized = Dag.applyRule(t, toLiteral, rule)
       val optimized2 = Dag.applyRule(t, toLiteral, rule)
@@ -256,7 +291,8 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   test("standard rules are reproducible") {
     import TypedPipeGen.genWithFakeSources
 
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithFakeSources) { t =>
       val (dag1, id1) = Dag(t, toLiteral)
       val opt1 = dag1.applySeq(OptimizationRules.standardMapReduceRules)
@@ -274,9 +310,14 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
 
     // We don't want any further optimization on this job
     val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
-    assert(TypedPipeDiff.diff(t, optimized)
-      .toIterableExecution
-      .waitFor(conf, Local(true)).get.isEmpty)
+    assert(
+      TypedPipeDiff
+        .diff(t, optimized)
+        .toIterableExecution
+        .waitFor(conf, Local(true))
+        .get
+        .isEmpty
+    )
   }
 
   def optimizationLawMemory[T: Ordering](t: TypedPipe[T], rule: Rule[TypedPipe]) = {
@@ -284,9 +325,14 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
 
     // We don't want any further optimization on this job
     val conf = Config.empty.setOptimizationPhases(classOf[EmptyOptimizationPhases])
-    assert(TypedPipeDiff.diff(t, optimized)
-      .toIterableExecution
-      .waitFor(conf, MemoryMode.empty).get.isEmpty)
+    assert(
+      TypedPipeDiff
+        .diff(t, optimized)
+        .toIterableExecution
+        .waitFor(conf, MemoryMode.empty)
+        .get
+        .isEmpty
+    )
   }
 
   def optimizationReducesSteps[T](init: TypedPipe[T], rule: Rule[TypedPipe]) = {
@@ -296,33 +342,38 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("all optimization rules don't change results") {
-    import TypedPipeGen.{ genWithIterableSources, genRule }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 50)
+    import TypedPipeGen.{genWithIterableSources, genRule}
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 50)
     forAll(genWithIterableSources, genRule)(optimizationLaw[Int] _)
   }
 
   test("dediamonding never changes results") {
     import TypedPipeGen.genWithIterableSources
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 50)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 50)
     forAll(genWithIterableSources)(optimizationLawMemory[Int](_, OptimizationRules.DeDiamondMappers))
   }
 
   test("some past failures of the optimizationLaw") {
     import TypedPipe._
 
-    val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar")).addTrap(TypedText.tsv[Int]("foo"))
+    val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar"))
+      .addTrap(TypedText.tsv[Int]("foo"))
     optimizationLaw(arg01, Rule.empty)
   }
 
   test("all optimization rules do not increase steps") {
-    import TypedPipeGen.{ allRules, genWithIterableSources, genRuleFrom }
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 200)
+    import TypedPipeGen.{allRules, genWithIterableSources, genRuleFrom}
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 200)
 
     val possiblyIncreasesSteps: Set[Rule[TypedPipe]] =
-      Set(OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
+      Set(
+        OptimizationRules.AddExplicitForks, // explicit forks can cause cascading to add steps instead of recomputing values
         OptimizationRules.ForceToDiskBeforeHashJoin, // adding a forceToDisk can increase the number of steps
         OptimizationRules.HashToShuffleCoGroup // obviously changing a hashjoin to a cogroup can increase steps
-        )
+      )
 
     val gen = genRuleFrom(allRules.filterNot(possiblyIncreasesSteps))
 
@@ -336,7 +387,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       implicit val mode = Hdfs(true, conf)
       implicit val fd = new FlowDef
       Try(CascadingBackend.toPipe(t, new Fields("value"))) match {
-        case Failure(ex) => assert(ex.getMessage == "booom")
+        case Failure(ex)  => assert(ex.getMessage == "booom")
         case Success(res) => fail(s"expected failure, got $res")
       }
     }
@@ -346,7 +397,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
 
       val config = Config.empty.setOptimizationPhases(classOf[ThrowingOptimizer])
       ex.waitFor(config, Local(true)) match {
-        case Failure(ex) => assert(ex.getMessage == "booom")
+        case Failure(ex)  => assert(ex.getMessage == "booom")
         case Success(res) => fail(s"expected failure, got $res")
       }
     }
@@ -380,7 +431,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
 
       val config = Config.empty.setOptimizationPhases(classOf[ConstantOptimizer])
       ex.waitFor(config, Local(true)) match {
-        case Failure(ex) => fail(s"$ex")
+        case Failure(ex)  => fail(s"$ex")
         case Success(res) => assert(res.isEmpty)
       }
     }
@@ -392,51 +443,51 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     invert(TypedPipe.from(List(1, 2, 3)))
     invert(TypedPipe.from(List(1, 2, 3)).map(_ * 2))
     invert {
-      TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey.toTypedPipe
+      TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey.toTypedPipe
     }
 
     invert {
-      val p = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey
+      val p = TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey
 
-      p.mapGroup { (k, its) => Iterator.single(its.sum * k) }
+      p.mapGroup((k, its) => Iterator.single(its.sum * k))
     }
 
     invert {
-      val p = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey
+      val p = TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey
       p.cross(TypedPipe.from(List("a", "b", "c")).sum)
     }
 
     invert {
-      val p = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey
+      val p = TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey
       p.cross(TypedPipe.from(List("a", "b", "c")))
     }
 
     invert {
-      val p = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey
+      val p = TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey
       p.forceToDisk
     }
 
     invert {
-      val p = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }.sumByKey
+      val p = TypedPipe.from(List(1, 2, 3)).map(i => (i, i)).sumByKey
       p.fork
     }
 
     invert {
-      val p1 = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }
+      val p1 = TypedPipe.from(List(1, 2, 3)).map(i => (i, i))
       val p2 = TypedPipe.from(TypedText.tsv[(Int, String)]("foo"))
 
       p1.join(p2).toTypedPipe
     }
 
     invert {
-      val p1 = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }
+      val p1 = TypedPipe.from(List(1, 2, 3)).map(i => (i, i))
       val p2 = TypedPipe.from(TypedText.tsv[(Int, String)]("foo"))
 
       p1.hashJoin(p2)
     }
 
     invert {
-      val p1 = TypedPipe.from(List(1, 2, 3)).map { i => (i, i) }
+      val p1 = TypedPipe.from(List(1, 2, 3)).map(i => (i, i))
       val p2 = TypedPipe.from(TypedText.tsv[(Int, String)]("foo"))
 
       p1.join(p2).filterKeys(_ % 2 == 0)
@@ -450,9 +501,8 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       val filterFn = { i: Int => i % 2 == 0 }
       val fn1 = { i: Int => (0 to i) }
 
-      def eqCheck[T](t: => T) = {
+      def eqCheck[T](t: => T) =
         assert(t == t)
-      }
 
       eqCheck(tp.map(fn0))
       eqCheck(tp.filter(filterFn))
@@ -503,10 +553,12 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     assert((end - start) / (1000L * 1000L) < millis)
   }
 
-  test("Dagon relies on fast hashCodes and fast equality. Test some example ones to make sure they are not exponential") {
+  test(
+    "Dagon relies on fast hashCodes and fast equality. Test some example ones to make sure they are not exponential"
+  ) {
 
     def testFib(fn: (TypedPipe[Int], TypedPipe[Int]) => TypedPipe[Int]) =
-      isFasterThan(1000){
+      isFasterThan(1000) {
         fib(TypedPipe.from(List(0)), TypedPipe.from(List(1, 2)), 45)(fn).hashCode
       }
 
@@ -522,8 +574,10 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     // without linear time equality, this fails when fib count is 35, at 50
     // it would take a huge amount of time
     isFasterThan(1000) {
-      assert(fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _) ==
-        fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _))
+      assert(
+        fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _) ==
+          fib(TypedPipe.from(List(0)), TypedPipe.from(List(1)), 50)(_ ++ _)
+      )
     }
   }
 
@@ -552,31 +606,52 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
     def kv(s: String) =
       TypedPipe.from(TypedText.tsv[(Int, Int)](s))
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").sumByKey.toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").join(kv("b")).toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").sumByKey.toTypedPipe.join(kv("b")).toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").join(kv("b").sumByKey.toTypedPipe).toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").join(kv("b").sumByKey.toTypedPipe.mapValues(_ * 2)).toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").join(kv("b").sumByKey.toTypedPipe.flatMapValues(0 to _)).toTypedPipe.group.max
     }
 
-    optimizedSteps(OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps), 1) {
+    optimizedSteps(
+      OptimizationRules.standardMapReduceRules ::: List(OptimizationRules.ComposeReduceSteps),
+      1
+    ) {
       kv("a").join(kv("b").sumByKey.toTypedPipe.filterKeys(_ > 2)).toTypedPipe.group.max
     }
   }
@@ -633,17 +708,21 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("merging pipes does not make them unplannable") {
-    val pipe1 = (TypedPipe.from(0 to 1000).map { x => (x, x) } ++
-      (TypedPipe.from(0 to 2000).groupBy(_ % 17).sum.toTypedPipe))
+    val pipe1 = TypedPipe.from(0 to 1000).map { x =>
+      (x, x)
+    } ++
+      (TypedPipe.from(0 to 2000).groupBy(_ % 17).sum.toTypedPipe)
 
-    val pipe2 = (TypedPipe.from(0 to 1000) ++
-      TypedPipe.from(0 to 2000).filter(_ % 17 == 0))
+    val pipe2 = TypedPipe.from(0 to 1000) ++
+      TypedPipe.from(0 to 2000).filter(_ % 17 == 0)
 
-    val pipe3 = (TypedPipe.from(TypedText.tsv[Int]("src1")).map { x => (x, x) } ++
-      (TypedPipe.from(TypedText.tsv[Int]("src2")).groupBy(_ % 17).sum.toTypedPipe))
+    val pipe3 = TypedPipe.from(TypedText.tsv[Int]("src1")).map { x =>
+      (x, x)
+    } ++
+      (TypedPipe.from(TypedText.tsv[Int]("src2")).groupBy(_ % 17).sum.toTypedPipe)
 
-    val pipe4 = (TypedPipe.from(TypedText.tsv[Int]("src1")) ++
-      TypedPipe.from(TypedText.tsv[Int]("src2")).filter(_ % 17 == 0))
+    val pipe4 = TypedPipe.from(TypedText.tsv[Int]("src1")) ++
+      TypedPipe.from(TypedText.tsv[Int]("src2")).filter(_ % 17 == 0)
 
     optimizedSteps(OptimizationRules.standardMapReduceRules, 2)(pipe1)
     optimizedSteps(OptimizationRules.standardMapReduceRules, 1)(pipe2)
@@ -692,13 +771,13 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
       // we need to use a flatMap to make sure that none of the optimizations are applied
       val pipe: TypedPipe[(Int, Int)] = TypedPipe
         .from(0 to 1000)
-        .flatMap { k => (k % 11, k % 13) :: Nil }
+        .flatMap(k => (k % 11, k % 13) :: Nil)
         .sumByKey
         .toTypedPipe
       // Do all kinds of different map only operations, but see them merged down to one flatMap
       val diamond = pipe.map(identity) ++
         pipe.mapValues(_ ^ 11) ++
-        pipe.flatMapValues { i => (0 until (i % 7)) } ++
+        pipe.flatMapValues(i => (0 until (i % 7))) ++
         pipe.flatMap { case (k, v) => (k, v) :: (v, k) :: Nil } ++
         pipe.filter { case (k, v) => k > v } ++
         pipe.filterKeys(_ % 3 == 0)

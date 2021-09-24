@@ -12,13 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 /**
- * Represents anything that starts as a TypedPipe of Key Value, where
- * the value type has been erased. Acts as proof that the K in the tuple
- * has an Ordering
+ * Represents anything that starts as a TypedPipe of Key Value, where the value type has been erased. Acts as
+ * proof that the K in the tuple has an Ordering
  */
 trait KeyedPipe[K] {
   def keyOrdering: Ordering[K]

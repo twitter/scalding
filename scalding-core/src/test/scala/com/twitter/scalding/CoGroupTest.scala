@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import org.scalatest.{ WordSpec, Matchers }
+import org.scalatest.{Matchers, WordSpec}
 
 class StarJoinJob(args: Args) extends Job(args) {
   val in0 = Tsv("input0").read.mapTo((0, 1) -> ('x0, 'a)) { input: (Int, Int) => input }
@@ -23,11 +23,12 @@ class StarJoinJob(args: Args) extends Job(args) {
   val in2 = Tsv("input2").read.mapTo((0, 1) -> ('x2, 'c)) { input: (Int, Int) => input }
   val in3 = Tsv("input3").read.mapTo((0, 1) -> ('x3, 'd)) { input: (Int, Int) => input }
 
-  in0.coGroupBy('x0) {
-    _.coGroup('x1, in1, OuterJoinMode)
-      .coGroup('x2, in2, OuterJoinMode)
-      .coGroup('x3, in3, OuterJoinMode)
-  }
+  in0
+    .coGroupBy('x0) {
+      _.coGroup('x1, in1, OuterJoinMode)
+        .coGroup('x2, in2, OuterJoinMode)
+        .coGroup('x3, in3, OuterJoinMode)
+    }
     .project('x0, 'a, 'b, 'c, 'd)
     .write(Tsv("output"))
 }

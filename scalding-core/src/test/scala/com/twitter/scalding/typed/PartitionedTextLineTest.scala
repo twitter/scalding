@@ -16,9 +16,9 @@ package com.twitter.scalding.typed
 
 import java.io.File
 
-import scala.io.{ Source => ScalaSource }
+import scala.io.{Source => ScalaSource}
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import com.twitter.scalding._
 
@@ -65,7 +65,7 @@ class PartitionedTextLineTest extends WordSpec with Matchers {
       val directory = new File(testMode.getWritePathFor(singlePartition))
       println(directory)
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+      directory.listFiles().map { _.getName() }.toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
@@ -93,7 +93,11 @@ class PartitionedTextLineTest extends WordSpec with Matchers {
       val directory = new File(testMode.getWritePathFor(multiplePartition))
       println(directory)
 
-      directory.listFiles.flatMap(d => d.listFiles.map(d.getName + "/" + _.getName)).toSet shouldBe Set("A/X", "A/Y", "B/Z")
+      directory.listFiles.flatMap(d => d.listFiles.map(d.getName + "/" + _.getName)).toSet shouldBe Set(
+        "A/X",
+        "A/Y",
+        "B/Z"
+      )
 
       val axSource = ScalaSource.fromFile(new File(directory, "A/X/part-00000-00000"))
       val aySource = ScalaSource.fromFile(new File(directory, "A/Y/part-00000-00001"))

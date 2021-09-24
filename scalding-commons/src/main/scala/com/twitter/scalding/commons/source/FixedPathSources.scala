@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.commons.source
 
@@ -21,11 +21,13 @@ import com.twitter.scalding._
 import org.apache.thrift.TBase
 
 abstract class FixedPathLzoThrift[T <: TBase[_, _]: Manifest](path: String*)
-  extends FixedPathSource(path: _*) with LzoThrift[T] {
+    extends FixedPathSource(path: _*)
+    with LzoThrift[T] {
   def column = manifest[T].runtimeClass
 }
 
 abstract class FixedPathLzoProtobuf[T <: Message: Manifest](path: String)
-  extends FixedPathSource(path) with LzoProtobuf[T] {
+    extends FixedPathSource(path)
+    with LzoProtobuf[T] {
   def column = manifest[T].runtimeClass
 }

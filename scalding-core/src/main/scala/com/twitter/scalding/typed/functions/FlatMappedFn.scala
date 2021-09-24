@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed.functions
 
 import java.io.Serializable
@@ -29,12 +29,13 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with Seriali
     case Single(FlatMapping.Identity(ev)) =>
       type F[T] = FlatMapping[Z, T]
       Single(ev.subst[F](fn))
-    case notId => fn match {
-      case FlatMapping.Identity(ev) =>
-        type F[T] = FlatMappedFn[T, B]
-        ev.reverse.subst[F](this)
-      case notIdFn => Series(notIdFn, notId) // only make a Series without either side being identity
-    }
+    case notId =>
+      fn match {
+        case FlatMapping.Identity(ev) =>
+          type F[T] = FlatMappedFn[T, B]
+          ev.reverse.subst[F](this)
+        case notIdFn => Series(notIdFn, notId) // only make a Series without either side being identity
+      }
   }
 
   final def combine[C](next: FlatMappedFn[B, C]): FlatMappedFn[A, C] = {
@@ -71,7 +72,7 @@ sealed trait FlatMappedFn[-A, +B] extends (A => TraversableOnce[B]) with Seriali
         val filter: A1 => TraversableOnce[A1] = FlatMapFunctions.FromFilter(f)
         type F[T] = A1 => TraversableOnce[T]
         ev.subst[F](filter)
-      case Single(Map(f)) => FlatMapFunctions.FromMap(f)
+      case Single(Map(f))   => FlatMapFunctions.FromMap(f)
       case Single(FlatM(f)) => f
       case Series(Identity(ev), rest) =>
         type F[T] = T => TraversableOnce[B1]
@@ -99,18 +100,18 @@ object FlatMappedFn extends Serializable {
 
   def asId[A, B](f: FlatMappedFn[A, B]): Option[EqTypes[_ >: A, _ <: B]] = f match {
     case Single(FlatMapping.Identity(ev)) => Some(ev)
-    case _ => None
+    case _                                => None
   }
 
   def asFilter[A, B](f: FlatMappedFn[A, B]): Option[(A => Boolean, EqTypes[(_ >: A), (_ <: B)])] = f match {
-    case Single(filter@FlatMapping.Filter(_, _)) => Some((filter.fn, filter.ev))
-    case _ => None
+    case Single(filter @ FlatMapping.Filter(_, _)) => Some((filter.fn, filter.ev))
+    case _                                         => None
   }
 
   def apply[A, B](fn: A => TraversableOnce[B]): FlatMappedFn[A, B] =
     fn match {
       case fmf: FlatMappedFn[A, B] => fmf
-      case rawfn => Single(FlatMapping.FlatM(rawfn))
+      case rawfn                   => Single(FlatMapping.FlatM(rawfn))
     }
 
   def identity[T]: FlatMappedFn[T, T] = Single(FlatMapping.Identity[T, T](EqTypes.reflexive[T]))
@@ -122,5 +123,6 @@ object FlatMappedFn extends Serializable {
     Single(FlatMapping.Map(fn))
 
   final case class Single[A, B](fn: FlatMapping[A, B]) extends FlatMappedFn[A, B]
-  final case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C]) extends FlatMappedFn[A, C]
+  final case class Series[A, B, C](first: FlatMapping[A, B], next: FlatMappedFn[B, C])
+      extends FlatMappedFn[A, C]
 }

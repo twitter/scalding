@@ -1,19 +1,17 @@
 package com.twitter.scalding.typed.memory_backend
 
 import scala.collection.mutable.ArrayBuffer
-import com.stripe.dagon.{ Memoize, FunctionK }
+import com.stripe.dagon.{FunctionK, Memoize}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Config
 
 object MemoryPlanner {
+
   /**
-   * This builds an new memoizing planner
-   * that reads from the given MemoryMode.
+   * This builds an new memoizing planner that reads from the given MemoryMode.
    *
-   * Note, this assumes all forks are made explicit
-   * in the graph, so it is up to any caller
-   * to make sure that optimization rule has first
-   * been applied
+   * Note, this assumes all forks are made explicit in the graph, so it is up to any caller to make sure that
+   * optimization rule has first been applied
    */
   def planner(conf: Config, srcs: Resolver[TypedSource, MemorySource]): FunctionK[TypedPipe, Op] =
     Memoize.functionK(new Memoize.RecursiveK[TypedPipe, Op] {
@@ -42,7 +40,10 @@ object MemoryPlanner {
         case (fk @ FilterKeys(_, _), rec) =>
           def go[K, V](node: FilterKeys[K, V]): Op[(K, V)] = {
             val FilterKeys(pipe, fn) = node
-            rec(pipe).concatMap { case (k, v) => if (fn(k)) { (k, v) :: Nil } else Nil }
+            rec(pipe).concatMap { case (k, v) =>
+              if (fn(k)) { (k, v) :: Nil }
+              else Nil
+            }
           }
           go(fk)
 
@@ -89,7 +90,7 @@ object MemoryPlanner {
 
         case (SourcePipe(src), _) =>
           val optsrc = srcs(src)
-          Op.Source({ cec => MemorySource.readOption(optsrc, src.toString)(cec) })
+          Op.Source { cec => MemorySource.readOption(optsrc, src.toString)(cec) }
 
         case (slk @ SumByLocalKeys(_, _), rec) =>
           def sum[K, V](sblk: SumByLocalKeys[K, V]) = {
@@ -101,12 +102,12 @@ object MemoryPlanner {
               while (iter.hasNext) {
                 val (k, v) = iter.next
                 map(k) = map.get(k) match {
-                  case None => v
+                  case None     => v
                   case Some(v1) => sg.plus(v1, v)
                 }
               }
               val res = new ArrayBuffer[(K, V)](map.size)
-              map.foreach { res += _ }
+              map.foreach(res += _)
               res
             }
           }
@@ -131,23 +132,25 @@ object MemoryPlanner {
           def go[K, V1, V2, R](hcg: HashCoGroup[K, V1, V2, R]) = {
             val leftOp = rec(hcg.left)
             val rightOp = rec(ReduceStepPipe(HashJoinable.toReduceStep(hcg.right)))
-            Op.Join[(K, V1), (K, V2), (K, R)](leftOp, rightOp, { (v1s, v2s) =>
-              val kv2 = v2s.groupBy(_._1)
-              val result = new ArrayBuffer[(K, R)]()
-              v1s.foreach {
-                case (k, v1) =>
+            Op.Join[(K, V1), (K, V2), (K, R)](
+              leftOp,
+              rightOp,
+              { (v1s, v2s) =>
+                val kv2 = v2s.groupBy(_._1)
+                val result = new ArrayBuffer[(K, R)]()
+                v1s.foreach { case (k, v1) =>
                   val v2 = kv2.getOrElse(k, Nil).map(_._2)
                   result ++= hcg.joiner(k, v1, v2).map((k, _))
+                }
+                result
               }
-              result
-            })
+            )
           }
           go(hcg)
 
         case (CoGroupedPipe(cg), rec) =>
-          def go[K, V](cg: CoGrouped[K, V]) = {
+          def go[K, V](cg: CoGrouped[K, V]) =
             Op.BulkJoin(cg.inputs.map(rec(_)), cg.joinFunction)
-          }
           go(cg)
 
         case (ReduceStepPipe(ir @ IdentityReduce(_, _, _, descriptions, _)), rec) =>
@@ -167,7 +170,7 @@ object MemoryPlanner {
         case (ReduceStepPipe(IdentityValueSortedReduce(_, pipe, ord, _, _, _)), rec) =>
           def go[K, V](p: TypedPipe[(K, V)], ord: Ordering[V]) = {
             val op = rec(p)
-            Op.Reduce[K, V, V](op, { (k, vs) => vs }, Some(ord))
+            Op.Reduce[K, V, V](op, (k, vs) => vs, Some(ord))
           }
           go(pipe, ord)
         case (ReduceStepPipe(ValueSortedReduce(_, pipe, ord, fn, _, _)), rec) =>
@@ -178,4 +181,3 @@ object MemoryPlanner {
     })
 
 }
-

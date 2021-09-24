@@ -1,8 +1,8 @@
 package com.twitter.scalding.parquet.tuple.macros
 
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{ Matchers, WordSpec }
-import org.apache.parquet.io.api.{ Binary, RecordConsumer }
+import org.scalatest.{Matchers, WordSpec}
+import org.apache.parquet.io.api.{Binary, RecordConsumer}
 import org.apache.parquet.schema.MessageTypeParser
 
 case class SampleClassA(x: Int, y: String)
@@ -221,10 +221,10 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       boolean.addBoolean(true)
 
       val float = converter.getConverter(4).asPrimitiveConverter()
-      float.addFloat(3F)
+      float.addFloat(3f)
 
       val double = converter.getConverter(5).asPrimitiveConverter()
-      double.addDouble(4D)
+      double.addDouble(4d)
 
       val string = converter.getConverter(6).asPrimitiveConverter()
       string.addBinary(Binary.fromString("foo"))
@@ -232,7 +232,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       val byte = converter.getConverter(7).asPrimitiveConverter()
       byte.addInt(1)
       converter.end()
-      converter.currentValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
+      converter.currentValue shouldEqual SampleClassE(0, 1L, 2, d = true, 3f, 4d, "foo", 1)
     }
 
     "Generate converters for case class with nested class" in {
@@ -276,9 +276,9 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       b.end()
 
       val c = converter.getConverter(2).asPrimitiveConverter()
-      c.addDouble(4D)
+      c.addDouble(4d)
       converter.end()
-      converter.currentValue shouldEqual SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+      converter.currentValue shouldEqual SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4d)
     }
 
     "Generate converters for case class with list fields" in {
@@ -338,8 +338,10 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       keyValue.end()
       converter.end()
 
-      converter.currentValue shouldEqual SampleClassK("foo",
-        Map(SampleClassA(2, "bar") -> SampleClassB(SampleClassA(2, "bar"), "b1")))
+      converter.currentValue shouldEqual SampleClassK(
+        "foo",
+        Map(SampleClassA(2, "bar") -> SampleClassB(SampleClassA(2, "bar"), "b1"))
+      )
     }
   }
 
@@ -347,7 +349,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     "Generate write support for class with all the primitive type fields" in {
 
       val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassE]
-      val e = SampleClassE(0, 1L, 2, d = true, 3F, 4D, "foo", 1)
+      val e = SampleClassE(0, 1L, 2, d = true, 3f, 4d, "foo", 1)
       val schema = Macros.caseClassParquetSchema[SampleClassE]
       val rc = new StringBuilderRecordConsumer
       writeSupport.writeRecord(e, rc, MessageTypeParser.parseMessageType(schema))
@@ -391,7 +393,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassF]
       val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassF]
 
-      val f = SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4D)
+      val f = SampleClassF(0, Some(SampleClassB(SampleClassA(2, "foo"), "b1")), 4d)
 
       val schema = MessageTypeParser.parseMessageType(schemaString)
       val rc = new StringBuilderRecordConsumer
@@ -424,7 +426,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |end message""".stripMargin
 
       //test write tuple with optional field = None
-      val f2 = SampleClassF(0, None, 4D)
+      val f2 = SampleClassF(0, None, 4d)
       val rc2 = new StringBuilderRecordConsumer
       writeSupport.writeRecord(f2, rc2, schema)
       rc2.writeScenario shouldEqual """start message

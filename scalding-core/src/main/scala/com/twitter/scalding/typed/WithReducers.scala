@@ -12,31 +12,31 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 import java.io.Serializable
 
 /**
- * used for types that may know how many reducers they need
- * e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
+ * used for types that may know how many reducers they need e.g. CoGrouped, Grouped, SortedGrouped,
+ * UnsortedGrouped
  */
 trait HasReducers {
   def reducers: Option[Int]
 }
 
 /**
- * used for types that must know how many reducers they need
- * e.g. Sketched
+ * used for types that must know how many reducers they need e.g. Sketched
  */
 trait MustHaveReducers extends HasReducers {
   def reducers: Some[Int]
 }
 
 /**
- * used for objects that may _set_ how many reducers they need
- * e.g. CoGrouped, Grouped, SortedGrouped, UnsortedGrouped
+ * used for objects that may _set_ how many reducers they need e.g. CoGrouped, Grouped, SortedGrouped,
+ * UnsortedGrouped
  */
 trait WithReducers[+This <: WithReducers[This]] extends HasReducers {
+
   /** never mutates this, instead returns a new item. */
   def withReducers(reds: Int): This
 }
@@ -49,7 +49,7 @@ object WithReducers extends Serializable {
 
   def maybeWithReducers[W <: WithReducers[W]](w: W, reds: Option[Int]): W =
     reds match {
-      case None => w
+      case None    => w
       case Some(r) => w.withReducers(r)
     }
 
@@ -58,9 +58,9 @@ object WithReducers extends Serializable {
    */
   def maybeCombine(optR1: Option[Int], optR2: Option[Int]): Option[Int] =
     (optR1, optR2) match {
-      case (None, other) => other
-      case (other, None) => other
-      case (Some(r1), Some(r2)) => Some(r1 max r2)
+      case (None, other)        => other
+      case (other, None)        => other
+      case (Some(r1), Some(r2)) => Some(r1.max(r2))
     }
 
 }

@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import cascading.pipe.joiner._
 
@@ -38,7 +38,7 @@ class InnerProductJob(args: Args) extends Job(args) {
     .map(('s1, 's2) -> 'score) { v: (Int, Int) =>
       v._1 * v._2
     }
-    .groupBy('x1, 'x2) { _.sum[Double]('score) }
+    .groupBy('x1, 'x2)(_.sum[Double]('score))
     .write(Tsv("output"))
 }
 
@@ -49,7 +49,9 @@ class BlockJoinPipeTest extends WordSpec with Matchers {
     val in2 = List(("0", "1", "1"), ("1", "0", "2"), ("2", "4", "5"))
     val correctOutput = Set((0, 1, 2.0), (0, 0, 1.0), (1, 1, 4.0), (2, 1, 8.0))
 
-    def runJobWithArguments(left: Int = 1, right: Int = 1, joiner: String = "i")(callback: Buffer[(Int, Int, Double)] => Unit): Unit = {
+    def runJobWithArguments(left: Int = 1, right: Int = 1, joiner: String = "i")(
+        callback: Buffer[(Int, Int, Double)] => Unit
+    ): Unit =
       JobTest(new InnerProductJob(_))
         .source(Tsv("input0"), in1)
         .source(Tsv("input1"), in2)
@@ -61,7 +63,6 @@ class BlockJoinPipeTest extends WordSpec with Matchers {
         }
         .run
         .finish()
-    }
 
     "correctly compute product with 1 left block and 1 right block" in {
       runJobWithArguments() { outBuf =>

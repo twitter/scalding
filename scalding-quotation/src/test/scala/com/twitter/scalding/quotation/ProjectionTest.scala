@@ -68,15 +68,11 @@ class ProjectionTest extends Test {
         Projections.flatten(Nil).set mustEqual Set()
       }
       "non-empty" in {
-        val list = List(
-          Projections(Set(p1)),
-          Projections(Set(p2)))
+        val list = List(Projections(Set(p1)), Projections(Set(p2)))
         Projections.flatten(list).set mustEqual Set(p1, p2)
       }
       "non-empty with merge" in {
-        val list = List(
-          Projections(Set(t1)),
-          Projections(Set(p1)))
+        val list = List(Projections(Set(t1)), Projections(Set(p1)))
         Projections.flatten(list).set mustEqual Set(t1)
       }
     }
@@ -87,9 +83,7 @@ class ProjectionTest extends Test {
         p.set mustEqual Set(p1, p2)
       }
       "with merge" in {
-        val list = List(
-          Projections(Set(p1)),
-          Projections(Set(t1)))
+        val list = List(Projections(Set(p1)), Projections(Set(t1)))
         Projections.flatten(list).set mustEqual Set(t1)
       }
     }

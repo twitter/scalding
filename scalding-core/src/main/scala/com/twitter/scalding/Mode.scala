@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.flow.FlowConnector
@@ -25,10 +25,10 @@ case class ModeException(message: String) extends RuntimeException(message)
 case class ModeLoadException(message: String, origin: ClassNotFoundException) extends RuntimeException(origin)
 
 object Mode {
+
   /**
-   * This is a Args and a Mode together. It is used purely as
-   * a work-around for the fact that Job only accepts an Args object,
-   * but needs a Mode inside.
+   * This is a Args and a Mode together. It is used purely as a work-around for the fact that Job only accepts
+   * an Args object, but needs a Mode inside.
    */
   private class ArgsWithMode(argsMap: Map[String, List[String]], val mode: Mode) extends Args(argsMap) {
     override def +(keyvals: (String, Iterable[String])): Args =
@@ -41,7 +41,7 @@ object Mode {
   /** Get a Mode if this Args was the result of a putMode */
   def getMode(args: Args): Option[Mode] = args match {
     case withMode: ArgsWithMode => Some(withMode.mode)
-    case _ => None
+    case _                      => None
   }
 
   val CascadingFlowConnectorClassKey = "cascading.flow.connector.class"
@@ -51,7 +51,8 @@ object Mode {
   val DefaultHadoopFlowProcess = "cascading.flow.hadoop.HadoopFlowProcess"
 
   val DefaultHadoop2Mr1FlowConnector = "cascading.flow.hadoop2.Hadoop2MR1FlowConnector"
-  val DefaultHadoop2Mr1FlowProcess = "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
+  val DefaultHadoop2Mr1FlowProcess =
+    "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
 
   val DefaultHadoop2TezFlowConnector = "cascading.flow.tez.Hadoop2TezFlowConnector"
   val DefaultHadoop2TezFlowProcess = "cascading.flow.tez.Hadoop2TezFlowProcess"
@@ -66,7 +67,9 @@ object Mode {
 
     if (args.boolean("local"))
       Local(strictSources)
-    else if (args.boolean("hdfs")) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
+    else if (
+      args.boolean("hdfs")
+    ) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
       Hdfs(strictSources, config)
     else if (args.boolean("hadoop1")) {
       config.set(CascadingFlowConnectorClassKey, DefaultHadoopFlowConnector)
@@ -81,10 +84,15 @@ object Mode {
       config.set(CascadingFlowProcessClassKey, DefaultHadoop2TezFlowProcess)
       Hdfs(strictSources, config)
     } else
-      throw ArgsException("[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none")
+      throw ArgsException(
+        "[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none"
+      )
   }
 
-  @deprecated("Use CascadingMode.cast(mode) or pattern match directly on known CascadingModes (e.g. Hdfs, Local)", "0.18.0")
+  @deprecated(
+    "Use CascadingMode.cast(mode) or pattern match directly on known CascadingModes (e.g. Hdfs, Local)",
+    "0.18.0"
+  )
   implicit class DeprecatedCascadingModeMethods(val mode: Mode) extends AnyVal {
     private def cmode: CascadingMode = CascadingMode.cast(mode)
 
@@ -111,4 +119,3 @@ trait Mode extends java.io.Serializable {
    */
   def newWriter(): Execution.Writer
 }
-

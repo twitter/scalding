@@ -2,7 +2,7 @@ package com.twitter.scalding.typed.memory_backend
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
-import com.twitter.scalding.{ TypedPipe, Execution, Config, Local }
+import com.twitter.scalding.{Config, Execution, Local, TypedPipe}
 import com.twitter.scalding.typed.TypedPipeGen
 
 class MemoryTest extends FunSuite with PropertyChecks {
@@ -38,7 +38,8 @@ class MemoryTest extends FunSuite with PropertyChecks {
   }
 
   test("basic word count") {
-    val x = TypedPipe.from(0 until 100)
+    val x = TypedPipe
+      .from(0 until 100)
       .groupBy(_ % 2)
       .sum
       .toIterableExecution
@@ -47,9 +48,10 @@ class MemoryTest extends FunSuite with PropertyChecks {
   }
 
   test("mapGroup works") {
-    val x = TypedPipe.from(0 until 100)
+    val x = TypedPipe
+      .from(0 until 100)
       .groupBy(_ % 2)
-      .mapGroup { (k, vs) => Iterator.single(vs.foldLeft(k)(_ + _)) }
+      .mapGroup((k, vs) => Iterator.single(vs.foldLeft(k)(_ + _)))
       .toIterableExecution
 
     mapMatch(x)
@@ -57,30 +59,32 @@ class MemoryTest extends FunSuite with PropertyChecks {
 
   test("hashJoin works") {
     val input = TypedPipe.from(0 until 100)
-    val left = input.map { k => (k, k % 2) }
-    val right = input.map { k => (k, k % 3) }
+    val left = input.map(k => (k, k % 2))
+    val right = input.map(k => (k, k % 3))
 
     mapMatch(left.hashJoin(right).toIterableExecution)
   }
 
   test("join works") {
     val input = TypedPipe.from(0 until 100)
-    val left = input.map { k => (k, k % 2) }
-    val right = input.map { k => (k, k % 3) }
+    val left = input.map(k => (k, k % 2))
+    val right = input.map(k => (k, k % 3))
 
     mapMatch(left.join(right).toIterableExecution)
   }
 
   test("scalding memory mode matches cascading local mode") {
     import TypedPipeGen.genWithIterableSources
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 50)
-    forAll(genWithIterableSources) { pipe => sortMatch(pipe.toIterableExecution) }
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 50)
+    forAll(genWithIterableSources)(pipe => sortMatch(pipe.toIterableExecution))
   }
 
   test("writing gives the same result as toIterableExecution") {
     import TypedPipeGen.genWithIterableSources
     // we can afford to test a lot more in just memory mode because it is faster than cascading
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 500)
     forAll(genWithIterableSources) { pipe =>
       val sink = new MemorySink.LocalVar[Int]
 
@@ -99,7 +103,7 @@ class MemoryTest extends FunSuite with PropertyChecks {
   test("using sources work") {
     val srctag = SourceT[Int]("some_source")
 
-    val job = TypedPipe.from(srctag).map { i => (i % 31, i) }.sumByKey.toIterableExecution
+    val job = TypedPipe.from(srctag).map(i => (i % 31, i)).sumByKey.toIterableExecution
 
     val jobRes = job.waitFor(Config.empty, MemoryMode.empty.addSourceIterable(srctag, (0 to 10000)))
 

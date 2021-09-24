@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.typed
 
@@ -23,10 +23,10 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
 object TypedSink extends java.io.Serializable {
+
   /**
-   * Build a TypedSink by declaring a concrete type for the Source
-   * Here because of the late addition of TypedSink to scalding to make it
-   * easier to port legacy code
+   * Build a TypedSink by declaring a concrete type for the Source Here because of the late addition of
+   * TypedSink to scalding to make it easier to port legacy code
    */
   def apply[T](s: Source)(implicit tset: TupleSetter[T]): TypedSink[T] =
     new TypedSink[T] {
@@ -45,8 +45,8 @@ trait TypedSink[-T] extends java.io.Serializable {
   def sinkFields: Fields = Dsl.intFields(0 until setter.arity)
 
   /**
-   * pipe is assumed to have the schema above, otherwise an error may occur
-   * The exact same pipe is returned to match the legacy Source API.
+   * pipe is assumed to have the schema above, otherwise an error may occur The exact same pipe is returned to
+   * match the legacy Source API.
    */
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe
 
@@ -63,4 +63,3 @@ trait TypedSink[-T] extends java.io.Serializable {
     }
   }
 }
-

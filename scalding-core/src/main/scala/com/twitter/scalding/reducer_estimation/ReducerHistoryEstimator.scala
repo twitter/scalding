@@ -1,6 +1,6 @@
 package com.twitter.scalding.reducer_estimation
 
-import com.twitter.scalding.estimation.{ HistoryEstimator, Task }
+import com.twitter.scalding.estimation.{HistoryEstimator, Task}
 import org.apache.hadoop.mapred.JobConf
 
 object ReducerHistoryEstimator {

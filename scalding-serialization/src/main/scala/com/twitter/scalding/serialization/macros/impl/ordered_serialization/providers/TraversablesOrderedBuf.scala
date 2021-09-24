@@ -21,8 +21,8 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
   TreeOrderedBuf
 }
 import CompileTimeLengthTypes._
-import scala.{ collection => sc }
-import scala.collection.{ immutable => sci }
+import scala.{collection => sc}
+import scala.collection.{immutable => sci}
 
 sealed trait ShouldSort
 case object DoSort extends ShouldSort
@@ -33,7 +33,9 @@ case object IsArray extends MaybeArray
 case object NotArray extends MaybeArray
 
 object TraversablesOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Iterable[Any]] =>
       TraversablesOrderedBuf(c)(buildDispatcher, tpe, NoSort, NotArray)
     case tpe if tpe.erasure =:= c.universe.typeOf[sci.Iterable[Any]] =>
@@ -86,10 +88,11 @@ object TraversablesOrderedBuf {
   }
 
   def apply(c: Context)(
-    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-    outerType: c.Type,
-    maybeSort: ShouldSort,
-    maybeArray: MaybeArray): TreeOrderedBuf[c.type] = {
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+      outerType: c.Type,
+      maybeSort: ShouldSort,
+      maybeArray: MaybeArray
+  ): TreeOrderedBuf[c.type] = {
 
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(s"fresh_$id"))
@@ -101,8 +104,10 @@ object TraversablesOrderedBuf {
     // When dealing with a map we have 2 type args, and need to generate the tuple type
     // it would correspond to if we .toList the Map.
     val innerType = if (outerType.asInstanceOf[TypeRefApi].args.size == 2) {
-      val (tpe1, tpe2) = (outerType.asInstanceOf[TypeRefApi].args.head,
-        outerType.asInstanceOf[TypeRefApi].args(1)) // linter:ignore
+      val (tpe1, tpe2) = (
+        outerType.asInstanceOf[TypeRefApi].args.head,
+        outerType.asInstanceOf[TypeRefApi].args(1)
+      ) // linter:ignore
       val containerType = typeOf[Tuple2[Any, Any]].asInstanceOf[TypeRef]
       import compat._
       TypeRef.apply(containerType.pre, containerType.sym, List(tpe1, tpe2))
@@ -193,10 +198,8 @@ object TraversablesOrderedBuf {
             $element.foreach { t =>
               val $target = t
               $currentHash =
-                _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${
-              innerBuf
-                .hash(target)
-            })
+                _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${innerBuf
+              .hash(target)})
               // go ahead and compute the length so we don't traverse twice for lists
               $len += 1
             }

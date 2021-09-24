@@ -4,7 +4,7 @@ import scala.reflect.macros.blackbox.Context
 
 trait ProjectionMacro extends TreeOps with Liftables {
   val c: Context
-  import c.universe.{ TypeName => _, _ }
+  import c.universe.{TypeName => _, _}
 
   def projections(params: List[Tree]): Tree = {
 
@@ -18,13 +18,12 @@ trait ProjectionMacro extends TreeOps with Liftables {
       TypeReference(TypeName(tpe.typeSymbol.fullName))
 
     def isFunction(t: Tree) =
-      Option(t.symbol).map {
-        _.typeSignature
-          .erasure
-          .typeSymbol
-          .fullName
-          .contains("scala.Function")
-      }.getOrElse(false)
+      Option(t.symbol)
+        .map {
+          _.typeSignature.erasure.typeSymbol.fullName
+            .contains("scala.Function")
+        }
+        .getOrElse(false)
 
     def functionBodyProjections(param: Tree, inputs: List[Tree], body: Tree): List[Tree] = {
 
@@ -37,7 +36,6 @@ trait ProjectionMacro extends TreeOps with Liftables {
             case q"$v.$m(..$params)" => unapply(v)
 
             case q"$v.$m" if t.symbol.isMethod =>
-
               if (inputSymbols.contains(v.symbol)) {
                 val p =
                   TypeReference(typeName(v))
@@ -79,7 +77,8 @@ trait ProjectionMacro extends TreeOps with Liftables {
 
     def functionInstanceProjections(func: Tree): List[Tree] = {
       val paramProjections =
-        func.symbol.typeSignature.typeArgs.dropRight(1)
+        func.symbol.typeSignature.typeArgs
+          .dropRight(1)
           .map(typeReference)
       q"""
         $func match {

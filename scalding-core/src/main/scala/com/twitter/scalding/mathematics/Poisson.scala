@@ -3,9 +3,8 @@ package com.twitter.scalding.mathematics
 import scala.util.Random
 
 /**
- * Generating Poisson-distributed random variables
- * according to Donald Knuth's algorithm as shown on Wikipedia's
- * Poisson Distribution page
+ * Generating Poisson-distributed random variables according to Donald Knuth's algorithm as shown on
+ * Wikipedia's Poisson Distribution page
  */
 
 class Poisson(fraction: Double, seed: Int) {

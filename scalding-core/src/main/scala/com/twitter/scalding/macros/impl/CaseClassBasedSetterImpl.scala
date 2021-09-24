@@ -16,20 +16,22 @@
 package com.twitter.scalding.macros.impl
 
 import scala.reflect.macros.Context
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 /**
- * Helper class for generating setters from case class to
- * other types. E.g. cascading Tuple, jdbc PreparedStatement
+ * Helper class for generating setters from case class to other types. E.g. cascading Tuple, jdbc
+ * PreparedStatement
  */
 object CaseClassBasedSetterImpl {
 
-  def apply[T](c: Context)(container: c.TermName, allowUnknownTypes: Boolean,
-    fsetter: CaseClassFieldSetter)(implicit T: c.WeakTypeTag[T]): (Int, c.Tree) = {
+  def apply[T](c: Context)(container: c.TermName, allowUnknownTypes: Boolean, fsetter: CaseClassFieldSetter)(
+      implicit T: c.WeakTypeTag[T]
+  ): (Int, c.Tree) = {
     import c.universe._
 
     sealed trait SetterBuilder {
       def columns: Int
+
       /**
        * This Tree assumes that "val $value = ..." has been set
        */
@@ -39,8 +41,8 @@ object CaseClassBasedSetterImpl {
       def columns = 1
       def setTree(value: Tree, offset: Int) = fsetter.from(c)(tpe, offset, container, value) match {
         case Success(tree) => tree
-        case Failure(e) => c.abort(c.enclosingPosition,
-          s"Case class ${T} is supported. Error on $tpe, ${e.getMessage}")
+        case Failure(e) =>
+          c.abort(c.enclosingPosition, s"Case class $T is supported. Error on $tpe, ${e.getMessage}")
       }
     }
     case object DefaultSetter extends SetterBuilder {
@@ -63,12 +65,12 @@ object CaseClassBasedSetterImpl {
     final case class CaseClassSetter(members: Vector[(Tree => Tree, SetterBuilder)]) extends SetterBuilder {
       val columns = members.map(_._2.columns).sum
       def setTree(value: Tree, offset: Int) = {
-        val setters = members.scanLeft((offset, Option.empty[Tree])) {
-          case ((off, _), (access, sb)) =>
+        val setters = members
+          .scanLeft((offset, Option.empty[Tree])) { case ((off, _), (access, sb)) =>
             val cca = newTermName(c.fresh("access"))
             val ccaT = q"$cca"
             (off + sb.columns, Some(q"val $cca = ${access(value)}; ${sb.setTree(ccaT, off)}"))
-        }
+          }
           .collect { case (_, Some(tree)) => tree }
         q"""..$setters"""
       }
@@ -93,24 +95,22 @@ object CaseClassBasedSetterImpl {
         case tpe if tpe.erasure =:= typeOf[Option[Any]] =>
           val innerType = tpe.asInstanceOf[TypeRefApi].args.head
           OptionSetter(matchField(innerType))
-        case tpe if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass) =>
-          CaseClassSetter(expandMethod(normalized(tpe)).map {
-            case (fn, tpe) =>
-              (fn, matchField(tpe))
+        case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass =>
+          CaseClassSetter(expandMethod(normalized(tpe)).map { case (fn, tpe) =>
+            (fn, matchField(tpe))
           })
         case tpe if allowUnknownTypes =>
           DefaultSetter
         case _ =>
-          c.abort(c.enclosingPosition,
-            s"Case class ${T.tpe} is not supported at type: $outerType")
+          c.abort(c.enclosingPosition, s"Case class ${T.tpe} is not supported at type: $outerType")
       }
     }
     def expandMethod(outerTpe: Type): Vector[(Tree => Tree, Type)] =
-      outerTpe
-        .declarations
+      outerTpe.declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
-          val fieldType = normalized(accessorMethod.returnType.asSeenFrom(outerTpe, outerTpe.typeSymbol.asClass))
+          val fieldType =
+            normalized(accessorMethod.returnType.asSeenFrom(outerTpe, outerTpe.typeSymbol.asClass))
 
           ({ pTree: Tree => q"""$pTree.$accessorMethod""" }, fieldType)
         }
@@ -118,7 +118,8 @@ object CaseClassBasedSetterImpl {
 
     // in TupleSetterImpl, the outer-most input val is called t, so we pass that in here:
     val sb = matchField(normalized(T.tpe))
-    if (sb.columns == 0) c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
+    if (sb.columns == 0)
+      c.abort(c.enclosingPosition, "Didn't consume any elements in the tuple, possibly empty case class?")
     (sb.columns, sb.setTree(q"t", 0))
   }
 }
