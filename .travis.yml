@@ -26,6 +26,11 @@ addons:
 
 matrix:
   include:
+#    - scala: 2.11.12
+#      env: BUILD="check code formatting"
+#      script:
+#        - ./sbt ++$TRAVIS_SCALA_VERSION clean scalafmtSbtCheck scalafmtCheckAll
+
 #BASE TESTS
     - scala: 2.11.12
       env: BUILD="base" TEST_TARGET="scalding-args scalding-date maple scalding-quotation"
