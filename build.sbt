@@ -1,9 +1,6 @@
 import ReleaseTransformations._
-import com.typesafe.sbt.SbtScalariform.scalariformSettings
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import scala.collection.JavaConverters._
-import scalariform.formatter.preferences._
 import microsites.ExtraMdFileConfig
 
 def scalaBinaryVersion(scalaVersion: String) = scalaVersion match {
@@ -43,14 +40,12 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
-val sharedSettings = scalariformSettings ++ Seq(
+val sharedSettings = Seq(
   organization := "com.twitter",
 
   scalaVersion := "2.11.12",
 
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
-
-  ScalariformKeys.preferences := formattingPreferences,
 
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
 
@@ -250,13 +245,6 @@ lazy val scaldingAssembly = Project(
   maple,
   scaldingSerialization
 )
-
-lazy val formattingPreferences = {
-  import scalariform.formatter.preferences._
-  FormattingPreferences().
-    setPreference(AlignParameters, false).
-    setPreference(PreserveSpaceBeforeArguments, true)
-}
 
 lazy val noPublishSettings = Seq(
     publish := (()),
