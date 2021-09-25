@@ -82,7 +82,7 @@ val sharedSettings = Seq(
 
   update / aggregate  := false,
 
-  Test / javaOptions ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m", "-XX:MaxPermSize=384m"),
+  Test / javaOptions ++= Seq("-Xmx2048m", "-XX:ReservedCodeCacheSize=384m"),
 
   Global / concurrentRestrictions := Seq(
     Tags.limitAll(1)
