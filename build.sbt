@@ -39,9 +39,7 @@ val thriftVersion = "0.9.3"
 val junitVersion = "4.10"
 val jlineVersion = "2.14.3"
 
-val printDependencyClasspath = taskKey[Unit](
-
-  "Prints location of the dependencies")
+val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
 val sharedSettings = Seq(
   organization := "com.twitter",
