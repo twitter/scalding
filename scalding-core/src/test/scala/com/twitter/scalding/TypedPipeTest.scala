@@ -886,7 +886,7 @@ class TypedMergeTest extends WordSpec with Matchers {
 
 class TypedShardJob(args: Args) extends Job(args) {
   (TypedPipe.from(TypedText.tsv[String]("input")) ++
-    TypedPipe.empty.map { _ => "hey" } ++
+    TypedPipe.empty.map(_ => "hey") ++
     TypedPipe.from(List("item")))
     .shard(10)
     .write(TypedText.tsv[String]("output"))

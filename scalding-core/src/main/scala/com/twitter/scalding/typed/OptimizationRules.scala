@@ -61,8 +61,7 @@ object OptimizationRules {
                 Binary(
                   f(a),
                   f(v),
-                  (a: TypedPipe[A], b: TypedPipe[B]) =>
-                    CrossValue(a, ComputedValue(b))
+                  (a: TypedPipe[A], b: TypedPipe[B]) => CrossValue(a, ComputedValue(b))
                 )
               case CrossValue(a, v) =>
                 Unary(f(a), CrossValue(_: TypedPipe[A], v))
@@ -120,8 +119,7 @@ object OptimizationRules {
 
     Unary(
       widen[(K, V1)](recurse(rs.mapped)),
-      (tp: TypedPipe[(K, V1)]) =>
-        ReduceStepPipe(ReduceStep.setInput[K, V1, V2](emptyRs, tp))
+      (tp: TypedPipe[(K, V1)]) => ReduceStepPipe(ReduceStep.setInput[K, V1, V2](emptyRs, tp))
     )
   }
 

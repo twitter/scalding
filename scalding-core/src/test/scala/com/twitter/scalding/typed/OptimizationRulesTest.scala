@@ -27,61 +27,53 @@ object TypedPipeGen {
       Gen.frequency(
         (
           1,
-          tpGen(srcGen).map {
-            p: TypedPipe[Int] =>
-              x: TypedPipe[Int] => x.cross(p).keys
+          tpGen(srcGen).map { p: TypedPipe[Int] => x: TypedPipe[Int] =>
+            x.cross(p).keys
           }
         ),
         (
           2,
-          tpGen(srcGen).map {
-            p: TypedPipe[Int] =>
-              x: TypedPipe[Int] => x.cross(ValuePipe(2)).values
+          tpGen(srcGen).map { p: TypedPipe[Int] => x: TypedPipe[Int] =>
+            x.cross(ValuePipe(2)).values
           }
         ),
         //Gen.const({ t: TypedPipe[Int] => t.debug }), debug spews a lot to the terminal
         (
           commonFreq,
-          Arbitrary.arbitrary[Int => Boolean].map {
-            fn =>
-              t: TypedPipe[Int] => t.filter(fn)
+          Arbitrary.arbitrary[Int => Boolean].map { fn => t: TypedPipe[Int] =>
+            t.filter(fn)
           }
         ),
         (
           commonFreq,
-          Arbitrary.arbitrary[Int => Int].map {
-            fn =>
-              t: TypedPipe[Int] => t.map(fn)
+          Arbitrary.arbitrary[Int => Int].map { fn => t: TypedPipe[Int] =>
+            t.map(fn)
           }
         ),
         (
           commonFreq,
-          Arbitrary.arbitrary[Int => List[Int]].map {
-            fn =>
-              t: TypedPipe[Int] => t.flatMap(fn.andThen(_.take(4))) // the take is to not get too big
+          Arbitrary.arbitrary[Int => List[Int]].map { fn => t: TypedPipe[Int] =>
+            t.flatMap(fn.andThen(_.take(4))) // the take is to not get too big
           }
         ),
         (2, Gen.const { t: TypedPipe[Int] => t.forceToDisk }),
         (2, Gen.const { t: TypedPipe[Int] => t.fork }),
         (
           5,
-          tpGen(srcGen).map {
-            p: TypedPipe[Int] =>
-              x: TypedPipe[Int] => x ++ p
+          tpGen(srcGen).map { p: TypedPipe[Int] => x: TypedPipe[Int] =>
+            x ++ p
           }
         ),
         (
           1,
-          Gen.identifier.map {
-            id =>
-              t: TypedPipe[Int] => t.addTrap(TypedText.tsv[Int](id))
+          Gen.identifier.map { id => t: TypedPipe[Int] =>
+            t.addTrap(TypedText.tsv[Int](id))
           }
         ),
         (
           1,
-          Gen.identifier.map {
-            id =>
-              t: TypedPipe[Int] => t.withDescription(id)
+          Gen.identifier.map { id => t: TypedPipe[Int] =>
+            t.withDescription(id)
           }
         )
       )

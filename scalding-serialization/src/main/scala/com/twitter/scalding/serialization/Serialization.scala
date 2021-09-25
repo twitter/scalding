@@ -126,15 +126,13 @@ object Serialization {
   def serializationIsEquivalence[T: Serialization]: Law2[T] =
     Law2(
       "equiv(a, b) == (write(a) == write(b))",
-      (t1: T, t2: T) =>
-        equiv(t1, t2) == writeEquiv(t1, t2)
+      (t1: T, t2: T) => equiv(t1, t2) == writeEquiv(t1, t2)
     )
 
   def hashCodeImpliesEquality[T: Serialization]: Law2[T] =
     Law2(
       "equiv(a, b) => hash(a) == hash(b)",
-      (t1: T, t2: T) =>
-        !equiv(t1, t2) || (hash(t1) == hash(t2))
+      (t1: T, t2: T) => !equiv(t1, t2) || (hash(t1) == hash(t2))
     )
 
   def reflexivity[T: Serialization]: Law1[T] =
@@ -160,8 +158,7 @@ object Serialization {
   def transitivity[T: Serialization]: Law3[T] =
     Law3(
       "equiv(a, b) && equiv(b, c) => equiv(a, c)",
-      (t1: T, t2: T, t3: T) =>
-        !(equiv(t1, t2) && equiv(t2, t3)) || equiv(t1, t3)
+      (t1: T, t2: T, t3: T) => !(equiv(t1, t2) && equiv(t2, t3)) || equiv(t1, t3)
     )
 
   def allLaws[T: Serialization]: Iterable[Law[T]] =

@@ -431,11 +431,11 @@ class RichPipe(val pipe: Pipe) extends java.io.Serializable with JoinAlgorithms 
   /**
    * Keep only items that don't satisfy this predicate. `filterNot` is equal to negating a `filter` operation.
    *
-   * {{{filterNot('name) { name: String => name contains "a" }}}}
+   * {{{filterNot('name) { name: String => name contains "a"}}} }
    *
    * is the same as:
    *
-   * {{{filter('name) { name: String => !(name contains "a") }}}}
+   * {{{filter('name) { name: String => !(name contains "a")}}} }
    */
   def filterNot[A](f: Fields)(fn: (A) => Boolean)(implicit conv: TupleConverter[A]): Pipe =
     filter[A](f)(!fn(_))

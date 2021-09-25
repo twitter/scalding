@@ -90,7 +90,7 @@ object MemoryPlanner {
 
         case (SourcePipe(src), _) =>
           val optsrc = srcs(src)
-          Op.Source { cec => MemorySource.readOption(optsrc, src.toString)(cec) }
+          Op.Source(cec => MemorySource.readOption(optsrc, src.toString)(cec))
 
         case (slk @ SumByLocalKeys(_, _), rec) =>
           def sum[K, V](sblk: SumByLocalKeys[K, V]) = {

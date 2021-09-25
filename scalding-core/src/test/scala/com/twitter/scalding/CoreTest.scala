@@ -1061,7 +1061,7 @@ class MergeTest extends WordSpec with Matchers {
       }
       .sink[(Double, Double)](Tsv("out2")) { outBuf =>
         "correctly self merge" in {
-          outBuf.toMap shouldBe big.groupBy(_._1).mapValues { iter => iter.map(_._2).max }
+          outBuf.toMap shouldBe big.groupBy(_._1).mapValues(iter => iter.map(_._2).max)
         }
       }
       .run

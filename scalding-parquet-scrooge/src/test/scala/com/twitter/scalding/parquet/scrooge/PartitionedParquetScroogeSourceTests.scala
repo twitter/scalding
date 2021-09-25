@@ -58,7 +58,7 @@ class PartitionedParquetScroogeSourceTests extends WordSpec with Matchers {
 
       val directory = new File(testMode.getWritePathFor(partitionSource))
 
-      directory.listFiles().map { _.getName() }.toSet shouldBe Set("94111", "10075")
+      directory.listFiles().map(_.getName()).toSet shouldBe Set("94111", "10075")
 
       // check that the partitioning is done correctly by zipcode
       validate(

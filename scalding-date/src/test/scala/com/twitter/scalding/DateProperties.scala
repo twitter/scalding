@@ -121,7 +121,7 @@ object DateProperties extends Properties("Date Properties") {
     (ex.contains(upperPred) || (lower == upper))
   }
 
-  def toRegex(glob: String) = glob.flatMap { c => if (c == '*') ".*" else c.toString }.r
+  def toRegex(glob: String) = glob.flatMap(c => if (c == '*') ".*" else c.toString).r
 
   def matches(l: List[String], arg: String): Int = l
     .map(toRegex _)

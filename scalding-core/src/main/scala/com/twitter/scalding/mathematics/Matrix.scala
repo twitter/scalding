@@ -516,7 +516,7 @@ class Matrix[RowT, ColT, ValT](
   ): Matrix[RowT, ColT, ValT] =
     // If the following is not true, it's not clear this is meaningful
     // assert(mon.isZero(fn(mon.zero,mon.zero)), "f is illdefined")
-    zip(that).mapValues { pair => fn(pair._1, pair._2) }(mon)
+    zip(that).mapValues(pair => fn(pair._1, pair._2))(mon)
 
   // Matrix summation
   def +(that: Matrix[RowT, ColT, ValT])(implicit mon: Monoid[ValT]): Matrix[RowT, ColT, ValT] =

@@ -102,7 +102,7 @@ class DelimitedPartitionSourceTest extends WordSpec with Matchers {
 
       val directory = new File(testMode.getWritePathFor(DelimitedPartitionedTsv))
 
-      directory.listFiles().map { _.getName() }.toSet shouldBe Set("A", "B")
+      directory.listFiles().map(_.getName()).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))
@@ -136,7 +136,7 @@ class CustomPartitionSourceTest extends WordSpec with Matchers {
 
       val directory = new File(testMode.getWritePathFor(CustomPartitionedTsv))
 
-      directory.listFiles().map { _.getName() }.toSet shouldBe Set("{A}->{x}", "{B}->{y}")
+      directory.listFiles().map(_.getName()).toSet shouldBe Set("{A}->{x}", "{B}->{y}")
 
       val aSource = ScalaSource.fromFile(new File(directory, "{A}->{x}/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "{B}->{y}/part-00000-00001"))
@@ -171,7 +171,7 @@ class PartialPartitionSourceTest extends WordSpec with Matchers {
 
       val directory = new File(testMode.getWritePathFor(PartialPartitionedTsv))
 
-      directory.listFiles().map { _.getName() }.toSet shouldBe Set("A", "B")
+      directory.listFiles().map(_.getName()).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/x/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/y/part-00000-00001"))

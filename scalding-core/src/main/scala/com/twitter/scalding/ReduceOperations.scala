@@ -176,7 +176,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * check if a predicate is satisfied for all in the values for this key
    */
   def forall[T: TupleConverter](fieldDef: (Fields, Fields))(fn: (T) => Boolean): Self =
-    mapReduceMap(fieldDef)(fn) { (x: Boolean, y: Boolean) => x && y } { x => x }
+    mapReduceMap(fieldDef)(fn)((x: Boolean, y: Boolean) => x && y)(x => x)
 
   /**
    * Return the first, useful probably only for sorted case.
@@ -231,10 +231,10 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
 
   private def extremum(max: Boolean, fieldDef: (Fields, Fields)): Self = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
-    val select = if (max) {
-      (a: CTuple, b: CTuple) => (a.compareTo(b) >= 0)
-    } else {
-      (a: CTuple, b: CTuple) => (a.compareTo(b) <= 0)
+    val select = if (max) { (a: CTuple, b: CTuple) =>
+      (a.compareTo(b) >= 0)
+    } else { (a: CTuple, b: CTuple) =>
+      (a.compareTo(b) <= 0)
     }
 
     mapReduceMap(fieldDef) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) =>
@@ -286,7 +286,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   def reduce[T](fieldDef: (Fields, Fields))(
       fn: (T, T) => T
   )(implicit setter: TupleSetter[T], conv: TupleConverter[T]): Self =
-    mapReduceMap[T, T, T](fieldDef) { t => t }(fn) { t => t }(conv, setter, conv, setter)
+    mapReduceMap[T, T, T](fieldDef)(t => t)(fn)(t => t)(conv, setter, conv, setter)
   //Same as reduce(f->f)
   def reduce[T](fieldDef: Symbol*)(
       fn: (T, T) => T
@@ -306,7 +306,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   )(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
-    reduce[T](fd) { (left, right) => sg.plus(right, left) }(tset, tconv)
+    reduce[T](fd)((left, right) => sg.plus(right, left))(tset, tconv)
 
   /**
    * The same as `sum(fs -> fs)` Assumed to be a commutative operation. If you don't want that, use
@@ -323,7 +323,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   )(implicit ring: Ring[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
     // We reverse the order because the left is the old value in reduce, and for list concat
     // we are much better off concatenating into the bigger list
-    reduce[T](fd) { (left, right) => ring.times(right, left) }(tset, tconv)
+    reduce[T](fd)((left, right) => ring.times(right, left))(tset, tconv)
 
   /**
    * The same as `times(fs -> fs)`
