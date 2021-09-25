@@ -23,14 +23,12 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.prov
 
 object OrderedSerializationProviderImpl {
   def normalizedDispatcher(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if !(tpe.normalize == tpe) => buildDispatcher(tpe.normalize)
   }
 
   def scaldingBasicDispatchers(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val primitiveDispatcher = PrimitiveOrderedBuf.dispatch(c)
     val optionDispatcher = OptionOrderedBuf.dispatch(c)(buildDispatcher)
@@ -67,7 +65,7 @@ object OrderedSerializationProviderImpl {
     import c.universe._
     scaldingBasicDispatchers(c)(OrderedSerializationProviderImpl.innerDispatcher(c)).orElse {
       case tpe: Type =>
-        c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type $tpe""")
+        c.abort(c.enclosingPosition, s"""Unable to find OrderedSerialization for type ${tpe}""")
     }
   }
 

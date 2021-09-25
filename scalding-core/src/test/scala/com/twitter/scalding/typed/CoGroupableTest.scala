@@ -11,9 +11,7 @@ class CoGroupableTest extends FunSuite {
     assert(CoGroupable.atMostOneValue(init.group.mapValues(_ + 100).sum))
     assert(CoGroupable.atMostOneValue(init.group.forceToReducers.mapValues(_ + 100).sum))
     assert(CoGroupable.atMostOneValue(init.group.forceToReducers.mapValues(_ + 100).sum.mapValues(_ - 100)))
-    assert(CoGroupable.atMostOneValue(init.group.forceToReducers.mapValues(_ + 100).sum.filter {
-      case (k, v) => k > v
-    }))
+    assert(CoGroupable.atMostOneValue(init.group.forceToReducers.mapValues(_ + 100).sum.filter { case (k, v) => k > v }))
     assert(CoGroupable.atMostOneValue(init.group.mapValues(_ * 2).sum.join(init.group.sum)))
 
     assert(!CoGroupable.atMostOneValue(init.group))

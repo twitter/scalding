@@ -11,7 +11,7 @@ import com.twitter.scalding.typed.TypedSource
 import SparkPlanner.PartitionComputer
 
 sealed abstract class Op[+A] {
-  import Op.{fakeClassTag, Transformed}
+  import Op.{Transformed, fakeClassTag}
 
   def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]]
 
@@ -36,76 +36,53 @@ object Op extends Serializable {
       Transformed[(K, V), (K, U)](op, _.flatMapValues(fn))
     def mapValues[U](fn: V => U): Op[(K, U)] =
       Transformed[(K, V), (K, U)](op, _.mapValues(fn))
-    def mapGroup[U](partitionComputer: PartitionComputer)(fn: (K, Iterator[V]) => Iterator[U])(implicit
-        ordK: Ordering[K]
-    ): Op[(K, U)] =
-      Transformed[(K, V), (K, U)](
-        op,
-        { rdd: RDD[(K, V)] =>
-          val numPartitions = partitionComputer(rdd.getNumPartitions)
-          val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
-          val partitioned = rdd.repartitionAndSortWithinPartitions(partitioner)
-          partitioned.mapPartitions(
-            { its =>
-              // since we are sorted, the adjacent keys are next to each other
-              val grouped = Iterators.groupSequential(its)
-              grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
-            },
-            preservesPartitioning = true
-          )
-        }
-      )
+    def mapGroup[U](partitionComputer: PartitionComputer)(fn: (K, Iterator[V]) => Iterator[U])(implicit ordK: Ordering[K]): Op[(K, U)] =
+      Transformed[(K, V), (K, U)](op, { rdd: RDD[(K, V)] =>
+        val numPartitions = partitionComputer(rdd.getNumPartitions)
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val partitioned = rdd.repartitionAndSortWithinPartitions(partitioner)
+        partitioned.mapPartitions({ its =>
+          // since we are sorted, the adjacent keys are next to each other
+          val grouped = Iterators.groupSequential(its)
+          grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+        }, preservesPartitioning = true)
+      })
 
     def hashJoin[U, W](right: Op[(K, U)])(fn: (K, V, Iterable[U]) => Iterator[W]): Op[(K, W)] =
       HashJoinOp(op, right, fn)
 
-    def sorted(
-        partitionComputer: PartitionComputer
-    )(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, V)] =
-      Transformed[(K, V), (K, V)](
-        op,
-        { rdd: RDD[(K, V)] =>
-          // The idea here is that we put the key and the value in
-          // logical key, but partition only on the left part of the key
-          val numPartitions = partitionComputer(rdd.getNumPartitions)
-          val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
-          val keyOnlyPartioner = KeyHashPartitioner(partitioner)
-          val unitValue: RDD[((K, V), Unit)] = rdd.map(kv => (kv, ()))
-          val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
-          partitioned.mapPartitions(
-            its =>
-              // discard the unit value
-              its.map { case (kv, _) => kv },
-            preservesPartitioning = true
-          ) // the keys haven't changed
-        }
-      )
+    def sorted(partitionComputer: PartitionComputer)(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, V)] =
+      Transformed[(K, V), (K, V)](op, { rdd: RDD[(K, V)] =>
+        // The idea here is that we put the key and the value in
+        // logical key, but partition only on the left part of the key
+        val numPartitions = partitionComputer(rdd.getNumPartitions)
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val keyOnlyPartioner = KeyHashPartitioner(partitioner)
+        val unitValue: RDD[((K, V), Unit)] = rdd.map { kv => (kv, ()) }
+        val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
+        partitioned.mapPartitions({ its =>
+          // discard the unit value
+          its.map { case (kv, _) => kv }
+        }, preservesPartitioning = true) // the keys haven't changed
+      })
 
-    def sortedMapGroup[U](partitionComputer: PartitionComputer)(
-        fn: (K, Iterator[V]) => Iterator[U]
-    )(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, U)] =
-      Transformed[(K, V), (K, U)](
-        op,
-        { rdd: RDD[(K, V)] =>
-          // The idea here is that we put the key and the value in
-          // logical key, but partition only on the left part of the key
-          val numPartitions = partitionComputer(rdd.getNumPartitions)
-          val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
-          val keyOnlyPartioner = KeyHashPartitioner(partitioner)
-          val unitValue: RDD[((K, V), Unit)] = rdd.map(kv => (kv, ()))
-          val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
-          partitioned.mapPartitions(
-            { its =>
-              // discard the unit value
-              val kviter = its.map { case (kv, _) => kv }
-              // since we are sorted first by key, then value, the keys are grouped
-              val grouped = Iterators.groupSequential(kviter)
-              grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
-            },
-            preservesPartitioning = true
-          ) // the keys haven't changed
-        }
-      )
+    def sortedMapGroup[U](partitionComputer: PartitionComputer)(fn: (K, Iterator[V]) => Iterator[U])(implicit ordK: Ordering[K], ordV: Ordering[V]): Op[(K, U)] =
+      Transformed[(K, V), (K, U)](op, { rdd: RDD[(K, V)] =>
+        // The idea here is that we put the key and the value in
+        // logical key, but partition only on the left part of the key
+        val numPartitions = partitionComputer(rdd.getNumPartitions)
+        val partitioner = rdd.partitioner.getOrElse(new HashPartitioner(numPartitions))
+        val keyOnlyPartioner = KeyHashPartitioner(partitioner)
+        val unitValue: RDD[((K, V), Unit)] = rdd.map { kv => (kv, ()) }
+        val partitioned = unitValue.repartitionAndSortWithinPartitions(keyOnlyPartioner)
+        partitioned.mapPartitions({ its =>
+          // discard the unit value
+          val kviter = its.map { case (kv, _) => kv }
+          // since we are sorted first by key, then value, the keys are grouped
+          val grouped = Iterators.groupSequential(kviter)
+          grouped.flatMap { case (k, vs) => fn(k, vs).map((k, _)) }
+        }, preservesPartitioning = true) // the keys haven't changed
+      })
   }
 
   private case class KeyHashPartitioner(partitioner: Partitioner) extends Partitioner {
@@ -147,12 +124,10 @@ object Op extends Serializable {
       Future(session.sparkContext.makeRDD(iterable.toSeq, 1))
   }
 
-  final case class Source[A](conf: Config, original: TypedSource[A], input: Option[SparkSource[A]])
-      extends Op[A] {
+  final case class Source[A](conf: Config, original: TypedSource[A], input: Option[SparkSource[A]]) extends Op[A] {
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       input match {
-        case None =>
-          Future.failed(new IllegalArgumentException(s"source $original was not connected to a spark source"))
+        case None => Future.failed(new IllegalArgumentException(s"source $original was not connected to a spark source"))
         case Some(src) => src.read(session, conf)
       }
   }
@@ -166,75 +141,67 @@ object Op extends Serializable {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(session, input.run(session).map(rdd => fn(widen(rdd))))
+      cache.getOrElseUpdate(session, input.run(session).map { rdd => fn(widen(rdd)) })
   }
 
   final case class Merged[A](pc: PartitionComputer, left: Op[A], tail: List[Op[A]]) extends Op[A] {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: A]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-      cache.getOrElseUpdate(
-        session, {
-          // start running in parallel
-          val lrdd = left.run(session)
-          val tailRunning = tail.map(_.run(session))
-          tailRunning match {
-            case Nil      => lrdd
-            case nonEmpty =>
-              // start all the upstream in parallel:
-              Future.sequence(lrdd :: nonEmpty).map { rdds =>
-                val rddAs = rdds.map(widen[A](_))
-                val merged = new UnionRDD(session.sparkContext, rddAs)
-                val partitions = merged.getNumPartitions
-                val newPartitions = pc(partitions)
-                if (newPartitions < partitions) {
-                  merged.coalesce(newPartitions)
-                } else {
-                  merged
-                }
+      cache.getOrElseUpdate(session, {
+        // start running in parallel
+        val lrdd = left.run(session)
+        val tailRunning = tail.map(_.run(session))
+        tailRunning match {
+          case Nil => lrdd
+          case nonEmpty =>
+            // start all the upstream in parallel:
+            Future.sequence(lrdd :: nonEmpty).map { rdds =>
+              val rddAs = rdds.map(widen[A](_))
+              val merged = new UnionRDD(session.sparkContext, rddAs)
+              val partitions = merged.getNumPartitions
+              val newPartitions = pc(partitions)
+              if (newPartitions < partitions) {
+                merged.coalesce(newPartitions)
+              } else {
+                merged
               }
-          }
+            }
         }
-      )
+      })
   }
 
-  final case class HashJoinOp[A, B, C, D](
-      left: Op[(A, B)],
-      right: Op[(A, C)],
-      joiner: (A, B, Iterable[C]) => Iterator[D]
-  ) extends Op[(A, D)] {
+  final case class HashJoinOp[A, B, C, D](left: Op[(A, B)], right: Op[(A, C)], joiner: (A, B, Iterable[C]) => Iterator[D]) extends Op[(A, D)] {
     @transient private val cache = new FutureCache[SparkSession, RDD[_ <: (A, D)]]
 
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: (A, D)]] =
-      cache.getOrElseUpdate(
-        session, {
-          // start running in parallel
-          val rrdd = right.run(session)
-          val lrdd = left.run(session)
+      cache.getOrElseUpdate(session, {
+        // start running in parallel
+        val rrdd = right.run(session)
+        val lrdd = left.run(session)
 
-          rrdd.flatMap { rightRdd =>
-            // TODO: spark has some thing to send replicated data to nodes
-            // we should materialize the small side, use the above, then
-            // implement a join using mapPartitions
-            val rightMap: Map[A, List[C]] = rightRdd.toLocalIterator.toList
-              .groupBy(_._1)
-              .map { case (k, vs) => (k, vs.map(_._2)) }
+        rrdd.flatMap { rightRdd =>
+          // TODO: spark has some thing to send replicated data to nodes
+          // we should materialize the small side, use the above, then
+          // implement a join using mapPartitions
+          val rightMap: Map[A, List[C]] = rightRdd
+            .toLocalIterator
+            .toList
+            .groupBy(_._1)
+            .map { case (k, vs) => (k, vs.map(_._2)) }
 
-            val bcastMap = session.sparkContext.broadcast(rightMap)
-            lrdd.map { leftrdd =>
-              val localJoiner = joiner
+          val bcastMap = session.sparkContext.broadcast(rightMap)
+          lrdd.map { leftrdd =>
 
-              leftrdd.mapPartitions(
-                { it: Iterator[(A, B)] =>
-                  val rightMap = bcastMap.value
-                  it.flatMap { case (a, b) => localJoiner(a, b, rightMap.getOrElse(a, Nil)).map((a, _)) }
-                },
-                preservesPartitioning = true
-              )
-            }
+            val localJoiner = joiner
+
+            leftrdd.mapPartitions({ it: Iterator[(A, B)] =>
+              val rightMap = bcastMap.value
+              it.flatMap { case (a, b) => localJoiner(a, b, rightMap.getOrElse(a, Nil)).map((a, _)) }
+            }, preservesPartitioning = true)
           }
         }
-      )
+      })
 
   }
 }

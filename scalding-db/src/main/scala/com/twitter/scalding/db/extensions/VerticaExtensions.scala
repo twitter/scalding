@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.db.extensions
 
@@ -20,11 +20,11 @@ import com.twitter.scalding.db._
 
 object VerticaExtensions {
   def verticaMutator: PartialFunction[DBColumnDefinition, DBColumnDefinition] = {
-    case t @ DBColumnDefinition(BIGINT, _, _, None, _, _)   => t.copy(sizeOpt = None)
-    case t @ DBColumnDefinition(INT, _, _, None, _, _)      => t.copy(sizeOpt = None)
+    case t @ DBColumnDefinition(BIGINT, _, _, None, _, _) => t.copy(sizeOpt = None)
+    case t @ DBColumnDefinition(INT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(SMALLINT, _, _, None, _, _) => t.copy(sizeOpt = None)
-    case t @ DBColumnDefinition(BOOLEAN, _, _, None, _, _)  => t.copy(sizeOpt = None)
-    case t @ DBColumnDefinition(TINYINT, _, _, None, _, _)  => t.copy(sizeOpt = None)
+    case t @ DBColumnDefinition(BOOLEAN, _, _, None, _, _) => t.copy(sizeOpt = None)
+    case t @ DBColumnDefinition(TINYINT, _, _, None, _, _) => t.copy(sizeOpt = None)
     case t @ DBColumnDefinition(DOUBLE, _, _, _, _, _) => t.copy(sqlType = SqlTypeName("DOUBLE PRECISION"))
   }
 }

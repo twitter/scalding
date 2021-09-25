@@ -10,11 +10,8 @@ class ParquetSchemaProvider(fieldRenamer: (String => String)) {
     import c.universe._
 
     if (!IsCaseClassImpl.isCaseClassType(c)(T.tpe))
-      c.abort(
-        c.enclosingPosition,
-        s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
-        This will mean the macro is operating on a non-resolved type."""
-      )
+      c.abort(c.enclosingPosition, s"""We cannot enforce ${T.tpe} is a case class, either it is not a case class or this macro call is possibly enclosed in a class.
+        This will mean the macro is operating on a non-resolved type.""")
 
     def matchField(fieldType: Type, originalFieldName: String, isOption: Boolean): Tree = {
       val fieldName = fieldRenamer(originalFieldName)
@@ -31,9 +28,7 @@ class ParquetSchemaProvider(fieldRenamer: (String => String)) {
         case tpe if tpe =:= typeOf[String] =>
           createPrimitiveTypeField(q"_root_.org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BINARY")
         case tpe if tpe =:= typeOf[Boolean] =>
-          createPrimitiveTypeField(
-            q"_root_.org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BOOLEAN"
-          )
+          createPrimitiveTypeField(q"_root_.org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.BOOLEAN")
         case tpe if tpe =:= typeOf[Short] || tpe =:= typeOf[Int] || tpe =:= typeOf[Byte] =>
           createPrimitiveTypeField(q"_root_.org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32")
         case tpe if tpe =:= typeOf[Long] =>
@@ -60,15 +55,16 @@ class ParquetSchemaProvider(fieldRenamer: (String => String)) {
       }
     }
 
-    def expandMethod(outerTpe: Type): List[Tree] =
-      outerTpe.declarations
+    def expandMethod(outerTpe: Type): List[Tree] = {
+      outerTpe
+        .declarations
         .collect { case m: MethodSymbol if m.isCaseAccessor => m }
         .map { accessorMethod =>
           val fieldName = accessorMethod.name.toString
           val fieldType = accessorMethod.returnType
           matchField(fieldType, fieldName, isOption = false)
-        }
-        .toList
+        }.toList
+    }
 
     val expanded = expandMethod(T.tpe)
 

@@ -1,23 +1,21 @@
 package com.twitter.scalding.jdbc
 
-import cascading.jdbc.{JDBCScheme, MySqlScheme, TableDesc}
+import cascading.jdbc.{ MySqlScheme, JDBCScheme, TableDesc }
 
 case class DriverClass(get: String)
 
 trait JdbcDriver {
   def driver: DriverClass
   def getTableDesc(
-      tableName: TableName,
-      columnNames: Array[ColumnName],
-      columnDefinitions: Array[Definition]
-  ) =
+    tableName: TableName,
+    columnNames: Array[ColumnName],
+    columnDefinitions: Array[Definition]) =
     new TableDesc(tableName.get, columnNames.map(_.get), columnDefinitions.map(_.get), null, null)
   def getJDBCScheme(
-      columnNames: Array[ColumnName],
-      filterCondition: Option[String],
-      updateBy: Iterable[String],
-      replaceOnInsert: Boolean
-  ) = {
+    columnNames: Array[ColumnName],
+    filterCondition: Option[String],
+    updateBy: Iterable[String],
+    replaceOnInsert: Boolean) = {
     if (replaceOnInsert) sys.error("replaceOnInsert functionality only supported by MySql")
     new JDBCScheme(
       null, // inputFormatClass
@@ -25,39 +23,35 @@ trait JdbcDriver {
       columnNames.map(_.get),
       null, // orderBy
       filterCondition.orNull,
-      updateBy.toArray
-    )
+      updateBy.toArray)
   }
 }
 
 trait MysqlDriver extends JdbcDriver with MysqlTableCreationImplicits {
   override val driver = DriverClass("com.mysql.jdbc.Driver")
   override def getTableDesc(
-      tableName: TableName,
-      columnNames: Array[ColumnName],
-      columnDefinitions: Array[Definition]
-  ) =
+    tableName: TableName,
+    columnNames: Array[ColumnName],
+    columnDefinitions: Array[Definition]) =
     new TableDesc(
       tableName.get,
       columnNames.map(_.get),
       columnDefinitions.map(_.get),
       null,
-      "SHOW TABLES LIKE '%s'"
-    )
+      "SHOW TABLES LIKE '%s'")
   override def getJDBCScheme(
-      columnNames: Array[ColumnName],
-      filterCondition: Option[String],
-      updateBy: Iterable[String],
-      replaceOnInsert: Boolean
-  ) =
+    columnNames: Array[ColumnName],
+    filterCondition: Option[String],
+    updateBy: Iterable[String],
+    replaceOnInsert: Boolean) = {
     new MySqlScheme(
       null, // inputFormatClass
       columnNames.map(_.get),
       null, // orderBy
       filterCondition.orNull,
       updateBy.toArray,
-      replaceOnInsert
-    )
+      replaceOnInsert)
+  }
 }
 
 trait HsqlDbDriver extends JdbcDriver {

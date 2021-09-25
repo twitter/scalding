@@ -1,7 +1,7 @@
 package com.twitter.scalding.db.macros.impl.handler
 
 import scala.reflect.macros.Context
-import scala.util.{Failure, Success}
+import scala.util.{ Success, Failure }
 
 import com.twitter.scalding.db.macros.impl.FieldName
 
@@ -28,9 +28,7 @@ private[handler] abstract class AnnotationHelper {
   import ctx.universe._
 
   def sizeAnnotation: scala.util.Try[(AnnotationHelper, SizeAnno)] =
-    consume[SizeAnno](typeOf[com.twitter.scalding.db.macros.size])(
-      _.flatten.map(o => WithSize(o)).getOrElse(WithoutSize)
-    )
+    consume[SizeAnno](typeOf[com.twitter.scalding.db.macros.size])(_.flatten.map(o => WithSize(o)).getOrElse(WithoutSize))
 
   def textAnnotation: scala.util.Try[(AnnotationHelper, TextAnno)] =
     consume(typeOf[com.twitter.scalding.db.macros.text])(_.map(_ => WithText).getOrElse(WithoutText))
@@ -41,11 +39,9 @@ private[handler] abstract class AnnotationHelper {
   def dateAnnotation: scala.util.Try[(AnnotationHelper, DateAnno)] =
     consume(typeOf[com.twitter.scalding.db.macros.date])(_.map(_ => WithDate).getOrElse(WithoutDate))
 
-  def consume[T](
-      t: ctx.universe.Type
-  )(fn: Option[Option[Int]] => T): scala.util.Try[(AnnotationHelper, T)] = {
-    val (matchedAnnotations, remainingAnnotations) = cannotationInfo.partition { case (tpe, _) =>
-      tpe =:= t
+  def consume[T](t: ctx.universe.Type)(fn: Option[Option[Int]] => T): scala.util.Try[(AnnotationHelper, T)] = {
+    val (matchedAnnotations, remainingAnnotations) = cannotationInfo.partition {
+      case (tpe, _) => tpe =:= t
     }
 
     val newHelper = new {
@@ -56,12 +52,12 @@ private[handler] abstract class AnnotationHelper {
 
     matchedAnnotations match {
       case h :: Nil => Success((newHelper, fn(Some(h._2))))
-      case h :: t   => Failure(new Exception(s"Error more than one annotation when looking for $t"))
-      case Nil      => Success((newHelper, fn(None)))
+      case h :: t => Failure(new Exception(s"Error more than one annotation when looking for $t"))
+      case Nil => Success((newHelper, fn(None)))
     }
   }
 
-  def validateFinished: scala.util.Try[Unit] =
+  def validateFinished: scala.util.Try[Unit] = {
     if (cannotationInfo.isEmpty) {
       Success(())
     } else {
@@ -71,4 +67,5 @@ private[handler] abstract class AnnotationHelper {
         """
       Failure(new Exception(msg))
     }
+  }
 }

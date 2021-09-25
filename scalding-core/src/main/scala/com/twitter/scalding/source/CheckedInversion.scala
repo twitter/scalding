@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.source
 
@@ -20,8 +20,9 @@ import com.twitter.bijection.Injection
 import java.io.Serializable
 
 /**
- * Handles the error checking for Injection inversion if check fails, it will throw an unrecoverable exception
- * stopping the job TODO: probably belongs in Bijection
+ * Handles the error checking for Injection inversion
+ * if check fails, it will throw an unrecoverable exception stopping the job
+ * TODO: probably belongs in Bijection
  */
 trait CheckedInversion[T, U] extends Serializable {
   def injection: Injection[T, U]

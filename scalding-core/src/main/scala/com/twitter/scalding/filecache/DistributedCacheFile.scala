@@ -7,7 +7,7 @@ import java.net.URI
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
+import org.apache.hadoop.mapreduce.filecache.{ DistributedCache => HDistributedCache }
 import org.apache.hadoop.fs.Path
 
 object URIHasher {
@@ -21,11 +21,9 @@ object URIHasher {
 
   /**
    * generates hashes of hdfs URIs using algebird's MurmurHash128
-   * @param uri
-   *   the URI to generate a hash for
-   * @return
-   *   a hex-encoded string of the bytes of the 128 bit hash. The results are zero padded on the left, so this
-   *   string will always be 32 characters long.
+   * @param uri the URI to generate a hash for
+   * @return a hex-encoded string of the bytes of the 128 bit hash. The results are zero padded on the left, so
+   *         this string will always be 32 characters long.
    */
   def apply(uri: URI): String = {
     val (h1, h2) = HashFunc(uri.toASCIIString)
@@ -35,15 +33,15 @@ object URIHasher {
 }
 
 /**
- * The distributed cache is simply hadoop's method for allowing each node local access to a specific file. The
- * registration of that file must be called with the Configuration of the job, and not when it's on a mapper
- * or reducer. Additionally, a unique name for the node-local access path must be used to prevent collisions
- * in the cluster. This class provides this functionality.
+ * The distributed cache is simply hadoop's method for allowing each node local access to a
+ * specific file. The registration of that file must be called with the Configuration of the job,
+ * and not when it's on a mapper or reducer. Additionally, a unique name for the node-local access
+ * path must be used to prevent collisions in the cluster. This class provides this functionality.
  *
- * In the configuration phase, the file URI is used to construct an UncachedFile instance. The name of the
- * symlink to use on the mappers is only available after calling the add() method, which registers the file
- * and computes the unique symlink name and returns a CachedFile instance. The CachedFile instance is
- * Serializable, it's designed to be assigned to a val and accessed later.
+ * In the configuration phase, the file URI is used to construct an UncachedFile instance. The name
+ * of the symlink to use on the mappers is only available after calling the add() method, which
+ * registers the file and computes the unique symlink name and returns a CachedFile instance.
+ * The CachedFile instance is Serializable, it's designed to be assigned to a val and accessed later.
  *
  * The local symlink is available thorugh .file or .path depending on what type you need.
  *
@@ -62,35 +60,33 @@ object URIHasher {
  *
  * {{{
  * object YourExecJob extends ExecutionApp {
- *   override def job =
- *     Execution.withCachedFile("/path/to/your/file.txt") { file =>
- *       doSomething(theCachedFile.path)
- *     }
+ *  override def job =
+ *    Execution.withCachedFile("/path/to/your/file.txt") { file =>
+ *      doSomething(theCachedFile.path)
+ *    }
  * }
  *
  * example with Execution and multiple files:
  *
  * object YourExecJob extends ExecutionApp {
- *   override def job =
- *     Execution.withCachedFile("/path/to/your/one.txt") { one =>
- *       Execution.withCachedFile("/path/to/your/second.txt") { second =>
- *         doSomething(one.path, second.path)
- *       }
- *     }
+ *  override def job =
+ *    Execution.withCachedFile("/path/to/your/one.txt") { one =>
+ *      Execution.withCachedFile("/path/to/your/second.txt") { second =>
+ *        doSomething(one.path, second.path)
+ *      }
+ *    }
  * }
  *
  * }}}
+ *
  */
 object DistributedCacheFile {
-
   /**
-   * Create an object that can be used to register a given URI (representing an hdfs file) that should be
-   * added to the DistributedCache.
+   * Create an object that can be used to register a given URI (representing an hdfs file)
+   * that should be added to the DistributedCache.
    *
-   * @param uri
-   *   The fully qualified URI that points to the hdfs file to add
-   * @return
-   *   A CachedFile instance
+   * @param uri The fully qualified URI that points to the hdfs file to add
+   * @return A CachedFile instance
    */
   def apply(uri: URI)(implicit mode: Mode): CachedFile = {
     val cachedFile = UncachedFile(Right(uri)).cached(mode)
@@ -114,12 +110,13 @@ object DistributedCacheFile {
   private[scalding] def cachedFile(path: String, mode: Mode): CachedFile =
     UncachedFile(Left(path)).cached(mode)
 
-  private[scalding] def addCachedFile(cachedFile: CachedFile, mode: Mode): Unit =
+  private[scalding] def addCachedFile(cachedFile: CachedFile, mode: Mode): Unit = {
     (cachedFile, mode) match {
       case (hadoopFile: HadoopCachedFile, hadoopMode: HadoopMode) =>
         HDistributedCache.addCacheFile(symlinkedUriFor(hadoopFile.sourceUri), hadoopMode.jobConf)
       case _ =>
     }
+  }
 
   def symlinkNameFor(uri: URI): String = {
     val hexsum = URIHasher(uri)
@@ -136,17 +133,17 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 
   def cached(mode: Mode): CachedFile =
     mode match {
-      case Hdfs(_, conf)        => addHdfs(conf)
-      case HadoopTest(conf, _)  => addHdfs(conf)
+      case Hdfs(_, conf) => addHdfs(conf)
+      case HadoopTest(conf, _) => addHdfs(conf)
       case (Local(_) | Test(_)) => addLocal()
-      case _                    => throw new RuntimeException("unhandled mode: %s".format(mode))
+      case _ => throw new RuntimeException("unhandled mode: %s".format(mode))
     }
 
   private[this] def addLocal(): CachedFile = {
     val path =
       source match {
         case Left(strPath) => strPath
-        case Right(uri)    => uri.getPath
+        case Right(uri) => uri.getPath
       }
 
     LocallyCachedFile(path)
@@ -167,7 +164,7 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
     val sourceUri =
       source match {
         case Left(strPath) => makeQualifiedStr(strPath, conf)
-        case Right(uri)    => makeQualifiedURI(uri, conf)
+        case Right(uri) => makeQualifiedURI(uri, conf)
       }
 
     HadoopCachedFile(sourceUri)
@@ -175,7 +172,6 @@ final case class UncachedFile private[scalding] (source: Either[String, URI]) {
 }
 
 sealed abstract class CachedFile {
-
   /** The path to the cahced file on disk (the symlink registered at configuration time) */
   def path: String
 

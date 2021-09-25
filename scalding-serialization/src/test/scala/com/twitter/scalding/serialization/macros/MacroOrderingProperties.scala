@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.serialization.macros
 import scala.language.higherKinds
-import java.io.{ByteArrayOutputStream, InputStream}
+import java.io.{ ByteArrayOutputStream, InputStream }
 import java.nio.ByteBuffer
 
 import com.twitter.scalding.serialization.{
@@ -28,9 +28,9 @@ import com.twitter.scalding.serialization.{
   OrderedSerialization,
   Serialization
 }
-import org.scalacheck.Arbitrary.{arbitrary => arb}
-import org.scalacheck.{Arbitrary, Gen, Prop}
-import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalacheck.Arbitrary.{ arbitrary => arb }
+import org.scalacheck.{ Arbitrary, Gen, Prop }
+import org.scalatest.prop.{ Checkers, PropertyChecks }
 import org.scalatest.FunSuite //, ShouldMatchers }
 import com.twitter.scalding.some.other.space.space._
 import scala.collection.immutable.Queue
@@ -147,18 +147,17 @@ case object A extends TestSealedAbstractClass(None)
 case object B extends TestSealedAbstractClass(Some("b"))
 
 sealed trait SealedTraitTest
-case class TestCC(
-    a: Int,
-    b: Long,
-    c: Option[Int],
-    d: Double,
-    e: Option[String],
-    f: Option[List[String]],
-    aBB: ByteBuffer
-) extends SealedTraitTest
+case class TestCC(a: Int,
+  b: Long,
+  c: Option[Int],
+  d: Double,
+  e: Option[String],
+  f: Option[List[String]],
+  aBB: ByteBuffer)
+  extends SealedTraitTest
 
 case class TestCaseClassB(a: Int, b: Long, c: Option[Int], d: Double, e: Option[String])
-    extends SealedTraitTest
+  extends SealedTraitTest
 
 case class TestCaseClassD(a: Int) extends SealedTraitTest
 
@@ -204,18 +203,19 @@ object MyData {
   }
 }
 
-class MyData(override val _1: Int, override val _2: Option[Long]) extends Product2[Int, Option[Long]] {
+class MyData(override val _1: Int, override val _2: Option[Long])
+  extends Product2[Int, Option[Long]] {
   override def canEqual(that: Any): Boolean = that match {
     case o: MyData => true
-    case _         => false
+    case _ => false
   }
 
   override def equals(obj: scala.Any): Boolean = obj match {
     case o: MyData =>
       (o._2, _2) match {
         case (Some(l), Some(r)) => r == l && _1 == o._1
-        case (None, None)       => _1 == o._1
-        case _                  => false
+        case (None, None) => _1 == o._1
+        case _ => false
       }
     case _ => false
   }
@@ -261,7 +261,7 @@ class MacroOpaqueContainer(val myField: Int) {
 
   override def equals(obj: scala.Any): Boolean = obj match {
     case that: MacroOpaqueContainer => that.myField == myField
-    case _                          => false
+    case _ => false
   }
 }
 
@@ -275,24 +275,26 @@ object Container {
   type SetAlias = Set[Double]
   case class InnerCaseClass(e: SetAlias)
 }
-class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOrdering {
+class MacroOrderingProperties
+  extends FunSuite
+  with PropertyChecks
+  with BinaryOrdering {
   type SetAlias = Set[Double]
 
   import ByteBufferArb._
   import Container.arbitraryInnerCaseClass
-  import OrderedSerialization.{compare => oBufCompare}
+  import OrderedSerialization.{ compare => oBufCompare }
 
   def gen[T: Arbitrary]: Gen[T] = implicitly[Arbitrary[T]].arbitrary
 
   def arbMap[T: Arbitrary, U](fn: T => U): Arbitrary[U] = Arbitrary(gen[T].map(fn))
 
-  def collectionArb[C[_], T: Arbitrary](implicit
-      cbf: collection.generic.CanBuildFrom[Nothing, T, C[T]]
-  ): Arbitrary[C[T]] =
+  def collectionArb[C[_], T: Arbitrary](
+    implicit cbf: collection.generic.CanBuildFrom[Nothing, T, C[T]]): Arbitrary[C[T]] =
     Arbitrary {
       gen[List[T]].map { l =>
         val builder = cbf()
-        l.foreach(builder += _)
+        l.foreach { builder += _ }
         builder.result
       }
     }
@@ -304,9 +306,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     import JavaStreamEnrichments._
 
     val baos = new ByteArrayOutputStream
-    t.foreach { e =>
+    t.foreach({ e =>
       orderedBuffer.write(baos, e)
-    }
+    })
     baos.toInputStream
   }
 
@@ -321,20 +323,19 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
   def checkManyExplicit[T](i: List[(T, T)])(implicit obuf: OrderedSerialization[T]) = {
     val serializedA = serializeSeq(i.map(_._1))
     val serializedB = serializeSeq(i.map(_._2))
-    i.foreach { case (a, b) =>
-      val compareBinary = obuf.compareBinary(serializedA, serializedB).unsafeToInt
-      val compareMem = obuf.compare(a, b)
-      if (compareBinary < 0) {
-        assert(
-          compareMem < 0,
-          s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign"
-        )
-      } else if (compareBinary > 0) {
-        assert(
-          compareMem > 0,
-          s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign"
-        )
-      }
+    i.foreach {
+      case (a, b) =>
+        val compareBinary = obuf.compareBinary(serializedA, serializedB).unsafeToInt
+        val compareMem = obuf.compare(a, b)
+        if (compareBinary < 0) {
+          assert(
+            compareMem < 0,
+            s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign")
+        } else if (compareBinary > 0) {
+          assert(
+            compareMem > 0,
+            s"Compare binary: $compareBinary, and compareMem : $compareMem must have the same sign")
+        }
     }
   }
 
@@ -356,14 +357,10 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     assert(oBufCompare(rta, a) === 0, s"A should be equal to itself after an RT -- ${rt(a)}")
     assert(oBufCompare(rtb, b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) + oBufCompare(b, a) === 0, "In memory comparasons make sense")
-    assert(
-      rawCompare(a, b) + rawCompare(b, a) === 0,
-      "When adding the raw compares in inverse order they should sum to 0"
-    )
-    assert(
-      oBufCompare(rta, rtb) === oBufCompare(a, b),
-      "Comparing a and b with ordered bufferables compare after a serialization RT"
-    )
+    assert(rawCompare(a, b) + rawCompare(b, a) === 0,
+      "When adding the raw compares in inverse order they should sum to 0")
+    assert(oBufCompare(rta, rtb) === oBufCompare(a, b),
+      "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
   def checkAreSame[T](a: T, b: T)(implicit obuf: OrderedSerialization[T]): Unit = {
@@ -373,12 +370,12 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     assert(oBufCompare(rtb, b) === 0, s"B should be equal to itself after an RT-- ${rt(b)}")
     assert(oBufCompare(a, b) === 0, "In memory comparasons make sense")
     assert(oBufCompare(b, a) === 0, "In memory comparasons make sense")
-    assert(rawCompare(a, b) === 0, "When adding the raw compares in inverse order they should sum to 0")
-    assert(rawCompare(b, a) === 0, "When adding the raw compares in inverse order they should sum to 0")
-    assert(
-      oBufCompare(rta, rtb) === 0,
-      "Comparing a and b with ordered bufferables compare after a serialization RT"
-    )
+    assert(rawCompare(a, b) === 0,
+      "When adding the raw compares in inverse order they should sum to 0")
+    assert(rawCompare(b, a) === 0,
+      "When adding the raw compares in inverse order they should sum to 0")
+    assert(oBufCompare(rta, rtb) === 0,
+      "Comparing a and b with ordered bufferables compare after a serialization RT")
   }
 
   def check[T: Arbitrary](implicit obuf: OrderedSerialization[T]) = {
@@ -416,7 +413,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     }
     check[java.lang.Boolean]
   }
-  test("Test out Byte")(check[Byte])
+  test("Test out Byte") { check[Byte] }
   test("Test out jl.Byte") {
     implicit val a = arbMap { b: Byte =>
       java.lang.Byte.valueOf(b)
@@ -424,7 +421,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     check[java.lang.Byte]
     checkCollisions[java.lang.Byte]
   }
-  test("Test out Short")(check[Short])
+  test("Test out Short") { check[Short] }
   test("Test out jl.Short") {
     implicit val a = arbMap { b: Short =>
       java.lang.Short.valueOf(b)
@@ -432,7 +429,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     check[java.lang.Short]
     checkCollisions[java.lang.Short]
   }
-  test("Test out Char")(check[Char])
+  test("Test out Char") { check[Char] }
   test("Test out jl.Char") {
     implicit val a = arbMap { b: Char =>
       java.lang.Character.valueOf(b)
@@ -478,7 +475,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     checkCollisions[java.lang.Integer]
 
   }
-  test("Test out Float")(check[Float])
+  test("Test out Float") { check[Float] }
   test("Test out jl.Float") {
     implicit val a = arbMap { b: Float =>
       java.lang.Float.valueOf(b)
@@ -486,7 +483,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     check[java.lang.Float]
     checkCollisions[java.lang.Float]
   }
-  test("Test out Long")(check[Long])
+  test("Test out Long") { check[Long] }
   test("Test out jl.Long") {
     implicit val a = arbMap { b: Long =>
       java.lang.Long.valueOf(b)
@@ -494,7 +491,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     check[java.lang.Long]
     checkCollisions[java.lang.Long]
   }
-  test("Test out Double")(check[Double])
+  test("Test out Double") { check[Double] }
   test("Test out jl.Double") {
     implicit val a = arbMap { b: Double =>
       java.lang.Double.valueOf(b)
@@ -679,8 +676,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
       "堒凳媨쉏떽㶥⾽샣井ㆠᇗ裉깴辫࠷᤭塈䎙寫㸉ᶴ䰄똇䡷䥞㷗䷱赫懓䷏剆祲ᝯ졑쐯헢鷴ӕ秔㽰ퟡ㏉鶖奚㙰银䮌ᕗ膾买씋썴행䣈丶偝쾕鐗쇊ኋ넥︇瞤䋗噯邧⹆♣ἷ铆玼⪷沕辤ᠥ⥰箼䔄◗",
       "騰쓢堷뛭ᣣﰩ嚲ﲯ㤑ᐜ檊೦⠩奯ᓩ윇롇러ᕰెꡩ璞﫼᭵礀閮䈦椄뾪ɔ믻䖔᪆嬽ﾌ鶬曭꣍ᆏ灖㐸뗋ㆃ녵ퟸ겵晬礙㇩䫓ᘞ昑싨",
       "좃ఱ䨻綛糔唄࿁劸酊᫵橻쩳괊筆ݓ淤숪輡斋靑耜঄骐冠㝑⧠떅漫곡祈䵾ᳺ줵됵↲搸虂㔢Ꝅ芆٠풐쮋炞哙⨗쾄톄멛癔짍避쇜畾㣕剼⫁়╢ꅢ澛氌ᄚ㍠ꃫᛔ匙㜗詇閦單錖⒅瘧崥",
-      "獌癚畇"
-    )
+      "獌癚畇")
     checkManyExplicit(c.map { i =>
       (i, i)
     })
@@ -718,9 +714,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     val oser = BinaryOrdering.ordSer[Either[Int, String]]
     assert(oser.staticSize === None, "can't get the size statically")
     assert(
-      Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(Left(1)),
-      "serialization size matches dynamic size"
-    )
+      Some(Serialization.toBytes[Either[Int, String]](Left(1)).length) === oser.dynamicSize(
+        Left(1)),
+      "serialization size matches dynamic size")
     check[Either[Int, String]]
     checkCollisions[Either[Int, String]]
   }
@@ -766,7 +762,9 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
   }
 
   test("test specific tuple 3") {
-    val c = List(("", None, ""), ("a", Some(1), "b"))
+    val c = List(
+      ("", None, ""),
+      ("a", Some(1), "b"))
     checkManyExplicit(c.map { i =>
       (i, i)
     })
@@ -853,7 +851,8 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     noOrderedSerialization[BigTrait]
   }
 
-  def fn[A](implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] =
+  def fn[A](
+    implicit or: OrderedSerialization[A]): OrderedSerialization[TypedParameterCaseClass[A]] =
     BinaryOrdering.ordSer[TypedParameterCaseClass[A]]
 
   test("Test out MacroOpaqueContainer inside a case class as an abstract type") {

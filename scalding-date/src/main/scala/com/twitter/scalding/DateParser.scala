@@ -1,3 +1,4 @@
+
 /*
 Copyright 2012 Twitter, Inc.
 
@@ -12,11 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding
 
-import scala.util.{Failure, Try}
+import scala.util.{ Try, Failure }
 import java.util.TimeZone
 import java.text.DateFormat
 
@@ -30,36 +31,37 @@ trait DateParser extends java.io.Serializable { self =>
 
   def rescueWith(second: DateParser): DateParser =
     new DateParser {
-      def parse(s: String)(implicit tz: TimeZone) =
-        self.parse(s).orElse(second.parse(s))
+      def parse(s: String)(implicit tz: TimeZone) = {
+        self.parse(s) orElse second.parse(s)
+      }
     }
 }
 
 object DateParser {
-
   /**
-   * This is scalding's default date parser. You can choose this by setting an implicit val DateParser. Note
-   * that DateParsers using SimpleDateFormat from Java are not thread-safe, thus the def here. You can cache
-   * the result if you are sure
+   * This is scalding's default date parser. You can choose this
+   * by setting an implicit val DateParser.
+   * Note that DateParsers using SimpleDateFormat from Java are
+   * not thread-safe, thus the def here. You can cache the result
+   * if you are sure
    */
   def default: DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) =
-      DateOps
-        .getDateParser(s)
-        .map(p => p.parse(s))
+      DateOps.getDateParser(s)
+        .map { p => p.parse(s) }
         .getOrElse(Failure(new IllegalArgumentException("Could not find parser for: " + s)))
   }
 
   /** Try these Parsers in order */
   def apply(items: Iterable[DateParser]): DateParser =
-    items.reduce(_.rescueWith(_))
+    items.reduce { _.rescueWith(_) }
 
   /** Using the type-class pattern */
   def parse(s: String)(implicit tz: TimeZone, p: DateParser): Try[RichDate] = p.parse(s)(tz)
 
   /**
-   * Note that DateFormats in Java are generally not thread-safe, so you should not share the result here
-   * across threads
+   * Note that DateFormats in Java are generally not thread-safe,
+   * so you should not share the result here across threads
    */
   implicit def from(df: DateFormat): DateParser = new DateParser {
     def parse(s: String)(implicit tz: TimeZone) = Try {
@@ -81,11 +83,21 @@ object DateParser {
 
 /**
  * //Scalding used to support Natty, this is removed. To add it back, use something like this in your code,
- * //possibly with: //implicit val myParser = DateParser(Seq(DateParser.default, NattyParser))
+ * //possibly with:
+ * //implicit val myParser = DateParser(Seq(DateParser.default, NattyParser))
  *
- * object NattyParser extends DateParser { def parse(s: String)(implicit tz: TimeZone) = Try { val timeParser
- * = new natty.Parser(tz) val dateGroups = timeParser.parse(s) if (dateGroups.size == 0) { throw new
- * IllegalArgumentException("Could not convert string: '" + str + "' into a date.") } // a DateGroup can have
- * more than one Date (e.g. if you do "Sept. 11th or 12th"), // but we're just going to take the first val
- * dates = dateGroups.get(0).getDates() RichDate(dates.get(0)) } }
+ * object NattyParser extends DateParser {
+ * def parse(s: String)(implicit tz: TimeZone) = Try {
+ * val timeParser = new natty.Parser(tz)
+ * val dateGroups = timeParser.parse(s)
+ * if (dateGroups.size == 0) {
+ * throw new IllegalArgumentException("Could not convert string: '" + str + "' into a date.")
+ * }
+ * // a DateGroup can have more than one Date (e.g. if you do "Sept. 11th or 12th"),
+ * // but we're just going to take the first
+ * val dates = dateGroups.get(0).getDates()
+ * RichDate(dates.get(0))
+ * }
+ * }
+ *
  */

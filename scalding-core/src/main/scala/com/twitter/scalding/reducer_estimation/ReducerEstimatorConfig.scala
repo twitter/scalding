@@ -8,9 +8,9 @@ object ReducerEstimatorConfig {
   val estimatedNumReducers = "scalding.reducer.estimator.result"
 
   /**
-   * Output param: same as estimatedNumReducers but with the cap specified by maxEstimatedReducersKey applied.
-   * Can be used to determine whether a cap was applied to the estimated number of reducers and potentially to
-   * trigger alerting / logging.
+   * Output param: same as estimatedNumReducers but with the cap specified by maxEstimatedReducersKey
+   * applied. Can be used to determine whether a cap was applied to the estimated number of reducers
+   * and potentially to trigger alerting / logging.
    */
   val cappedEstimatedNumReducersKey = "scalding.reducer.estimator.result.capped"
 
@@ -18,7 +18,8 @@ object ReducerEstimatorConfig {
   val originalNumReducers = "scalding.reducer.estimator.original.mapred.reduce.tasks"
 
   /**
-   * If we estimate more than this number of reducers, we will use this number instead of the estimated value
+   * If we estimate more than this number of reducers,
+   * we will use this number instead of the estimated value
    */
   val maxEstimatedReducersKey = "scalding.reducer.estimator.max.estimated.reducers"
 

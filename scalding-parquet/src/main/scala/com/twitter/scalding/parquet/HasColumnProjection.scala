@@ -5,8 +5,9 @@ import org.slf4j.LoggerFactory
 object HasColumnProjection {
   val LOG = LoggerFactory.getLogger(this.getClass)
 
-  def requireNoSemiColon(glob: String) =
+  def requireNoSemiColon(glob: String) = {
     require(!glob.contains(";"), "A column projection glob cannot contain a ; character")
+  }
 }
 
 trait HasColumnProjection {
@@ -41,15 +42,14 @@ trait HasColumnProjection {
     val deprecated = withColumns
     val strict = withColumnProjections
 
-    require(deprecated.isEmpty || strict.isEmpty, "Cannot provide both withColumns and withColumnProjections")
+    require(deprecated.isEmpty || strict.isEmpty,
+      "Cannot provide both withColumns and withColumnProjections")
 
     deprecated.foreach(requireNoSemiColon)
     strict.foreach(requireNoSemiColon)
 
     if (deprecated.nonEmpty) {
-      LOG.warn(
-        "withColumns is deprecated. Please use withColumnProjections, which uses a different glob syntax"
-      )
+      LOG.warn("withColumns is deprecated. Please use withColumnProjections, which uses a different glob syntax")
       Some(DeprecatedColumnProjectionString(deprecated))
     } else if (strict.nonEmpty) {
       Some(StrictColumnProjectionString(strict))

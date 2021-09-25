@@ -65,13 +65,10 @@ class TextMacroTest extends Test {
       }
     }
     "with function" in {
-      test
-        .paramGroupsWithFunction(1) {
-          case 1 => 2
-          case _ => 3
-        }
-        ._1
-        .text mustEqual
+      (test.paramGroupsWithFunction(1) {
+        case 1 => 2
+        case _ => 3
+      })._1.text mustEqual
         Some("""paramGroupsWithFunction(1) {
         case 1 => 2
         case _ => 3
@@ -88,7 +85,7 @@ class TextMacroTest extends Test {
       test.function { case _ => 4 }._1.text mustEqual Some("function { case _ => 4 }")
     }
     "curly braces" in {
-      test.function(_ + 1)._1.text mustEqual Some("function { _ + 1 }")
+      test.function { _ + 1 }._1.text mustEqual Some("function { _ + 1 }")
     }
   }
 
@@ -98,7 +95,8 @@ class TextMacroTest extends Test {
       _ + 1
     }
     c._1.text mustEqual
-      Some("""function {
+      Some(
+        """function {
       def test = 1
       _ + 1
     }""")

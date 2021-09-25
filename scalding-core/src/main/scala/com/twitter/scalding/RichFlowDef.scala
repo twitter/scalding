@@ -12,17 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import com.twitter.algebird.Monoid
-import java.util.{List => JList, Map => JMap}
+import java.util.{ Map => JMap, List => JList }
 
 /**
- * This is an enrichment-pattern class for cascading.flow.FlowDef. The rule is to never use this class
- * directly in input or return types, but only to add methods to FlowDef.
+ * This is an enrichment-pattern class for cascading.flow.FlowDef.
+ * The rule is to never use this class directly in input or return types, but
+ * only to add methods to FlowDef.
  */
 class RichFlowDef(val fd: FlowDef) {
   // allow .asScala conversions
@@ -56,10 +57,12 @@ class RichFlowDef(val fd: FlowDef) {
   private[this] def preferLeft[T](left: T, right: T): T =
     Option(left).getOrElse(right)
 
-  private[this] def mergeLeft[K, V](left: JMap[K, V], right: JMap[K, V]): Unit =
-    right.asScala.foreach { case (k, v) =>
-      if (!left.containsKey(k)) left.put(k, v)
+  private[this] def mergeLeft[K, V](left: JMap[K, V], right: JMap[K, V]): Unit = {
+    right.asScala.foreach {
+      case (k, v) =>
+        if (!left.containsKey(k)) left.put(k, v)
     }
+  }
   private[this] def appendLeft[T](left: JList[T], right: JList[T]): Unit = {
     val existing = left.asScala.toSet
     right.asScala
@@ -67,13 +70,13 @@ class RichFlowDef(val fd: FlowDef) {
       .foreach(left.add)
   }
 
-  def isEmpty: Boolean =
+  def isEmpty: Boolean = {
     fd.getTraps.isEmpty &&
       fd.getCheckpoints.isEmpty &&
       fd.getSources.isEmpty &&
       fd.getSinks.isEmpty &&
       fd.getTails.isEmpty
-
+  }
   /**
    * Mutate current flow def to add all sources/sinks/etc from given FlowDef
    */
@@ -138,20 +141,20 @@ class RichFlowDef(val fd: FlowDef) {
     }
 
     // Update the FlowState:
-    FlowStateMap
-      .get(fd)
+    FlowStateMap.get(fd)
       .foreach { thisFS =>
         /**
-         * these are all the sources that are upstream of the pipe in question
+         * these are all the sources that are upstream
+         * of the pipe in question
          */
         val subFlowState =
           Monoid.sum(
-            thisFS.sourceMap
+            thisFS
+              .sourceMap
               .collect {
                 case (name, source) if headNames(name) =>
                   FlowState.withSource(name, source)
-              }
-          )
+              })
         /*
          * We assume all the old config updates need to be
          * done, but this may an over approximation and not

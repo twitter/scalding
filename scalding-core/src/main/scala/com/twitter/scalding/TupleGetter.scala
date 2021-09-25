@@ -12,16 +12,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{ Tuple => CTuple }
 
 /**
- * Typeclass roughly equivalent to a Lens, which allows getting items out of a tuple. This is useful because
- * cascading has type coercion (string to int, for instance) that users expect in the fields API. This code is
- * not used in the typesafe API, which does not allow suc silent coercion. See the generated TupleConverters
- * for an example of where this is used
+ * Typeclass roughly equivalent to a Lens, which allows getting items out of a tuple.
+ * This is useful because cascading has type coercion (string to int, for instance) that
+ * users expect in the fields API.  This code is not used in the typesafe API, which
+ * does not allow suc silent coercion.
+ * See the generated TupleConverters for an example of where this is used
  */
 trait TupleGetter[@specialized(Int, Long, Float, Double) T] extends java.io.Serializable {
   def get(tup: CTuple, i: Int): T

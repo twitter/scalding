@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import java.util.TimeZone
@@ -25,13 +25,8 @@ import java.util.regex.Pattern
  * current range.  This children must be ordered from largest
  * to smallest in size.
  */
-class BaseGlobifier(
-    dur: Duration,
-    val sym: String,
-    pattern: String,
-    tz: TimeZone,
-    child: Option[BaseGlobifier]
-) extends java.io.Serializable {
+class BaseGlobifier(dur: Duration, val sym: String, pattern: String, tz: TimeZone, child: Option[BaseGlobifier])
+  extends java.io.Serializable {
   // result <= rd
   private def greatestLowerBound(rd: RichDate) = dur.floorOf(rd)
   // rd <= result
@@ -43,7 +38,7 @@ class BaseGlobifier(
   // Generate a lazy list of all children
   final def children: Stream[BaseGlobifier] = child match {
     case Some(c) => Stream.cons(c, c.children)
-    case None    => Stream.empty
+    case None => Stream.empty
   }
 
   final def asteriskChildren(rd: RichDate): String = {
@@ -68,9 +63,9 @@ class BaseGlobifier(
           List(sstr)
         case Some(c) =>
           /*
-           * Two cases: we should asterisk our children, or we need
-           * to recurse.  If we fill this entire range, just asterisk,
-           */
+         * Two cases: we should asterisk our children, or we need
+         * to recurse.  If we fill this entire range, just asterisk,
+         */
           val bottom = children.last
           val fillsright = format(leastUpperBound(dr.end)) ==
             format(bottom.leastUpperBound(dr.end))
@@ -124,17 +119,17 @@ class BaseGlobifier(
 }
 
 case class HourGlob(pat: String)(implicit tz: TimeZone)
-    extends BaseGlobifier(Hours(1), "%1$tH", pat, tz, None)
+  extends BaseGlobifier(Hours(1), "%1$tH", pat, tz, None)
 
 case class DayGlob(pat: String)(implicit tz: TimeZone)
-    extends BaseGlobifier(Days(1)(tz), "%1$td", pat, tz, Some(HourGlob(pat)))
+  extends BaseGlobifier(Days(1)(tz), "%1$td", pat, tz, Some(HourGlob(pat)))
 
 case class MonthGlob(pat: String)(implicit tz: TimeZone)
-    extends BaseGlobifier(Months(1)(tz), "%1$tm", pat, tz, Some(DayGlob(pat)))
+  extends BaseGlobifier(Months(1)(tz), "%1$tm", pat, tz, Some(DayGlob(pat)))
 
 /*
  * This is the outermost globifier and should generally be used to globify
  */
 case class Globifier(pat: String)(implicit tz: TimeZone)
-    extends BaseGlobifier(Years(1)(tz), "%1$tY", pat, tz, Some(MonthGlob(pat)))
-    with java.io.Serializable
+  extends BaseGlobifier(Years(1)(tz), "%1$tY", pat, tz, Some(MonthGlob(pat)))
+  with java.io.Serializable

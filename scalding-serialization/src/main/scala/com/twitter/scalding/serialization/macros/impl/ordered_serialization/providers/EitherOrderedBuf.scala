@@ -24,17 +24,13 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
 import CompileTimeLengthTypes._
 
 object EitherOrderedBuf {
-  def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Either[Any, Any]] =>
       EitherOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type
-  ): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+    outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher
@@ -87,8 +83,7 @@ object EitherOrderedBuf {
       val tmpGetHolder = freshT("tmpGetHolder")
       q"""
         val $tmpGetHolder: _root_.scala.Byte = $inputStreamA.readByte
-        if($tmpGetHolder == (0: _root_.scala.Byte)) _root_.scala.util.Left[${leftBuf.tpe}, ${rightBuf.tpe}](${leftBuf
-        .get(inputStreamA)})
+        if($tmpGetHolder == (0: _root_.scala.Byte)) _root_.scala.util.Left[${leftBuf.tpe}, ${rightBuf.tpe}](${leftBuf.get(inputStreamA)})
         else _root_.scala.util.Right[${leftBuf.tpe}, ${rightBuf.tpe}](${rightBuf.get(inputStreamA)})
       """
     }
@@ -156,8 +151,7 @@ object EitherOrderedBuf {
           q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"""
 
         (leftBuf.length(q"$element.left.get"), rightBuf.length(q"$element.right.get")) match {
-          case (lconst: ConstantLengthCalculation[_], rconst: ConstantLengthCalculation[_])
-              if lconst.toInt == rconst.toInt =>
+          case (lconst: ConstantLengthCalculation[_], rconst: ConstantLengthCalculation[_]) if lconst.toInt == rconst.toInt =>
             // We got lucky, they are the same size:
             ConstantLengthCalculation(c)(1 + rconst.toInt)
           case (_: NoLengthCalculationAvailable[_], _) => NoLengthCalculationAvailable(c)

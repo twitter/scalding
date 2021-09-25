@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
+import scala.concurrent.{ Future, Promise, ExecutionContext => ConcurrentExecutionContext }
 
 trait PromiseLike[P[_], F[_]] {
   def apply[T](): P[T]
@@ -24,7 +24,8 @@ object PromiseLike {
 }
 
 /**
- * This is a map for values that are produced in futures as is common in Execution
+ * This is a map for values that are produced in futures
+ * as is common in Execution
  */
 class FutureCacheGeneric[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
   private[this] val cache = new ConcurrentHashMap[K, F[V]]()
@@ -47,7 +48,8 @@ class FutureCacheGeneric[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
     }
 
   /**
-   * If you get a Left value as a result you MUST complete that Promise or you may deadlock other callers
+   * If you get a Left value as a result you MUST complete that Promise
+   * or you may deadlock other callers
    */
   def getOrPromise(k: K): Either[P[V], F[V]] = {
     /*
@@ -58,7 +60,7 @@ class FutureCacheGeneric[-K, V, P[_], F[_]](implicit pl: PromiseLike[P, F]) {
     val cancelFut = pl.future(cpromise)
 
     cache.putIfAbsent(k, cancelFut) match {
-      case null      => Left(cpromise)
+      case null => Left(cpromise)
       case existsFut => Right(existsFut)
     }
   }

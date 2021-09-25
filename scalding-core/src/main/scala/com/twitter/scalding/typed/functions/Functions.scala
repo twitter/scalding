@@ -1,6 +1,6 @@
 package com.twitter.scalding.typed.functions
 
-import com.twitter.algebird.{Aggregator, Fold, Ring, Semigroup}
+import com.twitter.algebird.{ Aggregator, Ring, Semigroup, Fold }
 import java.util.Random
 import java.io.Serializable
 
@@ -29,7 +29,7 @@ case class MakeKey[K, V](fn: V => K) extends Function1[V, (K, V)] {
 
 case class MapOptionToFlatMap[A, B](fn: A => Option[B]) extends Function1[A, List[B]] {
   def apply(a: A) = fn(a) match {
-    case None    => Nil
+    case None => Nil
     case Some(a) => a :: Nil
   }
 }
@@ -38,8 +38,7 @@ case class PartialFunctionToFilter[A, B](fn: PartialFunction[A, B]) extends Func
   def apply(a: A) = fn.isDefinedAt(a)
 }
 
-case class MapValueStream[A, B](fn: Iterator[A] => Iterator[B])
-    extends Function2[Any, Iterator[A], Iterator[B]] {
+case class MapValueStream[A, B](fn: Iterator[A] => Iterator[B]) extends Function2[Any, Iterator[A], Iterator[B]] {
   def apply(k: Any, vs: Iterator[A]) = fn(vs)
 }
 
@@ -110,8 +109,7 @@ case class FoldIterator[A, B](fold: Fold[A, B]) extends Function1[Iterator[A], I
   def apply(as: Iterator[A]) = Iterator.single(fold.overTraversable(as))
 }
 
-case class FoldWithKeyIterator[K, A, B](foldfn: K => Fold[A, B])
-    extends Function2[K, Iterator[A], Iterator[B]] {
+case class FoldWithKeyIterator[K, A, B](foldfn: K => Fold[A, B]) extends Function2[K, Iterator[A], Iterator[B]] {
   def apply(k: K, as: Iterator[A]) = Iterator.single(foldfn(k).overTraversable(as))
 }
 
@@ -170,8 +168,9 @@ case class SemigroupFromProduct[T](ring: Ring[T]) extends Semigroup[T] {
 }
 
 /**
- * This is a semigroup that throws IllegalArgumentException if there is more than one item. This is used to
- * trigger optimizations where the user knows there is at most one value per key.
+ * This is a semigroup that throws IllegalArgumentException if
+ * there is more than one item. This is used to trigger optimizations
+ * where the user knows there is at most one value per key.
  */
 case class RequireSingleSemigroup[T]() extends Semigroup[T] {
   def plus(a: T, b: T) = throw new IllegalArgumentException(s"expected only one item, calling plus($a, $b)")
@@ -222,25 +221,22 @@ case class FilterKeysToFilter[K](fn: K => Boolean) extends Function1[(K, Any), B
   def apply(kv: (K, Any)) = fn(kv._1)
 }
 
-case class FlatMapValuesToFlatMap[K, A, B](fn: A => TraversableOnce[B])
-    extends Function1[(K, A), TraversableOnce[(K, B)]] {
+case class FlatMapValuesToFlatMap[K, A, B](fn: A => TraversableOnce[B]) extends Function1[(K, A), TraversableOnce[(K, B)]] {
   def apply(ka: (K, A)) = {
     val k = ka._1
     fn(ka._2).map((k, _))
   }
 }
 
-case class MergeFlatMaps[A, B](fns: Iterable[A => TraversableOnce[B]])
-    extends Function1[A, TraversableOnce[B]] {
-  def apply(a: A) = fns.iterator.flatMap(fn => fn(a))
+case class MergeFlatMaps[A, B](fns: Iterable[A => TraversableOnce[B]]) extends Function1[A, TraversableOnce[B]] {
+  def apply(a: A) = fns.iterator.flatMap { fn => fn(a) }
 }
 
 case class MapValuesToMap[K, A, B](fn: A => B) extends Function1[(K, A), (K, B)] {
   def apply(ka: (K, A)) = (ka._1, fn(ka._2))
 }
 
-case class EmptyGuard[K, A, B](fn: (K, Iterator[A]) => Iterator[B])
-    extends Function2[K, Iterator[A], Iterator[B]] {
+case class EmptyGuard[K, A, B](fn: (K, Iterator[A]) => Iterator[B]) extends Function2[K, Iterator[A], Iterator[B]] {
   def apply(k: K, as: Iterator[A]) =
     if (as.nonEmpty) fn(k, as) else Iterator.empty
 }
@@ -253,8 +249,7 @@ case class MapGroupMapValues[A, B, C](fn: B => C) extends Function2[A, Iterator[
   def apply(a: A, bs: Iterator[B]) = bs.map(fn)
 }
 
-case class MapGroupFlatMapValues[A, B, C](fn: B => TraversableOnce[C])
-    extends Function2[A, Iterator[B], Iterator[C]] {
+case class MapGroupFlatMapValues[A, B, C](fn: B => TraversableOnce[C]) extends Function2[A, Iterator[B], Iterator[C]] {
   def apply(a: A, bs: Iterator[B]) = bs.flatMap(fn)
 }
 
@@ -268,16 +263,13 @@ object FlatMapFunctions extends Serializable {
   case class FromMap[A, B](fn: A => B) extends Function1[A, Iterator[B]] {
     def apply(a: A) = Iterator.single(fn(a))
   }
-  case class FromFilterCompose[A, B](fn: A => Boolean, next: A => TraversableOnce[B])
-      extends Function1[A, TraversableOnce[B]] {
+  case class FromFilterCompose[A, B](fn: A => Boolean, next: A => TraversableOnce[B]) extends Function1[A, TraversableOnce[B]] {
     def apply(a: A) = if (fn(a)) next(a) else Iterator.empty
   }
-  case class FromMapCompose[A, B, C](fn: A => B, next: B => TraversableOnce[C])
-      extends Function1[A, TraversableOnce[C]] {
+  case class FromMapCompose[A, B, C](fn: A => B, next: B => TraversableOnce[C]) extends Function1[A, TraversableOnce[C]] {
     def apply(a: A) = next(fn(a))
   }
-  case class FromFlatMapCompose[A, B, C](fn: A => TraversableOnce[B], next: B => TraversableOnce[C])
-      extends Function1[A, TraversableOnce[C]] {
+  case class FromFlatMapCompose[A, B, C](fn: A => TraversableOnce[B], next: B => TraversableOnce[C]) extends Function1[A, TraversableOnce[C]] {
     def apply(a: A) = fn(a).flatMap(next)
   }
 }
@@ -290,10 +282,9 @@ object ComposedFunctions extends Serializable {
   case class ComposedFilterFn[-A](fn0: A => Boolean, fn1: A => Boolean) extends Function1[A, Boolean] {
     def apply(a: A) = fn0(a) && fn1(a)
   }
-
   /**
-   * This is only called at the end of a task, so might as well make it stack safe since a little extra
-   * runtime cost won't matter
+   * This is only called at the end of a task, so might as well make it stack safe since a little
+   * extra runtime cost won't matter
    */
   case class ComposedOnComplete(fn0: () => Unit, fn1: () => Unit) extends Function0[Unit] {
     def apply(): Unit = {
@@ -305,7 +296,7 @@ object ComposedFunctions extends Serializable {
             notComposed()
             stack match {
               case h :: tail => loop(h, tail)
-              case Nil       => ()
+              case Nil => ()
             }
         }
 
@@ -314,9 +305,8 @@ object ComposedFunctions extends Serializable {
   }
 
   case class ComposedMapGroup[A, B, C, D](
-      f: (A, Iterator[B]) => Iterator[C],
-      g: (A, Iterator[C]) => Iterator[D]
-  ) extends Function2[A, Iterator[B], Iterator[D]] {
+    f: (A, Iterator[B]) => Iterator[C],
+    g: (A, Iterator[C]) => Iterator[D]) extends Function2[A, Iterator[B], Iterator[D]] {
 
     def apply(a: A, bs: Iterator[B]) = {
       val cs = f(a, bs)

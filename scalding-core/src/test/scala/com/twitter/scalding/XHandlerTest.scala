@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import cascading.flow.planner.PlannerException
 
 class XHandlerTest extends WordSpec with Matchers {
@@ -28,9 +28,7 @@ class XHandlerTest extends WordSpec with Matchers {
       rxh.handlers.find(h => h(new NoSuchMethodError)) should not be empty
       rxh.handlers.find(h => h(new AbstractMethodError)) should not be empty
       rxh.handlers.find(h => h(new NoClassDefFoundError)) should not be empty
-      rxh.handlers.find(h =>
-        h(new ModeLoadException("dummy", new ClassNotFoundException))
-      ) should not be empty
+      rxh.handlers.find(h => h(new ModeLoadException("dummy", new ClassNotFoundException))) should not be empty
     }
     "be handled if exist in custom mapping" in {
       val cRxh = RichXHandler(RichXHandler.mapping ++ Map(classOf[NullPointerException] -> "NPE"))
@@ -60,21 +58,11 @@ class XHandlerTest extends WordSpec with Matchers {
       val PlannerExceptionString = "cascadingflowplannerplannerexception"
       val ModeLoadExceptionString = "comtwitterscaldingmodeloadexception"
       RichXHandler.createXUrl(new PlannerException) shouldBe (RichXHandler.gitHubUrl + PlannerExceptionString)
-      RichXHandler.createXUrl(
-        new InvalidSourceException("Invalid Source")
-      ) shouldBe (RichXHandler.gitHubUrl + InvalidSouceExceptionString)
-      RichXHandler.createXUrl(
-        new NoSuchMethodError
-      ) shouldBe (RichXHandler.gitHubUrl + NoSuchMethodErrorString)
-      RichXHandler.createXUrl(
-        new AbstractMethodError
-      ) shouldBe (RichXHandler.gitHubUrl + AbstractMethodErrorString)
-      RichXHandler.createXUrl(
-        new NoClassDefFoundError
-      ) shouldBe (RichXHandler.gitHubUrl + NoClassDefFoundErrorString)
-      RichXHandler.createXUrl(
-        ModeLoadException("dummy", new ClassNotFoundException)
-      ) shouldBe (RichXHandler.gitHubUrl + ModeLoadExceptionString)
+      RichXHandler.createXUrl(new InvalidSourceException("Invalid Source")) shouldBe (RichXHandler.gitHubUrl + InvalidSouceExceptionString)
+      RichXHandler.createXUrl(new NoSuchMethodError) shouldBe (RichXHandler.gitHubUrl + NoSuchMethodErrorString)
+      RichXHandler.createXUrl(new AbstractMethodError) shouldBe (RichXHandler.gitHubUrl + AbstractMethodErrorString)
+      RichXHandler.createXUrl(new NoClassDefFoundError) shouldBe (RichXHandler.gitHubUrl + NoClassDefFoundErrorString)
+      RichXHandler.createXUrl(ModeLoadException("dummy", new ClassNotFoundException)) shouldBe (RichXHandler.gitHubUrl + ModeLoadExceptionString)
     }
   }
 }

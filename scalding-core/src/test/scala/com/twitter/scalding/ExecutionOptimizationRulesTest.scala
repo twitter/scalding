@@ -17,9 +17,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 
 class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
-  class MemorySource[T: TupleConverter](inFields: Fields = Fields.NONE)
-      extends Mappable[T]
-      with TypedSink[T] {
+  class MemorySource[T: TupleConverter](inFields: Fields = Fields.NONE) extends Mappable[T] with TypedSink[T] {
     private[this] val buf = Buffer[Tuple]()
     private[this] val name: String = UUID.randomUUID.toString
 
@@ -35,13 +33,13 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
         case _ => sys.error("MemorySink only usable with cascading local")
       }
 
-    def fields =
+    def fields = {
       if (inFields.isNone && setter.arity > 0) {
         Dsl.intFields(0 until setter.arity)
       } else inFields
+    }
 
-    override def converter[U >: T]: TupleConverter[U] =
-      TupleConverter.asSuperConverter[T, U](implicitly[TupleConverter[T]])
+    override def converter[U >: T]: TupleConverter[U] = TupleConverter.asSuperConverter[T, U](implicitly[TupleConverter[T]])
 
     private lazy val hdfsTap: Tap[_, _, _] = new MemorySourceTap(buf.asJava, fields)
 
@@ -50,11 +48,11 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
         sys.error("IterableSource is a Read-only Source")
       }
       mode match {
-        case Local(_)         => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), buf)
-        case Test(_)          => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), buf)
-        case Hdfs(_, _)       => hdfsTap
+        case Local(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), buf)
+        case Test(_) => new MemoryTap[InputStream, OutputStream](new NullScheme(fields, fields), buf)
+        case Hdfs(_, _) => hdfsTap
         case HadoopTest(_, _) => hdfsTap
-        case _                => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
+        case _ => throw ModeException("Unsupported mode for IterableSource: " + mode.toString)
       }
     }
   }
@@ -70,25 +68,26 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     override def apply(p: TypedPipe[Int]): TypedPipe[Int] = p.map(_ + i)
   }
 
-  def mapped(exec: Gen[Execution[TypedPipe[Int]]]): Gen[Execution[TypedPipe[Int]]] =
+  def mapped(exec: Gen[Execution[TypedPipe[Int]]]): Gen[Execution[TypedPipe[Int]]] = {
     exec.flatMap { pipe =>
       Gen.frequency(
         (1, Execution.Mapped(pipe, PlusOne())),
         (5, Arbitrary.arbitrary[Int].map(i => Execution.Mapped(pipe, PlusI(i))))
       )
     }
+  }
 
-  case class ReplaceTo[T](to: Execution[TypedPipe[Int]])
-      extends (TypedPipe[Int] => Execution[TypedPipe[Int]]) {
+  case class ReplaceTo[T](to: Execution[TypedPipe[Int]]) extends (TypedPipe[Int] => Execution[TypedPipe[Int]]) {
     override def apply(v1: TypedPipe[Int]): Execution[TypedPipe[Int]] = to
   }
 
-  def flatMapped(exec: Gen[Execution[TypedPipe[Int]]]): Gen[Execution[TypedPipe[Int]]] =
+  def flatMapped(exec: Gen[Execution[TypedPipe[Int]]]): Gen[Execution[TypedPipe[Int]]] = {
     exec.flatMap { from =>
       exec.map { to =>
         from.flatMap(ReplaceTo(to))
       }
     }
+  }
 
   def zipped[A, B](left: Gen[Execution[A]], right: Gen[Execution[B]]): Gen[Execution[(A, B)]] =
     for {
@@ -129,26 +128,21 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     )
 
   val iterableExec =
-    Gen
-      .oneOf(
-        zippedWrites,
-        zippedFlatMapped,
-        zippedMapped,
-        zipped(mappedOrFlatMapped, write(TypedPipeGen.genWithIterableSources)),
-        zipped(write(TypedPipeGen.genWithIterableSources), mappedOrFlatMapped)
-      )
-      .map { exec =>
-        exec
-          .flatMap { case (left, right) =>
-            left.toIterableExecution.zip(right.toIterableExecution)
-          }
-          .map { case (left, right) =>
-            left ++ right
-          }
-          .map {
-            _.toList.sorted
-          }
+    Gen.oneOf(
+      zippedWrites,
+      zippedFlatMapped,
+      zippedMapped,
+      zipped(mappedOrFlatMapped, write(TypedPipeGen.genWithIterableSources)),
+      zipped(write(TypedPipeGen.genWithIterableSources), mappedOrFlatMapped)
+    ).map { exec =>
+      exec flatMap {
+        case (left, right) => left.toIterableExecution.zip(right.toIterableExecution)
+      } map {
+        case (left, right) => left ++ right
+      } map {
+        _.toList.sorted
       }
+    }
 
   import ExecutionOptimizationRules._
 
@@ -176,7 +170,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     val (dag, _) = Dag(ex, ExecutionOptimizationRules.toLiteral)
     dag.allNodes.count {
       case Execution.WriteExecution(_, _, _) => true
-      case _                                 => false
+      case _ => false
     }
   }
 
@@ -187,8 +181,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("optimization rules are reproducible") {
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
-      PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
 
     forAll(genExec, genRule) { (exec, rule) =>
       val optimized = ExecutionOptimizationRules.apply(exec, rule)
@@ -198,8 +191,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("standard rules are reproducible") {
-    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
-      PropertyCheckConfiguration(minSuccessful = 500)
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration = PropertyCheckConfiguration(minSuccessful = 500)
 
     forAll(genExec) { exec =>
       val optimized = ExecutionOptimizationRules.stdOptimizations(exec)
@@ -237,8 +229,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     val pipe = TypedPipe.from(List(1, 2, 3))
     val sink = new MemorySource[Int]()
 
-    val job0 = pipe
-      .writeExecution(sink)
+    val job0 = pipe.writeExecution(sink)
       .zip(Execution.from("hello"))
       .zip(pipe.writeExecution(sink))
 
@@ -246,15 +237,13 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
 
     assert(writeCount(ExecutionOptimizationRules.stdOptimizations(job0)) == 1)
 
-    val job1 = pipe
-      .writeExecution(sink)
+    val job1 = pipe.writeExecution(sink)
       .zip(Execution.from("hello").zip(pipe.writeExecution(sink)))
     assert(writeCount(job1) == 2)
 
     assert(writeCount(ExecutionOptimizationRules.stdOptimizations(job1)) == 1)
 
-    val job2 = pipe
-      .writeExecution(sink)
+    val job2 = pipe.writeExecution(sink)
       .zip(Execution.from("world"))
       .zip(Execution.from("hello").zip(pipe.writeExecution(sink)))
 

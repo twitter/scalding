@@ -11,8 +11,7 @@ class ExampleMysqlJdbcSource() extends JDBCSource with MysqlDriver {
     datetime("off"),
     text("of"),
     double("my"),
-    smallint("cloud")
-  )
+    smallint("cloud"))
   override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
 }
 
@@ -25,8 +24,7 @@ class ExampleVerticaJdbcSource() extends JDBCSource with VerticaJdbcDriver {
     datetime("off"),
     text("of"),
     double("my"),
-    smallint("cloud")
-  )
+    smallint("cloud"))
   override def currentConfig = ConnectionSpec(ConnectUrl("how"), UserName("are"), Password("you"))
 }
 

@@ -1,13 +1,12 @@
 package com.twitter.scalding
 
 import com.twitter.scalding.source.TypedText
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 /**
  * Simple identity job that reads from a Tsv and writes to a Tsv with no change.
  *
- * @param args
- *   to the job. "input" specifies the input file, and "output" the output file.
+ * @param args to the job. "input" specifies the input file, and "output" the output file.
  */
 class SimpleTestJob(args: Args) extends Job(args) {
   Tsv(args("input")).read.write(Tsv(args("output")))
@@ -30,15 +29,12 @@ class JobTestTest extends WordSpec with Matchers {
         .arg("input", "input")
         .arg("output", "output")
         .source(incorrectSource, testInput)
-        .sink[(String, Int)](Tsv("output"))(outBuf => outBuf shouldBe testInput)
+        .sink[(String, Int)](Tsv("output")){ outBuf => { outBuf shouldBe testInput } }
         .run
 
-      (the[IllegalArgumentException] thrownBy {
+      the[IllegalArgumentException] thrownBy {
         runJobTest()
-      } should have).message(
-        s"Failed to create tap for: $requiredSource, with error: requirement failed: " + TestTapFactory.sourceNotFoundError
-          .format(requiredSource)
-      )
+      } should have message (s"Failed to create tap for: ${requiredSource}, with error: requirement failed: " + TestTapFactory.sourceNotFoundError.format(requiredSource))
     }
     "use local mode by default" in {
       JobTest(new SimpleTestJob(_)).getTestMode(true, None) match {

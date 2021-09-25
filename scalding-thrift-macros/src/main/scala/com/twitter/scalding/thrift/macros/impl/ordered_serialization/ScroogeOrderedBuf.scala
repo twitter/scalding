@@ -16,7 +16,7 @@
 package com.twitter.scalding.thrift.macros.impl.ordered_serialization
 
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
-import com.twitter.scrooge.{ThriftStruct, ThriftUnion}
+import com.twitter.scrooge.{ ThriftStruct, ThriftUnion }
 
 import scala.reflect.macros.Context
 
@@ -26,27 +26,18 @@ import scala.reflect.macros.Context
   fields named after the thrift fields. So we look at the companion object to figure out those fields names.
   Then we scan the trait for those methods to build the similar listing as is used in products. Other than that we use
   the same constructor approach to case classes in calling the companion object over calling new on the trait
- */
+  */
 object ScroogeOrderedBuf {
-  def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     import c.universe._
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe
-          if tpe <:< typeOf[ThriftStruct] && !(tpe =:= typeOf[ThriftStruct]) && !(tpe <:< typeOf[
-            ThriftUnion
-          ]) =>
-        ScroogeOrderedBuf(c)(buildDispatcher, tpe)
+      case tpe if tpe <:< typeOf[ThriftStruct] && !(tpe =:= typeOf[ThriftStruct]) && !(tpe <:< typeOf[ThriftUnion]) => ScroogeOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
   }
 
-  def apply(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type
-  ): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]], outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = newTermName(c.fresh(id))
 
@@ -54,7 +45,8 @@ object ScroogeOrderedBuf {
 
     val companionSymbol = outerType.typeSymbol.companionSymbol
 
-    val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType.declarations
+    val fieldNames: List[String] = companionSymbol.asModule.moduleClass.asType.toType
+      .declarations
       .filter(_.name.decoded.endsWith("Field "))
       .collect { case s: TermSymbol => s }
       .filter(_.isStatic)
@@ -62,19 +54,18 @@ object ScroogeOrderedBuf {
       .map { t =>
         val decodedName = t.name.decoded // Looks like "MethodNameField "
         decodedName.dropRight(6).toLowerCase //  These things end in "Field " , yes there is a space in there
-      }
-      .toList
+      }.toList
 
     val elementData: List[(c.universe.Type, TermName, TreeOrderedBuf[c.type])] =
-      outerType.declarations
+      outerType
+        .declarations
         .collect { case m: MethodSymbol => m }
         .filter(m => fieldNames.contains(m.name.toString.toLowerCase))
         .map { accessorMethod =>
           val fieldType = accessorMethod.returnType.asSeenFrom(outerType, outerType.typeSymbol.asClass)
           val b: TreeOrderedBuf[c.type] = dispatcher(fieldType)
           (fieldType, accessorMethod.name, b)
-        }
-        .toList
+        }.toList
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c
@@ -89,18 +80,19 @@ object ScroogeOrderedBuf {
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
 
-        val getValProcessor = elementData.map { case (tpe, accessorSymbol, tBuf) =>
-          val curR = freshT("curR")
-          val builderTree = q"""
+        val getValProcessor = elementData.map {
+          case (tpe, accessorSymbol, tBuf) =>
+            val curR = freshT("curR")
+            val builderTree = q"""
           val $curR: ${tBuf.tpe} = {
             ${tBuf.get(inputStream)}
           }
         """
-          (builderTree, curR)
+            (builderTree, curR)
         }
         q"""
        ..${getValProcessor.map(_._1)}
-       $companionSymbol(..${getValProcessor.map(_._2)}) : $outerType
+       ${companionSymbol}(..${getValProcessor.map(_._2)}) : $outerType
         """
       }
       override def compare(elementA: ctx.TermName, elementB: ctx.TermName): ctx.Tree =
@@ -114,3 +106,4 @@ object ScroogeOrderedBuf {
     }
   }
 }
+

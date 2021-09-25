@@ -12,43 +12,42 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding
 
 import cascading.tuple.TupleEntry
-import cascading.tuple.{Tuple => CTuple}
+import cascading.tuple.{ Tuple => CTuple }
 import com.twitter.scalding.serialization.Externalizer
 import scala.collection.breakOut
 
 /**
- * Typeclass to represent converting from cascading TupleEntry to some type T. The most common application is
- * to convert to scala Tuple objects for use with the Fields API. The typed API internally manually handles
- * its mapping to cascading Tuples, so the implicit resolution mechanism is not used.
+ * Typeclass to represent converting from cascading TupleEntry to some type T.
+ * The most common application is to convert to scala Tuple objects for use
+ * with the Fields API.  The typed API internally manually handles its mapping
+ * to cascading Tuples, so the implicit resolution mechanism is not used.
  *
- * WARNING: if you are seeing issues with the singleConverter being found when you expect something else, you
- * may have an issue where the enclosing scope needs to take an implicit TupleConverter of the correct type.
+ * WARNING: if you are seeing issues with the singleConverter being found when you
+ * expect something else, you may have an issue where the enclosing scope needs to
+ * take an implicit TupleConverter of the correct type.
  *
- * Unfortunately, the semantics we want (prefer to flatten tuples, but otherwise put everything into one
- * postition in the tuple) are somewhat difficlut to encode in scala.
+ * Unfortunately, the semantics we want (prefer to flatten tuples, but otherwise
+ * put everything into one postition in the tuple) are somewhat difficlut to
+ * encode in scala.
  */
-trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.Serializable with TupleArity {
-  self =>
+trait TupleConverter[@specialized(Int, Long, Float, Double) T] extends java.io.Serializable with TupleArity { self =>
   def apply(te: TupleEntry): T
   def andThen[U](fn: T => U): TupleConverter[U] =
     TupleConverter.AndThen(this, fn)
 }
 
 trait LowPriorityTupleConverters extends java.io.Serializable {
-  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit
-      g: TupleGetter[A]
-  ): TupleConverter[A] =
+  implicit def singleConverter[@specialized(Int, Long, Float, Double) A](implicit g: TupleGetter[A]): TupleConverter[A] =
     TupleConverter.Single[A](g)
 }
 
 object TupleConverter extends GeneratedTupleConverters {
-  final case class Single[@specialized(Int, Long, Float, Double) A](getter: TupleGetter[A])
-      extends TupleConverter[A] {
+  final case class Single[@specialized(Int, Long, Float, Double) A](getter: TupleGetter[A]) extends TupleConverter[A] {
     def apply(tup: TupleEntry): A = getter.get(tup.getTuple, 0)
     def arity = 1
   }
@@ -67,11 +66,11 @@ object TupleConverter extends GeneratedTupleConverters {
   }
 
   /**
-   * Treat this TupleConverter as one for a superclass We do this because we want to use implicit resolution
-   * invariantly, but clearly, the operation is covariant
+   * Treat this TupleConverter as one for a superclass
+   * We do this because we want to use implicit resolution invariantly,
+   * but clearly, the operation is covariant
    */
-  def asSuperConverter[T, U >: T](tc: TupleConverter[T]): TupleConverter[U] =
-    tc.asInstanceOf[TupleConverter[U]]
+  def asSuperConverter[T, U >: T](tc: TupleConverter[T]): TupleConverter[U] = tc.asInstanceOf[TupleConverter[U]]
 
   def build[T](thisArity: Int)(fn: TupleEntry => T): TupleConverter[T] = FromFn(fn, thisArity)
   def fromTupleEntry[T](t: TupleEntry)(implicit tc: TupleConverter[T]): T = tc(t)
@@ -79,8 +78,9 @@ object TupleConverter extends GeneratedTupleConverters {
   def of[T](implicit tc: TupleConverter[T]): TupleConverter[T] = tc
 
   /**
-   * Copies the tupleEntry, since cascading may change it after the end of an operation (and it is not safe to
-   * assume the consumer has not kept a ref to this tuple)
+   * Copies the tupleEntry, since cascading may change it after the end of an
+   * operation (and it is not safe to assume the consumer has not kept a ref
+   * to this tuple)
    */
   implicit lazy val TupleEntryConverter: TupleConverter[TupleEntry] = new TupleConverter[TupleEntry] {
     override def apply(tup: TupleEntry) = new TupleEntry(tup)
@@ -88,8 +88,9 @@ object TupleConverter extends GeneratedTupleConverters {
   }
 
   /**
-   * Copies the tuple, since cascading may change it after the end of an operation (and it is not safe to
-   * assume the consumer has not kept a ref to this tuple
+   * Copies the tuple, since cascading may change it after the end of an
+   * operation (and it is not safe to assume the consumer has not kept a ref
+   * to this tuple
    */
   implicit lazy val CTupleConverter: TupleConverter[CTuple] = new TupleConverter[CTuple] {
     override def apply(tup: TupleEntry) = tup.getTupleCopy
@@ -103,7 +104,7 @@ object TupleConverter extends GeneratedTupleConverters {
     def wrap(tup: CTuple): Product = new Product {
       def canEqual(that: Any) = that match {
         case p: Product => true
-        case _          => false
+        case _ => false
       }
       def productArity = tup.size
       def productElement(idx: Int) = tup.getObject(idx)
@@ -118,8 +119,8 @@ object TupleConverter extends GeneratedTupleConverters {
   }
   // Doesn't seem safe to make these implicit by default:
   /**
-   * Convert a TupleEntry to a List of CTuple, of length 2, with key, value from the TupleEntry (useful for
-   * RichPipe.unpivot)
+   * Convert a TupleEntry to a List of CTuple, of length 2, with key, value
+   * from the TupleEntry (useful for RichPipe.unpivot)
    */
   object KeyValueList extends TupleConverter[List[CTuple]] {
     def apply(tupe: TupleEntry): List[CTuple] = {

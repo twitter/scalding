@@ -2,7 +2,7 @@ package com.twitter.scalding.estimation
 
 import cascading.flow.FlowStep
 import cascading.tap.hadoop.Hfs
-import cascading.tap.{CompositeTap, Tap}
+import cascading.tap.{ CompositeTap, Tap }
 import com.twitter.scalding.tap.GlobHfs
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
@@ -25,7 +25,7 @@ object Common {
     val conf = step.getConfig
     unrollTaps(step).flatMap {
       case tap: GlobHfs => Some(tap.toString -> tap.getSize(conf))
-      case tap: Hfs     => Some(tap.toString -> GlobHfs.getSize(tap.getPath, conf))
+      case tap: Hfs => Some(tap.toString -> GlobHfs.getSize(tap.getPath, conf))
       case tap =>
         LOG.warn("InputSizeReducerEstimator unable to calculate size: " + tap)
         None

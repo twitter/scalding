@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.typed
 
 import com.twitter.scalding.Execution
@@ -28,12 +28,13 @@ object ValuePipe extends java.io.Serializable {
 }
 
 /**
- * ValuePipe is special case of a TypedPipe of just a optional single element. It is like a distribute Option
- * type It allows to perform scalar based operations on pipes like normalization.
+ * ValuePipe is special case of a TypedPipe of just a optional single element.
+ *  It is like a distribute Option type
+ * It allows to perform scalar based operations on pipes like normalization.
  */
 sealed trait ValuePipe[+T] extends java.io.Serializable {
   def leftCross[U](that: ValuePipe[U]): ValuePipe[(T, Option[U])] = that match {
-    case EmptyValue       => map((_, None))
+    case EmptyValue => map((_, None))
     case LiteralValue(v2) => map((_, Some(v2)))
     // We don't know if a computed value is empty or not. We need to run the MR job:
     case _ => ComputedValue(toTypedPipe.leftCross(that))
@@ -43,10 +44,11 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
 
   def map[U](fn: T => U): ValuePipe[U]
   def filter(fn: T => Boolean): ValuePipe[T]
-
   /**
-   * Identical to toOptionExecution.map(_.get) The result will be an exception if there is no value. The name
-   * here follows the convention of adding Execution to the name so in the repl in is removed
+   * Identical to toOptionExecution.map(_.get)
+   * The result will be an exception if there is no value.
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
    */
   def getExecution: Execution[T] = toOptionExecution.flatMap {
     case Some(t) => Execution.from(t)
@@ -56,22 +58,26 @@ sealed trait ValuePipe[+T] extends java.io.Serializable {
   }
 
   /**
-   * Like the above, but with a lazy parameter that is evaluated if the value pipe is empty The name here
-   * follows the convention of adding Execution to the name so in the repl in is removed
+   * Like the above, but with a lazy parameter that is evaluated
+   * if the value pipe is empty
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
    */
   def getOrElseExecution[U >: T](t: => U): Execution[U] = toOptionExecution.map(_.getOrElse(t))
   def toTypedPipe: TypedPipe[T]
 
   /**
-   * Convert this value to an Option. It is an error if somehow this is not either empty or has one value. The
-   * name here follows the convention of adding Execution to the name so in the repl in is removed
+   * Convert this value to an Option. It is an error if somehow
+   * this is not either empty or has one value.
+   * The name here follows the convention of adding
+   * Execution to the name so in the repl in is removed
    */
   def toOptionExecution: Execution[Option[T]] =
     toTypedPipe.toIterableExecution.map { it =>
       it.iterator.take(2).toList match {
-        case Nil      => None
+        case Nil => None
         case h :: Nil => Some(h)
-        case items    => sys.error("More than 1 item in an ValuePipe: " + items.toString)
+        case items => sys.error("More than 1 item in an ValuePipe: " + items.toString)
       }
     }
 

@@ -21,8 +21,8 @@ import java.lang.reflect.Type
 import cascading.tuple.Fields
 
 /**
- * Trait to assist with creating objects such as [[TypedTsv]] to read from separated files. Override
- * separator, skipHeader, writeHeader as needed.
+ * Trait to assist with creating objects such as [[TypedTsv]] to read from separated files.
+ * Override separator, skipHeader, writeHeader as needed.
  */
 trait TypedSeperatedFile extends Serializable {
   def separator: String
@@ -40,10 +40,7 @@ trait TypedSeperatedFile extends Serializable {
   def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields): FixedPathTypedDelimited[T] =
     apply(Seq(path), f)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](
-      paths: Seq[String],
-      f: Fields
-  ): FixedPathTypedDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields): FixedPathTypedDelimited[T] =
     new FixedPathTypedDelimited[T](paths, f, skipHeader, writeHeader, separator)
 }
 
@@ -76,41 +73,29 @@ object TypedOsv extends TypedSeperatedFile {
 }
 
 object FixedPathTypedDelimited {
-  def apply[T: Manifest: TupleConverter: TupleSetter](
-      path: String,
-      separator: String
-  ): FixedPathTypedDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, separator: String): FixedPathTypedDelimited[T] =
     apply(Seq(path), separator)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](
-      paths: Seq[String],
-      separator: String
-  ): FixedPathTypedDelimited[T] = {
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], separator: String): FixedPathTypedDelimited[T] = {
     val f = Dsl.intFields(0 until implicitly[TupleConverter[T]].arity)
     apply(paths, f, separator)
   }
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](
-      path: String,
-      f: Fields,
-      separator: String
-  ): FixedPathTypedDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](path: String, f: Fields, separator: String): FixedPathTypedDelimited[T] =
     apply(Seq(path), f, separator)
 
-  def apply[T: Manifest: TupleConverter: TupleSetter](
-      paths: Seq[String],
-      f: Fields,
-      separator: String
-  ): FixedPathTypedDelimited[T] =
+  def apply[T: Manifest: TupleConverter: TupleSetter](paths: Seq[String], f: Fields, separator: String): FixedPathTypedDelimited[T] =
     new FixedPathTypedDelimited[T](paths, f, false, false, separator)
 }
 
 /**
- * Allows you to set the types, prefer this: If T is a subclass of Product, we assume it is a tuple. If it is
- * not, wrap T in a Tuple1: e.g. TypedTsv[Tuple1[List[Int]]]
+ * Allows you to set the types, prefer this:
+ * If T is a subclass of Product, we assume it is a tuple. If it is not, wrap T in a Tuple1:
+ * e.g. TypedTsv[Tuple1[List[Int]]]
  */
 @deprecated("Use TypedTextDelimited instead", "2015-07")
-trait TypedDelimited[T] extends DelimitedScheme with Mappable[T] with TypedSink[T] {
+trait TypedDelimited[T] extends DelimitedScheme
+  with Mappable[T] with TypedSink[T] {
 
   override val skipHeader: Boolean = false
   override val writeHeader: Boolean = false
@@ -126,7 +111,7 @@ trait TypedDelimited[T] extends DelimitedScheme with Mappable[T] with TypedSink[
   override val types: Array[Class[_]] =
     if (classOf[scala.Product].isAssignableFrom(mf.runtimeClass)) {
       //Assume this is a Tuple:
-      mf.typeArguments.map(_.runtimeClass).toArray
+      mf.typeArguments.map { _.runtimeClass }.toArray
     } else {
       //Assume there is only a single item
       Array(mf.runtimeClass)
@@ -141,25 +126,19 @@ trait TypedDelimited[T] extends DelimitedScheme with Mappable[T] with TypedSink[
 }
 
 @deprecated("Use FixedTypedText instead", "2015-07")
-class FixedPathTypedDelimited[T](
-    p: Seq[String],
-    override val fields: Fields = Fields.ALL,
-    override val skipHeader: Boolean = false,
-    override val writeHeader: Boolean = false,
-    override val separator: String = "\t"
-)(implicit
-    override val mf: Manifest[T],
-    override val conv: TupleConverter[T],
-    override val tset: TupleSetter[T]
-) extends FixedPathSource(p: _*)
-    with TypedDelimited[T] {
+class FixedPathTypedDelimited[T](p: Seq[String],
+  override val fields: Fields = Fields.ALL,
+  override val skipHeader: Boolean = false,
+  override val writeHeader: Boolean = false,
+  override val separator: String = "\t")(implicit override val mf: Manifest[T], override val conv: TupleConverter[T],
+    override val tset: TupleSetter[T]) extends FixedPathSource(p: _*)
+  with TypedDelimited[T] {
 
   override lazy val toString: String = "FixedPathTypedDelimited" +
     ((p, fields, skipHeader, writeHeader, separator, mf).toString)
 
   override def equals(that: Any): Boolean = Option(that)
-    .map(_.toString == this.toString)
-    .getOrElse(false)
+    .map { _.toString == this.toString }.getOrElse(false)
 
   override lazy val hashCode: Int = toString.hashCode
 }

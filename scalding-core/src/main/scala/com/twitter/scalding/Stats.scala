@@ -1,11 +1,11 @@
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef, FlowListener, FlowProcess}
+import cascading.flow.{ Flow, FlowListener, FlowDef, FlowProcess }
 import cascading.flow.hadoop.HadoopFlowProcess
 import cascading.stats.CascadingStats
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.hadoop.mapreduce.Counter
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.ref.WeakReference
@@ -24,15 +24,12 @@ import scala.util.Try
  * which increments on the submitter before creating the function. See the difference?
  */
 trait Stat extends java.io.Serializable {
-
   /**
    * increment by the given amount
    */
   def incBy(amount: Long): Unit
-
   /** increment by 1L */
   def inc(): Unit = incBy(1L)
-
   /** increment by -1L (decrement) */
   def dec(): Unit = incBy(-1L)
   def key: StatKey
@@ -55,7 +52,7 @@ private[scalding] object CounterImpl {
   def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
     fp match {
       case hFP: HadoopFlowProcess => HadoopFlowPCounterImpl(hFP, statKey)
-      case _                      => GenericFlowPCounterImpl(fp, statKey)
+      case _ => GenericFlowPCounterImpl(fp, statKey)
     }
 }
 
@@ -63,13 +60,11 @@ sealed private[scalding] trait CounterImpl {
   def increment(amount: Long): Unit
 }
 
-private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey)
-    extends CounterImpl {
+private[scalding] final case class GenericFlowPCounterImpl(fp: FlowProcess[_], statKey: StatKey) extends CounterImpl {
   override def increment(amount: Long): Unit = fp.increment(statKey.group, statKey.counter, amount)
 }
 
-private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey)
-    extends CounterImpl {
+private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess, statKey: StatKey) extends CounterImpl {
   // we use a nullable type here for efficiency
   private[this] val counter: Counter = (for {
     r <- Option(fp.getReporter)
@@ -78,14 +73,11 @@ private[scalding] final case class HadoopFlowPCounterImpl(fp: HadoopFlowProcess,
 
   def skipNull: Boolean =
     fp.getProperty(Config.SkipNullCounters) match {
-      case null  => false // by default don't skip
+      case null => false // by default don't skip
       case isset => isset.toString.toBoolean
     }
 
-  require(
-    (counter != null) || skipNull,
-    s"counter for $statKey is null and ${Config.SkipNullCounters} is not set to true"
-  )
+  require((counter != null) || skipNull, s"counter for $statKey is null and ${Config.SkipNullCounters} is not set to true")
 
   override def increment(amount: Long): Unit =
     if (counter != null) counter.increment(amount) else ()
@@ -113,8 +105,7 @@ object Stats {
 
   // Returns a map of all custom counter names and their counts.
   def getAllCustomCounters()(implicit cascadingStats: CascadingStats): Map[String, Long] =
-    cascadingStats
-      .getCountersFor(ScaldingGroup)
+    cascadingStats.getCountersFor(ScaldingGroup)
       .asScala
       .map { counter =>
         val value = getCounterValue(counter)
@@ -124,9 +115,10 @@ object Stats {
 }
 
 /**
- * Used to inject a typed unique identifier to uniquely name each scalding flow. This is here mostly to deal
- * with the case of testing where there are many concurrent threads running Flows. Users should never have to
- * worry about these
+ * Used to inject a typed unique identifier to uniquely name each scalding flow.
+ * This is here mostly to deal with the case of testing where there are many
+ * concurrent threads running Flows. Users should never have to worry about
+ * these
  */
 case class UniqueID(get: String) {
   assert(get.indexOf(',') == -1, "UniqueID cannot contain ,: " + get)
@@ -162,7 +154,7 @@ object RuntimeStats extends java.io.Serializable {
     (new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]).asScala
   }
 
-  def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] =
+  def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] = {
     (for {
       weakFlowProcess <- flowMappingStore.get(uniqueId.get)
       flowProcess <- weakFlowProcess.get
@@ -171,9 +163,10 @@ object RuntimeStats extends java.io.Serializable {
     }).getOrElse {
       sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
     }
+  }
 
   private[this] var prevFP: FlowProcess[_] = null
-  def addFlowProcess(fp: FlowProcess[_]): Unit =
+  def addFlowProcess(fp: FlowProcess[_]): Unit = {
     if (!(prevFP eq fp)) {
       val uniqueJobIdObj = fp.getProperty(UniqueID.UNIQUE_JOB_ID)
       if (uniqueJobIdObj != null) {
@@ -188,11 +181,14 @@ object RuntimeStats extends java.io.Serializable {
       }
       prevFP = fp
     }
+  }
 
   /**
-   * For serialization, you may need to do: val keepAlive = RuntimeStats.getKeepAliveFunction outside of a
-   * closure passed to map/etc..., and then call: keepAlive() inside of your closure (mapping, reducing
-   * function)
+   * For serialization, you may need to do:
+   * val keepAlive = RuntimeStats.getKeepAliveFunction
+   * outside of a closure passed to map/etc..., and then call:
+   * keepAlive()
+   * inside of your closure (mapping, reducing function)
    */
   def getKeepAliveFunction(implicit flowDef: FlowDef): () => Unit = {
     // Don't capture the flowDef, just the id
@@ -211,14 +207,14 @@ class StatsFlowListener(f: Map[StatKey, Long] => Try[Unit]) extends FlowListener
 
   private var success = true
 
-  override def onCompleted(flow: Flow[_]): Unit =
+  override def onCompleted(flow: Flow[_]): Unit = {
     if (success) {
       val stats = flow.getFlowStats
-      val keys =
-        stats.getCounterGroups.asScala.flatMap(g => stats.getCountersFor(g).asScala.map(c => StatKey(c, g)))
+      val keys = stats.getCounterGroups.asScala.flatMap(g => stats.getCountersFor(g).asScala.map(c => StatKey(c, g)))
       val values = keys.map(k => (k, stats.getCounterValue(k.group, k.counter))).toMap
       f(values).get
     }
+  }
 
   override def onThrowable(flow: Flow[_], throwable: Throwable): Boolean = {
     success = false

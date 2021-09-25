@@ -12,13 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
 import com.twitter.scalding.serialization._
 import com.twitter.scalding.source.TypedText
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.algebird.field._
 
 class Matrix2Sum(args: Args) extends Job(args) {
@@ -198,17 +198,8 @@ class Matrix2PropJob(args: Args) extends Job(args) {
   val tsv3 = TypedText.tsv[(Int, Double)]("row")
   val row = MatrixLiteral(TypedPipe.from(tsv3).map { case (idx, v) => ((), idx, v) }, NoClue)
 
-  mat
-    .binarizeAs[Boolean]
-    .propagate(col)
-    .toTypedPipe
-    .map { case (idx, x, v) => (idx, v) }
-    .write(TypedText.tsv[(Int, Double)]("prop-col"))
-  row
-    .propagateRow(mat.binarizeAs[Boolean])
-    .toTypedPipe
-    .map { case (x, idx, v) => (idx, v) }
-    .write(TypedText.tsv[(Int, Double)]("prop-row"))
+  mat.binarizeAs[Boolean].propagate(col).toTypedPipe.map { case (idx, x, v) => (idx, v) }.write(TypedText.tsv[(Int, Double)]("prop-col"))
+  row.propagateRow(mat.binarizeAs[Boolean]).toTypedPipe.map { case (x, idx, v) => (idx, v) }.write(TypedText.tsv[(Int, Double)]("prop-row"))
 }
 
 class Matrix2Cosine(args: Args) extends Job(args) {
@@ -267,10 +258,12 @@ class Scalar2Ops(args: Args) extends Job(args) {
 class Matrix2Test extends WordSpec with Matchers {
   import Dsl._
 
-  def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] =
-    iter.map(it => ((it._1, it._2), it._3)).toMap
-  def oneDtoSparseMat[Idx, V](iter: Iterable[(Idx, V)]): Map[(Idx, Idx), V] =
-    iter.map(it => ((it._1, it._1), it._2)).toMap
+  def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] = {
+    iter.map { it => ((it._1, it._2), it._3) }.toMap
+  }
+  def oneDtoSparseMat[Idx, V](iter: Iterable[(Idx, V)]): Map[(Idx, Idx), V] = {
+    iter.map { it => ((it._1, it._1), it._2) }.toMap
+  }
 
   "A MatrixSum job" should {
     TUtil.printStack {
@@ -279,13 +272,7 @@ class Matrix2Test extends WordSpec with Matchers {
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 1.0,
-              (1, 2) -> 8.0,
-              (1, 3) -> 3.0,
-              (2, 1) -> 8.0,
-              (2, 2) -> 3.0
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
           }
         }
         .runHadoop
@@ -300,13 +287,7 @@ class Matrix2Test extends WordSpec with Matchers {
         .source(TypedText.tsv[(Int, Int, Double)]("mat2"), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 1.0,
-              (1, 2) -> 8.0,
-              (1, 3) -> 3.0,
-              (2, 1) -> 8.0,
-              (2, 2) -> 3.0
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
           }
         }
         .runHadoop
@@ -317,16 +298,12 @@ class Matrix2Test extends WordSpec with Matchers {
   "A Matrix2Sum3 job, where the Matrix contains tuples as values," should {
     TUtil.printStack {
       JobTest(new Matrix2Sum3(_))
-        .source(
-          Tsv("mat1", ('x1, 'y1, 'v1)),
-          List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0)))
-        )
+        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0))))
         .typedSink(TypedText.tsv[(Int, Int, (Double, Double, Double))]("sum")) { ob =>
           "correctly compute sums" in {
             // Treat (Double, Double, Double) as string because that is what is actually returned
             // when using runHadoop
-            val result =
-              Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0))
+            val result = Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0))
             toSparseMat(ob) shouldBe result
           }
         }(implicitly[TypeDescriptor[(Int, Int, (Double, Double, Double))]].converter)
@@ -343,13 +320,7 @@ class Matrix2Test extends WordSpec with Matchers {
         .source(Tsv("mat3", ('x3, 'y3, 'v3)), List((1, 3, 4.0), (2, 1, 1.0), (1, 2, 4.0)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("sum")) { ob =>
           "correctly compute sums" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 1.0,
-              (1, 2) -> 12.0,
-              (1, 3) -> 7.0,
-              (2, 1) -> 9.0,
-              (2, 2) -> 3.0
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 12.0, (1, 3) -> 7.0, (2, 1) -> 9.0, (2, 2) -> 3.0)
           }
         }
         .runHadoop
@@ -449,13 +420,13 @@ class Matrix2Test extends WordSpec with Matchers {
     TUtil.printStack {
       JobTest(new Matrix2PropJob(_))
         /* Sparse representation of the input matrix:
-         * [[0 1 1],
-         *  [0 0 1],
-         *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
-         *
-         *  Sparse representation of the input vector:
-         * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
-         */
+        * [[0 1 1],
+        *  [0 0 1],
+        *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+        *
+        *  Sparse representation of the input vector:
+        * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
+        */
         .source(TypedText.tsv[(Int, Int, Int)]("graph"), List((0, 1, 1), (0, 2, 1), (1, 2, 1), (2, 0, 1)))
         .source(TypedText.tsv[(Int, Double)]("row"), List((0, 1.0), (1, 2.0), (2, 4.0)))
         .source(TypedText.tsv[(Int, Double)]("col"), List((0, 1.0), (1, 2.0), (2, 4.0)))
@@ -480,12 +451,7 @@ class Matrix2Test extends WordSpec with Matchers {
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("cosine")) { ob =>
           "correctly compute cosine similarity" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 1.0,
-              (1, 2) -> 0.9701425001453319,
-              (2, 1) -> 0.9701425001453319,
-              (2, 2) -> 1.0
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
           }
         }
         .runHadoop
@@ -496,36 +462,16 @@ class Matrix2Test extends WordSpec with Matchers {
   "A Matrix2 Normalize job" should {
     TUtil.printStack {
       JobTest(new Matrix2Normalize(_))
-        .source(
-          TypedText.tsv[(Int, Int, Double)]("mat1"),
-          List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0))
-        )
-        .source(
-          TypedText.tsv[(Int, Int, Long)]("mat2"),
-          List((1, 1, 4L), (1, 2, 1L), (2, 2, 1L), (3, 1, 1L), (3, 2, 3L), (3, 3, 4L))
-        )
+        .source(TypedText.tsv[(Int, Int, Double)]("mat1"), List((1, 1, 4.0), (1, 2, 1.0), (2, 2, 1.0), (3, 1, 1.0), (3, 2, 3.0), (3, 3, 4.0)))
+        .source(TypedText.tsv[(Int, Int, Long)]("mat2"), List((1, 1, 4L), (1, 2, 1L), (2, 2, 1L), (3, 1, 1L), (3, 2, 3L), (3, 3, 4L)))
         .typedSink(TypedText.tsv[(Int, Int, Double)]("normalized")) { ob =>
           "correctly compute l1 normalization for matrix with double values" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 0.8,
-              (1, 2) -> 0.2,
-              (2, 2) -> 1.0,
-              (3, 1) -> 0.125,
-              (3, 2) -> 0.375,
-              (3, 3) -> 0.5
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
           }
         }
-        .typedSink(TypedText.tsv[(Int, Int, Double)]("long_normalized")) { ob =>
+        .typedSink(TypedText.tsv[(Int, Int, Double)]("long_normalized")){ ob =>
           "correctly compute l1 normalization for matrix with long values" in {
-            toSparseMat(ob) shouldBe Map(
-              (1, 1) -> 0.8,
-              (1, 2) -> 0.2,
-              (2, 2) -> 1.0,
-              (3, 1) -> 0.125,
-              (3, 2) -> 0.375,
-              (3, 3) -> 0.5
-            )
+            toSparseMat(ob) shouldBe Map((1, 1) -> 0.8, (1, 2) -> 0.2, (2, 2) -> 1.0, (3, 1) -> 0.125, (3, 2) -> 0.375, (3, 3) -> 0.5)
           }
 
         }

@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.serialization
 
-import com.twitter.chill.{Externalizer => ChillExtern}
+import com.twitter.chill.{ Externalizer => ChillExtern }
 
 import com.esotericsoftware.kryo.DefaultSerializer
 import com.esotericsoftware.kryo.serializers.JavaSerializer
@@ -38,3 +38,4 @@ class Externalizer[T] extends ChillExtern[T] {
   protected override def kryo =
     new KryoHadoop(ScalaAnyRefMapConfig(Map("scalding.kryo.setreferences" -> "true")))
 }
+

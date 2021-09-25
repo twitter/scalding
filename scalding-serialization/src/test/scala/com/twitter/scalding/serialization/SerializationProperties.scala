@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.serialization
 
 import org.scalacheck.Arbitrary
@@ -24,7 +24,7 @@ import org.scalacheck.Prop._
 
 import JavaStreamEnrichments._
 import java.io._
-import scala.util.{Success, Try}
+import scala.util.{ Try, Success }
 
 object LawTester {
   def apply[T: Arbitrary](base: String, laws: Iterable[Law[T]]): Properties =
@@ -64,8 +64,7 @@ object SerializationProperties extends Properties("SerializationProperties") {
   class IntTryWrapperClass(val x: Int)
 
   implicit val myTryIntWrapperOrdSer: OrderedSerialization[IntTryWrapperClass] =
-    OrderedSerialization
-      .viaTryTransform[IntTryWrapperClass, Int](_.x, { x: Int => Success(new IntTryWrapperClass(x)) })
+    OrderedSerialization.viaTryTransform[IntTryWrapperClass, Int](_.x, { x: Int => Success(new IntTryWrapperClass(x)) })
 
   implicit val arbIntWrapperClass: Arbitrary[IntWrapperClass] =
     Arbitrary(implicitly[Arbitrary[Int]].arbitrary.map(new IntWrapperClass(_)))

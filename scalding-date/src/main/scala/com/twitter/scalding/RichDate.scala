@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import java.text.SimpleDateFormat
@@ -22,8 +22,9 @@ import java.util.Date
 import java.util.TimeZone
 
 /**
- * RichDate adds some nice convenience functions to the Java date/calendar classes We commonly do Date/Time
- * work in analysis jobs, so having these operations convenient is very helpful.
+ * RichDate adds some nice convenience functions to the Java date/calendar classes
+ * We commonly do Date/Time work in analysis jobs, so having these operations convenient
+ * is very helpful.
  */
 object RichDate {
   // Implicits to Java types:
@@ -36,11 +37,10 @@ object RichDate {
 
   implicit def apply(d: Date): RichDate = RichDate(d.getTime)
   implicit def apply(d: Calendar): RichDate = RichDate(d.getTime)
-
   /**
-   * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps. We allow
-   * either date, date with time in minutes, date with time down to seconds. The separator between date and
-   * time can be a space or "T".
+   * Parse the string with one of the value DATE_FORMAT_VALIDATORS in the order listed in DateOps.
+   * We allow either date, date with time in minutes, date with time down to seconds.
+   * The separator between date and time can be a space or "T".
    */
   implicit def apply(str: String)(implicit tz: TimeZone, dp: DateParser): RichDate =
     dp.parse(str).get
@@ -51,16 +51,16 @@ object RichDate {
   def upperBound(s: String)(implicit tz: TimeZone, dp: DateParser) = {
     val end = apply(s)
     (DateOps.getFormatObject(s) match {
-      case Some(DateOps.Format.DATE_WITHOUT_DASH)         => end + Days(1)
-      case Some(DateOps.Format.DATE_WITH_DASH)            => end + Days(1)
-      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH)     => end + Hours(1)
-      case Some(DateOps.Format.DATEHOUR_WITH_DASH)        => end + Hours(1)
-      case Some(DateOps.Format.DATETIME_WITHOUT_DASH)     => end + Minutes(1)
-      case Some(DateOps.Format.DATETIME_WITH_DASH)        => end + Minutes(1)
+      case Some(DateOps.Format.DATE_WITHOUT_DASH) => end + Days(1)
+      case Some(DateOps.Format.DATE_WITH_DASH) => end + Days(1)
+      case Some(DateOps.Format.DATEHOUR_WITHOUT_DASH) => end + Hours(1)
+      case Some(DateOps.Format.DATEHOUR_WITH_DASH) => end + Hours(1)
+      case Some(DateOps.Format.DATETIME_WITHOUT_DASH) => end + Minutes(1)
+      case Some(DateOps.Format.DATETIME_WITH_DASH) => end + Minutes(1)
       case Some(DateOps.Format.DATETIME_HMS_WITHOUT_DASH) => end + Seconds(1)
-      case Some(DateOps.Format.DATETIME_HMS_WITH_DASH)    => end + Seconds(1)
-      case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH)   => end + Millisecs(2)
-      case None                                           => Days(1).floorOf(end + Days(1))
+      case Some(DateOps.Format.DATETIME_HMS_WITH_DASH) => end + Seconds(1)
+      case Some(DateOps.Format.DATETIME_HMSM_WITH_DASH) => end + Millisecs(2)
+      case None => Days(1).floorOf(end + Days(1))
     }) - Millisecs(1)
   }
 
@@ -72,8 +72,8 @@ object RichDate {
 }
 
 /**
- * A value class wrapper for milliseconds since the epoch. Its tempting to extend this with AnyVal but this
- * causes problem with Java code.
+ * A value class wrapper for milliseconds since the epoch. Its tempting to extend
+ * this with AnyVal but this causes problem with Java code.
  */
 case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   // these are mutable, don't keep them around
@@ -91,9 +91,9 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   //True of the other is a RichDate with equal value, or a Date equal to value
   override def equals(that: Any) =
     that match {
-      case d: Date      => d.getTime == timestamp
+      case d: Date => d.getTime == timestamp
       case RichDate(ts) => ts == timestamp
-      case _            => false
+      case _ => false
     }
 
   def before(that: RichDate): Boolean = compare(that) < 0
@@ -105,8 +105,8 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
   def format(pattern: String)(implicit tz: TimeZone): String = String.format(pattern, toCalendar(tz))
 
   /**
-   * Make sure the hashCode is the same as Date for the (questionable) choice to make them equal. This is the
-   * same as what java does (and only sane thing).
+   * Make sure the hashCode is the same as Date for the (questionable) choice
+   * to make them equal. This is the same as what java does (and only sane thing).
    */
   override def hashCode =
     (timestamp.toInt) ^ ((timestamp >> 32).toInt)
@@ -128,3 +128,4 @@ case class RichDate(val timestamp: Long) extends Ordered[RichDate] {
     sdfmt.format(cal.getTime)
   }
 }
+

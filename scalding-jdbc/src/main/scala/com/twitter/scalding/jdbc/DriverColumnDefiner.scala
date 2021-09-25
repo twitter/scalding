@@ -20,8 +20,7 @@ case object Nullable extends IsNullable("NULL")
 case object NotNullable extends IsNullable("NOT NULL")
 
 /**
- * This is a mechanism by which different databases can control and configure the way in which statements are
- * created.
+ * This is a mechanism by which different databases can control and configure the way in which statements are created.
  */
 trait DriverColumnDefiner[Type <: JdbcType] {
   //TODO does this need to deal with sizes, or now that it's fixed per DB will that be fine?
@@ -29,14 +28,13 @@ trait DriverColumnDefiner[Type <: JdbcType] {
 
   //TODO should use the fact that now we have more typed typeName
   protected def mkColumnDef(
-      name: String,
-      typeName: String,
-      nullable: IsNullable,
-      sizeOp: Option[Int] = None,
-      defOp: Option[String]
-  ) = {
-    val sizeStr = sizeOp.map("(" + _.toString + ")").getOrElse("")
-    val defStr = defOp.map(" DEFAULT '" + _ + "' ").getOrElse(" ")
+    name: String,
+    typeName: String,
+    nullable: IsNullable,
+    sizeOp: Option[Int] = None,
+    defOp: Option[String]) = {
+    val sizeStr = sizeOp.map { "(" + _.toString + ")" }.getOrElse("")
+    val defStr = defOp.map { " DEFAULT '" + _ + "' " }.getOrElse(" ")
     ColumnDefinition(ColumnName(name), Definition(typeName + sizeStr + defStr + nullable.get))
   }
 

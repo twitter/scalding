@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import com.twitter.scalding.typed.LookupJoin
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import com.twitter.algebird.Semigroup
 
@@ -25,10 +25,9 @@ object LookupJoinedTest {
   // Not defined if there is a collision in K and T, so make those unique:
   def genList(maxTime: Int, maxKey: Int, sz: Int): List[(Int, Int, Int)] = {
     val rng = new java.util.Random
-    (0 until sz).view
-      .map { _ =>
-        (rng.nextInt(maxTime), rng.nextInt(maxKey), rng.nextInt)
-      }
+    (0 until sz).view.map { _ =>
+      (rng.nextInt(maxTime), rng.nextInt(maxKey), rng.nextInt)
+    }
       .groupBy { case (t, k, v) => (t, k) }
       .mapValues(_.headOption.toList)
       .values
@@ -42,22 +41,19 @@ class LookupJoinerJob(args: Args) extends Job(args) {
   val in0 = TypedTsv[(Int, Int, Int)]("input0")
   val in1 = TypedTsv[(Int, Int, Int)]("input1")
 
-  LookupJoin(
-    TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
-  )
-    .map { case (t, (k, (v, opt))) =>
-      (t.toString, k.toString, v.toString, opt.toString)
+  LookupJoin(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })
+    .map {
+      case (t, (k, (v, opt))) =>
+        (t.toString, k.toString, v.toString, opt.toString)
     }
     .write(TypedTsv[(String, String, String, String)]("output"))
 
-  LookupJoin
-    .rightSumming(
-      TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-      TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
-    )
-    .map { case (t, (k, (v, opt))) =>
-      (t.toString, k.toString, v.toString, opt.toString)
+  LookupJoin.rightSumming(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })
+    .map {
+      case (t, (k, (v, opt))) =>
+        (t.toString, k.toString, v.toString, opt.toString)
     }
     .write(TypedTsv[(String, String, String, String)]("output2"))
 }
@@ -71,8 +67,7 @@ class LookupJoinedTest extends WordSpec with Matchers {
     def lookup(t: T, k: K): Option[W] = {
       val ord = Ordering.by { tkw: (T, K, W) => tkw._1 }
       serv.get(k).flatMap { in1s =>
-        in1s
-          .filter { case (t1, _, _) => Ordering[T].lt(t1, t) }
+        in1s.filter { case (t1, _, _) => Ordering[T].lt(t1, t) }
           .reduceOption(ord.max(_, _))
           .map {
             _._3
@@ -86,24 +81,21 @@ class LookupJoinedTest extends WordSpec with Matchers {
     implicit val ord: Ordering[(T, K, W)] = Ordering.by {
       _._1
     }
-    val serv: Map[K, List[(T, K, W)]] = in1.groupBy(_._2).map { case (k, v) =>
-      (
-        k,
-        v.toList.sorted
+    val serv: Map[K, List[(T, K, W)]] = in1.groupBy(_._2).map {
+      case (k, v) =>
+        (k, v.toList
+          .sorted
           .scanLeft(None: Option[(T, K, W)]) { (old, newer) =>
-            old
-              .map { case (_, _, w) => (newer._1, newer._2, Semigroup.plus(w, newer._3)) }
+            old.map { case (_, _, w) => (newer._1, newer._2, Semigroup.plus(w, newer._3)) }
               .orElse(Some(newer))
           }
-          .collect { case Some(v) => v }
-      )
+          .collect { case Some(v) => v })
     }
 
     def lookup(t: T, k: K): Option[W] = {
       val ord = Ordering.by { tkw: (T, K, W) => tkw._1 }
       serv.get(k).flatMap { in1s =>
-        in1s
-          .filter { case (t1, _, _) => Ordering[T].lt(t1, t) }
+        in1s.filter { case (t1, _, _) => Ordering[T].lt(t1, t) }
           .reduceOption(ord.max(_, _))
           .map {
             _._3
@@ -122,16 +114,16 @@ class LookupJoinedTest extends WordSpec with Matchers {
       JobTest(new LookupJoinerJob(_))
         .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
         .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
-        .sink[(String, String, String, String)](TypedTsv[(String, String, String, String)]("output")) {
-          outBuf =>
-            outBuf.toSet should equal(lookupJoin(in0, in1).toSet)
-            in0.size should equal(outBuf.size)
-        }
-        .sink[(String, String, String, String)](TypedTsv[(String, String, String, String)]("output2")) {
-          outBuf =>
+        .sink[(String, String, String, String)](
+          TypedTsv[(String, String, String, String)]("output")) { outBuf =>
+            outBuf.toSet should equal (lookupJoin(in0, in1).toSet)
+            in0.size should equal (outBuf.size)
+          }
+        .sink[(String, String, String, String)](
+          TypedTsv[(String, String, String, String)]("output2")) { outBuf =>
             outBuf.toSet should equal(lookupSumJoin(in0, in1).toSet)
             in0.size should equal(outBuf.size)
-        }
+          }
         .run
         //.runHadoop
         .finish()
@@ -148,13 +140,11 @@ class WindowLookupJoinerJob(args: Args) extends Job(args) {
   def gate(left: Int, right: Int) =
     (left.toLong - right.toLong) < window
 
-  LookupJoin
-    .withWindow(
-      TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
-      TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) }
-    )(gate _)
-    .map { case (t, (k, (v, opt))) =>
-      (t.toString, k.toString, v.toString, opt.toString)
+  LookupJoin.withWindow(TypedPipe.from(in0).map { case (t, k, v) => (t, (k, v)) },
+    TypedPipe.from(in1).map { case (t, k, v) => (t, (k, v)) })(gate _)
+    .map {
+      case (t, (k, (v, opt))) =>
+        (t.toString, k.toString, v.toString, opt.toString)
     }
     .write(TypedTsv[(String, String, String, String)]("output"))
 }
@@ -169,10 +159,10 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
     def lookup(t: Int, k: K): Option[W] = {
       val ord = Ordering.by { tkw: (Int, K, W) => tkw._1 }
       serv.get(k).flatMap { in1s =>
-        in1s
-          .filter { case (t1, _, _) =>
+        in1s.filter {
+          case (t1, _, _) =>
             (t1 < t) && ((t.toLong - t1.toLong) < win)
-          }
+        }
           .reduceOption(ord.max(_, _))
           .map {
             _._3
@@ -194,8 +184,8 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
         .arg("window", "100")
         .source(TypedTsv[(Int, Int, Int)]("input0"), in0)
         .source(TypedTsv[(Int, Int, Int)]("input1"), in1)
-        .sink[(String, String, String, String)](TypedTsv[(String, String, String, String)]("output")) {
-          outBuf =>
+        .sink[(String, String, String, String)](
+          TypedTsv[(String, String, String, String)]("output")) { outBuf =>
             val results = outBuf.toList.sorted
             val correct = windowLookupJoin(in0, in1, 100).toList.sorted
             def some(it: List[(String, String, String, String)]) =
@@ -206,11 +196,12 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
 
             some(results) shouldBe (some(correct))
             none(results) shouldBe (none(correct))
-            in0.size should equal(outBuf.size)
-        }
+            in0.size should equal (outBuf.size)
+          }
         .run
         //.runHadoop
         .finish()
     }
   }
 }
+

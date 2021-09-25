@@ -25,8 +25,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).map(_ => null.asInstanceOf[MockThriftStruct])
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).map(_ => null.asInstanceOf[MockThriftStruct]))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -66,8 +66,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -77,8 +77,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).forceToDisk.filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).forceToDisk.filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 2)
@@ -88,8 +88,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).forceToDisk
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).forceToDisk)
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 2)
@@ -99,8 +99,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).onComplete(() => println("done")).filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).onComplete(() => println("done")).filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -121,8 +121,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).withDescription("foo").filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).withDescription("foo").filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -132,8 +132,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).debug.filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).debug.filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -143,8 +143,8 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe.from(src2).filter(_ => true).map(_ => null.asInstanceOf[MockThriftStruct])
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2).filter(_ => true).map(_ => null.asInstanceOf[MockThriftStruct]))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)
@@ -154,11 +154,10 @@ class PlanningTests extends FunSuite {
     val src1 = new FixedPathParquetScrooge[MockThriftStruct]("src1")
     val src2 = new FixedPathParquetScrooge[MockThriftStruct]("src2")
 
-    val pipe = TypedPipe.from(src1) ++
-      TypedPipe
-        .from(src2)
-        .map(_ => null.asInstanceOf[MockThriftStruct])
-        .filter(_ => true)
+    val pipe = (TypedPipe.from(src1) ++
+      TypedPipe.from(src2)
+      .map(_ => null.asInstanceOf[MockThriftStruct])
+      .filter(_ => true))
 
     assert(steps(pipe) == 1)
     assert(steps(pipe, false) == 1)

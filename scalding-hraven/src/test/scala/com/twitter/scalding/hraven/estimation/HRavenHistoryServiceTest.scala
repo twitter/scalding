@@ -4,7 +4,7 @@ import cascading.flow.FlowStep
 import com.twitter.hraven.JobDescFactory.RESOURCE_MANAGER_KEY
 import com.twitter.hraven.rest.client.HRavenRestClient
 import com.twitter.hraven.util.JSONUtil
-import com.twitter.hraven.{Flow, TaskDetails}
+import com.twitter.hraven.{ Flow, TaskDetails }
 import com.twitter.scalding.estimation.FlowStrategyInfo
 import com.twitter.scalding.hraven.estimation.memory.HRavenMemoryHistoryService
 import com.twitter.scalding.hraven.reducer_estimation.HRavenReducerHistoryService
@@ -13,7 +13,7 @@ import org.apache.hadoop.mapred.JobConf
 import org.codehaus.jackson.`type`.TypeReference
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import scala.collection.JavaConverters._
 import scala.util.Try
 
@@ -27,7 +27,9 @@ class HRavenHistoryServiceTest extends WordSpec with Matchers {
           HRavenMockedClient(super.hRavenClient(conf), detailFields, counterFields)
       }
 
-      val history = historyService.fetchHistory(TestFlowStrategyInfo.dummy(), HRavenMockedClient.nFetch)
+      val history = historyService.fetchHistory(
+        TestFlowStrategyInfo.dummy(),
+        HRavenMockedClient.nFetch)
 
       if (history.isFailure) {
         history.get
@@ -51,7 +53,9 @@ class HRavenHistoryServiceTest extends WordSpec with Matchers {
           HRavenMockedClient(super.hRavenClient(conf), detailFields, counterFields)
       }
 
-      val history = historyService.fetchHistory(TestFlowStrategyInfo.dummy(), HRavenMockedClient.nFetch)
+      val history = historyService.fetchHistory(
+        TestFlowStrategyInfo.dummy(),
+        HRavenMockedClient.nFetch)
 
       if (history.isFailure) {
         history.get
@@ -98,10 +102,9 @@ object HRavenMockedClient {
   val RequiredJobConfigs = Seq("cascading.flow.step.num")
 
   def apply(
-      hRaven: Try[HRavenRestClient],
-      detailFields: List[String],
-      counterFields: List[String]
-  ): Try[HRavenRestClient] =
+    hRaven: Try[HRavenRestClient],
+    detailFields: List[String],
+    counterFields: List[String]): Try[HRavenRestClient] = {
     hRaven.map { hRaven =>
       val client = spy(hRaven)
 
@@ -127,6 +130,7 @@ object HRavenMockedClient {
 
       client
     }
+  }
 
   def configure(conf: JobConf): Unit = {
     conf.set(HRavenClient.apiHostnameKey, "test")
@@ -138,18 +142,12 @@ object HRavenMockedClient {
   }
 
   def flowsResponse: util.List[Flow] =
-    JSONUtil
-      .readJson(
-        getClass.getResourceAsStream("../../../../../flowResponse.json"),
-        new TypeReference[util.List[Flow]] {}
-      )
-      .asInstanceOf[util.List[Flow]]
+    JSONUtil.readJson(
+      getClass.getResourceAsStream("../../../../../flowResponse.json"),
+      new TypeReference[util.List[Flow]] {}).asInstanceOf[util.List[Flow]]
 
   def jobResponse(jobId: String): util.List[TaskDetails] =
-    JSONUtil
-      .readJson(
-        getClass.getResourceAsStream(s"../../../../../jobResponse_$jobId.json"),
-        new TypeReference[util.List[TaskDetails]] {}
-      )
-      .asInstanceOf[util.List[TaskDetails]]
+    JSONUtil.readJson(
+      getClass.getResourceAsStream(s"../../../../../jobResponse_$jobId.json"),
+      new TypeReference[util.List[TaskDetails]] {}).asInstanceOf[util.List[TaskDetails]]
 }

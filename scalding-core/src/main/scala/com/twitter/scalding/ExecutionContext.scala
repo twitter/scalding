@@ -12,22 +12,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import cascading.flow.hadoop.HadoopFlow
 import cascading.flow.planner.BaseFlowStep
-import cascading.flow.{Flow, FlowDef, FlowStepStrategy}
+import cascading.flow.{ Flow, FlowDef, FlowStepStrategy }
 import cascading.pipe.Pipe
 import com.twitter.scalding.estimation.memory.MemoryEstimatorStepStrategy
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import org.apache.hadoop.mapred.JobConf
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{ Logger, LoggerFactory }
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /*
  * This has all the state needed to build a single flow
@@ -39,21 +39,22 @@ trait ExecutionContext {
   def flowDef: FlowDef
   def mode: CascadingMode
 
-  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] =
+  private def getIdentifierOpt(descriptions: Seq[String]): Option[String] = {
     if (descriptions.nonEmpty) Some(descriptions.distinct.mkString(", ")) else None
+  }
 
   private def updateStepConfigWithDescriptions(step: BaseFlowStep[JobConf]): Unit = {
     val conf = step.getConfig
-    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach { descriptionString =>
+    getIdentifierOpt(ExecutionContext.getDesc(step)).foreach(descriptionString => {
       conf.set(Config.StepDescriptions, descriptionString)
-    }
+    })
   }
 
   /**
    * @return
-   *   Success(Some(flow)) -- when everything is right and we can build a flow from flowDef Success(None) --
-   *   when flowDef doesn't have sinks, even after we applied pending writes Failure(exception) -- when it’s
-   *   impossible to build a flow
+   *    Success(Some(flow)) -- when everything is right and we can build a flow from flowDef
+   *    Success(None)       -- when flowDef doesn't have sinks, even after we applied pending writes
+   *    Failure(exception)  -- when it’s impossible to build a flow
    */
   final def buildFlow: Try[Option[Flow[_]]] =
     // For some horrible reason, using Try( ) instead of the below gets me stuck:
@@ -102,8 +103,9 @@ trait ExecutionContext {
         flow match {
           case hadoopFlow: HadoopFlow =>
             val flowSteps = hadoopFlow.getFlowSteps.asScala
-            flowSteps.foreach { case baseFlowStep: BaseFlowStep[JobConf] =>
-              updateStepConfigWithDescriptions(baseFlowStep)
+            flowSteps.foreach {
+              case baseFlowStep: BaseFlowStep[JobConf] =>
+                updateStepConfigWithDescriptions(baseFlowStep)
             }
           case _ => // descriptions not yet supported in other modes
         }
@@ -113,18 +115,13 @@ trait ExecutionContext {
         mode match {
           case _: HadoopMode =>
             val reducerEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config
-              .get(Config.ReducerEstimators)
-              .toList
-              .map(_ => ReducerEstimatorStepStrategy)
+              .get(Config.ReducerEstimators).toList.map(_ => ReducerEstimatorStepStrategy)
             val memoryEstimatorStrategy: Seq[FlowStepStrategy[JobConf]] = config
-              .get(Config.MemoryEstimators)
-              .toList
-              .map(_ => MemoryEstimatorStepStrategy)
+              .get(Config.MemoryEstimators).toList.map(_ => MemoryEstimatorStepStrategy)
 
             val otherStrategies: Seq[FlowStepStrategy[JobConf]] = config.getFlowStepStrategies.map {
               case Success(fn) => fn(mode, configWithId)
-              case Failure(e) =>
-                throw new Exception("Failed to decode flow step strategy when submitting job", e)
+              case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
             }
 
             val optionalFinalStrategy = FlowStepStrategies()
@@ -136,28 +133,27 @@ trait ExecutionContext {
 
             config.getFlowListeners.foreach {
               case Success(fn) => flow.addListener(fn(mode, configWithId))
-              case Failure(e)  => throw new Exception("Failed to decode flow listener", e)
+              case Failure(e) => throw new Exception("Failed to decode flow listener", e)
             }
 
             config.getFlowStepListeners.foreach {
               case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-              case Failure(e)  => new Exception("Failed to decode flow step listener when submitting job", e)
+              case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
             }
           case _: CascadingLocal =>
             config.getFlowStepStrategies.foreach {
               case Success(fn) => flow.setFlowStepStrategy(fn(mode, configWithId))
-              case Failure(e) =>
-                throw new Exception("Failed to decode flow step strategy when submitting job", e)
+              case Failure(e) => throw new Exception("Failed to decode flow step strategy when submitting job", e)
             }
 
             config.getFlowListeners.foreach {
               case Success(fn) => flow.addListener(fn(mode, configWithId))
-              case Failure(e)  => throw new Exception("Failed to decode flow listener", e)
+              case Failure(e) => throw new Exception("Failed to decode flow listener", e)
             }
 
             config.getFlowStepListeners.foreach {
               case Success(fn) => flow.addStepListener(fn(mode, configWithId))
-              case Failure(e)  => new Exception("Failed to decode flow step listener when submitting job", e)
+              case Failure(e) => new Exception("Failed to decode flow step listener when submitting job", e)
             }
 
           case _ => ()
@@ -169,13 +165,14 @@ trait ExecutionContext {
     }
 
   /**
-   * Asynchronously execute the plan currently contained in the FlowDef
+   * Asynchronously execute the plan currently
+   * contained in the FlowDef
    */
   final def run: Future[JobStats] =
     buildFlow match {
       case Success(Some(flow)) => Execution.run(flow)
-      case Success(None)       => Future.successful(JobStats.empty)
-      case Failure(err)        => Future.failed(err)
+      case Success(None) => Future.successful(JobStats.empty)
+      case Failure(err) => Future.failed(err)
     }
 
   /**
@@ -184,7 +181,7 @@ trait ExecutionContext {
   final def waitFor: Try[JobStats] =
     buildFlow.flatMap {
       case Some(flow) => Execution.waitFor(flow)
-      case None       => Success(JobStats.empty)
+      case None => Success(JobStats.empty)
     }
 }
 
@@ -198,11 +195,12 @@ trait ExecutionContext {
 object ExecutionContext {
   private val LOG: Logger = LoggerFactory.getLogger(ExecutionContext.getClass)
 
-  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] =
+  private[scalding] def getDesc[T](baseFlowStep: BaseFlowStep[T]): Seq[String] = {
     baseFlowStep.getGraph.vertexSet.asScala.flatMap {
       case pipe: Pipe => RichPipe.getPipeDescriptions(pipe)
-      case _          => List() // no descriptions
+      case _ => List() // no descriptions
     }(collection.breakOut)
+  }
   /*
    * implicit val ec = ExecutionContext.newContext(config)
    * can be used inside of a Job to get an ExecutionContext if you want
@@ -218,3 +216,4 @@ object ExecutionContext {
   implicit def modeFromContext(implicit ec: ExecutionContext): Mode = ec.mode
   implicit def flowDefFromContext(implicit ec: ExecutionContext): FlowDef = ec.flowDef
 }
+

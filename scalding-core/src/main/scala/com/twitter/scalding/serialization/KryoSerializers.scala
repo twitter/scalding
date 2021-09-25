@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.serialization
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.{Serializer => KSerializer}
-import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{ Serializer => KSerializer }
+import com.esotericsoftware.kryo.io.{ Input, Output }
 
 import com.twitter.scalding._
 
@@ -25,8 +25,9 @@ import com.twitter.scalding._
  * This is a runtime check for types we should never be serializing
  */
 class ThrowingSerializer[T] extends KSerializer[T] {
-  override def write(kryo: Kryo, output: Output, t: T): Unit =
+  override def write(kryo: Kryo, output: Output, t: T): Unit = {
     sys.error(s"Kryo should never be used to serialize an instance: $t")
+  }
   override def read(kryo: Kryo, input: Input, t: Class[T]): T =
     sys.error(s"Kryo should never be used to serialize an instance, class: $t")
 }
@@ -38,13 +39,15 @@ class SerializeAsUnit[T >: Null] extends KSerializer[T] {
 }
 
 /**
- * * Below are some serializers for objects in the scalding project.
+ * *
+ * Below are some serializers for objects in the scalding project.
  */
 class RichDateSerializer extends KSerializer[RichDate] {
   // RichDates are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, date: RichDate): Unit =
+  def write(kser: Kryo, out: Output, date: RichDate): Unit = {
     out.writeLong(date.timestamp, true)
+  }
 
   def read(kser: Kryo, in: Input, cls: Class[RichDate]): RichDate =
     RichDate(in.readLong(true))
@@ -58,15 +61,17 @@ class DateRangeSerializer extends KSerializer[DateRange] {
     out.writeLong(range.end.timestamp, true)
   }
 
-  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange =
+  def read(kser: Kryo, in: Input, cls: Class[DateRange]): DateRange = {
     DateRange(RichDate(in.readLong(true)), RichDate(in.readLong(true)))
+  }
 }
 
 class ArgsSerializer extends KSerializer[Args] {
   // Args are immutable, no need to copy them
   setImmutable(true)
-  def write(kser: Kryo, out: Output, a: Args): Unit =
+  def write(kser: Kryo, out: Output, a: Args): Unit = {
     out.writeString(a.toString)
+  }
   def read(kser: Kryo, in: Input, cls: Class[Args]): Args =
     Args(in.readString)
 }
@@ -102,3 +107,4 @@ class StringFieldSerializer extends KSerializer[StringField[_]] {
     StringField[Any](id)(ord, mf)
   }
 }
+

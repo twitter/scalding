@@ -24,17 +24,13 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
 import CompileTimeLengthTypes._
 
 object OptionOrderedBuf {
-  def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] =>
       OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type
-  ): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+    outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher

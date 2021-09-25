@@ -18,7 +18,7 @@ package com.twitter.scalding.thrift.macros
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.thrift.macros.impl.ScroogeInternalOrderedSerializationImpl
 
-import scala.language.experimental.{macros => sMacros}
+import scala.language.experimental.{ macros => sMacros }
 
 object Macros {
   implicit def scroogeOrdSer[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]

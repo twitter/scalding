@@ -1,17 +1,17 @@
 package com.twitter.scalding
 
-import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
+import scala.concurrent.{ Future, Promise, ExecutionContext => ConcurrentExecutionContext }
 
 /**
  * Represents a cancellable promise.
  */
 case class CPromise[T](promise: Promise[T], cancellationHandler: Promise[CancellationHandler]) {
-
   /**
    * Creates a CFuture using the given promises.
    */
-  def cfuture: CFuture[T] =
+  def cfuture: CFuture[T] = {
     CFuture(promise.future, CancellationHandler.fromFuture(cancellationHandler.future))
+  }
 
   def completeWith(other: CFuture[T]): this.type = {
     // fulfill the main and cancellation handler promises

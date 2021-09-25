@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import org.scalatest.WordSpec
@@ -70,8 +70,8 @@ class DateTest extends WordSpec {
     }
     "throw an exception when trying to parse illegal strings" in {
       // Natty is *really* generous about what it accepts
-      intercept[IllegalArgumentException](RichDate("jhbjhvhjv"))
-      intercept[IllegalArgumentException](RichDate("99-99-99"))
+      intercept[IllegalArgumentException] { RichDate("jhbjhvhjv") }
+      intercept[IllegalArgumentException] { RichDate("99-99-99") }
     }
     "be able to deal with arithmetic operations with whitespace" in {
       val rd1: RichDate = RichDate("2010-10-02") + Seconds(1)
@@ -157,36 +157,12 @@ class DateTest extends WordSpec {
       }
     }
     "correctly calculate upperBound" in {
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("20101001")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 23:59:59")
-        )
-      )
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("2010100114")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 14:59:59")
-        )
-      )
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("201010011415")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 14:15:59")
-        )
-      )
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 23:59:59")
-        )
-      )
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 14:59:59")
-        )
-      )
-      assert(
-        Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) === Seconds(1).floorOf(
-          RichDate("2010-10-01 14:15:59")
-        )
-      )
+      assert(Seconds(1).floorOf(RichDate.upperBound("20101001")) === Seconds(1).floorOf(RichDate("2010-10-01 23:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("2010100114")) === Seconds(1).floorOf(RichDate("2010-10-01 14:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("201010011415")) === Seconds(1).floorOf(RichDate("2010-10-01 14:15:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01")) === Seconds(1).floorOf(RichDate("2010-10-01 23:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14")) === Seconds(1).floorOf(RichDate("2010-10-01 14:59:59")))
+      assert(Seconds(1).floorOf(RichDate.upperBound("2010-10-01 14:15")) === Seconds(1).floorOf(RichDate("2010-10-01 14:15:59")))
     }
     "Have an implicit Ordering" in {
       implicitly[Ordering[RichDate]]
@@ -195,8 +171,9 @@ class DateTest extends WordSpec {
   }
   "A DateRange" should {
     "correctly iterate on each duration" in {
-      def rangeContainTest(d1: DateRange, dur: Duration) =
+      def rangeContainTest(d1: DateRange, dur: Duration) = {
         assert(d1.each(dur).forall((d1r: DateRange) => d1.contains(d1r)))
+      }
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(1))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(2))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Days(1))
@@ -213,15 +190,14 @@ class DateTest extends WordSpec {
       assert(DateRange("2010-10-01", RichDate.upperBound("2010-10-01")).each(Hours(1)).size === 24)
       assert(DateRange("2010-10-31", RichDate.upperBound("2010-10-31")).each(Hours(1)).size === 24)
       assert(DateRange("2010-10-31", RichDate.upperBound("2010-10-31")).each(Days(1)).size === 1)
-      assert(
-        DateRange("2010-10-31 12:00", RichDate.upperBound("2010-10-31 13")).each(Minutes(1)).size === 120
-      )
+      assert(DateRange("2010-10-31 12:00", RichDate.upperBound("2010-10-31 13")).each(Minutes(1)).size === 120)
     }
     "have each partition disjoint and adjacent" in {
       def eachIsDisjoint(d: DateRange, dur: Duration): Unit = {
         val dl = d.each(dur)
-        assert(dl.zip(dl.tail).forall { case (da, db) =>
-          da.isBefore(db.start) && db.isAfter(da.end) && ((da.end + Millisecs(1)) == db.start)
+        assert(dl.zip(dl.tail).forall {
+          case (da, db) =>
+            da.isBefore(db.start) && db.isAfter(da.end) && ((da.end + Millisecs(1)) == db.start)
         })
       }
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Days(1))
@@ -234,21 +210,20 @@ class DateTest extends WordSpec {
       eachIsDisjoint(DateRange("2010-10-01", "2010-10-03"), Minutes(1))
     }
     "reject an end that is before its start" in {
-      intercept[IllegalArgumentException](DateRange("2010-10-02", "2010-10-01"))
+      intercept[IllegalArgumentException] { DateRange("2010-10-02", "2010-10-01") }
     }
     "correctly add time in either or both directions" in {
       assert(DateRange("2010-10-01", "2010-10-02").extend(Days(3)).each(Days(1)).size === 5)
       assert(DateRange("2010-10-01", "2010-10-02").prepend(Days(3)).each(Days(1)).size === 5)
       assert(DateRange("2010-10-01", "2010-10-02").embiggen(Days(3)).each(Days(1)).size === 8)
-      assert(
-        DateRange("2010-10-01", "2010-10-10").extend(Days(1)).prepend(Days(1)) ==
-          DateRange("2010-10-01", "2010-10-10").embiggen(Days(1))
-      )
+      assert(DateRange("2010-10-01", "2010-10-10").extend(Days(1)).prepend(Days(1)) ==
+        DateRange("2010-10-01", "2010-10-10").embiggen(Days(1)))
     }
   }
   "Time units" should {
-    def isSame(d1: Duration, d2: Duration) =
+    def isSame(d1: Duration, d2: Duration) = {
       (RichDate("2011-12-01") + d1) == (RichDate("2011-12-01") + d2)
+    }
     "have 1000 milliseconds in a sec" in {
       assert(isSame(Millisecs(1000), Seconds(1)))
       assert(Seconds(1).toMillisecs === 1000L)
@@ -291,49 +266,29 @@ class DateTest extends WordSpec {
       val t2 = Globifier("/%1$tY/%1$tm/%1$td/")
 
       val testcases =
-        (
-          t1.globify(DateRange("2011-12-01T14", "2011-12-04")),
-          List(
-            "/2011/12/01/14",
-            "/2011/12/01/15",
-            "/2011/12/01/16",
-            "/2011/12/01/17",
-            "/2011/12/01/18",
-            "/2011/12/01/19",
-            "/2011/12/01/20",
-            "/2011/12/01/21",
-            "/2011/12/01/22",
-            "/2011/12/01/23",
-            "/2011/12/02/*",
-            "/2011/12/03/*",
-            "/2011/12/04/00"
-          )
-        ) ::
-          (t1.globify(DateRange("2011-12-01", "2011-12-01T23:59")), List("/2011/12/01/*")) ::
-          (
-            t1.globify(DateRange("2014-06-30T00", "2014-07-01T00")),
-            List("/2014/06/30/*", "/2014/07/01/00")
-          ) ::
-          (t1.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")), List("/2011/12/01/12")) ::
-          (
-            t1.globify(DateRange("2011-12-01T12", "2011-12-01T14")),
-            List("/2011/12/01/12", "/2011/12/01/13", "/2011/12/01/14")
-          ) ::
-          (
-            t2.globify(DateRange("2011-12-01T14", "2011-12-04")),
-            List("/2011/12/01/", "/2011/12/02/", "/2011/12/03/", "/2011/12/04/")
-          ) ::
-          (t2.globify(DateRange("2011-12-01", "2011-12-01T23:59")), List("/2011/12/01/")) ::
-          (t2.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")), List("/2011/12/01/")) ::
-          (
-            t2.globify(DateRange("2011-12-01T12", "2012-01-02T14")),
-            List("/2011/12/*/", "/2012/01/01/", "/2012/01/02/")
-          ) ::
-          (
-            t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
-            List("/2011/11/*/", "/2011/12/01/", "/2011/12/02/")
-          ) ::
-          Nil
+        (t1.globify(DateRange("2011-12-01T14", "2011-12-04")),
+          List("/2011/12/01/14", "/2011/12/01/15", "/2011/12/01/16", "/2011/12/01/17", "/2011/12/01/18",
+            "/2011/12/01/19", "/2011/12/01/20", "/2011/12/01/21", "/2011/12/01/22", "/2011/12/01/23",
+            "/2011/12/02/*", "/2011/12/03/*", "/2011/12/04/00")) ::
+            (t1.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
+              List("/2011/12/01/*")) ::
+              (t1.globify(DateRange("2014-06-30T00", "2014-07-01T00")),
+                List("/2014/06/30/*", "/2014/07/01/00")) ::
+                (t1.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+                  List("/2011/12/01/12")) ::
+                  (t1.globify(DateRange("2011-12-01T12", "2011-12-01T14")),
+                    List("/2011/12/01/12", "/2011/12/01/13", "/2011/12/01/14")) ::
+                    (t2.globify(DateRange("2011-12-01T14", "2011-12-04")),
+                      List("/2011/12/01/", "/2011/12/02/", "/2011/12/03/", "/2011/12/04/")) ::
+                      (t2.globify(DateRange("2011-12-01", "2011-12-01T23:59")),
+                        List("/2011/12/01/")) ::
+                        (t2.globify(DateRange("2011-12-01T12", "2011-12-01T12:59")),
+                          List("/2011/12/01/")) ::
+                          (t2.globify(DateRange("2011-12-01T12", "2012-01-02T14")),
+                            List("/2011/12/*/", "/2012/01/01/", "/2012/01/02/")) ::
+                            (t2.globify(DateRange("2011-11-01T12", "2011-12-02T14")),
+                              List("/2011/11/*/", "/2011/12/01/", "/2011/12/02/")) ::
+                              Nil
 
       testcases.foreach { case (l, r) => assert(l === r) }
     }
@@ -346,8 +301,7 @@ class DateTest extends WordSpec {
         DateRange("2011-12-01", "2011-12-01T23:59"),
         DateRange("2014-06-30T00", "2014-07-01T00"),
         DateRange("2011-12-01T12", "2011-12-01T12:59"),
-        DateRange("2011-12-01T12", "2011-12-01T14")
-      )
+        DateRange("2011-12-01T12", "2011-12-01T14"))
 
       hourlyTestCases.foreach { dr =>
         val resultantDR = globifierOps.hourlyRtGlobifier(dr)
@@ -359,8 +313,7 @@ class DateTest extends WordSpec {
         DateRange("2011-12-01", "2011-12-01T23:59"),
         DateRange("2011-12-01T12", "2011-12-01T12:59"),
         DateRange("2011-12-01T12", "2012-01-02T14"),
-        DateRange("2011-11-01T12", "2011-12-02T14")
-      )
+        DateRange("2011-11-01T12", "2011-12-02T14"))
 
       dailyTestCases.foreach { dr =>
         val resultantDR = globifierOps.dailyRtGlobifier(dr)
@@ -369,11 +322,13 @@ class DateTest extends WordSpec {
     }
 
     def eachElementDistinct(dates: List[String]) = dates.size == dates.toSet.size
-    def globMatchesDate(glob: String)(date: String) =
+    def globMatchesDate(glob: String)(date: String) = {
       java.util.regex.Pattern.matches(glob.replaceAll("\\*", "[0-9]*"), date)
-    def bruteForce(pattern: String, dr: DateRange, dur: Duration)(implicit tz: java.util.TimeZone) =
+    }
+    def bruteForce(pattern: String, dr: DateRange, dur: Duration)(implicit tz: java.util.TimeZone) = {
       dr.each(dur)
-        .map((dr: DateRange) => String.format(pattern, dr.start.toCalendar(tz)))
+        .map { (dr: DateRange) => String.format(pattern, dr.start.toCalendar(tz)) }
+    }
 
     "handle random test cases" in {
       // This kind of implicit is not safe (what does the long mean?)
@@ -382,7 +337,7 @@ class DateTest extends WordSpec {
       val t1 = Globifier(pattern)
 
       val r = new java.util.Random()
-      (0 until 100).foreach { step =>
+      (0 until 100) foreach { step =>
         val start = RichDate("2011-08-03").value.getTime + r.nextInt(Int.MaxValue)
         val dr = DateRange(start, start + r.nextInt(Int.MaxValue))
         val splits = bruteForce(pattern, dr, Hours(1))
@@ -390,11 +345,8 @@ class DateTest extends WordSpec {
 
         assert(eachElementDistinct(globed))
         //See that each path is matched by exactly one glob:
-        assert(
-          splits
-            .map(path => globed.filter(globMatchesDate(_)(path)).size)
-            .forall(_ == 1)
-        )
+        assert(splits.map { path => globed.filter { globMatchesDate(_)(path) }.size }
+          .forall { _ == 1 })
       }
     }
   }

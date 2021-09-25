@@ -1,16 +1,16 @@
 package com.twitter.scalding.typed
 
-import org.scalacheck.{Arbitrary, Prop}
-import org.scalatest.{FunSuite, PropSpec}
-import org.scalatest.prop.{Checkers, PropertyChecks}
+import org.scalacheck.{ Arbitrary, Prop }
+import org.scalatest.{ FunSuite, PropSpec }
+import org.scalatest.prop.{ Checkers, PropertyChecks }
 import scala.reflect.ClassTag
 
 object HashArrayEqualsWrapperLaws {
 
-  def check2[T](
-      ordToTest: Ordering[HashEqualsArrayWrapper[T]]
-  )(implicit ord: Ordering[T], arb: Arbitrary[Array[T]]): Prop =
+  def check2[T](ordToTest: Ordering[HashEqualsArrayWrapper[T]])(implicit ord: Ordering[T], arb: Arbitrary[Array[T]]): Prop =
+
     Prop.forAll { (left: Array[T], right: Array[T]) =>
+
       val leftWrapped = HashEqualsArrayWrapper.wrap(left)
       val rightWrapped = HashEqualsArrayWrapper.wrap(right)
 
@@ -29,6 +29,7 @@ object HashArrayEqualsWrapperLaws {
     }
 
   def check[T](ordToTest: Ordering[Array[T]])(implicit ord: Ordering[T], arb: Arbitrary[Array[T]]): Prop =
+
     Prop.forAll { (left: Array[T], right: Array[T]) =>
       import scala.Ordering.Implicits.seqDerivedOrdering
 

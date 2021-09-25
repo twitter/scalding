@@ -3,7 +3,7 @@ package com.twitter.scalding
 import com.twitter.bijection.JavaSerializationInjection
 import com.twitter.chill.KryoPool
 import com.twitter.chill.config.ScalaAnyRefMapConfig
-import com.twitter.scalding.serialization.{Externalizer, KryoHadoop}
+import com.twitter.scalding.serialization.{ Externalizer, KryoHadoop }
 import com.twitter.scalding.source.TypedText
 import org.scalatest.FunSuite
 
@@ -14,8 +14,7 @@ class ToIterableSerializationTest extends FunSuite {
   }
 
   val myFoo = new Foo
-  val testIterableExecution =
-    Execution.toIterable(TypedPipe.from(TypedText.tsv[Int]("foo")).map(_ * myFoo.field))
+  val testIterableExecution = Execution.toIterable(TypedPipe.from(TypedText.tsv[Int]("foo")).map(_ * myFoo.field))
 
   test("toIterableExecution should roundtrip") {
 

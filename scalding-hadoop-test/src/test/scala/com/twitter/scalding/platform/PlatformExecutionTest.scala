@@ -1,7 +1,7 @@
 package com.twitter.scalding.platform
 
-import com.twitter.scalding.{Config, Execution, TypedPipe, TypedTsv}
-import org.scalatest.{Matchers, WordSpec}
+import com.twitter.scalding.{ Config, Execution, TypedPipe, TypedTsv }
+import org.scalatest.{ Matchers, WordSpec }
 import scala.io.Source
 
 object InAndOutExecution extends Function[Config, Execution[Unit]] {
@@ -72,7 +72,7 @@ class PlatformExecutionTest extends WordSpec with Matchers with HadoopSharedPlat
     "reading then writing shouldn't change the data" in {
       HadoopPlatformExecutionTest(InAndOutExecution, cluster)
         .source("input", inAndOut)
-        .sink[String]("output")(_.toSet shouldBe inAndOut.toSet)
+        .sink[String]("output") { _.toSet shouldBe inAndOut.toSet }
         .run()
     }
   }
@@ -84,7 +84,7 @@ class PlatformExecutionTest extends WordSpec with Matchers with HadoopSharedPlat
       HadoopPlatformExecutionTest(OneDistributedCacheExecution, cluster)
         .data(one)
         .source("input", input)
-        .sink[String]("output")(_ shouldBe output)
+        .sink[String]("output") { _ shouldBe output }
         .run()
     }
 
@@ -95,7 +95,7 @@ class PlatformExecutionTest extends WordSpec with Matchers with HadoopSharedPlat
         .data(first)
         .data(second)
         .source("input", input)
-        .sink[String]("output")(_ shouldBe output)
+        .sink[String]("output") { _ shouldBe output }
         .run()
     }
   }

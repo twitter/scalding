@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Try, Success, Failure }
 import cascading.tap.Tap
 
 case class OptionalSource[T](src: Mappable[T]) extends Source with Mappable[T] {
@@ -27,7 +27,6 @@ case class OptionalSource[T](src: Mappable[T]) extends Source with Mappable[T] {
         src.createTap(readOrWrite)
       case Failure(_) =>
         IterableSource[T](Nil)(TupleSetter.singleSetter[T], src.converter)
-          .createTap(readOrWrite)
-          .asInstanceOf[Tap[_, _, _]]
+          .createTap(readOrWrite).asInstanceOf[Tap[_, _, _]]
     }
 }

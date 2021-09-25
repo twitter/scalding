@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 /*
@@ -66,7 +66,7 @@ object ExecutionApp {
     // We can have something left in the last bucket, so extract it.
     val nonHadoop = finalLast match {
       case Some(x) => tmpNonHadoop :+ x
-      case None    => tmpNonHadoop
+      case None => tmpNonHadoop
     }
 
     // Throwaway hadoop config
@@ -83,7 +83,8 @@ trait ExecutionApp extends java.io.Serializable {
   /**
    * The first argument should be the mode name (hdfs or local)
    *
-   * The default for this is to parse all hadoop arguments and put them into the config. Any unparsed hadoop
+   * The default for this is to parse all hadoop arguments
+   * and put them into the config. Any unparsed hadoop
    * arguments are put into the Args.
    */
   def config(inputArgs: Array[String]): (Config, Mode) = {
@@ -101,9 +102,7 @@ trait ExecutionApp extends java.io.Serializable {
       Config
         .hadoopWithDefaults(hconf)
         .setArgs(args)
-        .setExecutionCleanupOnFinish(
-          true
-        ) // since ExecutionApp returns Execution[Unit], temp paths can't escape
+        .setExecutionCleanupOnFinish(true) // since ExecutionApp returns Execution[Unit], temp paths can't escape
     /*
      * Make sure the hadoop config is set in sync with the config
      * which should not matter for execution, but especially legacy
@@ -115,8 +114,9 @@ trait ExecutionApp extends java.io.Serializable {
     (config, mode)
   }
 
-  def main(args: Array[String]): Unit =
+  def main(args: Array[String]): Unit = {
     config(args) match {
       case (conf, mode) => job.waitFor(conf, mode).get
     }
+  }
 }

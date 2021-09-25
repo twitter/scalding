@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.typed
 
 /**
@@ -26,13 +26,12 @@ trait HasDescription {
  * Used for objects that may _set_ a description to be used in .dot and MR step names.
  */
 trait WithDescription[+This <: WithDescription[This]] extends HasDescription { self: This =>
-
   /** never mutates this, instead returns a new item. */
   def withDescription(description: String): This
 
   def withDescription(descriptionOpt: Option[String]): This =
     descriptionOpt match {
       case Some(description) => withDescription(description)
-      case None              => self
+      case None => self
     }
 }

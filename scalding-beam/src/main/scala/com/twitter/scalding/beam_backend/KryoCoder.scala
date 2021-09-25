@@ -1,16 +1,17 @@
 package com.twitter.scalding.beam_backend
 
 import com.esotericsoftware.kryo.io.Input
-import com.twitter.chill.{KryoInstantiator, KryoPool}
-import com.twitter.scalding.serialization.JavaStreamEnrichments.{RichInputStream, RichOutputStream}
+import com.twitter.chill.{ KryoInstantiator, KryoPool }
+import com.twitter.scalding.serialization.JavaStreamEnrichments.{ RichInputStream, RichOutputStream }
 import com.twitter.scalding.serialization.OrderedSerialization
-import java.io.{InputStream, OutputStream}
-import org.apache.beam.sdk.coders.{AtomicCoder, Coder}
+import java.io.{ InputStream, OutputStream }
+import org.apache.beam.sdk.coders.{ AtomicCoder, Coder }
 import scala.language.implicitConversions
 
 final class KryoCoder(kryoInstantiator: KryoInstantiator) extends AtomicCoder[Any] {
-  @transient private[this] lazy val kryoPool: KryoPool =
-    KryoPool.withByteArrayOutputStream(Runtime.getRuntime.availableProcessors, kryoInstantiator)
+  @transient private[this] lazy val kryoPool: KryoPool = KryoPool.withByteArrayOutputStream(Runtime
+    .getRuntime
+    .availableProcessors, kryoInstantiator)
 
   override def encode(value: Any, os: OutputStream): Unit = {
     val bytes = kryoPool.toBytesWithClass(value)
@@ -40,7 +41,7 @@ object OrderedSerializationCoder {
   def apply[T](ord: Ordering[T], fallback: Coder[T]): Coder[T] =
     ord match {
       case ordSer: OrderedSerialization[T] @unchecked => OrderedSerializationCoder(ordSer)
-      case _                                          => fallback
+      case _ => fallback
     }
 }
 
@@ -50,6 +51,7 @@ case class TupleCoder[K, V](coderK: Coder[K], coderV: Coder[V]) extends AtomicCo
     coderV.encode(value._2, outStream)
   }
 
-  override def decode(inStream: InputStream): (K, V) =
+  override def decode(inStream: InputStream): (K, V) = {
     (coderK.decode(inStream), coderV.decode(inStream))
+  }
 }

@@ -17,22 +17,20 @@ package com.twitter.scalding.serialization.macros.impl.ordered_serialization.pro
 
 import scala.reflect.macros.blackbox.Context
 
-import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{ProductLike, TreeOrderedBuf}
+import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
+  ProductLike,
+  TreeOrderedBuf
+}
 
 @SuppressWarnings(Array("org.wartremover.warts.MergeMaps"))
 object CaseClassOrderedBuf {
-  def dispatch(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
-  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    case tpe
-        if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeSymbol.asClass.isModuleClass =>
+  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+    case tpe if tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass && !tpe.typeSymbol.asClass.isModuleClass =>
       CaseClassOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(
-      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-      outerType: c.Type
-  ): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+    outerType: c.Type): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(id))
 
@@ -62,14 +60,15 @@ object CaseClassOrderedBuf {
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
 
-        val getValProcessor = elementData.map { case (tpe, accessorSymbol, tBuf) =>
-          val curR = freshT("curR")
-          val builderTree = q"""
+        val getValProcessor = elementData.map {
+          case (tpe, accessorSymbol, tBuf) =>
+            val curR = freshT("curR")
+            val builderTree = q"""
           val $curR: ${tBuf.tpe} = {
             ${tBuf.get(inputStream)}
           }
         """
-          (builderTree, curR)
+            (builderTree, curR)
         }
 
         q"""

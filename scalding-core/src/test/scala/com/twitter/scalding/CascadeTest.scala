@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 import java.io.BufferedWriter
 import java.io.FileWriter
@@ -25,26 +25,24 @@ import cascading.cascade.Cascade
 import cascading.flow.FlowSkipIfSinkNotStale
 
 class Job1(args: Args) extends Job(args) {
-  Tsv(args("input0"), 'line).pipe
-    .map[String, String]('line -> 'line)((x: String) => "job1:" + x)
-    .write(Tsv(args("output0"), fields = 'line))
+  Tsv(args("input0"), ('line)).pipe.map[String, String]('line -> 'line)((x: String) => "job1:" + x).write(Tsv(args("output0"), fields = 'line))
 }
 
 class Job2(args: Args) extends Job(args) {
-  Tsv(args("output0"), 'line).pipe
-    .map[String, String]('line -> 'line)((x: String) => "job2" + x)
-    .write(Tsv(args("output1")))
+  Tsv(args("output0"), ('line)).pipe.map[String, String]('line -> 'line)((x: String) => "job2" + x).write(Tsv(args("output1")))
 }
 
 class CascadeTestJob(args: Args) extends CascadeJob(args) {
 
   val jobs = List(new Job1(args), new Job2(args))
 
-  override def preProcessCascade(cascade: Cascade) =
+  override def preProcessCascade(cascade: Cascade) = {
     cascade.setFlowSkipStrategy(new FlowSkipIfSinkNotStale())
+  }
 
-  override def postProcessCascade(cascade: Cascade) =
+  override def postProcessCascade(cascade: Cascade) = {
     println(cascade.getCascadeStats())
+  }
 
 }
 
@@ -54,7 +52,7 @@ class TwoPhaseCascadeTest extends WordSpec with Matchers with FieldConversions {
       .arg("input0", "input0")
       .arg("output0", "output0")
       .arg("output1", "output1")
-      .source(Tsv("input0", 'line), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
+      .source(Tsv("input0", ('line)), List(Tuple1("line1"), Tuple1("line2"), Tuple1("line3"), Tuple1("line4")))
       .sink[String](Tsv("output1")) { ob =>
         "verify output got changed by both flows" in {
           ob.toList shouldBe List("job2job1:line1", "job2job1:line2", "job2job1:line3", "job2job1:line4")
@@ -78,16 +76,10 @@ class TwoPhaseCascadeTest extends WordSpec with Matchers with FieldConversions {
     val output1 = File.createTempFile("cascading-job-output1-", "")
     output1.mkdir()
 
-    val args = Array[String](
-      "com.twitter.scalding.CascadeTestJob",
-      "--local",
-      "--input0",
-      input0.getAbsolutePath,
-      "--output0",
-      output0.getAbsolutePath,
-      "--output1",
-      output1.getAbsolutePath
-    )
+    val args = Array[String]("com.twitter.scalding.CascadeTestJob", "--local",
+      "--input0", input0.getAbsolutePath,
+      "--output0", output0.getAbsolutePath,
+      "--output1", output1.getAbsolutePath)
 
     Tool.main(args)
 

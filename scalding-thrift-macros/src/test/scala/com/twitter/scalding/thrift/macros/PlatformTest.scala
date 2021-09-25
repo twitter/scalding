@@ -12,31 +12,26 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.thrift.macros
 
 import com.twitter.scalding._
-import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopSharedPlatformTest}
+import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.thrift.macros.impl.ScroogeInternalOrderedSerializationImpl
 import com.twitter.scalding.thrift.macros.scalathrift._
 import org.scalacheck.Arbitrary
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
-import scala.language.experimental.{macros => sMacros}
+import scala.language.experimental.{ macros => sMacros }
 
 class CompareJob[T: OrderedSerialization](in: Iterable[T], args: Args) extends Job(args) {
-  TypedPipe
-    .from(in)
-    .flatMap { i =>
-      (0 until 1).map(_ => i)
-    }
-    .map(_ -> 1L)
-    .sumByKey
-    .map { case (k, v) =>
+  TypedPipe.from(in).flatMap{ i =>
+    (0 until 1).map (_ => i)
+  }.map(_ -> 1L).sumByKey.map {
+    case (k, v) =>
       (k.hashCode, v)
-    }
-    .write(TypedTsv[(Int, Long)]("output"))
+  }.write(TypedTsv[(Int, Long)]("output"))
 }
 private[macros] trait InstanceProvider[T] {
   def g(idx: Int): T
@@ -44,8 +39,7 @@ private[macros] trait InstanceProvider[T] {
 class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.FATAL)
   org.apache.log4j.Logger.getLogger("org.mortbay").setLevel(org.apache.log4j.Level.FATAL)
-  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] =
-    macro ScroogeInternalOrderedSerializationImpl[T]
+  implicit def toScroogeInternalOrderedSerialization[T]: OrderedSerialization[T] = macro ScroogeInternalOrderedSerializationImpl[T]
 
   import ScroogeGenerators._
 
@@ -63,7 +57,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
         val expected =
           input
             .groupBy(identity)
-            .map { case (k, v) => (k.hashCode, v.size) }
+            .map{ case (k, v) => (k.hashCode, v.size) }
 
         out.toSet shouldBe expected.toSet
       }
@@ -90,10 +84,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "Expected items should match : Internal Serializer / TestUnion" in {
       toScroogeInternalOrderedSerialization[TestUnion]
-      runCompareTest[TestUnion](
-        toScroogeInternalOrderedSerialization[TestUnion],
-        arbitraryInstanceProvider[TestUnion]
-      )
+      runCompareTest[TestUnion](toScroogeInternalOrderedSerialization[TestUnion], arbitraryInstanceProvider[TestUnion])
     }
 
     "Expected items should match : Internal Serializer / Enum" in {
@@ -110,8 +101,9 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
 
     "Expected items should match : Internal Serializer / (Long, TestTypes)" in {
       case object Container {
-        def ord[T](implicit oSer: OrderedSerialization[T]): OrderedSerialization[(Long, T)] =
+        def ord[T](implicit oSer: OrderedSerialization[T]): OrderedSerialization[(Long, T)] = {
           implicitly[OrderedSerialization[(Long, T)]]
+        }
       }
 
       val ordSer = Container.ord[TestTypes]

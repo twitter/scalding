@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 /**
@@ -22,11 +22,12 @@ sealed abstract class SkewReplication {
   val DEFAULT_NUM_REDUCERS = 100
 
   /**
-   * Given the estimated frequencies of a join key in two pipes that we want to skew-join together, this
-   * returns the key's replication amount in each pipe.
+   * Given the estimated frequencies of a join key in two pipes that we want to skew-join together,
+   * this returns the key's replication amount in each pipe.
    *
-   * Note: if we switch to a Count-Min sketch, we'll need to change the meaning of these counts from "sampled
-   * counts" to "estimates of full counts", and also change how we deal with counts of zero.
+   * Note: if we switch to a Count-Min sketch, we'll need to change the meaning of these counts
+   * from "sampled counts" to "estimates of full counts", and also change how we deal with counts of
+   * zero.
    */
   def getReplications(leftCount: Int, rightCount: Int, reducers: Int): (Int, Int)
 }
@@ -51,8 +52,8 @@ final case class SkewReplicationA(replicationFactor: Int = 1) extends SkewReplic
 /**
  * See https://github.com/twitter/scalding/pull/229#issuecomment-10792296
  */
-final case class SkewReplicationB(maxKeysInMemory: Int = 1e6.toInt, maxReducerOutput: Int = 1e7.toInt)
-    extends SkewReplication {
+final case class SkewReplicationB(maxKeysInMemory: Int = 1E6.toInt, maxReducerOutput: Int = 1E7.toInt)
+  extends SkewReplication {
 
   override def getReplications(leftCount: Int, rightCount: Int, reducers: Int) = {
     val numReducers = if (reducers <= 0) DEFAULT_NUM_REDUCERS else reducers

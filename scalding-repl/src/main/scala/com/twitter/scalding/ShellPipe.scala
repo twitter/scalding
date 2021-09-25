@@ -17,8 +17,7 @@ package com.twitter.scalding
 
 /**
  * Enrichment on TypedPipes allowing them to be run locally, independent of the overall flow.
- * @param pipe
- *   to wrap
+ * @param pipe to wrap
  */
 class ShellTypedPipe[T](pipe: TypedPipe[T])(implicit state: BaseReplState) {
   import state.execute
@@ -31,24 +30,23 @@ class ShellTypedPipe[T](pipe: TypedPipe[T])(implicit state: BaseReplState) {
 
   /**
    * Save snapshot of a typed pipe to a temporary sequence file.
-   * @return
-   *   A TypedPipe to a new Source, reading from the sequence file.
+   * @return A TypedPipe to a new Source, reading from the sequence file.
    */
   def snapshot: TypedPipe[T] =
     execute(pipe.forceToDiskExecution)
 
   /**
-   * Create a (local) iterator over the pipe. For non-trivial pipes (anything except a head-pipe reading from
-   * a source), a snapshot is automatically created and iterated over.
-   * @return
-   *   local iterator
+   * Create a (local) iterator over the pipe. For non-trivial pipes (anything except
+   * a head-pipe reading from a source), a snapshot is automatically created and
+   * iterated over.
+   * @return local iterator
    */
   def toIterator: Iterator[T] =
     execute(pipe.toIterableExecution).iterator
 
   /**
-   * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`. Warning: user must ensure that
-   * the results will actually fit in memory.
+   * Create a list from the pipe in memory. Uses `ShellTypedPipe.toIterator`.
+   * Warning: user must ensure that the results will actually fit in memory.
    */
   def toList: List[T] = toIterator.toList
 

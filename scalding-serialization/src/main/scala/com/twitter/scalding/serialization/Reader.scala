@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.serialization
 
 import java.io.InputStream
@@ -20,9 +20,9 @@ import scala.reflect.ClassTag
 import scala.collection.generic.CanBuildFrom
 
 /**
- * This is a specialized typeclass to make it easier to implement Serializations. The specialization *should*
- * mean that there is no boxing and if the JIT does its work, Reader should compose well (via collections,
- * Tuple2, Option, Either)
+ * This is a specialized typeclass to make it easier to implement Serializations.
+ * The specialization *should* mean that there is no boxing and if the JIT
+ * does its work, Reader should compose well (via collections, Tuple2, Option, Either)
  */
 trait Reader[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) +T] {
   def read(is: InputStream): T
@@ -31,9 +31,8 @@ trait Reader[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) +T] {
 object Reader {
   import JavaStreamEnrichments._
 
-  def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](is: InputStream)(implicit
-      r: Reader[T]
-  ): T = r.read(is)
+  def read[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T](
+    is: InputStream)(implicit r: Reader[T]): T = r.read(is)
   /*
    * Instances below
    */
@@ -91,8 +90,7 @@ object Reader {
     def read(is: InputStream) = (r1.read(is), r2.read(is))
   }
 
-  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Reader: ClassTag]
-      : Reader[Array[T]] =
+  implicit def array[@specialized(Boolean, Byte, Short, Int, Long, Float, Double) T: Reader: ClassTag]: Reader[Array[T]] =
     new Reader[Array[T]] {
       val readerT = implicitly[Reader[T]]
       def read(is: InputStream) = {

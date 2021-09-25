@@ -3,7 +3,11 @@ package com.twitter.scalding.typed.functions
 import java.io.Serializable
 
 /**
- * This is one of 4 core, non composed operations: identity filter map flatMap
+ * This is one of 4 core, non composed operations:
+ * identity
+ * filter
+ * map
+ * flatMap
  */
 sealed abstract class FlatMapping[-A, +B] extends Serializable
 
@@ -19,3 +23,4 @@ object FlatMapping extends Serializable {
   final case class Map[A, B](fn: A => B) extends FlatMapping[A, B]
   final case class FlatM[A, B](fn: A => TraversableOnce[B]) extends FlatMapping[A, B]
 }
+

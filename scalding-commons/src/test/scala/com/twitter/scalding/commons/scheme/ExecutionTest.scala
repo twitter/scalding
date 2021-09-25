@@ -1,17 +1,23 @@
 package com.twitter.scalding.commons.scheme
 
 import com.twitter.scalding.source.TypedSequenceFile
-import com.twitter.scalding.{Config, Execution, Hdfs, Local, TypedPipe}
+import com.twitter.scalding.{
+  Config,
+  Execution,
+  Hdfs,
+  Local,
+  TypedPipe
+}
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.{Matchers, WordSpec}
-import scala.util.{Failure, Success}
+import org.scalatest.{ Matchers, WordSpec }
+import scala.util.{ Failure, Success }
 
 class ExecutionTest extends WordSpec with Matchers {
   object TestPath {
     def getCurrentDirectory = new java.io.File(".").getCanonicalPath
     def prefix = getCurrentDirectory.split("/").last match {
       case "scalding-commons" => getCurrentDirectory
-      case _                  => getCurrentDirectory + "/scalding-commons"
+      case _ => getCurrentDirectory + "/scalding-commons"
     }
     val testfsPathRoot = prefix + "/src/test/resources/com/twitter/scalding/test_filesystem/"
   }
@@ -47,16 +53,14 @@ class ExecutionTest extends WordSpec with Matchers {
   }
 
   "Execution" should {
-    class TypedSequenceFileSource[T](override val path: String)
-        extends TypedSequenceFile[T](path)
-        with CombinedSequenceFileScheme
+    class TypedSequenceFileSource[T](override val path: String) extends TypedSequenceFile[T](path) with CombinedSequenceFileScheme
 
     "toIterableExecution works correctly on partly empty input (empty part, part with value)" in {
       val exec =
         TypedPipe
           .from(new TypedSequenceFileSource[(Long, Long)](TestPath.testfsPathRoot + "test_data/2013/09"))
           .toIterableExecution
-          .map(_.toSet)
+          .map { _.toSet }
 
       val res = exec.shouldSucceedHadoop()
 
@@ -68,7 +72,7 @@ class ExecutionTest extends WordSpec with Matchers {
         TypedPipe
           .from(new TypedSequenceFileSource[(Long, Long)](TestPath.testfsPathRoot + "test_data/2013/10"))
           .toIterableExecution
-          .map(_.toSet)
+          .map { _.toSet }
 
       val res = exec.shouldSucceedHadoop()
 

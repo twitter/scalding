@@ -1,7 +1,8 @@
 package com.twitter.scalding.typed.functions
 
 /**
- * This is a more powerful version of =:= that can allow us to remove casts and also not have any runtime cost
+ * This is a more powerful version of =:= that can allow
+ * us to remove casts and also not have any runtime cost
  * for our function calls in some cases of trivial functions
  */
 sealed abstract class EqTypes[A, B] extends java.io.Serializable {
@@ -33,3 +34,4 @@ object EqTypes extends java.io.Serializable {
     // in scala 2.13, this won't need a cast, but the cast is safe
     reflexive[A].asInstanceOf[EqTypes[A, B]]
 }
+

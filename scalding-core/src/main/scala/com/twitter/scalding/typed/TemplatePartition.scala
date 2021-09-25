@@ -18,7 +18,7 @@ package typed
 import scala.collection.JavaConverters._
 
 import cascading.tap.partition.Partition
-import cascading.tuple.{Fields, TupleEntry}
+import cascading.tuple.{ Fields, TupleEntry }
 
 /**
  * Creates a partition using the given template string.
@@ -28,10 +28,9 @@ import cascading.tuple.{Fields, TupleEntry}
 case class TemplatePartition(partitionFields: Fields, template: String) extends Partition {
   assert(
     partitionFields.size == "%s".r.findAllIn(template).length,
-    "Number of partition fields %s does not correspond to template (%s)".format(partitionFields, template)
-  )
+    "Number of partition fields %s does not correspond to template (%s)".format(partitionFields, template))
 
-  /** Regex pattern created from the template to extract the partition values from a path. */
+  /** Regex pattern created from the template to extract the partition values from a path.*/
   lazy val pattern = template.replaceAll("%s", "(.*)").r.pattern
 
   /** Returns the path depth. In this case the number of partition fields. */
@@ -41,7 +40,8 @@ case class TemplatePartition(partitionFields: Fields, template: String) extends 
   override def getPartitionFields(): Fields = partitionFields
 
   /**
-   * Converts the given partition string to field values and populates the supplied tuple entry with it.
+   * Converts the given partition string to field values and populates the supplied tuple entry
+   * with it.
    */
   override def toTuple(partition: String, tupleEntry: TupleEntry): Unit = {
     val m = pattern.matcher(partition)
@@ -51,7 +51,8 @@ case class TemplatePartition(partitionFields: Fields, template: String) extends 
   }
 
   /**
-   * Given the specified tuple entry fill in the supplied template entry to create the partition path.
+   * Given the specified tuple entry fill in the supplied template entry to create the partition
+   * path.
    */
   override def toPartition(tupleEntry: TupleEntry): String = {
     val fields = tupleEntry.asIterableOf(classOf[String]).asScala.toList

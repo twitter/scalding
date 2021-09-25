@@ -17,7 +17,7 @@ package com.twitter.scalding.avro
 
 import cascading.avro.AvroScheme
 import cascading.avro.PackedAvroScheme
-import cascading.avro.local.{AvroScheme => LAvroScheme, PackedAvroScheme => LPackedAvroScheme}
+import cascading.avro.local.{ AvroScheme => LAvroScheme, PackedAvroScheme => LPackedAvroScheme }
 import com.twitter.scalding._
 import org.apache.avro.Schema
 import cascading.scheme.Scheme
@@ -26,17 +26,15 @@ import java.io.OutputStream
 import java.util.Properties
 import cascading.tuple.Fields
 import collection.JavaConverters._
-import org.apache.hadoop.mapred.{JobConf, OutputCollector, RecordReader}
+import org.apache.hadoop.mapred.{ OutputCollector, RecordReader, JobConf }
 
 trait UnpackedAvroFileScheme extends FileSource {
   def schema: Option[Schema]
 
   // HadoopSchemeInstance gives compile errors in 2.10 for some reason
-  override def hdfsScheme = (new AvroScheme(schema.getOrElse(null)))
-    .asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+  override def hdfsScheme = (new AvroScheme(schema.getOrElse(null))).asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
 
-  override def localScheme = (new LAvroScheme(schema.getOrElse(null)))
-    .asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
+  override def localScheme = (new LAvroScheme(schema.getOrElse(null))).asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
 
 }
 
@@ -44,11 +42,9 @@ trait PackedAvroFileScheme[T] extends FileSource {
   def schema: Schema
 
   // HadoopSchemeInstance gives compile errors for this in 2.10 for some reason
-  override def hdfsScheme = (new PackedAvroScheme[T](schema))
-    .asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
+  override def hdfsScheme = (new PackedAvroScheme[T](schema)).asInstanceOf[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]]
 
-  override def localScheme =
-    (new LPackedAvroScheme[T](schema)).asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
+  override def localScheme = (new LPackedAvroScheme[T](schema)).asInstanceOf[Scheme[Properties, InputStream, OutputStream, _, _]]
 }
 
 object UnpackedAvroSource {
@@ -69,20 +65,16 @@ object UnpackedAvroSource {
     new UnpackedAvroSource[T](Seq(path), schema)
 }
 
-case class UnpackedAvroSource[T](paths: Seq[String], schema: Option[Schema])(implicit
-    val conv: TupleConverter[T],
-    tset: TupleSetter[T]
-) extends FixedPathSource(paths: _*)
-    with UnpackedAvroFileScheme
-    with Mappable[T]
-    with TypedSink[T] {
+case class UnpackedAvroSource[T](paths: Seq[String], schema: Option[Schema])(implicit val conv: TupleConverter[T], tset: TupleSetter[T])
+
+  extends FixedPathSource(paths: _*)
+  with UnpackedAvroFileScheme with Mappable[T] with TypedSink[T] {
 
   override def sinkFields: Fields = {
-    val outFields = schema.map { schema =>
-      val schemaFields = schema.getFields
-      schemaFields.asScala.foldLeft(new Fields())((cFields, sField) =>
-        cFields.append(new Fields(sField.name()))
-      )
+    val outFields = schema.map {
+      schema =>
+        val schemaFields = schema.getFields
+        schemaFields.asScala.foldLeft(new Fields())((cFields, sField) => cFields.append(new Fields(sField.name())))
     }
     outFields.getOrElse(Dsl.intFields(0 until setter.arity))
   }
@@ -97,15 +89,8 @@ object PackedAvroSource {
   def apply[T: AvroSchemaType: Manifest: TupleConverter](path: String) = new PackedAvroSource[T](Seq(path))
 }
 
-case class PackedAvroSource[T](paths: Seq[String])(implicit
-    val mf: Manifest[T],
-    conv: TupleConverter[T],
-    tset: TupleSetter[T],
-    avroType: AvroSchemaType[T]
-) extends FixedPathSource(paths: _*)
-    with PackedAvroFileScheme[T]
-    with Mappable[T]
-    with TypedSink[T] {
+case class PackedAvroSource[T](paths: Seq[String])(implicit val mf: Manifest[T], conv: TupleConverter[T], tset: TupleSetter[T], avroType: AvroSchemaType[T])
+  extends FixedPathSource(paths: _*) with PackedAvroFileScheme[T] with Mappable[T] with TypedSink[T] {
   override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
 
   override def setter[U <: T] = TupleSetter.asSubSetter[T, U](tset)

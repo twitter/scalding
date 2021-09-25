@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.platform
 
-import org.scalatest.{BeforeAndAfterAll, Suite}
+import org.scalatest.{ BeforeAndAfterAll, Suite }
 
 trait HadoopSharedPlatformTest extends BeforeAndAfterAll { this: Suite =>
   org.apache.log4j.Logger.getLogger("org.apache.hadoop").setLevel(org.apache.log4j.Level.ERROR)
@@ -35,7 +35,7 @@ trait HadoopSharedPlatformTest extends BeforeAndAfterAll { this: Suite =>
 
   //TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
   // get lost in the logging
-  override def afterAll(): Unit =
+  override def afterAll(): Unit = {
     try super.afterAll()
     finally {
       // Necessary because afterAll can be called from a different thread and we want to make sure that the state
@@ -45,4 +45,5 @@ trait HadoopSharedPlatformTest extends BeforeAndAfterAll { this: Suite =>
         cluster.shutdown()
       }
     }
+  }
 }

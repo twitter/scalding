@@ -1,21 +1,19 @@
 package com.twitter.scalding.estimation
 
-import cascading.flow.{Flow, FlowStep}
+import cascading.flow.{ Flow, FlowStep }
 import com.twitter.algebird.Monoid
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 case class FlowStrategyInfo(
-    flow: Flow[JobConf],
-    predecessorSteps: Seq[FlowStep[JobConf]],
-    step: FlowStep[JobConf]
-)
+  flow: Flow[JobConf],
+  predecessorSteps: Seq[FlowStep[JobConf]],
+  step: FlowStep[JobConf])
 
 /**
  * Trait for estimation some parameters of Job.
- * @tparam T
- *   return type of estimation
+ * @tparam T return type of estimation
  */
 trait Estimator[T] {
   def estimate(info: FlowStrategyInfo): Option[T]
@@ -24,11 +22,12 @@ trait Estimator[T] {
 case class FallbackEstimator[T](first: Estimator[T], fallback: Estimator[T]) extends Estimator[T] {
   private val LOG = LoggerFactory.getLogger(this.getClass)
 
-  override def estimate(info: FlowStrategyInfo): Option[T] =
+  override def estimate(info: FlowStrategyInfo): Option[T] = {
     first.estimate(info).orElse {
       LOG.warn(s"$first estimator failed. Falling back to $fallback.")
       fallback.estimate(info)
     }
+  }
 }
 
 class FallbackEstimatorMonoid[T] extends Monoid[Estimator[T]] {

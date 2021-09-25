@@ -1,9 +1,9 @@
 package com.twitter.scalding
 
 import cascading.tap.Tap
-import cascading.tuple.{Fields, Tuple}
+import cascading.tuple.{ Fields, Tuple }
 import scala.collection.mutable.Buffer
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class TestTapFactoryTest extends WordSpec with Matchers {
   "A test tap created by TestTapFactory" should {
@@ -14,19 +14,19 @@ class TestTapFactoryTest extends WordSpec with Matchers {
       // Map of sources to use when creating the tap-- does not contain testSource
       val emptySourceMap = Map[Source, Buffer[Tuple]]()
 
-      val testMode = Test(emptySourceMap.get(_))
+      val testMode = Test { emptySourceMap.get(_) }
       val testTapFactory = TestTapFactory(testSource, new Fields())
 
       def createIllegalTap(accessMode: AccessMode): Tap[Any, Any, Any] =
         testTapFactory.createTap(accessMode)(testMode).asInstanceOf[Tap[Any, Any, Any]]
 
-      (the[IllegalArgumentException] thrownBy {
+      the[IllegalArgumentException] thrownBy {
         createIllegalTap(Read)
-      } should have).message("requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
+      } should have message ("requirement failed: " + TestTapFactory.sourceNotFoundError.format(testSource))
 
-      (the[IllegalArgumentException] thrownBy {
+      the[IllegalArgumentException] thrownBy {
         createIllegalTap(Write)
-      } should have).message("requirement failed: " + TestTapFactory.sinkNotFoundError.format(testSource))
+      } should have message ("requirement failed: " + TestTapFactory.sinkNotFoundError.format(testSource))
     }
   }
 }

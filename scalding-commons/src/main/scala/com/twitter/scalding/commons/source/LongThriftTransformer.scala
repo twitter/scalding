@@ -12,16 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.commons.source
 
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import com.twitter.elephantbird.mapreduce.io.ThriftWritable
-import com.twitter.elephantbird.util.{ThriftUtils, TypeRef}
+import com.twitter.elephantbird.util.{ ThriftUtils, TypeRef }
 import com.twitter.scalding._
-import org.apache.hadoop.io.{LongWritable, Writable}
+import org.apache.hadoop.io.{ LongWritable, Writable }
 import org.apache.thrift.TBase
 
 trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
@@ -32,16 +32,18 @@ trait LongThriftTransformer[V <: TBase[_, _]] extends Source {
   // meant to override fields within WritableSequenceFileScheme.
   val keyType = classOf[LongWritable]
   val valueType = classOf[ThriftWritable[V]].asInstanceOf[Class[Writable]]
-  override protected def transformForRead(pipe: Pipe): Pipe =
+  override protected def transformForRead(pipe: Pipe): Pipe = {
     new RichPipe(pipe).mapTo(fields -> fields) { v: (LongWritable, ThriftWritable[V]) =>
       v._2.setConverter(mt.runtimeClass.asInstanceOf[Class[V]])
       (v._1.get, v._2.get)
     }
-  override protected def transformForWrite(pipe: Pipe) =
+  }
+  override protected def transformForWrite(pipe: Pipe) = {
     new RichPipe(pipe).mapTo(fields -> fields) { v: (Long, V) =>
       val key = new LongWritable(v._1)
       val value = new ThriftWritable(v._2, typeRef)
       (key, value)
     }
+  }
   lazy val typeRef = ThriftUtils.getTypeRef(mt.runtimeClass).asInstanceOf[TypeRef[TBase[_, _]]]
 }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.parquet.tuple
 
@@ -20,16 +20,15 @@ import cascading.scheme.Scheme
 import cascading.tuple.Fields
 import com.twitter.scalding._
 import com.twitter.scalding.parquet.HasFilterPredicate
-import com.twitter.scalding.source.{DailySuffixSource, HourlySuffixSource}
+import com.twitter.scalding.source.{ DailySuffixSource, HourlySuffixSource }
 
 object ParquetTupleSource {
   def apply(fields: Fields, paths: String*) = new FixedPathParquetTuple(fields, paths: _*)
 }
 
 /**
- * User should define their own source like: class MySource(path: String, dateRange: DateRange,
- * requestedFields: Fields) extends DailySuffixParquetTuple(path, dateRange, requestedFields) with
- * Mappable2[Int, Int] with TypedSink2[Int,Int]
+ * User should define their own source like:
+ * class MySource(path: String, dateRange: DateRange, requestedFields: Fields) extends DailySuffixParquetTuple(path, dateRange, requestedFields) with Mappable2[Int, Int] with TypedSink2[Int,Int]
  */
 trait ParquetTupleSource extends FileSource with HasFilterPredicate {
   def fields: Fields
@@ -38,7 +37,7 @@ trait ParquetTupleSource extends FileSource with HasFilterPredicate {
 
     val scheme = withFilter match {
       case Some(fp) => new ParquetTupleScheme(fp, fields)
-      case None     => new ParquetTupleScheme(fields)
+      case None => new ParquetTupleScheme(fields)
     }
 
     HadoopSchemeInstance(scheme.asInstanceOf[Scheme[_, _, _, _, _]])
@@ -47,17 +46,19 @@ trait ParquetTupleSource extends FileSource with HasFilterPredicate {
 }
 
 /**
- * See [[com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift]] for documentation on how to specify
- * filter predicates for these sources.
+ * See [[com.twitter.scalding.parquet.thrift.DailySuffixParquetThrift]] for documentation on
+ * how to specify filter predicates for these sources.
  */
-class DailySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
-    extends DailySuffixSource(path, dateRange)
-    with ParquetTupleSource
+class DailySuffixParquetTuple(
+  path: String,
+  dateRange: DateRange,
+  override val fields: Fields) extends DailySuffixSource(path, dateRange) with ParquetTupleSource
 
-class HourlySuffixParquetTuple(path: String, dateRange: DateRange, override val fields: Fields)
-    extends HourlySuffixSource(path, dateRange)
-    with ParquetTupleSource
+class HourlySuffixParquetTuple(
+  path: String,
+  dateRange: DateRange,
+  override val fields: Fields) extends HourlySuffixSource(path, dateRange) with ParquetTupleSource
 
-class FixedPathParquetTuple(override val fields: Fields, paths: String*)
-    extends FixedPathSource(paths: _*)
-    with ParquetTupleSource
+class FixedPathParquetTuple(
+  override val fields: Fields,
+  paths: String*) extends FixedPathSource(paths: _*) with ParquetTupleSource

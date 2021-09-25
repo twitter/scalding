@@ -12,40 +12,38 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package com.twitter.scalding.serialization
 
-import java.io.{InputStream, OutputStream}
-import scala.util.{Failure, Success}
+import java.io.{ InputStream, OutputStream }
+import scala.util.{ Failure, Success }
 import scala.util.control.NonFatal
 
 import JavaStreamEnrichments._
 
 object StringOrderedSerialization {
-  final def binaryIntCompare(
-      leftSize: Int,
-      seekingLeft: InputStream,
-      rightSize: Int,
-      seekingRight: InputStream
-  ): Int = {
+  final def binaryIntCompare(leftSize: Int, seekingLeft: InputStream, rightSize: Int, seekingRight: InputStream): Int = {
     /*
-     * This algorithm only works if count in {0, 1, 2, 3}. Since we only
-     * call it that way below it is safe.
-     */
+       * This algorithm only works if count in {0, 1, 2, 3}. Since we only
+       * call it that way below it is safe.
+       */
 
     @inline
     def compareBytes(count: Int): Int =
       if ((count & 2) == 2) {
         // there are 2 or 3 bytes to read
-        val cmp = Integer.compare(seekingLeft.readUnsignedShort, seekingRight.readUnsignedShort)
+        val cmp = Integer.compare(seekingLeft.readUnsignedShort,
+          seekingRight.readUnsignedShort)
         if (cmp != 0) cmp
-        else if (count == 3) Integer.compare(seekingLeft.readUnsignedByte, seekingRight.readUnsignedByte)
+        else if (count == 3) Integer.compare(seekingLeft.readUnsignedByte,
+          seekingRight.readUnsignedByte)
         else 0
       } else {
         // there are 0 or 1 bytes to read
         if (count == 0) 0
-        else Integer.compare(seekingLeft.readUnsignedByte, seekingRight.readUnsignedByte)
+        else Integer.compare(seekingLeft.readUnsignedByte,
+          seekingRight.readUnsignedByte)
       }
 
     /**
@@ -100,18 +98,17 @@ class StringOrderedSerialization extends OrderedSerialization[String] {
     val leftStart = seekingLeft.position
     val rightStart = seekingRight.position
 
-    val res =
-      OrderedSerialization.resultFrom(binaryIntCompare(leftSize, seekingLeft, rightSize, seekingRight))
+    val res = OrderedSerialization.resultFrom(binaryIntCompare(leftSize, seekingLeft, rightSize, seekingRight))
     seekingLeft.seekToPosition(leftStart + leftSize)
     seekingRight.seekToPosition(rightStart + rightSize)
     res
   } catch {
     case NonFatal(e) => OrderedSerialization.CompareFailure(e)
   }
-
   /**
-   * generally there is no way to see how big a utf-8 string is without serializing. We could scan looking for
-   * all ascii characters, but it's hard to see if we'd get the balance right.
+   * generally there is no way to see how big a utf-8 string is without serializing.
+   * We could scan looking for all ascii characters, but it's hard to see if
+   * we'd get the balance right.
    */
   override def staticSize = None
   override def dynamicSize(s: String) = None

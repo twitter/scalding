@@ -1,18 +1,18 @@
 package com.twitter.scalding.spark_backend
 
 import cascading.flow.FlowDef
-import com.stripe.dagon.{HMap, Rule}
+import com.stripe.dagon.{ HMap, Rule }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox
-import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters}
+import com.twitter.scalding.{ Config, Execution, ExecutionCounters, CancellationHandler, CFuture}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ Future, ExecutionContext, Promise }
 import java.util.concurrent.atomic.AtomicLong
 
-import Execution.{ToWrite, Writer}
+import Execution.{ ToWrite, Writer }
 
 import SparkMode.SparkConfigMethods
 
@@ -36,29 +36,28 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
   type WorkVal[+A] = (TypedSource[A], Future[RDD[_ <: A]])
 
   private[this] case class State(
-      id: Long,
-      sources: Resolver[TypedSource, SparkSource],
-      initToOpt: HMap[StateKey, TypedPipe],
-      forcedPipes: HMap[StateKey, WorkVal]
-  ) {
+    id: Long,
+    sources: Resolver[TypedSource, SparkSource],
+    initToOpt: HMap[StateKey, TypedPipe],
+    forcedPipes: HMap[StateKey, WorkVal]) {
 
     /**
-     * Returns true if we actually add this optimized pipe. We do this because we don't want to take the side
-     * effect twice.
+     * Returns true if we actually add this optimized pipe. We do this
+     * because we don't want to take the side effect twice.
      */
     def addForce[T](
-        c: Config,
-        init: TypedPipe[T],
-        opt: TypedPipe[T],
-        rdd: Future[RDD[_ <: T]],
-        persist: Option[StorageLevel]
-    )(implicit ec: ExecutionContext): (State, Boolean) =
+      c: Config,
+      init: TypedPipe[T],
+      opt: TypedPipe[T],
+      rdd: Future[RDD[_ <: T]],
+      persist: Option[StorageLevel])(implicit ec: ExecutionContext): (State, Boolean) =
+
       forcedPipes.get((c, opt)) match {
         case None =>
           // we have not previously forced this source
           val forcedRdd: Future[RDD[_ <: T]] =
             persist match {
-              case None        => rdd
+              case None => rdd
               case Some(level) => rdd.map(_.persist(level))
             }
           val ssrc: SparkSource[T] = materializedSource[T](forcedRdd)
@@ -69,7 +68,10 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
           val newForced = forcedPipes + ((c, opt) -> workVal)
           val newInitToOpt = initToOpt + ((c, init) -> opt)
 
-          (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true)
+          (copy(
+            sources = newSources,
+            forcedPipes = newForced,
+            initToOpt = newInitToOpt), true)
         case Some(_) =>
           (copy(initToOpt = initToOpt + ((c, init) -> opt)), false)
       }
@@ -97,9 +99,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       }
 
     // This should be called after a pipe has been forced
-    def write[T](c: Config, init: TypedPipe[T], sink: TypedSink[T])(implicit
-        ec: ExecutionContext
-    ): Future[Unit] =
+    def write[T](c: Config, init: TypedPipe[T], sink: TypedSink[T])(implicit ec: ExecutionContext): Future[Unit] =
       sparkMode.sink(sink) match {
         case None => Future.failed(new Exception(s"unknown sink: $sink when writing $init"))
         case Some(ssink) =>
@@ -118,40 +118,33 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
   private def materializedSource[A](persisted: Future[RDD[_ <: A]]): SparkSource[A] =
     new SparkSource[A] {
       def read(s: SparkSession, config: Config)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
-        if (session != s)
-          Future.failed(
-            new Exception(
-              "SparkSession has changed, illegal state. You must not share TypedPipes across Execution runs"
-            )
-          )
+        if (session != s) Future.failed(new Exception("SparkSession has changed, illegal state. You must not share TypedPipes across Execution runs"))
         else {
           persisted
         }
     }
 
-  def finished(): Unit =
+  def finished(): Unit = {
     state.set(null)
+  }
 
-  def getForced[T](conf: Config, initial: TypedPipe[T])(implicit
-      cec: ExecutionContext
-  ): Future[TypedPipe[T]] =
+  def getForced[T](conf: Config, initial: TypedPipe[T])(implicit cec: ExecutionContext): Future[TypedPipe[T]] =
     state.get().getForced(conf, initial)
 
-  def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit
-      cec: ExecutionContext
-  ): Future[Iterable[T]] =
+  def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit cec: ExecutionContext): Future[Iterable[T]] =
     state.get().getIterable(conf, initial)
 
   def start(): Unit = ()
 
   /**
-   * do a batch of writes, possibly optimizing, and return a new unique Long.
+   * do a batch of writes, possibly optimizing, and return a new unique
+   * Long.
    *
    * empty writes are legitimate and should still return a Long
    */
-  def execute(conf: Config, writes: List[ToWrite[_]])(implicit
-      cec: ExecutionContext
-  ): CFuture[(Long, ExecutionCounters)] = {
+  def execute(
+    conf: Config,
+    writes: List[ToWrite[_]])(implicit cec: ExecutionContext): CFuture[(Long, ExecutionCounters)] = {
 
     val planner = SparkPlanner.plan(conf, sparkMode.sources.orElse(state.get().sources))
 
@@ -172,8 +165,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         init = keyPipe,
         opt = opt,
         promise.future,
-        conf.getForceToDiskPersistMode.orElse(Some(StorageLevel.DISK_ONLY))
-      )
+        conf.getForceToDiskPersistMode.orElse(Some(StorageLevel.DISK_ONLY)))
       def action = () => {
         // actually run
         val op = planner(opt)
@@ -183,12 +175,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       }
       (newState, if (added) action else emptyAction)
     }
-    def write[T](
-        opt: TypedPipe[T],
-        keyPipe: TypedPipe[T],
-        sink: TypedSink[T],
-        oldState: State
-    ): (State, Action) = {
+    def write[T](opt: TypedPipe[T], keyPipe: TypedPipe[T], sink: TypedSink[T], oldState: State): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()
       val (newState, added) = oldState.addForce[T](conf, init = keyPipe, opt = opt, promise.future, None)
       val action = () => {
@@ -199,7 +186,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
             val rddF = op.run(session)
             promise.completeWith(rddF)
             rddF.map(_ => ())
-          } else Future.successful(())
+          }
+          else Future.successful(())
 
         rddF.flatMap(_ => newState.write(conf, keyPipe, sink))
       }
@@ -207,15 +195,15 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
     }
 
     /**
-     * We keep track of the actions to avoid calling run on any RDDs until we have fully built the entire next
-     * state
+     * We keep track of the actions to avoid calling run on any RDDs
+     * until we have fully built the entire next state
      */
     val (id: Long, acts) = state.update { s =>
       val (nextState, acts) = optimizedWrites.foldLeft((s, List.empty[Action])) {
-        case (old @ (state, acts), OptimizedWrite(pipe, Force(opt))) =>
+        case (old@(state, acts), OptimizedWrite(pipe, Force(opt))) =>
           val (st, a) = force(opt, pipe, state)
           (st, a :: acts)
-        case (old @ (state, acts), OptimizedWrite(pipe, ToIterable(opt))) =>
+        case (old@(state, acts), OptimizedWrite(pipe, ToIterable(opt))) =>
           val (st, a) = force(opt, pipe, state)
           (st, a :: acts)
         case ((state, acts), OptimizedWrite(pipe, ToWrite.SimpleWrite(opt, sink))) =>
@@ -225,6 +213,6 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
     // now we run the actions:
-    CFuture.uncancellable(Future.traverse(acts)(fn => fn()).map(_ => (id, ExecutionCounters.empty)))
+    CFuture.uncancellable(Future.traverse(acts) { fn => fn() }.map(_ => (id, ExecutionCounters.empty)))
   }
 }

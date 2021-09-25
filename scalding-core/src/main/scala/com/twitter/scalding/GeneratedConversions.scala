@@ -5,1007 +5,918 @@ import cascading.tuple.TupleEntry
 
 trait GeneratedTupleConverters extends LowPriorityTupleConverters {
 
-  case class TupleConverter1[A](gA: TupleGetter[A]) extends TupleConverter[Tuple1[A]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple1(gA.get(tup, 0))
-    }
-    def arity = 1
+  case class TupleConverter1[A](  gA : TupleGetter[A]) extends TupleConverter[Tuple1[A]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple1(gA.get(tup, 0))
+      }
+      def arity = 1
   }
-  implicit def tuple1Converter[A](implicit gA: TupleGetter[A]): TupleConverter[Tuple1[A]] = TupleConverter1(
-    gA
-  )
+  implicit def tuple1Converter[A](implicit
+    gA : TupleGetter[A]): TupleConverter[Tuple1[A]] = TupleConverter1(gA)
 
-  case class TupleConverter2[A, B](gA: TupleGetter[A], gB: TupleGetter[B])
-      extends TupleConverter[Tuple2[A, B]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple2(gA.get(tup, 0), gB.get(tup, 1))
-    }
-    def arity = 2
+  case class TupleConverter2[A,B](  gA : TupleGetter[A],
+    gB : TupleGetter[B]) extends TupleConverter[Tuple2[A,B]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple2(gA.get(tup, 0),
+         gB.get(tup, 1))
+      }
+      def arity = 2
   }
-  implicit def tuple2Converter[A, B](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B]
-  ): TupleConverter[Tuple2[A, B]] = TupleConverter2(gA, gB)
+  implicit def tuple2Converter[A,B](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B]): TupleConverter[Tuple2[A,B]] = TupleConverter2(gA, gB)
 
-  case class TupleConverter3[A, B, C](gA: TupleGetter[A], gB: TupleGetter[B], gC: TupleGetter[C])
-      extends TupleConverter[Tuple3[A, B, C]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple3(gA.get(tup, 0), gB.get(tup, 1), gC.get(tup, 2))
-    }
-    def arity = 3
+  case class TupleConverter3[A,B,C](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C]) extends TupleConverter[Tuple3[A,B,C]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple3(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2))
+      }
+      def arity = 3
   }
-  implicit def tuple3Converter[A, B, C](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C]
-  ): TupleConverter[Tuple3[A, B, C]] = TupleConverter3(gA, gB, gC)
+  implicit def tuple3Converter[A,B,C](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C]): TupleConverter[Tuple3[A,B,C]] = TupleConverter3(gA, gB, gC)
 
-  case class TupleConverter4[A, B, C, D](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D]
-  ) extends TupleConverter[Tuple4[A, B, C, D]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple4(gA.get(tup, 0), gB.get(tup, 1), gC.get(tup, 2), gD.get(tup, 3))
-    }
-    def arity = 4
+  case class TupleConverter4[A,B,C,D](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D]) extends TupleConverter[Tuple4[A,B,C,D]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple4(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3))
+      }
+      def arity = 4
   }
-  implicit def tuple4Converter[A, B, C, D](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D]
-  ): TupleConverter[Tuple4[A, B, C, D]] = TupleConverter4(gA, gB, gC, gD)
+  implicit def tuple4Converter[A,B,C,D](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D]): TupleConverter[Tuple4[A,B,C,D]] = TupleConverter4(gA, gB, gC, gD)
 
-  case class TupleConverter5[A, B, C, D, E](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E]
-  ) extends TupleConverter[Tuple5[A, B, C, D, E]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple5(gA.get(tup, 0), gB.get(tup, 1), gC.get(tup, 2), gD.get(tup, 3), gE.get(tup, 4))
-    }
-    def arity = 5
+  case class TupleConverter5[A,B,C,D,E](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E]) extends TupleConverter[Tuple5[A,B,C,D,E]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple5(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4))
+      }
+      def arity = 5
   }
-  implicit def tuple5Converter[A, B, C, D, E](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E]
-  ): TupleConverter[Tuple5[A, B, C, D, E]] = TupleConverter5(gA, gB, gC, gD, gE)
+  implicit def tuple5Converter[A,B,C,D,E](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E]): TupleConverter[Tuple5[A,B,C,D,E]] = TupleConverter5(gA, gB, gC, gD, gE)
 
-  case class TupleConverter6[A, B, C, D, E, F](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F]
-  ) extends TupleConverter[Tuple6[A, B, C, D, E, F]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple6(gA.get(tup, 0), gB.get(tup, 1), gC.get(tup, 2), gD.get(tup, 3), gE.get(tup, 4), gF.get(tup, 5))
-    }
-    def arity = 6
+  case class TupleConverter6[A,B,C,D,E,F](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F]) extends TupleConverter[Tuple6[A,B,C,D,E,F]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple6(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5))
+      }
+      def arity = 6
   }
-  implicit def tuple6Converter[A, B, C, D, E, F](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F]
-  ): TupleConverter[Tuple6[A, B, C, D, E, F]] = TupleConverter6(gA, gB, gC, gD, gE, gF)
+  implicit def tuple6Converter[A,B,C,D,E,F](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F]): TupleConverter[Tuple6[A,B,C,D,E,F]] = TupleConverter6(gA, gB, gC, gD, gE, gF)
 
-  case class TupleConverter7[A, B, C, D, E, F, G](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G]
-  ) extends TupleConverter[Tuple7[A, B, C, D, E, F, G]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple7(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6)
-      )
-    }
-    def arity = 7
+  case class TupleConverter7[A,B,C,D,E,F,G](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G]) extends TupleConverter[Tuple7[A,B,C,D,E,F,G]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple7(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6))
+      }
+      def arity = 7
   }
-  implicit def tuple7Converter[A, B, C, D, E, F, G](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G]
-  ): TupleConverter[Tuple7[A, B, C, D, E, F, G]] = TupleConverter7(gA, gB, gC, gD, gE, gF, gG)
+  implicit def tuple7Converter[A,B,C,D,E,F,G](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G]): TupleConverter[Tuple7[A,B,C,D,E,F,G]] = TupleConverter7(gA, gB, gC, gD, gE, gF, gG)
 
-  case class TupleConverter8[A, B, C, D, E, F, G, H](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H]
-  ) extends TupleConverter[Tuple8[A, B, C, D, E, F, G, H]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple8(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7)
-      )
-    }
-    def arity = 8
+  case class TupleConverter8[A,B,C,D,E,F,G,H](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H]) extends TupleConverter[Tuple8[A,B,C,D,E,F,G,H]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple8(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7))
+      }
+      def arity = 8
   }
-  implicit def tuple8Converter[A, B, C, D, E, F, G, H](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H]
-  ): TupleConverter[Tuple8[A, B, C, D, E, F, G, H]] = TupleConverter8(gA, gB, gC, gD, gE, gF, gG, gH)
+  implicit def tuple8Converter[A,B,C,D,E,F,G,H](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H]): TupleConverter[Tuple8[A,B,C,D,E,F,G,H]] = TupleConverter8(gA, gB, gC, gD, gE, gF, gG, gH)
 
-  case class TupleConverter9[A, B, C, D, E, F, G, H, I](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I]
-  ) extends TupleConverter[Tuple9[A, B, C, D, E, F, G, H, I]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple9(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8)
-      )
-    }
-    def arity = 9
+  case class TupleConverter9[A,B,C,D,E,F,G,H,I](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I]) extends TupleConverter[Tuple9[A,B,C,D,E,F,G,H,I]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple9(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8))
+      }
+      def arity = 9
   }
-  implicit def tuple9Converter[A, B, C, D, E, F, G, H, I](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I]
-  ): TupleConverter[Tuple9[A, B, C, D, E, F, G, H, I]] = TupleConverter9(gA, gB, gC, gD, gE, gF, gG, gH, gI)
+  implicit def tuple9Converter[A,B,C,D,E,F,G,H,I](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I]): TupleConverter[Tuple9[A,B,C,D,E,F,G,H,I]] = TupleConverter9(gA, gB, gC, gD, gE, gF, gG, gH, gI)
 
-  case class TupleConverter10[A, B, C, D, E, F, G, H, I, J](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J]
-  ) extends TupleConverter[Tuple10[A, B, C, D, E, F, G, H, I, J]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple10(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9)
-      )
-    }
-    def arity = 10
+  case class TupleConverter10[A,B,C,D,E,F,G,H,I,J](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J]) extends TupleConverter[Tuple10[A,B,C,D,E,F,G,H,I,J]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple10(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9))
+      }
+      def arity = 10
   }
-  implicit def tuple10Converter[A, B, C, D, E, F, G, H, I, J](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J]
-  ): TupleConverter[Tuple10[A, B, C, D, E, F, G, H, I, J]] =
-    TupleConverter10(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ)
+  implicit def tuple10Converter[A,B,C,D,E,F,G,H,I,J](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J]): TupleConverter[Tuple10[A,B,C,D,E,F,G,H,I,J]] = TupleConverter10(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ)
 
-  case class TupleConverter11[A, B, C, D, E, F, G, H, I, J, K](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K]
-  ) extends TupleConverter[Tuple11[A, B, C, D, E, F, G, H, I, J, K]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple11(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10)
-      )
-    }
-    def arity = 11
+  case class TupleConverter11[A,B,C,D,E,F,G,H,I,J,K](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K]) extends TupleConverter[Tuple11[A,B,C,D,E,F,G,H,I,J,K]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple11(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10))
+      }
+      def arity = 11
   }
-  implicit def tuple11Converter[A, B, C, D, E, F, G, H, I, J, K](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K]
-  ): TupleConverter[Tuple11[A, B, C, D, E, F, G, H, I, J, K]] =
-    TupleConverter11(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK)
+  implicit def tuple11Converter[A,B,C,D,E,F,G,H,I,J,K](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K]): TupleConverter[Tuple11[A,B,C,D,E,F,G,H,I,J,K]] = TupleConverter11(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK)
 
-  case class TupleConverter12[A, B, C, D, E, F, G, H, I, J, K, L](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L]
-  ) extends TupleConverter[Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple12(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11)
-      )
-    }
-    def arity = 12
+  case class TupleConverter12[A,B,C,D,E,F,G,H,I,J,K,L](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L]) extends TupleConverter[Tuple12[A,B,C,D,E,F,G,H,I,J,K,L]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple12(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11))
+      }
+      def arity = 12
   }
-  implicit def tuple12Converter[A, B, C, D, E, F, G, H, I, J, K, L](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L]
-  ): TupleConverter[Tuple12[A, B, C, D, E, F, G, H, I, J, K, L]] =
-    TupleConverter12(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL)
+  implicit def tuple12Converter[A,B,C,D,E,F,G,H,I,J,K,L](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L]): TupleConverter[Tuple12[A,B,C,D,E,F,G,H,I,J,K,L]] = TupleConverter12(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL)
 
-  case class TupleConverter13[A, B, C, D, E, F, G, H, I, J, K, L, M](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M]
-  ) extends TupleConverter[Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple13(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12)
-      )
-    }
-    def arity = 13
+  case class TupleConverter13[A,B,C,D,E,F,G,H,I,J,K,L,M](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M]) extends TupleConverter[Tuple13[A,B,C,D,E,F,G,H,I,J,K,L,M]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple13(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12))
+      }
+      def arity = 13
   }
-  implicit def tuple13Converter[A, B, C, D, E, F, G, H, I, J, K, L, M](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M]
-  ): TupleConverter[Tuple13[A, B, C, D, E, F, G, H, I, J, K, L, M]] =
-    TupleConverter13(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM)
+  implicit def tuple13Converter[A,B,C,D,E,F,G,H,I,J,K,L,M](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M]): TupleConverter[Tuple13[A,B,C,D,E,F,G,H,I,J,K,L,M]] = TupleConverter13(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM)
 
-  case class TupleConverter14[A, B, C, D, E, F, G, H, I, J, K, L, M, N](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N]
-  ) extends TupleConverter[Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple14(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13)
-      )
-    }
-    def arity = 14
+  case class TupleConverter14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N]) extends TupleConverter[Tuple14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple14(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13))
+      }
+      def arity = 14
   }
-  implicit def tuple14Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N]
-  ): TupleConverter[Tuple14[A, B, C, D, E, F, G, H, I, J, K, L, M, N]] =
-    TupleConverter14(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN)
+  implicit def tuple14Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N]): TupleConverter[Tuple14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]] = TupleConverter14(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN)
 
-  case class TupleConverter15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O]
-  ) extends TupleConverter[Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple15(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14)
-      )
-    }
-    def arity = 15
+  case class TupleConverter15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O]) extends TupleConverter[Tuple15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple15(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14))
+      }
+      def arity = 15
   }
-  implicit def tuple15Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O]
-  ): TupleConverter[Tuple15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]] =
-    TupleConverter15(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO)
+  implicit def tuple15Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O]): TupleConverter[Tuple15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]] = TupleConverter15(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO)
 
-  case class TupleConverter16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P]
-  ) extends TupleConverter[Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple16(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15)
-      )
-    }
-    def arity = 16
+  case class TupleConverter16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P]) extends TupleConverter[Tuple16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple16(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15))
+      }
+      def arity = 16
   }
-  implicit def tuple16Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P]
-  ): TupleConverter[Tuple16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]] =
-    TupleConverter16(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP)
+  implicit def tuple16Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P]): TupleConverter[Tuple16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]] = TupleConverter16(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP)
 
-  case class TupleConverter17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q]
-  ) extends TupleConverter[Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple17(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16)
-      )
-    }
-    def arity = 17
+  case class TupleConverter17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q]) extends TupleConverter[Tuple17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple17(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16))
+      }
+      def arity = 17
   }
-  implicit def tuple17Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q]
-  ): TupleConverter[Tuple17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q]] =
-    TupleConverter17(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ)
+  implicit def tuple17Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q]): TupleConverter[Tuple17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]] = TupleConverter17(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ)
 
-  case class TupleConverter18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R]
-  ) extends TupleConverter[Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple18(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16),
-        gR.get(tup, 17)
-      )
-    }
-    def arity = 18
+  case class TupleConverter18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R]) extends TupleConverter[Tuple18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple18(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16),
+         gR.get(tup, 17))
+      }
+      def arity = 18
   }
-  implicit def tuple18Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R]
-  ): TupleConverter[Tuple18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R]] =
-    TupleConverter18(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR)
+  implicit def tuple18Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R]): TupleConverter[Tuple18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]] = TupleConverter18(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR)
 
-  case class TupleConverter19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S]
-  ) extends TupleConverter[Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple19(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16),
-        gR.get(tup, 17),
-        gS.get(tup, 18)
-      )
-    }
-    def arity = 19
+  case class TupleConverter19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S]) extends TupleConverter[Tuple19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple19(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16),
+         gR.get(tup, 17),
+         gS.get(tup, 18))
+      }
+      def arity = 19
   }
-  implicit def tuple19Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S]
-  ): TupleConverter[Tuple19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]] =
-    TupleConverter19(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS)
+  implicit def tuple19Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S]): TupleConverter[Tuple19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]] = TupleConverter19(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS)
 
-  case class TupleConverter20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T]
-  ) extends TupleConverter[Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple20(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16),
-        gR.get(tup, 17),
-        gS.get(tup, 18),
-        gT.get(tup, 19)
-      )
-    }
-    def arity = 20
+  case class TupleConverter20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T]) extends TupleConverter[Tuple20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple20(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16),
+         gR.get(tup, 17),
+         gS.get(tup, 18),
+         gT.get(tup, 19))
+      }
+      def arity = 20
   }
-  implicit def tuple20Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T]
-  ): TupleConverter[Tuple20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T]] =
-    TupleConverter20(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT)
+  implicit def tuple20Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T]): TupleConverter[Tuple20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]] = TupleConverter20(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT)
 
-  case class TupleConverter21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T],
-      gU: TupleGetter[U]
-  ) extends TupleConverter[Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple21(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16),
-        gR.get(tup, 17),
-        gS.get(tup, 18),
-        gT.get(tup, 19),
-        gU.get(tup, 20)
-      )
-    }
-    def arity = 21
+  case class TupleConverter21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T],
+    gU : TupleGetter[U]) extends TupleConverter[Tuple21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple21(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16),
+         gR.get(tup, 17),
+         gS.get(tup, 18),
+         gT.get(tup, 19),
+         gU.get(tup, 20))
+      }
+      def arity = 21
   }
-  implicit def tuple21Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T],
-      gU: TupleGetter[U]
-  ): TupleConverter[Tuple21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U]] =
-    TupleConverter21(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT, gU)
+  implicit def tuple21Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T],
+    gU : TupleGetter[U]): TupleConverter[Tuple21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]] = TupleConverter21(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT, gU)
 
-  case class TupleConverter22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T],
-      gU: TupleGetter[U],
-      gV: TupleGetter[V]
-  ) extends TupleConverter[Tuple22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]] {
-    def apply(te: TupleEntry) = {
-      val tup = te.getTuple
-      Tuple22(
-        gA.get(tup, 0),
-        gB.get(tup, 1),
-        gC.get(tup, 2),
-        gD.get(tup, 3),
-        gE.get(tup, 4),
-        gF.get(tup, 5),
-        gG.get(tup, 6),
-        gH.get(tup, 7),
-        gI.get(tup, 8),
-        gJ.get(tup, 9),
-        gK.get(tup, 10),
-        gL.get(tup, 11),
-        gM.get(tup, 12),
-        gN.get(tup, 13),
-        gO.get(tup, 14),
-        gP.get(tup, 15),
-        gQ.get(tup, 16),
-        gR.get(tup, 17),
-        gS.get(tup, 18),
-        gT.get(tup, 19),
-        gU.get(tup, 20),
-        gV.get(tup, 21)
-      )
-    }
-    def arity = 22
+  case class TupleConverter22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](  gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T],
+    gU : TupleGetter[U],
+    gV : TupleGetter[V]) extends TupleConverter[Tuple22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]] {
+      def apply(te : TupleEntry) = {
+        val tup = te.getTuple
+        Tuple22(gA.get(tup, 0),
+         gB.get(tup, 1),
+         gC.get(tup, 2),
+         gD.get(tup, 3),
+         gE.get(tup, 4),
+         gF.get(tup, 5),
+         gG.get(tup, 6),
+         gH.get(tup, 7),
+         gI.get(tup, 8),
+         gJ.get(tup, 9),
+         gK.get(tup, 10),
+         gL.get(tup, 11),
+         gM.get(tup, 12),
+         gN.get(tup, 13),
+         gO.get(tup, 14),
+         gP.get(tup, 15),
+         gQ.get(tup, 16),
+         gR.get(tup, 17),
+         gS.get(tup, 18),
+         gT.get(tup, 19),
+         gU.get(tup, 20),
+         gV.get(tup, 21))
+      }
+      def arity = 22
   }
-  implicit def tuple22Converter[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](implicit
-      gA: TupleGetter[A],
-      gB: TupleGetter[B],
-      gC: TupleGetter[C],
-      gD: TupleGetter[D],
-      gE: TupleGetter[E],
-      gF: TupleGetter[F],
-      gG: TupleGetter[G],
-      gH: TupleGetter[H],
-      gI: TupleGetter[I],
-      gJ: TupleGetter[J],
-      gK: TupleGetter[K],
-      gL: TupleGetter[L],
-      gM: TupleGetter[M],
-      gN: TupleGetter[N],
-      gO: TupleGetter[O],
-      gP: TupleGetter[P],
-      gQ: TupleGetter[Q],
-      gR: TupleGetter[R],
-      gS: TupleGetter[S],
-      gT: TupleGetter[T],
-      gU: TupleGetter[U],
-      gV: TupleGetter[V]
-  ): TupleConverter[Tuple22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V]] =
-    TupleConverter22(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT, gU, gV)
+  implicit def tuple22Converter[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](implicit
+    gA : TupleGetter[A],
+    gB : TupleGetter[B],
+    gC : TupleGetter[C],
+    gD : TupleGetter[D],
+    gE : TupleGetter[E],
+    gF : TupleGetter[F],
+    gG : TupleGetter[G],
+    gH : TupleGetter[H],
+    gI : TupleGetter[I],
+    gJ : TupleGetter[J],
+    gK : TupleGetter[K],
+    gL : TupleGetter[L],
+    gM : TupleGetter[M],
+    gN : TupleGetter[N],
+    gO : TupleGetter[O],
+    gP : TupleGetter[P],
+    gQ : TupleGetter[Q],
+    gR : TupleGetter[R],
+    gS : TupleGetter[S],
+    gT : TupleGetter[T],
+    gU : TupleGetter[U],
+    gV : TupleGetter[V]): TupleConverter[Tuple22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]] = TupleConverter22(gA, gB, gC, gD, gE, gF, gG, gH, gI, gJ, gK, gL, gM, gN, gO, gP, gQ, gR, gS, gT, gU, gV)
 }
 trait GeneratedTupleSetters extends LowPriorityTupleSetters {
 
@@ -1019,7 +930,7 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
   }
   implicit def tup1Setter[Z <: Tuple1[_]]: TupleSetter[Z] = TupleSetter1[Z]()
 
-  case class TupleSetter2[Z <: Tuple2[_, _]]() extends TupleSetter[Z] {
+  case class TupleSetter2[Z <: Tuple2[_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(2)
       tup.set(0, arg._1)
@@ -1028,9 +939,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 2
   }
-  implicit def tup2Setter[Z <: Tuple2[_, _]]: TupleSetter[Z] = TupleSetter2[Z]()
+  implicit def tup2Setter[Z <: Tuple2[_,_]]: TupleSetter[Z] = TupleSetter2[Z]()
 
-  case class TupleSetter3[Z <: Tuple3[_, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter3[Z <: Tuple3[_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(3)
       tup.set(0, arg._1)
@@ -1040,9 +951,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 3
   }
-  implicit def tup3Setter[Z <: Tuple3[_, _, _]]: TupleSetter[Z] = TupleSetter3[Z]()
+  implicit def tup3Setter[Z <: Tuple3[_,_,_]]: TupleSetter[Z] = TupleSetter3[Z]()
 
-  case class TupleSetter4[Z <: Tuple4[_, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter4[Z <: Tuple4[_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(4)
       tup.set(0, arg._1)
@@ -1053,9 +964,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 4
   }
-  implicit def tup4Setter[Z <: Tuple4[_, _, _, _]]: TupleSetter[Z] = TupleSetter4[Z]()
+  implicit def tup4Setter[Z <: Tuple4[_,_,_,_]]: TupleSetter[Z] = TupleSetter4[Z]()
 
-  case class TupleSetter5[Z <: Tuple5[_, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter5[Z <: Tuple5[_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(5)
       tup.set(0, arg._1)
@@ -1067,9 +978,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 5
   }
-  implicit def tup5Setter[Z <: Tuple5[_, _, _, _, _]]: TupleSetter[Z] = TupleSetter5[Z]()
+  implicit def tup5Setter[Z <: Tuple5[_,_,_,_,_]]: TupleSetter[Z] = TupleSetter5[Z]()
 
-  case class TupleSetter6[Z <: Tuple6[_, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter6[Z <: Tuple6[_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(6)
       tup.set(0, arg._1)
@@ -1082,9 +993,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 6
   }
-  implicit def tup6Setter[Z <: Tuple6[_, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter6[Z]()
+  implicit def tup6Setter[Z <: Tuple6[_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter6[Z]()
 
-  case class TupleSetter7[Z <: Tuple7[_, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter7[Z <: Tuple7[_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(7)
       tup.set(0, arg._1)
@@ -1098,9 +1009,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 7
   }
-  implicit def tup7Setter[Z <: Tuple7[_, _, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter7[Z]()
+  implicit def tup7Setter[Z <: Tuple7[_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter7[Z]()
 
-  case class TupleSetter8[Z <: Tuple8[_, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter8[Z <: Tuple8[_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(8)
       tup.set(0, arg._1)
@@ -1115,9 +1026,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 8
   }
-  implicit def tup8Setter[Z <: Tuple8[_, _, _, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter8[Z]()
+  implicit def tup8Setter[Z <: Tuple8[_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter8[Z]()
 
-  case class TupleSetter9[Z <: Tuple9[_, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter9[Z <: Tuple9[_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(9)
       tup.set(0, arg._1)
@@ -1133,9 +1044,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 9
   }
-  implicit def tup9Setter[Z <: Tuple9[_, _, _, _, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter9[Z]()
+  implicit def tup9Setter[Z <: Tuple9[_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter9[Z]()
 
-  case class TupleSetter10[Z <: Tuple10[_, _, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter10[Z <: Tuple10[_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(10)
       tup.set(0, arg._1)
@@ -1152,9 +1063,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 10
   }
-  implicit def tup10Setter[Z <: Tuple10[_, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter10[Z]()
+  implicit def tup10Setter[Z <: Tuple10[_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter10[Z]()
 
-  case class TupleSetter11[Z <: Tuple11[_, _, _, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter11[Z <: Tuple11[_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(11)
       tup.set(0, arg._1)
@@ -1172,9 +1083,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 11
   }
-  implicit def tup11Setter[Z <: Tuple11[_, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] = TupleSetter11[Z]()
+  implicit def tup11Setter[Z <: Tuple11[_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter11[Z]()
 
-  case class TupleSetter12[Z <: Tuple12[_, _, _, _, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter12[Z <: Tuple12[_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(12)
       tup.set(0, arg._1)
@@ -1193,10 +1104,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 12
   }
-  implicit def tup12Setter[Z <: Tuple12[_, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter12[Z]()
+  implicit def tup12Setter[Z <: Tuple12[_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter12[Z]()
 
-  case class TupleSetter13[Z <: Tuple13[_, _, _, _, _, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter13[Z <: Tuple13[_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(13)
       tup.set(0, arg._1)
@@ -1216,10 +1126,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 13
   }
-  implicit def tup13Setter[Z <: Tuple13[_, _, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter13[Z]()
+  implicit def tup13Setter[Z <: Tuple13[_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter13[Z]()
 
-  case class TupleSetter14[Z <: Tuple14[_, _, _, _, _, _, _, _, _, _, _, _, _, _]]() extends TupleSetter[Z] {
+  case class TupleSetter14[Z <: Tuple14[_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(14)
       tup.set(0, arg._1)
@@ -1240,11 +1149,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 14
   }
-  implicit def tup14Setter[Z <: Tuple14[_, _, _, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter14[Z]()
+  implicit def tup14Setter[Z <: Tuple14[_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter14[Z]()
 
-  case class TupleSetter15[Z <: Tuple15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter15[Z <: Tuple15[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(15)
       tup.set(0, arg._1)
@@ -1266,11 +1173,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 15
   }
-  implicit def tup15Setter[Z <: Tuple15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter15[Z]()
+  implicit def tup15Setter[Z <: Tuple15[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter15[Z]()
 
-  case class TupleSetter16[Z <: Tuple16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter16[Z <: Tuple16[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(16)
       tup.set(0, arg._1)
@@ -1293,11 +1198,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 16
   }
-  implicit def tup16Setter[Z <: Tuple16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter16[Z]()
+  implicit def tup16Setter[Z <: Tuple16[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter16[Z]()
 
-  case class TupleSetter17[Z <: Tuple17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter17[Z <: Tuple17[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(17)
       tup.set(0, arg._1)
@@ -1321,11 +1224,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 17
   }
-  implicit def tup17Setter[Z <: Tuple17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]: TupleSetter[Z] =
-    TupleSetter17[Z]()
+  implicit def tup17Setter[Z <: Tuple17[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter17[Z]()
 
-  case class TupleSetter18[Z <: Tuple18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter18[Z <: Tuple18[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(18)
       tup.set(0, arg._1)
@@ -1350,11 +1251,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 18
   }
-  implicit def tup18Setter[Z <: Tuple18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]
-      : TupleSetter[Z] = TupleSetter18[Z]()
+  implicit def tup18Setter[Z <: Tuple18[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter18[Z]()
 
-  case class TupleSetter19[Z <: Tuple19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter19[Z <: Tuple19[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(19)
       tup.set(0, arg._1)
@@ -1380,11 +1279,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 19
   }
-  implicit def tup19Setter[Z <: Tuple19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]
-      : TupleSetter[Z] = TupleSetter19[Z]()
+  implicit def tup19Setter[Z <: Tuple19[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter19[Z]()
 
-  case class TupleSetter20[Z <: Tuple20[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter20[Z <: Tuple20[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(20)
       tup.set(0, arg._1)
@@ -1411,11 +1308,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 20
   }
-  implicit def tup20Setter[Z <: Tuple20[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]
-      : TupleSetter[Z] = TupleSetter20[Z]()
+  implicit def tup20Setter[Z <: Tuple20[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter20[Z]()
 
-  case class TupleSetter21[Z <: Tuple21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter21[Z <: Tuple21[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(21)
       tup.set(0, arg._1)
@@ -1443,11 +1338,9 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 21
   }
-  implicit def tup21Setter[Z <: Tuple21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]
-      : TupleSetter[Z] = TupleSetter21[Z]()
+  implicit def tup21Setter[Z <: Tuple21[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter21[Z]()
 
-  case class TupleSetter22[Z <: Tuple22[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]()
-      extends TupleSetter[Z] {
+  case class TupleSetter22[Z <: Tuple22[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]() extends TupleSetter[Z] {
     override def apply(arg: Z) = {
       val tup = Tuple.size(22)
       tup.set(0, arg._1)
@@ -1476,7 +1369,6 @@ trait GeneratedTupleSetters extends LowPriorityTupleSetters {
     }
     override def arity = 22
   }
-  implicit def tup22Setter[Z <: Tuple22[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]]
-      : TupleSetter[Z] = TupleSetter22[Z]()
+  implicit def tup22Setter[Z <: Tuple22[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_]]: TupleSetter[Z] = TupleSetter22[Z]()
 }
 // end of autogenerated

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.platform
 
 import cascading.flow.Flow
@@ -21,18 +21,18 @@ import com.twitter.scalding._
 import org.apache.hadoop.mapred.JobConf
 
 /**
- * This class is used to construct unit tests in scalding which use Hadoop's MiniCluster to more fully
- * simulate and test the logic which is deployed in a job.
+ * This class is used to construct unit tests in scalding which
+ * use Hadoop's MiniCluster to more fully simulate and test
+ * the logic which is deployed in a job.
  */
 case class HadoopPlatformJobTest(
-    cons: (Args) => Job,
-    cluster: LocalCluster,
-    argsMap: Map[String, List[String]] = Map.empty,
-    dataToCreate: Seq[(String, Seq[String])] = Vector(),
-    sourceWriters: Seq[Args => Job] = Vector.empty,
-    sourceReaders: Seq[Mode => Unit] = Vector.empty,
-    flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty
-) extends HadoopPlatform[Args, Job, HadoopPlatformJobTest] {
+  cons: (Args) => Job,
+  cluster: LocalCluster,
+  argsMap: Map[String, List[String]] = Map.empty,
+  dataToCreate: Seq[(String, Seq[String])] = Vector(),
+  sourceWriters: Seq[Args => Job] = Vector.empty,
+  sourceReaders: Seq[Mode => Unit] = Vector.empty,
+  flowCheckers: Seq[Flow[JobConf] => Unit] = Vector.empty) extends HadoopPlatform[Args, Job, HadoopPlatformJobTest] {
 
   override def arg(key: String, value: String): HadoopPlatformJobTest =
     copy(argsMap = argsMap + (key -> List(value)))
@@ -43,14 +43,12 @@ case class HadoopPlatformJobTest(
   override def source[T](out: TypedSink[T], data: Seq[T]): HadoopPlatformJobTest =
     copy(sourceWriters = sourceWriters :+ { args: Args =>
       new Job(args) {
-        TypedPipe.from(List("")).flatMap(_ => data).write(out)
+        TypedPipe.from(List("")).flatMap { _ => data }.write(out)
       }
     })
 
   override def sink[T](in: Mappable[T])(toExpect: (Seq[T]) => Unit): HadoopPlatformJobTest =
-    copy(sourceReaders = sourceReaders :+ { m: Mode =>
-      toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq)
-    })
+    copy(sourceReaders = sourceReaders :+ { m: Mode => toExpect(in.toIterator(Config.defaultFrom(m), m).toSeq) })
 
   def inspectCompletedFlow(checker: Flow[JobConf] => Unit): HadoopPlatformJobTest =
     copy(flowCheckers = flowCheckers :+ checker)
@@ -64,8 +62,8 @@ case class HadoopPlatformJobTest(
     execute(job)
     checkSinks()
     flowCheckers.foreach { checker =>
-      job.completedFlow.collect { case f: Flow[JobConf @unchecked] =>
-        checker(f)
+      job.completedFlow.collect {
+        case f: Flow[JobConf @unchecked] => checker(f)
       }
     }
   }
@@ -78,7 +76,7 @@ case class HadoopPlatformJobTest(
     job.clear()
     job.next match { // linter:ignore:UseOptionForeachNotPatMatch
       case Some(nextJob) => execute(nextJob)
-      case None          => ()
+      case None => ()
     }
   }
 }

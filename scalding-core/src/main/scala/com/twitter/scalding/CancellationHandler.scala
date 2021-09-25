@@ -1,12 +1,13 @@
 package com.twitter.scalding
 
-import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future}
+import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 sealed trait CancellationHandler { outer =>
   def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit]
   def compose(other: CancellationHandler): CancellationHandler = new CancellationHandler {
-    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] =
+    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
       other.stop().zip(outer.stop()).map(_ => ())
+    }
   }
 }
 
@@ -20,7 +21,8 @@ object CancellationHandler {
   }
 
   def fromFuture(f: Future[CancellationHandler]): CancellationHandler = new CancellationHandler {
-    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] =
+    override def stop()(implicit ec: ConcurrentExecutionContext): Future[Unit] = {
       f.flatMap(_.stop())
+    }
   }
 }

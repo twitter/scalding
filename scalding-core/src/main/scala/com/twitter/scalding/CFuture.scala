@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future}
+import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext }
 
 /**
  * Represents a cancellable future.
@@ -25,27 +25,29 @@ case class CFuture[+T](future: Future[T], cancellationHandler: CancellationHandl
 }
 
 object CFuture {
-  def successful[T](result: T): CFuture[T] =
+  def successful[T](result: T): CFuture[T] = {
     CFuture(Future.successful(result), CancellationHandler.empty)
+  }
 
   def failed(t: Throwable): CFuture[Nothing] = {
     val f = Future.failed(t)
     CFuture(f, CancellationHandler.empty)
   }
 
-  def uncancellable[T](fut: Future[T]): CFuture[T] =
+  def uncancellable[T](fut: Future[T]): CFuture[T] = {
     CFuture(fut, CancellationHandler.empty)
+  }
 
-  def fromFuture[T](fut: Future[CFuture[T]])(implicit cec: ConcurrentExecutionContext): CFuture[T] =
+  def fromFuture[T](fut: Future[CFuture[T]])(implicit cec: ConcurrentExecutionContext): CFuture[T] = {
     CFuture(fut.flatMap(_.future), CancellationHandler.fromFuture(fut.map(_.cancellationHandler)))
+  }
 
   /**
    * Use our internal faster failing zip function rather than the standard one due to waiting
    */
-  def failFastSequence[T](
-      t: Iterable[CFuture[T]]
-  )(implicit cec: ConcurrentExecutionContext): CFuture[List[T]] =
+  def failFastSequence[T](t: Iterable[CFuture[T]])(implicit cec: ConcurrentExecutionContext): CFuture[List[T]] = {
     t.foldLeft(CFuture.successful(Nil: List[T])) { (f, i) =>
       f.zip(i).map { case (tail, h) => h :: tail }
     }.map(_.reverse)
+  }
 }

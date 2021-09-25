@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import org.scalacheck.Arbitrary
@@ -29,13 +29,13 @@ object GlobifierProperties extends Properties("Globifier Properties") {
   implicit def tz: TimeZone = TimeZone.getTimeZone("UTC")
 
   implicit val hourArb: Arbitrary[Hours] =
-    Arbitrary(choose(0, 10000).map(Hours(_)))
+    Arbitrary { choose(0, 10000).map { Hours(_) } }
 
   implicit val dayArb: Arbitrary[Days] =
-    Arbitrary(choose(0, 100).map(Days(_)))
+    Arbitrary { choose(0, 100).map { Days(_) } }
 
   implicit val yearArb: Arbitrary[Years] =
-    Arbitrary(choose(0, 100).map(Years(_)))
+    Arbitrary { choose(0, 100).map { Years(_) } }
 
   implicit val richDateArb: Arbitrary[RichDate] = Arbitrary {
     for (v <- choose(0L, 1L << 32)) yield RichDate(v)

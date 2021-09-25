@@ -42,7 +42,7 @@ sealed abstract class BeamOp[+A] {
     applyPTransform(Filter.by[A, ProcessFunction[A, java.lang.Boolean]](ProcessPredicate(f)))
 
   def applyPTransform[C >: A, B](
-      f: PTransform[PCollection[C], PCollection[B]]
+    f: PTransform[PCollection[C], PCollection[B]]
   )(implicit kryoCoder: KryoCoder): BeamOp[B] =
     TransformBeamOp(this, f, kryoCoder)
 
@@ -54,56 +54,57 @@ object BeamOp extends Serializable {
   implicit private def fakeClassTag[A]: ClassTag[A] = ClassTag(classOf[AnyRef]).asInstanceOf[ClassTag[A]]
 
   def planMapGroup[K, V, U](
-      pcoll: PCollection[KV[K, java.lang.Iterable[V]]],
-      reduceFn: (K, Iterator[V]) => Iterator[U]
-  )(implicit ordK: Ordering[K], kryoCoder: KryoCoder): PCollection[KV[K, java.lang.Iterable[U]]] =
+    pcoll: PCollection[KV[K, java.lang.Iterable[V]]],
+    reduceFn: (K, Iterator[V]) => Iterator[U]
+  )(implicit ordK: Ordering[K], kryoCoder: KryoCoder): PCollection[KV[K, java.lang.Iterable[U]]] = {
     reduceFn match {
       case ComposedMapGroup(f, g) => planMapGroup(planMapGroup(pcoll, f), g)
       case EmptyGuard(MapValueStream(sa: SumAll[V])) =>
         pcoll
-          .apply(Combine.groupedValues(new SerializableBiFunction[V, V, V] {
-            override def apply(t: V, u: V): V = sa.sg.plus(t, u)
-          }))
-          .setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), kryoCoder))
+          .apply(Combine.groupedValues(
+            new SerializableBiFunction[V, V, V] {
+              override def apply(t: V, u: V): V = sa.sg.plus (t, u)
+            })).setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), kryoCoder))
           .apply(MapElements.via(new SimpleFunction[KV[K, V], KV[K, java.lang.Iterable[U]]]() {
             override def apply(input: KV[K, V]): KV[K, lang.Iterable[U]] =
               KV.of(input.getKey, Seq(input.getValue.asInstanceOf[U]).toIterable.asJava)
-          }))
-          .setCoder(
-            KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder))
-          )
+          })).setCoder(
+          KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder))
+        )
       case notComposedOrSum =>
-        pcoll
-          .apply(ParDo.of(MapFn[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[U]]] { elem =>
+        pcoll.apply(ParDo.of(
+          MapFn[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[U]]] { elem =>
             KV.of(
               elem.getKey,
-              notComposedOrSum(elem.getKey, elem.getValue.asScala.toIterator).toIterable.asJava
-            )
-          }))
-          .setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder)))
+              notComposedOrSum(elem.getKey, elem.getValue.asScala.toIterator).toIterable.asJava)
+          })).setCoder(
+          KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder)))
     }
+  }
 
-  final case class Source[A](conf: Config, original: TypedSource[A], input: Option[BeamSource[A]])
-      extends BeamOp[A] {
+  final case class Source[A](
+    conf: Config,
+    original: TypedSource[A],
+    input: Option[BeamSource[A]]) extends BeamOp[A] {
     def run(pipeline: Pipeline): PCollection[_ <: A] =
       input match {
-        case None =>
-          throw new IllegalArgumentException(
-            s"source $original was not connected to a beam source"
-          )
+        case None => throw new IllegalArgumentException(
+          s"source $original was not connected to a beam source"
+        )
         case Some(src) => src.read(pipeline, conf)
       }
   }
 
   final case class FromIterable[A](iterable: Iterable[A], kryoCoder: KryoCoder) extends BeamOp[A] {
-    override def run(pipeline: Pipeline): PCollection[_ <: A] =
+    override def run(pipeline: Pipeline): PCollection[_ <: A] = {
       pipeline.apply(Create.of(iterable.asJava).withCoder(kryoCoder))
+    }
   }
 
   final case class TransformBeamOp[A, B](
-      source: BeamOp[A],
-      f: PTransform[PCollection[A], PCollection[B]],
-      kryoCoder: KryoCoder
+    source: BeamOp[A],
+    f: PTransform[PCollection[A], PCollection[B]],
+    kryoCoder: KryoCoder
   ) extends BeamOp[B] {
     def run(pipeline: Pipeline): PCollection[B] = {
       val pCollection: PCollection[A] = widenPCollection(source.run(pipeline))
@@ -112,11 +113,9 @@ object BeamOp extends Serializable {
   }
 
   final case class HashJoinOp[K, V, U, W](
-      left: BeamOp[(K, V)],
-      right: BeamOp[(K, U)],
-      joiner: (K, V, Iterable[U]) => Iterator[W]
-  )(implicit kryoCoder: KryoCoder, ordK: Ordering[K])
-      extends BeamOp[(K, W)] {
+    left: BeamOp[(K, V)],
+    right: BeamOp[(K, U)], joiner: (K, V, Iterable[U]) => Iterator[W]
+  )(implicit kryoCoder: KryoCoder, ordK: Ordering[K]) extends BeamOp[(K, W)] {
     override def run(pipeline: Pipeline): PCollection[_ <: (K, W)] = {
       val leftPCollection = left.run(pipeline)
       val keyCoder: Coder[K] = OrderedSerializationCoder.apply(ordK, kryoCoder)
@@ -124,8 +123,7 @@ object BeamOp extends Serializable {
 
       val rightPCollectionView = rightPCollection
         .apply(TupleToKV[K, U](keyCoder, kryoCoder))
-        .apply(GroupByKey.create[K, U]())
-        .setCoder(KvCoder.of(keyCoder, kryoCoder))
+        .apply(GroupByKey.create[K, U]()).setCoder(KvCoder.of(keyCoder, kryoCoder))
         .apply(View.asMap[K, java.lang.Iterable[U]]())
 
       leftPCollection
@@ -139,10 +137,9 @@ object BeamOp extends Serializable {
   }
 
   final case class CoGroupedOp[K, V](
-      cg: CoGrouped[K, V],
-      inputOps: Seq[BeamOp[(K, Any)]]
-  )(implicit kryoCoder: KryoCoder)
-      extends BeamOp[(K, V)] {
+    cg: CoGrouped[K, V],
+    inputOps: Seq[BeamOp[(K, Any)]]
+  )(implicit kryoCoder: KryoCoder) extends BeamOp[(K, V)] {
     override def run(pipeline: Pipeline): PCollection[_ <: (K, V)] = {
       val inputOpsSize = inputOps.size
       val keyCoder: Coder[K] = OrderedSerializationCoder.apply(cg.keyOrdering, kryoCoder)
@@ -169,8 +166,7 @@ object BeamOp extends Serializable {
         )((keyed, colWithTag) => keyed.and[Any](colWithTag._2, colWithTag._1))
 
       keyedPCollectionTuple
-        .apply(CoGroupByKey.create())
-        .setCoder(KvCoder.of(keyCoder, coGroupResultCoder))
+        .apply(CoGroupByKey.create()).setCoder(KvCoder.of(keyCoder, coGroupResultCoder))
         .apply(ParDo.of(new CoGroupDoFn[K, V](cg, tupleTags)))
         .setCoder(KvCoder.of(keyCoder, kryoCoder))
         .apply(KVToTuple[K, V](keyCoder, kryoCoder))
@@ -178,8 +174,8 @@ object BeamOp extends Serializable {
   }
 
   case class CoGroupDoFn[K, V](
-      coGrouped: CoGrouped[K, V],
-      tags: Seq[TupleTag[Any]]
+    coGrouped: CoGrouped[K, V],
+    tags: Seq[TupleTag[Any]]
   ) extends DoFn[KV[K, CoGbkResult], KV[K, V]] {
     @ProcessElement
     def processElement(c: DoFn[KV[K, CoGbkResult], KV[K, V]]#ProcessContext): Unit = {
@@ -193,7 +189,7 @@ object BeamOp extends Serializable {
         iteratorSeq.drop(1).map(_.asScala)
       )
 
-      while (outputIter.hasNext) {
+      while(outputIter.hasNext) {
         c.output(KV.of(key, outputIter.next()))
       }
     }
@@ -201,8 +197,8 @@ object BeamOp extends Serializable {
 
   implicit class KVOp[K, V](val op: BeamOp[(K, V)]) extends AnyVal {
     def mapGroup[U](
-        reduceFn: (K, Iterator[V]) => Iterator[U]
-    )(implicit ordK: Ordering[K], kryoCoder: KryoCoder): BeamOp[(K, U)] =
+      reduceFn: (K, Iterator[V]) => Iterator[U]
+    )(implicit ordK: Ordering[K], kryoCoder: KryoCoder): BeamOp[(K, U)] = {
       TransformBeamOp[(K, V), (K, U)](
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, U)]]() {
@@ -215,19 +211,18 @@ object BeamOp extends Serializable {
               .setCoder(KvCoder.of(keyCoder, IterableCoder.of(kryoCoder)))
 
             planMapGroup[K, V, U](groupedValues, reduceFn)
-              .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]] { elem =>
+              .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]]{ elem =>
                 elem.getValue.asScala.map(KV.of(elem.getKey, _))
-              }))
-              .setCoder(KvCoder.of(keyCoder, kryoCoder))
+              })).setCoder(KvCoder.of(keyCoder, kryoCoder))
               .apply(KVToTuple[K, U](keyCoder, kryoCoder))
           }
         },
-        kryoCoder
-      )
+        kryoCoder)
+    }
 
     def sortedMapGroup[U](
-        reduceFn: (K, Iterator[V]) => Iterator[U]
-    )(implicit ordK: Ordering[K], ordV: Ordering[V], kryoCoder: KryoCoder): BeamOp[(K, U)] =
+      reduceFn: (K, Iterator[V]) => Iterator[U]
+    )(implicit ordK: Ordering[K], ordV: Ordering[V], kryoCoder: KryoCoder): BeamOp[(K, U)] = {
       TransformBeamOp[(K, V), (K, U)](
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, U)]]() {
@@ -242,17 +237,16 @@ object BeamOp extends Serializable {
               .apply(SortGroupedValues[K, V])
 
             planMapGroup[K, V, U](groupedSortedValues, reduceFn)
-              .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]] { elem =>
+              .apply(ParDo.of(FlatMapFn[KV[K, java.lang.Iterable[U]], KV[K, U]]{ elem =>
                 elem.getValue.asScala.map(KV.of(elem.getKey, _))
-              }))
-              .setCoder(KvCoder.of(keyCoder, kryoCoder))
+              })).setCoder(KvCoder.of(keyCoder, kryoCoder))
               .apply(KVToTuple[K, U](keyCoder, kryoCoder))
           }
         },
-        kryoCoder
-      )
+        kryoCoder)
+    }
 
-    def sorted(implicit ordK: Ordering[K], ordV: Ordering[V], kryoCoder: KryoCoder): BeamOp[(K, V)] =
+    def sorted(implicit ordK: Ordering[K], ordV: Ordering[V], kryoCoder: KryoCoder): BeamOp[(K, V)] = {
       TransformBeamOp[(K, V), (K, V)](
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, V)]]() {
@@ -271,77 +265,73 @@ object BeamOp extends Serializable {
               .apply(KVToTuple[K, V](keyCoder, valueCoder))
           }
         },
-        kryoCoder
-      )
+        kryoCoder)
+    }
 
     def mapSideAggregator(
-        size: Int,
-        semigroup: Semigroup[V]
-    )(implicit kryoCoder: KryoCoder): BeamOp[(K, V)] =
+      size: Int, semigroup: Semigroup[V]
+    )(implicit kryoCoder: KryoCoder): BeamOp[(K, V)] = {
       TransformBeamOp[(K, V), (K, V)](
         op,
         new PTransform[PCollection[(K, V)], PCollection[(K, V)]]() {
           override def expand(input: PCollection[(K, V)]): PCollection[(K, V)] =
             input.apply(ParDo.of(MapSideAggregator[K, V](size, semigroup))).setCoder(kryoCoder)
         },
-        kryoCoder
-      )
+        kryoCoder)
+    }
 
     def hashJoin[U, W](
-        right: BeamOp[(K, U)],
-        fn: (K, V, Iterable[U]) => Iterator[W]
-    )(implicit kryoCoder: KryoCoder, ord: Ordering[K]): BeamOp[(K, W)] =
+      right: BeamOp[(K, U)],
+      fn: (K, V, Iterable[U]) => Iterator[W]
+    )(implicit kryoCoder: KryoCoder, ord: Ordering[K]): BeamOp[(K, W)] = {
       HashJoinOp(op, right, fn)
+    }
   }
 
   /**
-   * @todo
-   *   this needs to be changed to some external sorter, current Beam external sorter implementation does not
-   *   provide an option to sort with custom Ordering
-   * @see
-   *   [[org.apache.beam.sdk.extensions.sorter.ExternalSorter]]
+   * @todo this needs to be changed to some external sorter, current Beam external sorter
+   *       implementation does not provide an option to sort with custom Ordering
+   * @see [[org.apache.beam.sdk.extensions.sorter.ExternalSorter]]
    */
-  case class SortGroupedValues[K, V](implicit
-      ordK: Ordering[K],
-      ordV: Ordering[V],
-      kryoCoder: KryoCoder
+  case class SortGroupedValues[K, V](
+    implicit ordK: Ordering[K], ordV: Ordering[V], kryoCoder: KryoCoder
   ) extends PTransform[PCollection[KV[K, java.lang.Iterable[V]]], PCollection[KV[K, java.lang.Iterable[V]]]] {
     override def expand(
-        input: PCollection[KV[K, lang.Iterable[V]]]
-    ): PCollection[KV[K, lang.Iterable[V]]] =
+      input: PCollection[KV[K, lang.Iterable[V]]]
+    ): PCollection[KV[K, lang.Iterable[V]]] = {
       input
-        .apply(ParDo.of(MapFn[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[V]]] { elem =>
+        .apply(ParDo.of(MapFn[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[V]]]{ elem =>
           KV.of(elem.getKey, elem.getValue.asScala.toArray.sorted.toIterable.asJava)
         }))
-        .setCoder(
-          KvCoder.of(
-            OrderedSerializationCoder(ordK, kryoCoder),
-            IterableCoder.of(OrderedSerializationCoder(ordV, kryoCoder))
-          )
+        .setCoder(KvCoder.of(
+          OrderedSerializationCoder(ordK, kryoCoder),
+          IterableCoder.of(OrderedSerializationCoder(ordV, kryoCoder)))
         )
+    }
   }
 
   case class TupleToKV[K, V](
-      kCoder: Coder[K],
-      vCoder: Coder[V]
+    kCoder: Coder[K],
+    vCoder: Coder[V]
   ) extends PTransform[PCollection[(K, V)], PCollection[KV[K, V]]] {
-    override def expand(input: PCollection[(K, V)]): PCollection[KV[K, V]] =
+    override def expand(input: PCollection[(K, V)]): PCollection[KV[K, V]] = {
       input
         .apply(MapElements.via[(K, V), KV[K, V]](new SimpleFunction[(K, V), KV[K, V]]() {
           override def apply(input: (K, V)): KV[K, V] = KV.of(input._1, input._2)
-        }))
-        .setCoder(KvCoder.of(kCoder, vCoder))
+        })).setCoder(KvCoder.of(kCoder, vCoder))
+    }
   }
 
   case class KVToTuple[K, V](
-      coderK: Coder[K],
-      coderV: Coder[V]
+    coderK: Coder[K],
+    coderV: Coder[V]
   ) extends PTransform[PCollection[KV[K, V]], PCollection[(K, V)]] {
-    override def expand(input: PCollection[KV[K, V]]): PCollection[(K, V)] =
+    override def expand(input: PCollection[KV[K, V]]): PCollection[(K, V)] = {
       input
         .apply(MapElements.via[KV[K, V], (K, V)](new SimpleFunction[KV[K, V], (K, V)]() {
           override def apply(input: KV[K, V]): (K, V) = (input.getKey, input.getValue)
-        }))
-        .setCoder(TupleCoder(coderK, coderV))
+        })).setCoder(TupleCoder(coderK, coderV))
+    }
   }
 }
+

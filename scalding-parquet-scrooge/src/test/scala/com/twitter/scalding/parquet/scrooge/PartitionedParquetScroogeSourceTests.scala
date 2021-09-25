@@ -8,7 +8,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetReader
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 object PartitionedParquetScroogeTestSources {
   val path = "/a/path"
@@ -17,14 +17,9 @@ object PartitionedParquetScroogeTestSources {
 
 class PartitionedParquetScroogeWriteJob(args: Args) extends Job(args) {
   import PartitionedParquetScroogeTestSources._
-  val input = Seq(
-    Address("123 Embarcadero", "94111"),
-    Address("123 E 79th St", "10075"),
-    Address("456 W 80th St", "10075")
-  )
+  val input = Seq(Address("123 Embarcadero", "94111"), Address("123 E 79th St", "10075"), Address("456 W 80th St", "10075"))
 
-  TypedPipe
-    .from(input)
+  TypedPipe.from(input)
     .map { case Address(street, zipcode) => (zipcode, Address(street, zipcode)) }
     .write(partitionSource)
 }
@@ -36,8 +31,7 @@ class PartitionedParquetScroogeSourceTests extends WordSpec with Matchers {
     val conf: Configuration = new Configuration
     conf.set("parquet.thrift.converter.class", classOf[ScroogeRecordConverter[Address]].getName)
     val parquetReader: ParquetReader[Address] =
-      ParquetReader
-        .builder[Address](new ScroogeReadSupport[Address], path)
+      ParquetReader.builder[Address](new ScroogeReadSupport[Address], path)
         .withConf(conf)
         .build()
 
@@ -51,25 +45,21 @@ class PartitionedParquetScroogeSourceTests extends WordSpec with Matchers {
         job = new PartitionedParquetScroogeWriteJob(args)
         job
       }
-      JobTest(buildJob(_)).runHadoop
+      JobTest(buildJob(_))
+        .runHadoop
         .finish()
 
       val testMode = job.mode.asInstanceOf[HadoopTest]
 
       val directory = new File(testMode.getWritePathFor(partitionSource))
 
-      directory.listFiles().map { _.getName() }.toSet shouldBe Set("94111", "10075")
+      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("94111", "10075")
 
       // check that the partitioning is done correctly by zipcode
-      validate(
-        new Path(directory.getPath + "/94111/part-00000-00000-m-00000.parquet"),
-        Address("123 Embarcadero", "94111")
-      )
-      validate(
-        new Path(directory.getPath + "/10075/part-00000-00001-m-00000.parquet"),
-        Address("123 E 79th St", "10075"),
-        Address("456 W 80th St", "10075")
-      )
+      validate(new Path(directory.getPath + "/94111/part-00000-00000-m-00000.parquet"),
+        Address("123 Embarcadero", "94111"))
+      validate(new Path(directory.getPath + "/10075/part-00000-00001-m-00000.parquet"),
+        Address("123 E 79th St", "10075"), Address("456 W 80th St", "10075"))
     }
   }
 }

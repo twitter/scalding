@@ -1,11 +1,11 @@
 package com.twitter.scalding.spark_backend
 
-import org.scalatest.{BeforeAndAfter, FunSuite, PropSpec}
+import org.scalatest.{ BeforeAndAfter, FunSuite, PropSpec }
 import org.apache.hadoop.io.IntWritable
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, TextLine, WritableSequenceFile}
+import com.twitter.scalding.{ Config, Execution, TextLine, WritableSequenceFile }
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
 import java.io.File
@@ -37,10 +37,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       new SparkConf()
         .setMaster(master)
         .setAppName(appName)
-        .set(
-          "spark.driver.host",
-          "localhost"
-        ) // this is needed to work on OSX when disconnected from the network
+        .set("spark.driver.host", "localhost") // this is needed to work on OSX when disconnected from the network
 
     session = SparkSession.builder.config(conf).getOrCreate()
   }
@@ -50,11 +47,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     session = null
   }
 
-  def sparkMatchesIterable[A: Ordering](
-      t: Execution[Iterable[A]],
-      iter: Iterable[A],
-      conf: Config = Config.empty
-  ) = {
+  def sparkMatchesIterable[A: Ordering](t: Execution[Iterable[A]], iter: Iterable[A], conf: Config = Config.empty) = {
     val smode = SparkMode.default(session)
     val semit = t.waitFor(conf, smode).get
 
@@ -62,22 +55,17 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   }
 
   def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) =
-    sparkMatchesIterable(
-      t.toIterableExecution,
-      t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
-    )
+    sparkMatchesIterable(t.toIterableExecution,
+      t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get)
 
   test("some basic map-only operations work") {
     sparkMatchesMemory(TypedPipe.from(0 to 100))
     sparkMatchesMemory(TypedPipe.from(0 to 100).map(_ * 2))
-    sparkMatchesMemory(TypedPipe.from(0 to 100).map(x => (x, x * Int.MaxValue)))
+    sparkMatchesMemory(TypedPipe.from(0 to 100).map { x => (x, x * Int.MaxValue) })
 
-    sparkMatchesMemory(
-      TypedPipe
-        .from(0 to 100)
-        .map(x => (x, x * Int.MaxValue))
-        .filter { case (k, v) => k > v }
-    )
+    sparkMatchesMemory(TypedPipe.from(0 to 100)
+      .map { x => (x, x * Int.MaxValue) }
+      .filter { case (k, v) => k > v })
   }
 
   test("test with map-only with merge") {
@@ -91,7 +79,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     sparkMatchesMemory {
       val input = TypedPipe.from(0 to 1000)
       // many merges
-      Monoid.sum((2 to 8).map(i => input.filter(_ % i == 0)))
+      Monoid.sum((2 to 8).map { i => input.filter(_ % i == 0) })
     }
   }
 
@@ -146,98 +134,85 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   }
 
   def tmpPath(suffix: String): String =
-    Paths.get(System.getProperty("java.io.tmpdir"), "scalding", "spark_backend", suffix).toString
+    Paths.get(System.getProperty("java.io.tmpdir"),
+      "scalding",
+      "spark_backend",
+      suffix).toString
 
   test("writeExecution works with TextLine") {
     val path = tmpPath("textline")
-    sparkMatchesIterable(
-      {
-        val loc = TextLine(path)
-        val input = TypedPipe.from(0 to 100000)
-        input
-          .groupBy(_ % 2)
-          .sorted
-          .foldLeft(0)(_ - _)
-          .toTypedPipe
-          .map(_.toString)
-          .writeExecution(loc)
-          .flatMap { _ =>
-            TypedPipe.from(loc).toIterableExecution
-          }
+    sparkMatchesIterable({
+      val loc = TextLine(path)
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2)
+        .sorted
+        .foldLeft(0)(_ - _)
+        .toTypedPipe
+        .map(_.toString)
+        .writeExecution(loc)
+        .flatMap { _ =>
+          TypedPipe.from(loc).toIterableExecution
+        }
 
-      },
-      (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString)
-    )
+    }, (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString))
 
     removeDir(path)
   }
 
   test("writeExecution works with IntWritable") {
     val path = tmpPath("int_writable")
-    sparkMatchesIterable(
-      {
-        val loc = WritableSequenceFile[IntWritable, IntWritable](path)
-        val input = TypedPipe.from(0 to 100000)
-        input
-          .groupBy(_ % 2)
-          .sorted
-          .foldLeft(0)(_ - _)
-          .toTypedPipe
-          .map { case (k, v) => (new IntWritable(k), new IntWritable(v)) }
-          .writeExecution(loc)
-          .flatMap { _ =>
-            TypedPipe.from(loc).map { case (k, v) => (k.get, v.get) }.toIterableExecution
-          }
+    sparkMatchesIterable({
+      val loc = WritableSequenceFile[IntWritable, IntWritable](path)
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2)
+        .sorted
+        .foldLeft(0)(_ - _)
+        .toTypedPipe
+        .map { case (k, v) => (new IntWritable(k), new IntWritable(v)) }
+        .writeExecution(loc)
+        .flatMap { _ =>
+          TypedPipe.from(loc)
+            .map { case (k, v) => (k.get, v.get) }
+            .toIterableExecution
+        }
 
-      },
-      (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _))
-    )
+    }, (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)))
 
     removeDir(path)
   }
 
   test("forceToDisk works") {
-    sparkMatchesIterable(
-      {
-        val input = TypedPipe.from(0 to 100000)
-        input
-          .groupBy(_ % 2)
-          .sorted
-          .foldLeft(0)(_ - _)
-          .toTypedPipe
-          .map(_.toString)
-          .forceToDiskExecution
-          .flatMap(_.toIterableExecution)
+    sparkMatchesIterable({
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2)
+        .sorted
+        .foldLeft(0)(_ - _)
+        .toTypedPipe
+        .map(_.toString)
+        .forceToDiskExecution
+        .flatMap(_.toIterableExecution)
 
-      },
-      (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString)
-    )
+    }, (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString))
   }
 
   test("forceToDisk works with no persistance") {
-    sparkMatchesIterable(
-      {
-        val input = TypedPipe.from(0 to 100000)
-        input
-          .groupBy(_ % 2)
-          .sorted
-          .foldLeft(0)(_ - _)
-          .toTypedPipe
-          .map(_.toString)
-          .forceToDisk
-          .toIterableExecution
+    sparkMatchesIterable({
+      val input = TypedPipe.from(0 to 100000)
+      input.groupBy(_ % 2)
+        .sorted
+        .foldLeft(0)(_ - _)
+        .toTypedPipe
+        .map(_.toString)
+        .forceToDisk
+        .toIterableExecution
 
-      },
-      (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString),
-      Config.empty.setForceToDiskPersistMode("NONE")
-    )
+    }, (0 to 100000).groupBy(_ % 2).mapValues(_.foldLeft(0)(_ - _)).map(_.toString),
+      Config.empty.setForceToDiskPersistMode("NONE"))
   }
 }
 
 class ConfigPartitionComputerTest extends PropSpec with PropertyChecks {
-  property(
-    "when no config or number of reducers are given, returns the current number of partitions (or 1)"
-  ) {
+  property("when no config or number of reducers are given, returns the current number of partitions (or 1)") {
     val pc = ConfigPartitionComputer(Config.empty, None)
     forAll { i: Int =>
       if (i >= 1) assert(pc(i) == i)

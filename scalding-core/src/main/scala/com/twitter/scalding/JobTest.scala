@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
 import scala.collection.mutable
@@ -24,14 +24,17 @@ import cascading.stats.CascadingStats
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.JobConf
 
+
 object JobTest {
 
   @deprecated(message = "Use the non-reflection based JobTest apply methods", since = "0.16.1")
-  def apply(jobName: String) =
+  def apply(jobName: String) = {
     new JobTest((args: Args) => Job(jobName, args))
+  }
 
-  def apply(cons: (Args) => Job) =
+  def apply(cons: (Args) => Job) = {
     new JobTest(cons)
+  }
 
   def apply[T <: Job: Manifest] = {
     val cons = { (args: Args) =>
@@ -45,8 +48,8 @@ object JobTest {
 
   // We have to memoize to return the same buffer each time.
   private case class MemoizedSourceFn[T](
-      fn: Source => Option[Iterable[T]],
-      setter: TupleSetter[T]
+    fn: Source => Option[Iterable[T]],
+    setter: TupleSetter[T]
   ) extends (Source => Option[mutable.Buffer[Tuple]]) {
     private val memo = mutable.Map[Source, Option[mutable.Buffer[Tuple]]]()
     private val lock = new Object()
@@ -58,13 +61,16 @@ object JobTest {
 }
 
 object CascadeTest {
-  def apply(jobName: String) =
+  def apply(jobName: String) = {
     new CascadeTest((args: Args) => Job(jobName, args))
+  }
 }
 
 /**
- * This class is used to construct unit tests for scalding jobs. You should not use it unless you are writing
- * tests. For examples of how to do that, see the tests included in the main scalding repository:
+ * This class is used to construct unit tests for scalding jobs.
+ * You should not use it unless you are writing tests.
+ * For examples of how to do that, see the tests included in the
+ * main scalding repository:
  * https://github.com/twitter/scalding/tree/master/scalding-core/src/test/scala/com/twitter/scalding
  */
 class JobTest(cons: (Args) => Job) {
@@ -89,7 +95,7 @@ class JobTest(cons: (Args) => Job) {
   }
 
   private def sourceBuffer[T: TupleSetter](s: Source, tups: Iterable[T]): JobTest = {
-    source(src => if (src == s) Some(tups) else None)
+    source { src => if (src == s) Some(tups) else None }
     this
   }
 
@@ -104,8 +110,9 @@ class JobTest(cons: (Args) => Job) {
   }
 
   /**
-   * Enables syntax like: .ifSource { case Tsv("in") => List(1, 2, 3) } We need a different function name from
-   * source to help the compiler
+   * Enables syntax like:
+   * .ifSource { case Tsv("in") => List(1, 2, 3) }
+   * We need a different function name from source to help the compiler
    */
   def ifSource[T](fn: PartialFunction[Source, Iterable[T]])(implicit setter: TupleSetter[T]): JobTest =
     source(fn.lift)
@@ -126,13 +133,11 @@ class JobTest(cons: (Args) => Job) {
      * you also modify the `finalize` function accordingly.
      */
     sinkSet += s
-    callbacks += (() => op(buffer.map(tup => conv(new TupleEntry(tup)))))
+    callbacks += (() => op(buffer.map { tup => conv(new TupleEntry(tup)) }))
     this
   }
 
-  def typedSink[A](s: Source with TypedSink[A])(op: mutable.Buffer[A] => Unit)(implicit
-      conv: TupleConverter[A]
-  ) =
+  def typedSink[A](s: Source with TypedSink[A])(op: mutable.Buffer[A] => Unit)(implicit conv: TupleConverter[A]) =
     sink[A](s)(op)
 
   // Used to pass an assertion about a counter defined by the given group and name.
@@ -211,7 +216,8 @@ class JobTest(cons: (Args) => Job) {
   }
 
   /**
-   * Run the clean ups and checks after a job has executed
+   * Run the clean ups and checks after a job
+   * has executed
    */
   def postRunChecks(mode: Mode): Unit = {
     mode match {
@@ -221,12 +227,12 @@ class JobTest(cons: (Args) => Job) {
          * you also modify the `finalize` function accordingly.
          */
         // The sinks are written to disk, we need to clean them up:
-        sinkSet.foreach(hadoopTest.finalize(_))
+        sinkSet.foreach{ hadoopTest.finalize(_) }
       }
       case _ => ()
     }
     // Now it is time to check the test conditions:
-    callbacks.foreach(cb => cb())
+    callbacks.foreach { cb => cb() }
   }
 
   // Registers test files, initializes the global mode, and creates a job.
@@ -245,14 +251,8 @@ class JobTest(cons: (Args) => Job) {
     // create cascading 3.0 planner trace files during tests
     if (System.getenv.asScala.getOrElse("SCALDING_CASCADING3_DEBUG", "0") == "1") {
       System.setProperty("cascading.planner.plan.path", "target/test/cascading/traceplan/" + job.name)
-      System.setProperty(
-        "cascading.planner.plan.transforms.path",
-        "target/test/cascading/traceplan/" + job.name + "/transform"
-      )
-      System.setProperty(
-        "cascading.planner.stats.path",
-        "target/test/cascading/traceplan/" + job.name + "/stats"
-      )
+      System.setProperty("cascading.planner.plan.transforms.path", "target/test/cascading/traceplan/" + job.name + "/transform")
+      System.setProperty("cascading.planner.stats.path", "target/test/cascading/traceplan/" + job.name + "/stats")
     }
 
     if (validateJob) {
@@ -262,13 +262,12 @@ class JobTest(cons: (Args) => Job) {
     // Make sure to clean the state:
     job.clear()
 
-    val next: Option[Job] = if (runNext) { job.next }
-    else { None }
+    val next: Option[Job] = if (runNext) { job.next } else { None }
     next match {
       case Some(nextjob) => runJob(nextjob, runNext)
       case None =>
         postRunChecks(job.mode)
-        statsCallbacks.foreach(cb => cb(job.scaldingCascadingStats.get))
+        statsCallbacks.foreach { cb => cb(job.scaldingCascadingStats.get) }
     }
   }
 }

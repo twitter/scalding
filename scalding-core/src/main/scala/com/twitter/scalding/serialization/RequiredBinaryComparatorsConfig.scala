@@ -1,6 +1,6 @@
 package com.twitter.scalding.serialization
 
-import com.twitter.scalding.{Config, Job}
+import com.twitter.scalding.{ Config, Job }
 
 sealed trait RequireOrderedSerializationMode
 object RequireOrderedSerializationMode {
@@ -10,6 +10,5 @@ object RequireOrderedSerializationMode {
 
 trait RequiredBinaryComparatorsConfig extends Job {
   def requireOrderedSerializationMode: RequireOrderedSerializationMode = RequireOrderedSerializationMode.Fail
-  override def config =
-    super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode.toString)
+  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode.toString)
 }

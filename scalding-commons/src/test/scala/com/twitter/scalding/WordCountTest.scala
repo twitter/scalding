@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 
 class WordCountTest extends WordSpec with Matchers {
   "A WordCount job" should {
@@ -23,7 +23,7 @@ class WordCountTest extends WordSpec with Matchers {
       .arg("input", "inputFile")
       .arg("output", "outputFile")
       .source(TextLine("inputFile"), List((0, "hack hack hack and hack")))
-      .sink[(String, Int)](TypedTsv[(String, Long)]("outputFile")) { outputBuffer =>
+      .sink[(String, Int)](TypedTsv[(String, Long)]("outputFile")){ outputBuffer =>
         val outMap = outputBuffer.toMap
         "count words correctly" in {
           outMap("hack") shouldBe 4

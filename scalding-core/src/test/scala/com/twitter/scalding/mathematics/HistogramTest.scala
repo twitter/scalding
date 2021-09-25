@@ -12,25 +12,23 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 package com.twitter.scalding.mathematics
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{ Matchers, WordSpec }
 import com.twitter.scalding._
 
 class HistogramJob(args: Args) extends Job(args) {
   try {
     val hist = Tsv("input", 'n)
-      .groupAll(_.histogram('n -> 'hist))
+      .groupAll{ _.histogram('n -> 'hist) }
 
     hist
-      .flatMapTo('hist -> ('bin, 'cdf)) { h: Histogram => h.cdf }
+      .flatMapTo('hist -> ('bin, 'cdf)){ h: Histogram => h.cdf }
       .write(Tsv("cdf-output"))
 
     hist
-      .mapTo('hist -> ('min, 'max, 'sum, 'mean, 'stdDev)) { h: Histogram =>
-        (h.min, h.max, h.sum, h.mean, h.stdDev)
-      }
+      .mapTo('hist -> ('min, 'max, 'sum, 'mean, 'stdDev)){ h: Histogram => (h.min, h.max, h.sum, h.mean, h.stdDev) }
       .write(Tsv("stats-output"))
 
   } catch {
@@ -45,7 +43,7 @@ class HistogramJobTest extends WordSpec with Matchers {
   val cdfOutput = Set((1.0, 0.3), (2.0, 0.5), (3.0, 0.8), (4.0, 0.9), (8.0, 1.0))
   "A HistogramJob" should {
     JobTest(new HistogramJob(_))
-      .source(Tsv("input", 'n), inputData)
+      .source(Tsv("input", ('n)), inputData)
       .sink[(Double, Double, Double, Double, Double)](Tsv("stats-output")) { buf =>
         val (min, max, sum, mean, stdDev) = buf.head
         "correctly compute the min" in {

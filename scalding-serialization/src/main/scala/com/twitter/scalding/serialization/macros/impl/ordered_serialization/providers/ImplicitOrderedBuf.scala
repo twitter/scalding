@@ -26,8 +26,8 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 object ImplicitOrderedBuf {
 
   def dispatch(c: Context): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-    val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = { case tpe =>
-      ImplicitOrderedBuf(c)(tpe)
+    val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+      case tpe => ImplicitOrderedBuf(c)(tpe)
     }
     pf
   }
@@ -41,7 +41,7 @@ object ImplicitOrderedBuf {
     val variableName = TermName(variableNameStr)
 
     val implicitInstanciator = q"""
-      implicitly[_root_.com.twitter.scalding.serialization.OrderedSerialization[$outerType]]"""
+      implicitly[_root_.com.twitter.scalding.serialization.OrderedSerialization[${outerType}]]"""
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c

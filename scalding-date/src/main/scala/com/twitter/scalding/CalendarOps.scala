@@ -1,20 +1,24 @@
 package com.twitter.scalding
 
-import java.util.{Calendar, Date}
+import java.util.{ Date, Calendar }
 import scala.annotation.tailrec
 
 /**
+ *
  */
 object CalendarOps {
   def truncate(date: Calendar, field: Int): Calendar = {
     @tailrec
-    def truncateIter(cal: Calendar, field: Int, currentField: Int): Calendar =
+    def truncateIter(cal: Calendar, field: Int, currentField: Int): Calendar = {
       if (currentField > field) {
         currentField match {
           case Calendar.DAY_OF_MONTH => cal.set(currentField, 1)
-          case Calendar.DAY_OF_WEEK_IN_MONTH | Calendar.DAY_OF_WEEK | Calendar.DAY_OF_YEAR |
-              Calendar.WEEK_OF_MONTH | Calendar.WEEK_OF_YEAR | Calendar.HOUR_OF_DAY =>
-            () // Skip
+          case Calendar.DAY_OF_WEEK_IN_MONTH |
+            Calendar.DAY_OF_WEEK |
+            Calendar.DAY_OF_YEAR |
+            Calendar.WEEK_OF_MONTH |
+            Calendar.WEEK_OF_YEAR |
+            Calendar.HOUR_OF_DAY => () // Skip
           case _ => cal.set(currentField, 0)
         }
 
@@ -22,6 +26,7 @@ object CalendarOps {
       } else {
         cal
       }
+    }
 
     val cloned = date.clone().asInstanceOf[Calendar]
 
