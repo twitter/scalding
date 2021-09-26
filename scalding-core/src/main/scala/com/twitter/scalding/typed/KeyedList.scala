@@ -19,7 +19,6 @@ import java.io.Serializable
 import scala.collection.JavaConverters._
 
 import com.twitter.algebird.{ Fold, Semigroup, Ring, Aggregator }
-import com.twitter.algebird.mutable.PriorityQueueMonoid
 
 import com.twitter.scalding.typed.functions._
 
@@ -79,7 +78,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
       // If you care which items you take, you should sort by a random number
       // or the value itself.
       val fakeOrdering: Ordering[T] = Ordering.by { v: T => v.hashCode }
-      implicit val mon = new PriorityQueueMonoid(n)(fakeOrdering)
+      implicit val mon = new ScaldingPriorityQueueMonoid(n)(fakeOrdering)
       mapValues(mon.build(_))
         // Do the heap-sort on the mappers:
         .sum
@@ -213,7 +212,7 @@ trait KeyedListLike[K, +T, +This[K, +T] <: KeyedListLike[K, T, This]] extends Se
    * to fit in memory.
    */
   def sortedTake[U >: T](k: Int)(implicit ord: Ordering[U]): This[K, Seq[U]] = {
-    val mon = new PriorityQueueMonoid[U](k)(ord)
+    val mon = new ScaldingPriorityQueueMonoid[U](k)(ord)
     mapValues(mon.build(_))
       .sum(mon) // results in a PriorityQueue
       // scala can't infer the type, possibly due to the view bound on TypedPipe
