@@ -2,14 +2,16 @@ package com.twitter.scalding.mathematics
 
 class Histogram(map: Map[Double, Long], binWidth: Double) {
   lazy val size = map.values.sum
-  lazy val sum = map.foldLeft(0.0){ case (acc, (bin, count)) => acc + bin * count }
+  lazy val sum = map.foldLeft(0.0) { case (acc, (bin, count)) => acc + bin * count }
   lazy val keys = map.keys.toList.sorted
 
   lazy val min = keys.head
   lazy val max = keys.last
 
   lazy val stdDev = {
-    val squaredDiff = map.foldLeft(0.0){ case (acc, (bin, count)) => acc + count * math.pow(bin - mean, 2.0) }
+    val squaredDiff = map.foldLeft(0.0) { case (acc, (bin, count)) =>
+      acc + count * math.pow(bin - mean, 2.0)
+    }
     math.sqrt(squaredDiff / size)
   }
 
@@ -35,7 +37,7 @@ class Histogram(map: Map[Double, Long], binWidth: Double) {
     result
   }
 
-  def percentile(p: Int) = keys.find{ bin => cdf(bin) * 100 >= p }.getOrElse(-1d)
+  def percentile(p: Int) = keys.find(bin => cdf(bin) * 100 >= p).getOrElse(-1d)
 
   lazy val median = percentile(50)
   lazy val q1 = percentile(25)

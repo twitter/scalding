@@ -12,26 +12,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.tuple.Fields
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
-  def setAndCheck[T <: Comparable[_]](v: T)(implicit conv: (T) => Fields): Unit = {
+  def setAndCheck[T <: Comparable[_]](v: T)(implicit conv: (T) => Fields): Unit =
     conv(v) shouldBe (new Fields(v))
-  }
-  def setAndCheckS[T <: Comparable[_]](v: Seq[T])(implicit conv: (Seq[T]) => Fields): Unit = {
+  def setAndCheckS[T <: Comparable[_]](v: Seq[T])(implicit conv: (Seq[T]) => Fields): Unit =
     conv(v) shouldBe (new Fields(v: _*))
-  }
-  def setAndCheckSym(v: Symbol): Unit = {
+  def setAndCheckSym(v: Symbol): Unit =
     (v: Fields) shouldBe (new Fields(v.toString.tail))
-  }
-  def setAndCheckSymS(v: Seq[Symbol]): Unit = {
+  def setAndCheckSymS(v: Seq[Symbol]): Unit =
     (v: Fields) shouldBe (new Fields(v.map(_.toString.tail): _*))
-  }
   def setAndCheckField(v: Field[_]): Unit = {
     val vF: Fields = v
     val fields = new Fields(v.id)
@@ -44,12 +40,10 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
     fields.setComparators(v.map(_.ord): _*)
     checkFieldsWithComparators(vF, fields)
   }
-  def setAndCheckEnumValue(v: Enumeration#Value): Unit = {
+  def setAndCheckEnumValue(v: Enumeration#Value): Unit =
     (v: Fields) shouldBe (new Fields(v.toString))
-  }
-  def setAndCheckEnumValueS(v: Seq[Enumeration#Value]): Unit = {
+  def setAndCheckEnumValueS(v: Seq[Enumeration#Value]): Unit =
     (v: Fields) shouldBe (new Fields(v.map(_.toString): _*))
-  }
   def checkFieldsWithComparators(actual: Fields, expected: Fields): Unit = {
     // sometimes one or the other is actually a RichFields, so rather than test for
     // actual.equals(expected), we just check that all the field names and comparators line up
@@ -60,7 +54,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
   "Field" should {
     "contain manifest" in {
       val field = Field[Long]("foo")
-      field.mf should contain (implicitly[Manifest[Long]])
+      field.mf should contain(implicitly[Manifest[Long]])
     }
   }
   "RichFields" should {
@@ -80,7 +74,10 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       val comparator = implicitly[Ordering[String]]
       fields.setComparators(comparator, comparator)
       val fieldList: List[Field[_]] = fields.toFieldList
-      fieldList shouldBe List(new StringField[String]("foo")(comparator, None), new StringField[String]("bar")(comparator, None))
+      fieldList shouldBe List(
+        new StringField[String]("foo")(comparator, None),
+        new StringField[String]("bar")(comparator, None)
+      )
     }
     "throw an exception on when converting a virtual Fields instance" in {
 
@@ -203,7 +200,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       f2 = (0 until 10) -> 'you
       f2 shouldBe (new Fields((0 until 10).map(int2Integer): _*), new Fields("you"))
 
-      f2 = (('hey, 'world) -> 'other)
+      f2 = ('hey, 'world) -> 'other
       f2 shouldBe (new Fields("hey", "world"), new Fields("other"))
 
       f2 = 0 -> 2
@@ -214,12 +211,12 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
 
       val foo = Field[java.math.BigInteger]("foo")
       val bar = Field[java.math.BigDecimal]("bar")
-      f2 = ((foo, bar) -> 'bell)
+      f2 = (foo, bar) -> 'bell
       var fields = new Fields("foo", "bar")
       fields.setComparators(foo.ord, bar.ord)
       f2 shouldBe (fields, new Fields("bell"))
 
-      f2 = (foo -> ('bar, 'bell))
+      f2 = foo -> ('bar, 'bell)
       fields = RichFields(foo)
       fields.setComparators(foo.ord)
       f2 shouldBe (fields, new Fields("bar", "bell"))
@@ -232,7 +229,7 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       f2 shouldBe (new Fields("one", "two", "three"), new Fields("n1", "n2", "n3"))
       f2 = List(4, 5, 6) -> List(1, 2, 3)
       f2 shouldBe (new Fields(int2Integer(4), int2Integer(5), int2Integer(6)),
-        new Fields(int2Integer(1), int2Integer(2), int2Integer(3)))
+      new Fields(int2Integer(1), int2Integer(2), int2Integer(3)))
 
       object Schema extends Enumeration {
         val one, two, three = Value

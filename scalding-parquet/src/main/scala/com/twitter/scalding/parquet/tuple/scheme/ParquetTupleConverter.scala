@@ -1,9 +1,10 @@
 package com.twitter.scalding.parquet.tuple.scheme
 
-import org.apache.parquet.io.api.{ Binary, Converter, GroupConverter, PrimitiveConverter }
+import org.apache.parquet.io.api.{Binary, Converter, GroupConverter, PrimitiveConverter}
 import scala.util.Try
 
 trait TupleFieldConverter[+T] extends Converter with Serializable {
+
   /**
    * Current value read from parquet column
    */
@@ -25,7 +26,8 @@ abstract class ParquetTupleConverter[T] extends GroupConverter with TupleFieldCo
 
 /**
  * Primitive fields converter
- * @tparam T primitive types (String, Double, Float, Long, Int, Short, Byte, Boolean)
+ * @tparam T
+ *   primitive types (String, Double, Float, Long, Int, Short, Byte, Boolean)
  */
 trait PrimitiveFieldConverter[T] extends PrimitiveConverter with TupleFieldConverter[T] {
   val defaultValue: T
@@ -43,13 +45,13 @@ class StringConverter extends PrimitiveFieldConverter[String] {
 }
 
 class DoubleConverter extends PrimitiveFieldConverter[Double] {
-  override val defaultValue: Double = 0D
+  override val defaultValue: Double = 0d
 
   override def addDouble(v: Double): Unit = value = v
 }
 
 class FloatConverter extends PrimitiveFieldConverter[Float] {
-  override val defaultValue: Float = 0F
+  override val defaultValue: Float = 0f
 
   override def addFloat(v: Float): Unit = value = v
 }
@@ -86,7 +88,8 @@ class BooleanConverter extends PrimitiveFieldConverter[Boolean] {
 
 /**
  * Collection field converter, such as list(Scala Option is also seen as a collection).
- * @tparam T collection element type(can be primitive types or nested types)
+ * @tparam T
+ *   collection element type(can be primitive types or nested types)
  */
 trait CollectionConverter[T] {
   val child: TupleFieldConverter[T]
@@ -96,10 +99,12 @@ trait CollectionConverter[T] {
 
 /**
  * A wrapper of primitive converters for modeling primitive fields in a collection
- * @tparam T primitive types (String, Double, Float, Long, Int, Short, Byte, Boolean)
+ * @tparam T
+ *   primitive types (String, Double, Float, Long, Int, Short, Byte, Boolean)
  */
-abstract class CollectionElementPrimitiveConverter[T](val parent: CollectionConverter[T]) extends PrimitiveConverter
-  with TupleFieldConverter[T] {
+abstract class CollectionElementPrimitiveConverter[T](val parent: CollectionConverter[T])
+    extends PrimitiveConverter
+    with TupleFieldConverter[T] {
   val delegate: PrimitiveFieldConverter[T]
 
   override def addBinary(v: Binary) = {
@@ -139,10 +144,12 @@ abstract class CollectionElementPrimitiveConverter[T](val parent: CollectionConv
 
 /**
  * A wrapper of group converters for modeling group type element in a collection
- * @tparam T group tuple type(can be a collection type, such as list)
+ * @tparam T
+ *   group tuple type(can be a collection type, such as list)
  */
-abstract class CollectionElementGroupConverter[T](val parent: CollectionConverter[T]) extends GroupConverter
-  with TupleFieldConverter[T] {
+abstract class CollectionElementGroupConverter[T](val parent: CollectionConverter[T])
+    extends GroupConverter
+    with TupleFieldConverter[T] {
 
   val delegate: TupleFieldConverter[T]
 
@@ -162,7 +169,8 @@ abstract class CollectionElementGroupConverter[T](val parent: CollectionConverte
 
 /**
  * Option converter for modeling option field
- * @tparam T option element type(can be primitive types or nested types)
+ * @tparam T
+ *   option element type(can be primitive types or nested types)
  */
 abstract class OptionConverter[T] extends TupleFieldConverter[Option[T]] with CollectionConverter[T] {
   var value: Option[T] = None
@@ -184,9 +192,9 @@ abstract class OptionConverter[T] extends TupleFieldConverter[Option[T]] with Co
 }
 
 /**
- * List in parquet is represented by 3-level structure.
- * Check this https://github.com/apache/incubator-parquet-format/blob/master/LogicalTypes.md
- * Helper class to wrap a converter for a list group converter
+ * List in parquet is represented by 3-level structure. Check this
+ * https://github.com/apache/incubator-parquet-format/blob/master/LogicalTypes.md Helper class to wrap a
+ * converter for a list group converter
  */
 object ListElement {
   def wrapper(child: Converter): GroupConverter = new GroupConverter() {
@@ -201,11 +209,16 @@ object ListElement {
     override def start(): Unit = ()
   }
 }
+
 /**
  * List converter for modeling list field
- * @tparam T list element type(can be primitive types or nested types)
+ * @tparam T
+ *   list element type(can be primitive types or nested types)
  */
-abstract class ListConverter[T] extends GroupConverter with TupleFieldConverter[List[T]] with CollectionConverter[T] {
+abstract class ListConverter[T]
+    extends GroupConverter
+    with TupleFieldConverter[List[T]]
+    with CollectionConverter[T] {
 
   var value: List[T] = Nil
 
@@ -243,9 +256,13 @@ abstract class ListConverter[T] extends GroupConverter with TupleFieldConverter[
 
 /**
  * Set converter for modeling set field
- * @tparam T list element type(can be primitive types or nested types)
+ * @tparam T
+ *   list element type(can be primitive types or nested types)
  */
-abstract class SetConverter[T] extends GroupConverter with TupleFieldConverter[Set[T]] with CollectionConverter[T] {
+abstract class SetConverter[T]
+    extends GroupConverter
+    with TupleFieldConverter[Set[T]]
+    with CollectionConverter[T] {
 
   var value: Set[T] = Set()
 
@@ -274,10 +291,15 @@ abstract class SetConverter[T] extends GroupConverter with TupleFieldConverter[S
 
 /**
  * Map converter for modeling map field
- * @tparam K map key type
- * @tparam V map value type
+ * @tparam K
+ *   map key type
+ * @tparam V
+ *   map value type
  */
-abstract class MapConverter[K, V] extends GroupConverter with TupleFieldConverter[Map[K, V]] with CollectionConverter[(K, V)] {
+abstract class MapConverter[K, V]
+    extends GroupConverter
+    with TupleFieldConverter[Map[K, V]]
+    with CollectionConverter[(K, V)] {
 
   var value: Map[K, V] = Map()
 
@@ -302,13 +324,14 @@ abstract class MapConverter[K, V] extends GroupConverter with TupleFieldConverte
 }
 
 abstract class MapKeyValueConverter[K, V](parent: CollectionConverter[(K, V)])
-  extends CollectionElementGroupConverter[(K, V)](parent) {
+    extends CollectionElementGroupConverter[(K, V)](parent) {
 
   val keyConverter: TupleFieldConverter[K]
 
   val valueConverter: TupleFieldConverter[V]
 
-  override lazy val delegate: TupleFieldConverter[(K, V)] = new GroupConverter with TupleFieldConverter[(K, V)] {
+  override lazy val delegate: TupleFieldConverter[(K, V)] = new GroupConverter
+    with TupleFieldConverter[(K, V)] {
     override def currentValue: (K, V) = (keyConverter.currentValue, valueConverter.currentValue)
 
     override def reset(): Unit = {
@@ -316,15 +339,16 @@ abstract class MapKeyValueConverter[K, V](parent: CollectionConverter[(K, V)])
       valueConverter.reset()
     }
 
-    override def getConverter(i: Int): Converter = {
+    override def getConverter(i: Int): Converter =
       if (i == 0) keyConverter
       else if (i == 1) valueConverter
-      else throw new IllegalArgumentException("key_value has only the key (0) and value (1) fields expected: " + i)
-    }
+      else
+        throw new IllegalArgumentException(
+          "key_value has only the key (0) and value (1) fields expected: " + i
+        )
 
     override def end(): Unit = ()
 
     override def start(): Unit = reset()
   }
 }
-

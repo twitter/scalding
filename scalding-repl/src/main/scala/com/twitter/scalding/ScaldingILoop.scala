@@ -23,9 +23,9 @@ import scala.tools.nsc.interpreter.JPrintWriter
 import scala.tools.nsc.GenericRunnerSettings
 
 object ScaldingILoop {
+
   /**
-   * Search for files with the given name in all directories from current directory
-   * up to root.
+   * Search for files with the given name in all directories from current directory up to root.
    */
   private[scalding] def findAllUpPath(currentDir: String)(filename: String): List[File] = {
     val matchingFiles = for {
@@ -49,8 +49,7 @@ object ScaldingILoop {
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
  */
-class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
-  extends ILoopCompat(in, out) {
+class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter) extends ILoopCompat(in, out) {
   def this() = this(None, new JPrintWriter(Console.out, true))
 
   settings = new GenericRunnerSettings({ s => echo(s) })
@@ -59,31 +58,33 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
     val fc = Console.YELLOW
     val wc = Console.RED
     def wrapFlames(s: String) = s.replaceAll("[()]+", fc + "$0" + wc)
-    echo(fc +
-      " (                                           \n" +
-      " )\\ )            (   (                       \n" +
-      "(()/(         )  )\\  )\\ )  (          (  (   \n" +
-      " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
-      "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
-      wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
-      wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
-      "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
-      "                                    |___/   ")
+    echo(
+      fc +
+        " (                                           \n" +
+        " )\\ )            (   (                       \n" +
+        "(()/(         )  )\\  )\\ )  (          (  (   \n" +
+        " /(_)) (   ( /( ((_)(()/( )\\   (     )\\))(  \n" +
+        "(_))   )\\  )( )) _   ((_)(( )  )\\ ) (( ))\\  \n".replaceAll("_", wc + "_" + fc) + wc +
+        wrapFlames("/ __|((_) ((_)_ | |  _| | (_) _(_(( (_()_) \n") +
+        wrapFlames("\\__ \\/ _| / _` || |/ _` | | || ' \\))/ _` \\  \n") +
+        "|___/\\__| \\__,_||_|\\__,_| |_||_||_| \\__, |  \n" +
+        "                                    |___/   "
+    )
   }
 
   /**
-   * Commands specific to the Scalding REPL. To define a new command use one of the following
-   * factory methods:
-   * - `LoopCommand.nullary` for commands that take no arguments
-   * - `LoopCommand.cmd` for commands that take one string argument
-   * - `LoopCommand.varargs` for commands that take multiple string arguments
+   * Commands specific to the Scalding REPL. To define a new command use one of the following factory methods:
+   *   - `LoopCommand.nullary` for commands that take no arguments
+   *   - `LoopCommand.cmd` for commands that take one string argument
+   *   - `LoopCommand.varargs` for commands that take multiple string arguments
    */
   private val scaldingCommands: List[LoopCommand] = List()
 
   /**
    * Change the shell prompt to read scalding&gt;
    *
-   * @return a prompt string to use for this REPL.
+   * @return
+   *   a prompt string to use for this REPL.
    */
   override def prompt: String = Console.BLUE + "\nscalding> " + Console.RESET
 
@@ -94,7 +95,8 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
   /**
    * Gets the list of commands that this REPL supports.
    *
-   * @return a list of the command supported by this REPL.
+   * @return
+   *   a list of the command supported by this REPL.
    */
   override def commands: List[LoopCommand] = super.commands ++ scaldingCommands
 
@@ -102,7 +104,8 @@ class ScaldingILoop(in: Option[BufferedReader], out: JPrintWriter)
     "com.twitter.scalding._",
     "com.twitter.scalding.ReplImplicits._",
     "com.twitter.scalding.ReplImplicitContext._",
-    "com.twitter.scalding.ReplState._")
+    "com.twitter.scalding.ReplState._"
+  )
 
   override def createInterpreter(): Unit = {
     super.createInterpreter()

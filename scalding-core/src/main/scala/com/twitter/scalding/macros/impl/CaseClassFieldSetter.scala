@@ -20,8 +20,8 @@ import scala.reflect.macros.Context
 import scala.util.Try
 
 /**
- * Helper to set fields from a case class to other "container" types
- * E.g. cascading Tuple, jdbc PreparedStatement
+ * Helper to set fields from a case class to other "container" types E.g. cascading Tuple, jdbc
+ * PreparedStatement
  */
 trait CaseClassFieldSetter {
 

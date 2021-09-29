@@ -12,10 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import com.twitter.scalding._
 
@@ -35,13 +35,15 @@ class ExecutionKMeansTest extends WordSpec with Matchers {
 
       // To have the seeds stay sane for kmeans k == vectorCount
       val vectorCount = k
-      val vectors = TypedPipe.from((0 until vectorCount).map { i => randVect(i % k) })
+      val vectors = TypedPipe.from((0 until vectorCount).map(i => randVect(i % k)))
 
-      val labels = KMeans(k, vectors).flatMap {
-        case (_, _, labeledPipe) =>
+      val labels = KMeans(k, vectors)
+        .flatMap { case (_, _, labeledPipe) =>
           labeledPipe.toIterableExecution
-      }
-        .waitFor(Config.default, Local(false)).get.toList
+        }
+        .waitFor(Config.default, Local(false))
+        .get
+        .toList
 
       def clusterOf(v: Vector[Double]): Int = v.indexWhere(_ > 0.0)
 
@@ -49,10 +51,9 @@ class ExecutionKMeansTest extends WordSpec with Matchers {
 
       // The rule is this: if two vectors share the same prefix,
       // the should be in the same cluster
-      byCluster.foreach {
-        case (clusterId, vs) =>
-          val id = vs.head._1
-          vs.foreach { case (thisId, _) => id shouldBe thisId }
+      byCluster.foreach { case (clusterId, vs) =>
+        val id = vs.head._1
+        vs.foreach { case (thisId, _) => id shouldBe thisId }
       }
     }
   }

@@ -16,9 +16,9 @@ package com.twitter.scalding.typed
 
 import java.io.File
 
-import scala.io.{ Source => ScalaSource }
+import scala.io.{Source => ScalaSource}
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import com.twitter.scalding._
 import TDsl._
@@ -57,7 +57,7 @@ class PartitionedDelimitedTest extends WordSpec with Matchers {
 
       val directory = new File(testMode.getWritePathFor(singlePartition))
 
-      directory.listFiles().map({ _.getName() }).toSet shouldBe Set("A", "B")
+      directory.listFiles().map(_.getName()).toSet shouldBe Set("A", "B")
 
       val aSource = ScalaSource.fromFile(new File(directory, "A/part-00000-00000"))
       val bSource = ScalaSource.fromFile(new File(directory, "B/part-00000-00001"))

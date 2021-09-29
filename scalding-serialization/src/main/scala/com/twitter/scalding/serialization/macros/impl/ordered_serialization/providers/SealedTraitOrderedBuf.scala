@@ -20,17 +20,22 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization._
 import scala.reflect.macros.blackbox.Context
 
 object SealedTraitOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
 
     val pf: PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
-      case tpe if (tpe.typeSymbol.isClass && (tpe.typeSymbol.asClass.isAbstractClass || tpe.typeSymbol.asClass.isTrait)) =>
+      case tpe
+          if tpe.typeSymbol.isClass && (tpe.typeSymbol.asClass.isAbstractClass || tpe.typeSymbol.asClass.isTrait) =>
         SealedTraitOrderedBuf(c)(buildDispatcher, tpe)
     }
     pf
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-    outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(s"$id"))
 
@@ -38,13 +43,15 @@ object SealedTraitOrderedBuf {
 
     if (knownDirectSubclasses.isEmpty)
       sys.error(
-        s"Unable to access any knownDirectSubclasses for $outerType , a bug in scala 2.10/2.11 makes this unreliable. -- ${c.enclosingPosition}")
+        s"Unable to access any knownDirectSubclasses for $outerType , a bug in scala 2.10/2.11 makes this unreliable. -- ${c.enclosingPosition}"
+      )
 
     // 22 is a magic number, so pick it aligning with usual size for case class fields
     // could be bumped, but the getLength method may get slow, or fail to compile at some point.
     if (knownDirectSubclasses.size > 22)
       sys.error(
-        s"More than 22 subclasses($outerType). This code is inefficient for this and may cause jvm errors. Supply code manually. -- ${c.enclosingPosition}")
+        s"More than 22 subclasses($outerType). This code is inefficient for this and may cause jvm errors. Supply code manually. -- ${c.enclosingPosition}"
+      )
 
     val subClassesValid = knownDirectSubclasses.forall { sc =>
       scala.util.Try(sc.asType.asClass.isCaseClass).getOrElse(false)
@@ -52,7 +59,8 @@ object SealedTraitOrderedBuf {
 
     if (!subClassesValid)
       sys.error(
-        s"We only support the extension of a sealed trait with case classes, for type $outerType -- ${c.enclosingPosition}")
+        s"We only support the extension of a sealed trait with case classes, for type $outerType -- ${c.enclosingPosition}"
+      )
 
     val dispatcher = buildDispatcher
 
@@ -66,8 +74,10 @@ object SealedTraitOrderedBuf {
       .zipWithIndex
       .map { case ((tpe, tbuf), idx) => (idx, tpe, tbuf) }
 
-    require(subData.nonEmpty,
-      "Unable to parse any subtypes for the sealed trait, error. This must be an error.")
+    require(
+      subData.nonEmpty,
+      "Unable to parse any subtypes for the sealed trait, error. This must be an error."
+    )
 
     new TreeOrderedBuf[c.type] {
       override val ctx: c.type = c

@@ -4,20 +4,16 @@ import com.twitter.scalding.serialization.Externalizer
 import java.io.Serializable
 
 /**
- * This is a weakly typed multi-way join function. By construction,
- * it should be kept in sync with the types in a Seq[TypedPipe[(K, Any)]]
+ * This is a weakly typed multi-way join function. By construction, it should be kept in sync with the types
+ * in a Seq[TypedPipe[(K, Any)]]
  *
- * a more sophisticated typing could use an HList of TypedPipe
- * and another more advanced coding here to prove the types line up.
- * However, this is somewhat easy to test and only exposed to
- * those writing backends, so we are currently satisfied with the
- * weak typing in this case
+ * a more sophisticated typing could use an HList of TypedPipe and another more advanced coding here to prove
+ * the types line up. However, this is somewhat easy to test and only exposed to those writing backends, so we
+ * are currently satisfied with the weak typing in this case
  *
- * We use Externalizer internally to independently serialize each function
- * in the composition. This, in principle, should allow Externalizer
- * to work better since different functions may be serializable with
- * Kryo or Java, but currently Externalizer has to use java or kryo
- * for the entire object.
+ * We use Externalizer internally to independently serialize each function in the composition. This, in
+ * principle, should allow Externalizer to work better since different functions may be serializable with Kryo
+ * or Java, but currently Externalizer has to use java or kryo for the entire object.
  */
 sealed abstract class MultiJoinFunction[A, +B] extends Serializable {
   def inputSize: Int
@@ -34,9 +30,10 @@ object MultiJoinFunction extends Serializable {
   }
 
   final case class PairCachedRight[K, A, B, C](
-    left: MultiJoinFunction[K, A],
-    right: MultiJoinFunction[K, B],
-    @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends MultiJoinFunction[K, C] {
+      left: MultiJoinFunction[K, A],
+      right: MultiJoinFunction[K, B],
+      @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
+  ) extends MultiJoinFunction[K, C] {
 
     private[this] val fnEx = Externalizer(fn)
 
@@ -54,7 +51,10 @@ object MultiJoinFunction extends Serializable {
        * correctness due to the weak types that MultiJoinFunction has (non-static size of Seq and
        * the use of Any)
        */
-      require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
+      require(
+        rightStreams.size == inputSize - 1,
+        s"expected $inputSize inputSize, found ${rightStreams.size + 1}"
+      )
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
 
@@ -65,9 +65,10 @@ object MultiJoinFunction extends Serializable {
   }
 
   final case class Pair[K, A, B, C](
-    left: MultiJoinFunction[K, A],
-    right: MultiJoinFunction[K, B],
-    @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]) extends MultiJoinFunction[K, C] {
+      left: MultiJoinFunction[K, A],
+      right: MultiJoinFunction[K, B],
+      @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
+  ) extends MultiJoinFunction[K, C] {
 
     private[this] val fnEx = Externalizer(fn)
 
@@ -85,7 +86,10 @@ object MultiJoinFunction extends Serializable {
        * correctness due to the weak types that MultiJoinFunction has (non-static size of Seq and
        * the use of Any)
        */
-      require(rightStreams.size == inputSize - 1, s"expected ${inputSize} inputSize, found ${rightStreams.size + 1}")
+      require(
+        rightStreams.size == inputSize - 1,
+        s"expected $inputSize inputSize, found ${rightStreams.size + 1}"
+      )
       val (leftSeq, rightSeq) = rightStreams.splitAt(leftSeqCount)
       val joinedLeft = left(key, leftMost, leftSeq)
 
@@ -109,8 +113,9 @@ object MultiJoinFunction extends Serializable {
    * This is used to implement mapGroup on already joined streams
    */
   final case class MapGroup[K, A, B](
-    input: MultiJoinFunction[K, A],
-    @transient mapGroupFn: (K, Iterator[A]) => Iterator[B]) extends MultiJoinFunction[K, B] {
+      input: MultiJoinFunction[K, A],
+      @transient mapGroupFn: (K, Iterator[A]) => Iterator[B]
+  ) extends MultiJoinFunction[K, B] {
 
     private[this] val fnEx = Externalizer(mapGroupFn)
 
@@ -123,11 +128,11 @@ object MultiJoinFunction extends Serializable {
   }
 
   /**
-   * This is used to join IteratorMappedReduce with others.
-   * We could compose Casting[A] with MapGroup[K, A, B] but since it is common enough we give
-   * it its own case.
+   * This is used to join IteratorMappedReduce with others. We could compose Casting[A] with MapGroup[K, A, B]
+   * but since it is common enough we give it its own case.
    */
-  final case class MapCast[K, A, B](@transient mapGroupFn: (K, Iterator[A]) => Iterator[B]) extends MultiJoinFunction[K, B] {
+  final case class MapCast[K, A, B](@transient mapGroupFn: (K, Iterator[A]) => Iterator[B])
+      extends MultiJoinFunction[K, B] {
 
     private[this] val fnEx = Externalizer(mapGroupFn)
 
@@ -139,4 +144,3 @@ object MultiJoinFunction extends Serializable {
     }
   }
 }
-

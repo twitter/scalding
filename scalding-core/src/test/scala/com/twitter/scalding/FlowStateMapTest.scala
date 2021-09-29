@@ -3,7 +3,7 @@ package com.twitter.scalding
 import org.scalatest.FunSuite
 
 import cascading.flow.FlowDef
-import com.twitter.scalding.source.{ TypedText, NullSink }
+import com.twitter.scalding.source.{NullSink, TypedText}
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 
 class FlowStateMapTest extends FunSuite {

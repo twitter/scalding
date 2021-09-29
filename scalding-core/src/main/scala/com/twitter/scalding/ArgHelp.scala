@@ -14,24 +14,29 @@ class HelpException extends RuntimeException("User asked for help")
 class DescriptionValidationException(msg: String) extends RuntimeException(msg)
 
 trait ArgHelper {
+
   /**
    * Similar to describe but validate all args are described
    *
-   * @param describedArgs List of Argument Descriptions
-   * @param ex Input Execution
-   * @return Output Execution
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @param ex
+   *   Input Execution
+   * @return
+   *   Output Execution
    */
-  def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+  def validatedDescribe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] =
     Execution.getArgs.flatMap { args =>
       validatedDescribe(describedArgs, args)
       ex
     }
-  }
 
   /**
    * Describe a set of Args given Descriptions and validate all Args are described
-   * @param describedArgs List of Argument Descriptions
-   * @param args Job Arguments
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @param args
+   *   Job Arguments
    */
   def validatedDescribe(describedArgs: Seq[DescribedArg], args: Args): Unit = {
     describe(describedArgs, args)
@@ -46,25 +51,29 @@ trait ArgHelper {
   }
 
   /**
-   * Describe the Arguments of this Execution.  By running --help the args will output
-   * and the execution will end
+   * Describe the Arguments of this Execution. By running --help the args will output and the execution will
+   * end
    *
-   * @param describedArgs List of Argument Descriptions
-   * @param ex Input Execution
-   * @return Output Execution
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @param ex
+   *   Input Execution
+   * @return
+   *   Output Execution
    */
-  def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] = {
+  def describe[T](describedArgs: Seq[DescribedArg], ex: Execution[T]): Execution[T] =
     Execution.getArgs.flatMap { args =>
       describe(describedArgs, args)
       ex
     }
-  }
 
   /**
    * Describe a set of Args given Descriptions
    *
-   * @param describedArgs List of Argument Descriptions
-   * @param args Job Arguments
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @param args
+   *   Job Arguments
    */
   def describe(describedArgs: Seq[DescribedArg], args: Args): Unit =
     if (args.boolean("help")) helpRequest(describedArgs)
@@ -83,40 +92,40 @@ trait ArgHelper {
   /**
    * Command line arg string given the Described Args
    *
-   * @param describedArgs List of Argument Descriptions
-   * @return Command Line Parameters
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @return
+   *   Command Line Parameters
    */
-  private[this] def argString(describedArgs: Seq[DescribedArg]): String = {
-    describedArgs.foldLeft("") {
-      case (str, describedArg) =>
-        val msg = describedArg match {
-          case RequiredArg(key, _) => s"--$key VALUE "
-          case OptionalArg(key, _) => s"[--$key VALUE] "
-          case ListArg(key, _) => s"[--$key VALUE VALUE2] "
-          case BooleanArg(key, _) => s"[--$key] "
-        }
-        str + msg
+  private[this] def argString(describedArgs: Seq[DescribedArg]): String =
+    describedArgs.foldLeft("") { case (str, describedArg) =>
+      val msg = describedArg match {
+        case RequiredArg(key, _) => s"--$key VALUE "
+        case OptionalArg(key, _) => s"[--$key VALUE] "
+        case ListArg(key, _)     => s"[--$key VALUE VALUE2] "
+        case BooleanArg(key, _)  => s"[--$key] "
+      }
+      str + msg
     } + "[--help]"
-  }
 
   /**
    * More detailed help command for these described arguments
    *
-   * @param describedArgs List of Argument Descriptions
-   * @return Detailed Help for the Args
+   * @param describedArgs
+   *   List of Argument Descriptions
+   * @return
+   *   Detailed Help for the Args
    */
-  private[this] def help(describedArgs: Seq[DescribedArg]): String = {
-    describedArgs.foldLeft("") {
-      case (str, describedArg) =>
-        val msg = describedArg match {
-          case RequiredArg(key, description) => s"--$key(Required) :: $description \n"
-          case OptionalArg(key, description) => s"--$key(Optional) :: $description \n"
-          case ListArg(key, description) => s"--$key(List) :: $description \n"
-          case BooleanArg(key, description) => s"--$key(Boolean) :: $description \n"
-        }
-        str + msg
+  private[this] def help(describedArgs: Seq[DescribedArg]): String =
+    describedArgs.foldLeft("") { case (str, describedArg) =>
+      val msg = describedArg match {
+        case RequiredArg(key, description) => s"--$key(Required) :: $description \n"
+        case OptionalArg(key, description) => s"--$key(Optional) :: $description \n"
+        case ListArg(key, description)     => s"--$key(List) :: $description \n"
+        case BooleanArg(key, description)  => s"--$key(Boolean) :: $description \n"
+      }
+      str + msg
     } + "--help :: Show this help message."
-  }
 }
 
 object ArgHelp extends ArgHelper

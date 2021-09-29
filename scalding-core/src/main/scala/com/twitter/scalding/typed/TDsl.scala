@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed
 
 import java.io.Serializable
@@ -24,10 +24,9 @@ import cascading.tuple.Fields
 import com.twitter.scalding._
 
 /**
- * implicits for the type-safe DSL
- * import TDsl._ to get the implicit conversions from Grouping/CoGrouping to Pipe,
- *   to get the .toTypedPipe method on standard cascading Pipes.
- *   to get automatic conversion of Mappable[T] to TypedPipe[T]
+ * implicits for the type-safe DSL import TDsl._ to get the implicit conversions from Grouping/CoGrouping to
+ * Pipe, to get the .toTypedPipe method on standard cascading Pipes. to get automatic conversion of
+ * Mappable[T] to TypedPipe[T]
  */
 object TDsl extends Serializable with GeneratedTupleAdders {
   implicit def pipeTExtensions(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): PipeTExtensions =
@@ -60,7 +59,9 @@ class PipeTExtensions(pipe: Pipe, flowDef: FlowDef, mode: Mode) extends Serializ
    *   }
    *  The above sums all the tuples and returns a TypedPipe[Int] which has the total sum.
    */
-  def typed[T, U](fielddef: (Fields, Fields))(fn: TypedPipe[T] => TypedPipe[U])(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe =
+  def typed[T, U](fielddef: (Fields, Fields))(
+      fn: TypedPipe[T] => TypedPipe[U]
+  )(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe =
     fn(TypedPipe.from(pipe, fielddef._1)(flowDef, mode, conv)).toPipe(fielddef._2)(flowDef, mode, setter)
 
   def toTypedPipe[T](fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =

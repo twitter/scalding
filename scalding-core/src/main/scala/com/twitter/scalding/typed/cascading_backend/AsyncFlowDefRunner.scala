@@ -1,7 +1,9 @@
 package com.twitter.scalding.typed.cascading_backend
 
-import cascading.flow.{ FlowDef, Flow }
+import cascading.flow.{Flow, FlowDef}
 import com.twitter.scalding.{
+  source,
+  typed,
   CascadingLocal,
   CascadingMode,
   Config,
@@ -12,33 +14,31 @@ import com.twitter.scalding.{
   HadoopMode,
   JobStats,
   Mappable,
-  TypedPipe,
-  source,
-  typed
+  TypedPipe
 }
-import com.twitter.scalding.{ CancellationHandler, CFuture, CPromise }
+import com.twitter.scalding.{CFuture, CPromise, CancellationHandler}
 import com.twitter.scalding.typed.TypedSink
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
-import com.stripe.dagon.{ Rule, HMap }
+import com.stripe.dagon.{HMap, Rule}
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ FileSystem, Path }
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.slf4j.LoggerFactory
-import scala.concurrent.{ Future, ExecutionContext => ConcurrentExecutionContext, Promise }
+import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
-import Execution.{ Writer, ToWrite }
+import Execution.{ToWrite, Writer}
 
 object AsyncFlowDefRunner {
+
   /**
    * We send messages from other threads into the submit thread here
    */
   private sealed trait FlowDefAction
-  private final case class RunFlowDef(conf: Config,
-    fd: FlowDef,
-    result: CPromise[(Long, JobStats)]) extends FlowDefAction
+  private final case class RunFlowDef(conf: Config, fd: FlowDef, result: CPromise[(Long, JobStats)])
+      extends FlowDefAction
   private final case class StopFlow(flow: Flow[_], result: Promise[Unit]) extends FlowDefAction
   private case object Stop extends FlowDefAction
 
@@ -54,7 +54,7 @@ object AsyncFlowDefRunner {
     override def run(): Unit = {
       val fs = mode match {
         case localMode: CascadingLocal => FileSystem.getLocal(new Configuration)
-        case hdfsMode: HadoopMode => FileSystem.get(hdfsMode.jobConf)
+        case hdfsMode: HadoopMode      => FileSystem.get(hdfsMode.jobConf)
       }
 
       filesToCleanup.foreach { file: String =>
@@ -74,10 +74,8 @@ object AsyncFlowDefRunner {
 }
 
 /**
- * This holds an internal thread to run
- * This holds an internal thread to submit run
- * a Config, Mode, FlowDef and return a Future holding the
- * JobStats
+ * This holds an internal thread to run This holds an internal thread to submit run a Config, Mode, FlowDef
+ * and return a Future holding the JobStats
  */
 class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
   import AsyncFlowDefRunner._
@@ -95,17 +93,21 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
   private object FilesToCleanUp {
     def empty: FilesToCleanUp = FilesToCleanUp(Set.empty, Set.empty)
   }
+
   /**
-   * @param filesToCleanup temporary files created by forceToDiskExecution
-   * @param initToOpt this is the mapping between user's TypedPipes and their optimized versions
-   * which are actually run.
-   * @param forcedPipes these are all the side effecting forcing of TypedPipes into simple
-   * SourcePipes or IterablePipes. These are for both toIterableExecution and forceToDiskExecution
+   * @param filesToCleanup
+   *   temporary files created by forceToDiskExecution
+   * @param initToOpt
+   *   this is the mapping between user's TypedPipes and their optimized versions which are actually run.
+   * @param forcedPipes
+   *   these are all the side effecting forcing of TypedPipes into simple SourcePipes or IterablePipes. These
+   *   are for both toIterableExecution and forceToDiskExecution
    */
   private case class State(
-    filesToCleanup: FilesToCleanUp,
-    initToOpt: HMap[StateKey, TypedPipe],
-    forcedPipes: HMap[StateKey, WorkVal]) {
+      filesToCleanup: FilesToCleanUp,
+      initToOpt: HMap[StateKey, TypedPipe],
+      forcedPipes: HMap[StateKey, WorkVal]
+  ) {
 
     def addFilesToCleanup(conf: Config, s: Option[String]): State =
       s match {
@@ -116,24 +118,26 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       }
 
     /**
-     * Returns true if we actually add this optimized pipe. We do this
-     * because we don't want to take the side effect twice.
+     * Returns true if we actually add this optimized pipe. We do this because we don't want to take the side
+     * effect twice.
      */
-    def addForce[T](c: Config,
-      init: TypedPipe[T],
-      opt: TypedPipe[T],
-      p: Future[TypedPipe[T]]): (State, Boolean) =
-
+    def addForce[T](
+        c: Config,
+        init: TypedPipe[T],
+        opt: TypedPipe[T],
+        p: Future[TypedPipe[T]]
+    ): (State, Boolean) =
       forcedPipes.get((c, opt)) match {
         case None =>
-          (copy(forcedPipes = forcedPipes + ((c, opt) -> p),
-            initToOpt = initToOpt + ((c, init) -> opt)), true)
+          (
+            copy(forcedPipes = forcedPipes + ((c, opt) -> p), initToOpt = initToOpt + ((c, init) -> opt)),
+            true
+          )
         case Some(_) =>
           (copy(initToOpt = initToOpt + ((c, init) -> opt)), false)
       }
 
     def getForce[T](c: Config, init: TypedPipe[T]): Option[Future[TypedPipe[T]]] =
-
       initToOpt.get((c, init)).map { opt =>
         forcedPipes.get((c, opt)) match {
           case None =>
@@ -154,14 +158,14 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
       s
     }
   private def getState: State =
-    updateState { s => (s, s) }
+    updateState(s => (s, s))
 
   private val messageQueue: LinkedBlockingQueue[AsyncFlowDefRunner.FlowDefAction] =
     new LinkedBlockingQueue[AsyncFlowDefRunner.FlowDefAction]()
 
   /**
-   * Hadoop and/or cascading has some issues, it seems, with starting jobs
-   * from multiple threads. This thread does all the Flow starting.
+   * Hadoop and/or cascading has some issues, it seems, with starting jobs from multiple threads. This thread
+   * does all the Flow starting.
    */
   private lazy val thread = new Thread(new Runnable {
     def run(): Unit = {
@@ -251,11 +255,11 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
   }
 
   /**
-   * This evaluates the fn in a Try, validates the sources
-   * calls runFlowDef, then clears the FlowStateMap
+   * This evaluates the fn in a Try, validates the sources calls runFlowDef, then clears the FlowStateMap
    */
-  def validateAndRun(conf: Config)(fn: Config => FlowDef)(
-    implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
+  def validateAndRun(
+      conf: Config
+  )(fn: Config => FlowDef)(implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
     val tFlowDef = Try(fn(conf)).map { flowDef =>
       FlowStateMap.validateSources(flowDef, mode)
       flowDef
@@ -263,19 +267,18 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
 
     tFlowDef match {
       case Success(flowDef) =>
-        runFlowDef(conf, flowDef).map {
-          case (id, jobStats) =>
-            FlowStateMap.clear(flowDef)
-            (id, ExecutionCounters.fromJobStats(jobStats))
+        runFlowDef(conf, flowDef).map { case (id, jobStats) =>
+          FlowStateMap.clear(flowDef)
+          (id, ExecutionCounters.fromJobStats(jobStats))
         }
       case Failure(e) =>
         CFuture.failed(e)
     }
   }
 
-  def execute(
-    conf: Config,
-    writes: List[ToWrite[_]])(implicit cec: ConcurrentExecutionContext): CFuture[(Long, ExecutionCounters)] = {
+  def execute(conf: Config, writes: List[ToWrite[_]])(implicit
+      cec: ConcurrentExecutionContext
+  ): CFuture[(Long, ExecutionCounters)] = {
 
     import Execution.ToWrite._
 
@@ -310,19 +313,18 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
           }
         }
 
-        sinkOpt.foreach {
-          case (sink, fp) =>
-            // We write the optimized pipe
-            write(opt, sink)
-            val pipeFut = done.future.map(_ => fp())
-            pipePromise.completeWith(pipeFut)
+        sinkOpt.foreach { case (sink, fp) =>
+          // We write the optimized pipe
+          write(opt, sink)
+          val pipeFut = done.future.map(_ => fp())
+          pipePromise.completeWith(pipeFut)
         }
       }
       def addIter[A](init: TypedPipe[A], optimized: Either[Iterable[A], Mappable[A]]): Unit = {
         val result = optimized match {
           case Left(iter) if iter.isEmpty => TypedPipe.EmptyTypedPipe
-          case Left(iter) => TypedPipe.IterablePipe(iter)
-          case Right(mappable) => TypedPipe.SourcePipe(mappable)
+          case Left(iter)                 => TypedPipe.IterablePipe(iter)
+          case Right(mappable)            => TypedPipe.SourcePipe(mappable)
         }
         val fut = Future.successful(result)
         updateState(_.addForce(conf, init, result, fut))
@@ -332,18 +334,17 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         case OptimizedWrite(init, Force(opt)) =>
           force(init, opt)
         case OptimizedWrite(init, ToIterable(opt)) =>
-          def step[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit = {
+          def step[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit =
             opt match {
-              case TypedPipe.EmptyTypedPipe => addIter(init, Left(Nil))
-              case TypedPipe.IterablePipe(as) => addIter(init, Left(as))
+              case TypedPipe.EmptyTypedPipe               => addIter(init, Left(Nil))
+              case TypedPipe.IterablePipe(as)             => addIter(init, Left(as))
               case TypedPipe.SourcePipe(src: Mappable[A]) => addIter(init, Right(src))
-              case other =>
+              case other                                  =>
                 // we need to write the pipe out first.
                 force(init, opt)
               // now, when we go to check for the pipe later, it
               // will be a SourcePipe of a Mappable by construction
             }
-          }
           step(init, opt)
 
         case OptimizedWrite(_, SimpleWrite(pipe, sink)) =>
@@ -360,10 +361,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     cfuture
   }
 
-  def getForced[T](
-    conf: Config,
-    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[TypedPipe[T]] =
-
+  def getForced[T](conf: Config, initial: TypedPipe[T])(implicit
+      cec: ConcurrentExecutionContext
+  ): Future[TypedPipe[T]] =
     getState.getForce(conf, initial) match {
       case Some(fut) => fut
       case None =>
@@ -372,18 +372,16 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
         Future.failed(new IllegalStateException(msg))
     }
 
-  def getIterable[T](
-    conf: Config,
-    initial: TypedPipe[T])(implicit cec: ConcurrentExecutionContext): Future[Iterable[T]] =
-
+  def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit
+      cec: ConcurrentExecutionContext
+  ): Future[Iterable[T]] =
     getForced(conf, initial).flatMap {
-      case TypedPipe.EmptyTypedPipe => Future.successful(Nil)
+      case TypedPipe.EmptyTypedPipe     => Future.successful(Nil)
       case TypedPipe.IterablePipe(iter) => Future.successful(iter)
       case TypedPipe.SourcePipe(src: Mappable[T]) =>
-        Future.successful(
-          new Iterable[T] {
-            def iterator = src.toIterator(conf, mode)
-          })
+        Future.successful(new Iterable[T] {
+          def iterator = src.toIterator(conf, mode)
+        })
       case other =>
         val msg =
           s"logic error: expected an Iterable pipe. ($conf, $initial) -> $other is not iterable"
@@ -391,23 +389,23 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     }
 
   private def forceToDisk[T]( // linter:disable:UnusedParameter
-    uuid: UUID,
-    conf: Config,
-    pipe: TypedPipe[T] // note, we don't use this, but it fixes the type T
-    ): (typed.TypedSink[T], () => TypedPipe[T], Option[String]) =
-
+      uuid: UUID,
+      conf: Config,
+      pipe: TypedPipe[T] // note, we don't use this, but it fixes the type T
+  ): (typed.TypedSink[T], () => TypedPipe[T], Option[String]) =
     mode match {
       case _: CascadingLocal => // Local or Test mode
         val inMemoryDest = new typed.MemorySink[T]
+
         /**
-         * This is a bit tricky. readResults has to be called after the job has
-         * run, so we need to do this inside the function which will
-         * be called after the job has run
+         * This is a bit tricky. readResults has to be called after the job has run, so we need to do this
+         * inside the function which will be called after the job has run
          */
         (inMemoryDest, () => TypedPipe.from(inMemoryDest.readResults), None)
       case _: HadoopMode =>
         val temporaryPath: String = {
-          val tmpDir = conf.get("hadoop.tmp.dir")
+          val tmpDir = conf
+            .get("hadoop.tmp.dir")
             .orElse(conf.get("cascading.tmp.dir"))
             .getOrElse("/tmp")
 

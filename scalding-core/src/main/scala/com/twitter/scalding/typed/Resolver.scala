@@ -5,8 +5,7 @@ import java.io.Serializable
 import scala.util.hashing.MurmurHash3
 
 /**
- * This class is an like a higher kinded PartialFunction
- * which we use to look up sources and sinks in a safe
+ * This class is an like a higher kinded PartialFunction which we use to look up sources and sinks in a safe
  * way
  */
 abstract class Resolver[I[_], O[_]] extends Serializable {
@@ -26,7 +25,8 @@ object Resolver extends Serializable {
     def apply[A](i: I[A]): Option[O[A]] = toHMap.get(i)
   }
 
-  private case class OrElse[I[_], O[_]](first: Resolver[I, O], second: Resolver[I, O]) extends Resolver[I, O] {
+  private case class OrElse[I[_], O[_]](first: Resolver[I, O], second: Resolver[I, O])
+      extends Resolver[I, O] {
     override val hashCode: Int = MurmurHash3.productHash(this)
 
     def apply[A](i: I[A]): Option[O[A]] = {
@@ -51,7 +51,8 @@ object Resolver extends Serializable {
     }
   }
 
-  private case class AndThen[X[_], Y[_], Z[_]](first: Resolver[X, Y], second: Resolver[Y, Z]) extends Resolver[X, Z] {
+  private case class AndThen[X[_], Y[_], Z[_]](first: Resolver[X, Y], second: Resolver[Y, Z])
+      extends Resolver[X, Z] {
     override val hashCode: Int = MurmurHash3.productHash(this)
 
     def apply[A](i: X[A]): Option[Z[A]] =
@@ -75,9 +76,8 @@ object Resolver extends Serializable {
           case HMapResolver(shm) =>
             // dagon does not have a ++ :(
             val merged = fhm.keySet.foldLeft(shm) { (hmap, k) =>
-              def addKey[A](k: I[A]): HMap[I, O] = {
+              def addKey[A](k: I[A]): HMap[I, O] =
                 hmap + (k -> fhm(k))
-              }
               addKey(k)
             }
             HMapResolver(merged)
