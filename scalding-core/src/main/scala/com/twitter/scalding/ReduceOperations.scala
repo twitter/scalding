@@ -193,13 +193,13 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => oldVal } { result => result._1 }
   }
-  def head(f: Symbol*): Self = head(f -> f)
+  def head(f: Symbol*): Self = head(fields(f) -> fields(f))
 
   def last(fd: (Fields, Fields)) = {
     //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => newVal } { result => result._1 }
   }
-  def last(f: Symbol*): Self = last(f -> f)
+  def last(f: Symbol*): Self = last(fields(f) -> fields(f))
 
   /**
    * Collect all the values into a List[T] and then operate on that
@@ -239,9 +239,9 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     mapReduceMap(fieldDef) { ctuple: CTuple => Tuple1(ctuple) } { (oldVal, newVal) => if (select(oldVal._1, newVal._1)) oldVal else newVal } { result => result._1 }
   }
   def max(fieldDef: (Fields, Fields)) = extremum(true, fieldDef)
-  def max(f: Symbol*) = extremum(true, (f -> f))
+  def max(f: Symbol*) = extremum(true, (fields(f) -> fields(f)))
   def min(fieldDef: (Fields, Fields)) = extremum(false, fieldDef)
-  def min(f: Symbol*) = extremum(false, (f -> f))
+  def min(f: Symbol*) = extremum(false, (fields(f) -> fields(f)))
 
   /**
    * Similar to the scala.collection.Iterable.mkString
@@ -288,7 +288,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
   //Same as reduce(f->f)
   def reduce[T](fieldDef: Symbol*)(fn: (T, T) => T)(implicit setter: TupleSetter[T],
     conv: TupleConverter[T]): Self = {
-    reduce(fieldDef -> fieldDef)(fn)(setter, conv)
+    reduce(fields(fieldDef) -> fields(fieldDef))(fn)(setter, conv)
   }
 
   // Abstract algebra reductions (sum, times, dot):
@@ -309,7 +309,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * Assumed to be a commutative operation.  If you don't want that, use .forceToReducers
    */
   def sum[T](fs: Symbol*)(implicit sg: Semigroup[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self =
-    sum[T](fs -> fs)(sg, tconv, tset)
+    sum[T](fields(fs) -> fields(fs))(sg, tconv, tset)
 
   /**
    * Returns the product of all the items in this grouping
@@ -324,7 +324,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * The same as `times(fs -> fs)`
    */
   def times[T](fs: Symbol*)(implicit ring: Ring[T], tconv: TupleConverter[T], tset: TupleSetter[T]): Self = {
-    times[T](fs -> fs)(ring, tconv, tset)
+    times[T](fields(fs) -> fields(fs))(ring, tconv, tset)
   }
 
   /**

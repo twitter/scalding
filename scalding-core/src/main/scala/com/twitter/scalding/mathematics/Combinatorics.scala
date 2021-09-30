@@ -202,7 +202,7 @@ object Combinatorics {
         }.filter('temp){
           x: Double => if (allc.size == numWeights) (math.abs(x - result) <= error) else (x <= result)
         }.discard('temp), allc)
-    })._1.unique(allColumns)
+    })._1.unique(fields(allColumns))
 
     (1 to numWeights).zip(weights).foldLeft(res) ((a, b) => {
       val (num, wt) = b
@@ -218,7 +218,7 @@ object Combinatorics {
   def positiveWeightedSum(weights: IndexedSeq[Double], result: Double, error: Double)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     val allColumns = (1 to weights.size).map(x => Symbol("k" + x))
     weightedSum(weights, result, error)
-      .filter(allColumns) { x: TupleEntry =>
+      .filter(fields(allColumns)) { x: TupleEntry =>
         (0 until allColumns.size).forall { i => x.getDouble(java.lang.Integer.valueOf(i)) != 0.0 }
       }
   }

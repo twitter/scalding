@@ -23,7 +23,32 @@ import java.util.Comparator
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
+/**
+ * These are particularly unsafe and we don't recommend using them
+ */
+trait DeprecatedFieldConversions extends LowPriorityFieldConversions {
+  implicit def travOnceToFields[T](t: TraversableOnce[Any]): Fields =
+    parseAnySeqToFields(t)
+}
+
+object DeprecatedFieldConversions extends DeprecatedFieldConversions
+
 trait LowPriorityFieldConversions {
+  /**
+   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
+   * Not sure we should be this flexible, but given that Cascading will throw an
+   * exception before scheduling the job, I guess this is okay.
+   */
+  def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T): Fields = {
+    val fields = new Fields(anyf.toSeq.map { anyToFieldArg }: _*)
+    anyf.foreach {
+      _ match {
+        case field: Field[_] => fields.setComparator(field.id, field.ord)
+        case _ =>
+      }
+    }
+    fields
+  }
 
   protected def anyToFieldArg(f: Any): Comparable[_] = f match {
     case x: Symbol => x.name
@@ -49,13 +74,18 @@ trait LowPriorityFieldConversions {
    * Lists are handled by an implicit in FieldConversions, which have
    * higher priority.
    */
-  implicit def productToFields(f: Product): Fields = {
-    val fields = new Fields(f.productIterator.map { anyToFieldArg }.toSeq: _*)
-    f.productIterator.foreach {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
-      case _ =>
-    }
-    fields
+  implicit def productToFields(f: Product): Fields = f match {
+    case l: List[_] =>
+      // List is a common product, unfortunately this is a very dangerous
+      // implicit since so many things extends product...
+      parseAnySeqToFields(l)
+    case _ =>
+      val fields = new Fields(f.productIterator.map(anyToFieldArg).toSeq: _*)
+      f.productIterator.foreach {
+        case field: Field[_] => fields.setComparator(field.id, field.ord)
+        case _ => ()
+      }
+      fields
   }
 }
 
@@ -169,25 +199,12 @@ trait FieldConversions extends LowPriorityFieldConversions {
   implicit def fromEnum[T <: Enumeration](enumeration: T): Fields =
     new Fields(enumeration.values.toList.map { _.toString }: _*)
 
-  implicit def fields[T <: TraversableOnce[Symbol]](f: T): Fields = new Fields(f.toSeq.map(_.name): _*)
-  implicit def strFields[T <: TraversableOnce[String]](f: T): Fields = new Fields(f.toSeq: _*)
-  implicit def intFields[T <: TraversableOnce[Int]](f: T): Fields = {
-    new Fields(f.toSeq.map { new java.lang.Integer(_) }: _*)
-  }
-  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f: T): RichFields = RichFields(f.toSeq)
-  /**
-   * Useful to convert f : Any* to Fields.  This handles mixed cases ("hey", 'you).
-   * Not sure we should be this flexible, but given that Cascading will throw an
-   * exception before scheduling the job, I guess this is okay.
-   */
-  implicit def parseAnySeqToFields[T <: TraversableOnce[Any]](anyf: T): Fields = {
-    val fields = new Fields(anyf.toSeq.map { anyToFieldArg }: _*)
-    anyf.foreach {
-      case field: Field[_] => fields.setComparator(field.id, field.ord)
-      case _ =>
-    }
-    fields
-  }
+  def fields[T <: TraversableOnce[Symbol]](f: T): Fields = new Fields(f.toSeq.map(_.name): _*)
+  def strFields[T <: TraversableOnce[String]](f: T): Fields = new Fields(f.toSeq: _*)
+  def intFields[T <: TraversableOnce[Int]](f: T): Fields =
+    new Fields(f.toSeq.map(Integer.valueOf): _*)
+
+  implicit def fieldFields[T <: TraversableOnce[Field[_]]](f: T): Fields = RichFields(f.toSeq)
 
   //Handle a pair generally:
   implicit def tuple2ToFieldsPair[T, U](pair: (T, U))(implicit tf: T => Fields, uf: U => Fields): (Fields, Fields) = {
@@ -199,7 +216,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
    * We can't set the field Manifests because cascading doesn't (yet) expose field type information
    * in the Fields API.
    */
-  implicit def fieldsToRichFields(fields: Fields): RichFields = {
+  implicit def fieldsToRichFields(fields: Fields): RichFields =
     if (!fields.isDefined) {
       // TODO We could provide a reasonable conversion here by designing a rich type hierarchy such as
       // Fields
@@ -211,20 +228,21 @@ trait FieldConversions extends LowPriorityFieldConversions {
       // of the appropriate type
       sys.error("virtual Fields cannot be converted to RichFields")
     }
+    else {
 
-    // This bit is kludgy because cascading provides different interfaces for extracting
-    // IDs and Comparators from a Fields instance.  (The IDs are only available
-    // "one at a time" by querying for a specific index, while the Comparators are only
-    // available "all at once" by calling getComparators.)
+      // This bit is kludgy because cascading provides different interfaces for extracting
+      // IDs and Comparators from a Fields instance.  (The IDs are only available
+      // "one at a time" by querying for a specific index, while the Comparators are only
+      // available "all at once" by calling getComparators.)
 
-    new RichFields(asList(fields).zip(fields.getComparators).map {
-      case (id: Comparable[_], comparator: Comparator[_]) => id match {
-        case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
-        case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
-        case z => sys.error("not expecting object of type " + z.getClass + " as field name")
-      }
-    })
-  }
+      new RichFields(asList(fields).zip(fields.getComparators).map {
+        case (id: Comparable[_], comparator: Comparator[_]) => id match {
+          case x: java.lang.Integer => IntField(x)(Ordering.comparatorToOrdering(comparator), None)
+          case y: String => StringField(y)(Ordering.comparatorToOrdering(comparator), None)
+          case z => sys.error("not expecting object of type " + z.getClass + " as field name")
+        }
+      })
+    }
 
 }
 
@@ -234,7 +252,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
 // val myFields: Fields = ...
 // myFields.toFieldList
 
-case class RichFields(val toFieldList: List[Field[_]]) extends Fields(toFieldList.map { _.id }: _*) {
+case class RichFields(toFieldList: List[Field[_]]) extends Fields(toFieldList.map { _.id }: _*) {
   toFieldList.foreach { field: Field[_] => setComparator(field.id, field.ord) }
 }
 
