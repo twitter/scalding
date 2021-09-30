@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import org.apache.hadoop.io.BytesWritable
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 case class C1(a: Int)
 case class C2(b: Int)
@@ -37,7 +37,8 @@ class ReferencedClassFinderTest extends WordSpec with Matchers {
     "Identify and tokenize used case classes" in {
       val job = JobTest(new ReferencedClassFinderExample(_))
         .arg("output", "outputFile")
-        .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")){ _: Any => Unit }.initJob(false)
+        .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")) { _: Any => Unit }
+        .initJob(false)
       val config = Config.tryFrom(job.config).get
       val tokenizedClasses = config.getCascadingSerializationTokens.values.toSet
       val kryoRegisteredClasses = config.getKryoRegisteredClasses
@@ -56,14 +57,14 @@ class ReferencedClassFinderTest extends WordSpec with Matchers {
       tokenizedClasses should not contain (classOf[BytesWritable].getName)
       kryoRegisteredClasses should not contain (classOf[BytesWritable])
       // classOf[Int] will return the primitive int, so manually pass in scala's wrapper
-      tokenizedClasses should not contain ("scala.Int")
-      tokenizedClasses should not contain ("scala.Array")
+      tokenizedClasses should not contain "scala.Int"
+      tokenizedClasses should not contain "scala.Array"
     }
 
     "Run successfully" in {
       JobTest(new ReferencedClassFinderExample(_))
         .arg("output", "outputFile")
-        .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")){ _: Any => Unit }
+        .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")) { _: Any => Unit }
         .runHadoop
     }
   }

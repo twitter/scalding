@@ -1,13 +1,9 @@
 package com.twitter.scalding.quotation
 
 import scala.reflect.macros.blackbox.Context
-import scala.reflect.macros.runtime.{ Context => ReflectContext }
+import scala.reflect.macros.runtime.{Context => ReflectContext}
 
-class QuotedMacro(val c: Context)
-  extends TreeOps
-  with TextMacro
-  with ProjectionMacro
-  with Liftables {
+class QuotedMacro(val c: Context) extends TreeOps with TextMacro with ProjectionMacro with Liftables {
   import c.universe._
 
   def internal: Tree = quoted
@@ -23,7 +19,8 @@ class QuotedMacro(val c: Context)
         .callsiteTyper
         .context
         .tree
-        .asInstanceOf[Tree])
+        .asInstanceOf[Tree]
+    )
 
   val QuotedCompanion = q"_root_.com.twitter.scalding.quotation.Quoted"
 
@@ -39,9 +36,7 @@ class QuotedMacro(val c: Context)
         case q"val $name = $body" => quoted(body)
 
         case q"$m.method" if m.symbol.fullName == classOf[Quoted].getName =>
-          c.abort(
-            c.enclosingPosition,
-            "Quoted.method can be invoked only as an implicit parameter")
+          c.abort(c.enclosingPosition, "Quoted.method can be invoked only as an implicit parameter")
 
         case tree @ q"$instance.$method[..$t]" =>
           q"${Quoted(source, Some(callText(method, t)), Projections.empty)}"
@@ -93,7 +88,7 @@ class QuotedMacro(val c: Context)
       sym.fullName.startsWith("com.twitter.scalding") || {
         sym.owner match {
           case NoSymbol => false
-          case owner => isScalding(owner)
+          case owner    => isScalding(owner)
         }
       }
 
@@ -101,7 +96,7 @@ class QuotedMacro(val c: Context)
       c.abort(
         c.enclosingPosition,
         "The quotation must happen at the level of the user-facing API. Add an `implicit q: Quoted` to the enclosing method. " +
-          "If that's not possible and the transformation doesn't introduce projections, use Quoted.internal.")
+          "If that's not possible and the transformation doesn't introduce projections, use Quoted.internal."
+      )
   }
 }
-

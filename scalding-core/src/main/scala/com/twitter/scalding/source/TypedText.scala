@@ -1,14 +1,14 @@
 package com.twitter.scalding.source
 
 import cascading.scheme.Scheme
-import cascading.scheme.hadoop.{ TextDelimited => CHTextDelimited }
-import cascading.scheme.local.{ TextDelimited => CLTextDelimited }
+import cascading.scheme.hadoop.{TextDelimited => CHTextDelimited}
+import cascading.scheme.local.{TextDelimited => CLTextDelimited}
 import com.twitter.scalding._
 import com.twitter.scalding.typed.TypedSink
 
 /**
- * This object gives you easy access to text formats (possibly LZO compressed) by
- * using a case class to describe the field names and types.
+ * This object gives you easy access to text formats (possibly LZO compressed) by using a case class to
+ * describe the field names and types.
  */
 case class TypedSep(str: String) extends AnyVal
 
@@ -28,51 +28,65 @@ object TypedText {
   /**
    * Prefix might be "/logs/awesome"
    */
-  private def hourly[T](sep: TypedSep, prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
+  private def hourly[T](sep: TypedSep, prefix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] = {
     require(prefix.last != '/', "prefix should not include trailing /")
     new TimePathTypedText[T](sep, prefix + TimePathedSource.YEAR_MONTH_DAY_HOUR + "/*")
   }
 
-  def hourlyTsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def hourlyTsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     hourly(TAB, prefix)
 
-  def hourlyOsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def hourlyOsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     hourly(ONE, prefix)
 
-  def hourlyCsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def hourlyCsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     hourly(COMMA, prefix)
 
-  private def daily[T](
-      sep: TypedSep, prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
+  private def daily[T](sep: TypedSep, prefix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] = {
     require(prefix.last != '/', "prefix should not include trailing /")
     new TimePathTypedText[T](sep, prefix + TimePathedSource.YEAR_MONTH_DAY + "/*")
   }
 
-  def dailyTsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyTsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     daily(TAB, prefix)
 
-  def dailyOsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyOsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     daily(ONE, prefix)
 
-  def dailyCsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyCsv[T](prefix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] =
     daily(COMMA, prefix)
 
-  private def dailyPrefixSuffix[T](
-      sep: TypedSep, 
-      prefix: String, 
-      suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = {
+  private def dailyPrefixSuffix[T](sep: TypedSep, prefix: String, suffix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] = {
     require(prefix.last != '/', "prefix should not include trailing /")
     require(suffix.head == '/', "suffix should include a preceding /")
     new TimePathTypedText[T](sep, prefix + TimePathedSource.YEAR_MONTH_DAY + suffix + "/*")
   }
 
-  def dailyPrefixSuffixTsv[T](prefix: String, suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyPrefixSuffixTsv[T](prefix: String, suffix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] =
     dailyPrefixSuffix(TAB, prefix, suffix)
 
-  def dailyPrefixSuffixOsv[T](prefix: String, suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyPrefixSuffixOsv[T](prefix: String, suffix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] =
     dailyPrefixSuffix(ONE, prefix, suffix)
 
-  def dailyPrefixSuffixCsv[T](prefix: String, suffix: String)(implicit dr: DateRange, td: TypeDescriptor[T]): TypedTextDelimited[T] = 
+  def dailyPrefixSuffixCsv[T](prefix: String, suffix: String)(implicit
+      dr: DateRange,
+      td: TypeDescriptor[T]
+  ): TypedTextDelimited[T] =
     dailyPrefixSuffix(COMMA, prefix, suffix)
 
 }
@@ -99,30 +113,50 @@ trait TypedTextDelimited[T] extends SchemedSource with Mappable[T] with TypedSin
   override def sourceFields = typeDescriptor.fields
 
   override def localScheme =
-    new CLTextDelimited(typeDescriptor.fields, false, false, separator.str, strict, null /* quote */ ,
-      typeDescriptor.fields.getTypesClasses, safe)
+    new CLTextDelimited(
+      typeDescriptor.fields,
+      false,
+      false,
+      separator.str,
+      strict,
+      null /* quote */,
+      typeDescriptor.fields.getTypesClasses,
+      safe
+    )
 
   override def hdfsScheme =
-    HadoopSchemeInstance(new CHTextDelimited(typeDescriptor.fields, null /* compression */ , false, false,
-      separator.str, strict, null /* quote */ ,
-      typeDescriptor.fields.getTypesClasses, safe).asInstanceOf[Scheme[_, _, _, _, _]])
+    HadoopSchemeInstance(
+      new CHTextDelimited(
+        typeDescriptor.fields,
+        null /* compression */,
+        false,
+        false,
+        separator.str,
+        strict,
+        null /* quote */,
+        typeDescriptor.fields.getTypesClasses,
+        safe
+      ).asInstanceOf[Scheme[_, _, _, _, _]]
+    )
 }
 
 class TimePathTypedText[T](sep: TypedSep, path: String)(implicit dr: DateRange, td: TypeDescriptor[T])
-  extends TimePathedSource(path, dr, DateOps.UTC) with TypedTextDelimited[T] {
+    extends TimePathedSource(path, dr, DateOps.UTC)
+    with TypedTextDelimited[T] {
   override def typeDescriptor = td
   protected override def separator = sep
 }
 
 class MostRecentTypedText[T](sep: TypedSep, path: String)(implicit dr: DateRange, td: TypeDescriptor[T])
-  extends MostRecentGoodSource(path, dr, DateOps.UTC) with TypedTextDelimited[T] {
+    extends MostRecentGoodSource(path, dr, DateOps.UTC)
+    with TypedTextDelimited[T] {
   override def typeDescriptor = td
   protected override def separator = sep
 }
 
 class FixedTypedText[T](sep: TypedSep, path: String*)(implicit td: TypeDescriptor[T])
-  extends FixedPathSource(path: _*) with TypedTextDelimited[T] {
+    extends FixedPathSource(path: _*)
+    with TypedTextDelimited[T] {
   override def typeDescriptor = td
   protected override def separator = sep
 }
-

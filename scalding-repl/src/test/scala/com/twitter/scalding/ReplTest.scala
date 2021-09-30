@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import java.io.File
@@ -35,7 +35,7 @@ class ReplTest extends WordSpec {
 
     val suffix = mode match {
       case _: CascadingLocal => "local"
-      case _: HadoopMode => "hadoop"
+      case _: HadoopMode     => "hadoop"
     }
     val testPath = "/tmp/scalding-repl/test/" + suffix + "/"
     val helloRef = List("Hello world", "Goodbye world")
@@ -58,13 +58,14 @@ class ReplTest extends WordSpec {
         // it's a TypedPipe from a MemorySink or SequenceFile)
         s match {
           case TypedPipe.IterablePipe(_) => succeed
-          case TypedPipe.SourcePipe(s) => assert(s.toString.contains("SequenceFile"))
+          case TypedPipe.SourcePipe(s)   => assert(s.toString.contains("SequenceFile"))
           case _ => fail(s"expected an IterablePipe or source from a SequenceFile, found: $s")
         }
       }
 
       "can be mapped and saved -- TypedPipe[String]" in {
-        val s = TypedPipe.from(TextLine(helloPath))
+        val s = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .snapshot
 
@@ -78,7 +79,8 @@ class ReplTest extends WordSpec {
       }
 
       "tuples -- TypedPipe[(String,Int)]" in {
-        val s = TypedPipe.from(TextLine(helloPath))
+        val s = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .map(w => (w.toLowerCase, w.length))
           .snapshot
@@ -87,8 +89,9 @@ class ReplTest extends WordSpec {
         assert(output === helloRef.flatMap(_.split("\\s+")).map(w => (w.toLowerCase, w.length)))
       }
 
-      "grouped -- Grouped[String,String]" which {
-        val grp = TypedPipe.from(TextLine(helloPath))
+      "grouped -- Grouped[String,String]".which {
+        val grp = TypedPipe
+          .from(TextLine(helloPath))
           .groupBy(_.toLowerCase)
 
         val correct = helloRef.map(l => (l.toLowerCase, l))
@@ -103,15 +106,14 @@ class ReplTest extends WordSpec {
         }
       }
 
-      "joined -- CoGrouped[String, Long]" which {
-        val linesByWord = TypedPipe.from(TextLine(helloPath))
+      "joined -- CoGrouped[String, Long]".which {
+        val linesByWord = TypedPipe
+          .from(TextLine(helloPath))
           .flatMap(_.split("\\s+"))
           .groupBy(_.toLowerCase)
         val wordScores = TypedPipe.from(TypedTsv[(String, Double)](tutorialData + "/word_scores.tsv")).group
 
-        val grp = linesByWord.join(wordScores)
-          .mapValues { case (text, score) => score }
-          .sum
+        val grp = linesByWord.join(wordScores).mapValues { case (text, score) => score }.sum
 
         val correct = Map("hello" -> 1.0, "goodbye" -> 3.0, "world" -> 4.0)
 
@@ -139,7 +141,8 @@ class ReplTest extends WordSpec {
 
     "run entire flow" in {
       resetFlowDef()
-      val hello = TypedPipe.from(TextLine(helloPath))
+      val hello = TypedPipe
+        .from(TextLine(helloPath))
         .flatMap(_.split("\\s+"))
         .map(_.toLowerCase)
         .distinct

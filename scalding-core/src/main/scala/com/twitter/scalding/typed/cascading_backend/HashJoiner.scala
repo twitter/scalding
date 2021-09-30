@@ -12,11 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.typed.cascading_backend
 
-import cascading.pipe.joiner.{ Joiner => CJoiner, JoinerClosure }
-import cascading.tuple.{ Tuple => CTuple }
+import cascading.pipe.joiner.{Joiner => CJoiner, JoinerClosure}
+import cascading.tuple.{Tuple => CTuple}
 
 import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.typed.MultiJoinFunction
@@ -27,9 +27,10 @@ import scala.collection.JavaConverters._
  * Only intended to be use to implement the hashCogroup on TypedPipe/Grouped
  */
 class HashJoiner[K, V, W, R](
-  rightHasSingleValue: Boolean,
-  rightGetter: MultiJoinFunction[K, W],
-  joiner: (K, V, Iterable[W]) => Iterator[R]) extends CJoiner {
+    rightHasSingleValue: Boolean,
+    rightGetter: MultiJoinFunction[K, W],
+    joiner: (K, V, Iterable[W]) => Iterator[R]
+) extends CJoiner {
 
   private[this] val joinEx = Externalizer(joiner)
 
@@ -60,7 +61,8 @@ class HashJoiner[K, V, W, R](
       left.flatMap { kv =>
         val leftV = kv.getObject(1).asInstanceOf[V] // get just the Vs
 
-        joinEx.get(key, leftV, rightIterable)
+        joinEx
+          .get(key, leftV, rightIterable)
           .map { rval =>
             // There always has to be four resulting fields
             // or otherwise the flow planner will throw

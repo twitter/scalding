@@ -1,12 +1,12 @@
 package com.twitter.scalding.estimation.memory
 
 import cascading.flow.FlowStep
-import com.twitter.scalding.estimation.{ FlowStepHistory, FlowStrategyInfo, HistoryService, Task }
+import com.twitter.scalding.estimation.{FlowStepHistory, FlowStrategyInfo, HistoryService, Task}
 import org.apache.hadoop.mapred.JobConf
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import org.scalatest.{ Matchers, WordSpec }
-import scala.util.{ Success, Try }
+import org.scalatest.{Matchers, WordSpec}
+import scala.util.{Success, Try}
 
 class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
   import Utils._
@@ -18,8 +18,7 @@ class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
 
     "estimate correct numbers for only reducers" in {
       val estimation = SmoothedMemoryEstimator
-        .makeHistory(Seq(
-          "REDUCE" -> 1024.megabytes))
+        .makeHistory(Seq("REDUCE" -> 1024.megabytes))
         .estimate(TestFlowStrategyInfo.dummy)
 
       estimation shouldBe reduceEstimate((1228, 1536))
@@ -27,8 +26,7 @@ class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
 
     "estimate correct numbers for only mappers" in {
       val estimation = SmoothedMemoryEstimator
-        .makeHistory(Seq(
-          "MAP" -> 1024.megabytes))
+        .makeHistory(Seq("MAP" -> 1024.megabytes))
         .estimate(TestFlowStrategyInfo.dummy)
 
       estimation shouldBe mapEstimate((1228, 1536))
@@ -36,15 +34,18 @@ class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
 
     "estimate correct numbers" in {
       val estimation = SmoothedMemoryEstimator
-        .makeHistory(Seq(
-          "MAP" -> 800.megabytes,
-          "REDUCE" -> 800.megabytes,
-          "MAP" -> 1024.megabytes,
-          "REDUCE" -> 1024.megabytes,
-          "MAP" -> 1300.megabytes,
-          "REDUCE" -> 1300.megabytes,
-          "MAP" -> 723.megabytes,
-          "REDUCE" -> 723.megabytes))
+        .makeHistory(
+          Seq(
+            "MAP" -> 800.megabytes,
+            "REDUCE" -> 800.megabytes,
+            "MAP" -> 1024.megabytes,
+            "REDUCE" -> 1024.megabytes,
+            "MAP" -> 1300.megabytes,
+            "REDUCE" -> 1300.megabytes,
+            "MAP" -> 723.megabytes,
+            "REDUCE" -> 723.megabytes
+          )
+        )
         .estimate(TestFlowStrategyInfo.dummy)
 
       estimation shouldBe Some(MemoryEstimate(Some((1228, 1536)), Some((1228, 1536))))
@@ -53,13 +54,15 @@ class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
     "estimate less than max cap" in {
       val conf = TestFlowStrategyInfo.dummy.step.getConfig
       val estimation = SmoothedMemoryEstimator
-        .makeHistory(Seq(
-          "MAP" -> (MemoryEstimatorConfig.getMaxContainerMemory(conf).megabyte + 1.gigabyte)))
+        .makeHistory(Seq("MAP" -> (MemoryEstimatorConfig.getMaxContainerMemory(conf).megabyte + 1.gigabyte)))
         .estimate(TestFlowStrategyInfo.dummy)
 
       val expectedEstimation = (
-        (MemoryEstimatorConfig.getMaxContainerMemory(conf) / MemoryEstimatorConfig.getXmxScaleFactor(conf)).toLong,
-        MemoryEstimatorConfig.getMaxContainerMemory(conf))
+        (MemoryEstimatorConfig.getMaxContainerMemory(conf) / MemoryEstimatorConfig.getXmxScaleFactor(
+          conf
+        )).toLong,
+        MemoryEstimatorConfig.getMaxContainerMemory(conf)
+      )
 
       estimation shouldBe mapEstimate(expectedEstimation)
     }
@@ -67,13 +70,17 @@ class SmoothedHistoryMemoryEstimatorTest extends WordSpec with Matchers {
     "estimate not less than min cap" in {
       val conf = TestFlowStrategyInfo.dummy.step.getConfig
       val estimation = SmoothedMemoryEstimator
-        .makeHistory(Seq(
-          "MAP" -> (MemoryEstimatorConfig.getMinContainerMemory(conf).megabyte - 500.megabyte)))
+        .makeHistory(
+          Seq("MAP" -> (MemoryEstimatorConfig.getMinContainerMemory(conf).megabyte - 500.megabyte))
+        )
         .estimate(TestFlowStrategyInfo.dummy)
 
       val expectedEstimation = (
-        (MemoryEstimatorConfig.getMinContainerMemory(conf) / MemoryEstimatorConfig.getXmxScaleFactor(conf)).toLong,
-        MemoryEstimatorConfig.getMinContainerMemory(conf))
+        (MemoryEstimatorConfig.getMinContainerMemory(conf) / MemoryEstimatorConfig.getXmxScaleFactor(
+          conf
+        )).toLong,
+        MemoryEstimatorConfig.getMinContainerMemory(conf)
+      )
 
       estimation shouldBe mapEstimate(expectedEstimation)
     }
@@ -86,42 +93,41 @@ object EmptyHistoryService extends HistoryService {
 }
 
 class DummyHistoryService(val history: Seq[(String, Long)]) extends HistoryService {
-  override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] = {
-    Success(history.map {
-      case (taskType, memory) =>
-        val task = Task(
-          details = Map(
-            Task.TaskType -> taskType),
-          counters = Map(
-            SmoothedHistoryMemoryEstimator.CommittedHeapBytes -> memory))
-        val tasks = Seq(task)
-        FlowStepHistory(
-          keys = null,
-          submitTimeMillis = 0,
-          launchTimeMillis = 0L,
-          finishTimeMillis = 0L,
-          totalMaps = 0L,
-          totalReduces = 0L,
-          finishedMaps = 0L,
-          finishedReduces = 0L,
-          failedMaps = 0L,
-          failedReduces = 0L,
-          mapFileBytesRead = 0L,
-          mapFileBytesWritten = 0L,
-          mapOutputBytes = 0l,
-          reduceFileBytesRead = 0l,
-          hdfsBytesRead = 0l,
-          hdfsBytesWritten = 0L,
-          mapperTimeMillis = 0L,
-          reducerTimeMillis = 0L,
-          reduceShuffleBytes = 0L,
-          cost = 1.1,
-          tasks = tasks)
+  override def fetchHistory(info: FlowStrategyInfo, maxHistory: Int): Try[Seq[FlowStepHistory]] =
+    Success(history.map { case (taskType, memory) =>
+      val task = Task(
+        details = Map(Task.TaskType -> taskType),
+        counters = Map(SmoothedHistoryMemoryEstimator.CommittedHeapBytes -> memory)
+      )
+      val tasks = Seq(task)
+      FlowStepHistory(
+        keys = null,
+        submitTimeMillis = 0,
+        launchTimeMillis = 0L,
+        finishTimeMillis = 0L,
+        totalMaps = 0L,
+        totalReduces = 0L,
+        finishedMaps = 0L,
+        finishedReduces = 0L,
+        failedMaps = 0L,
+        failedReduces = 0L,
+        mapFileBytesRead = 0L,
+        mapFileBytesWritten = 0L,
+        mapOutputBytes = 0L,
+        reduceFileBytesRead = 0L,
+        hdfsBytesRead = 0L,
+        hdfsBytesWritten = 0L,
+        mapperTimeMillis = 0L,
+        reducerTimeMillis = 0L,
+        reduceShuffleBytes = 0L,
+        cost = 1.1,
+        tasks = tasks
+      )
     })
-  }
 }
 
-class SmoothedMemoryEstimator(override val historyService: HistoryService) extends SmoothedHistoryMemoryEstimator
+class SmoothedMemoryEstimator(override val historyService: HistoryService)
+    extends SmoothedHistoryMemoryEstimator
 
 object SmoothedMemoryEstimator {
   def empty: SmoothedMemoryEstimator = new SmoothedMemoryEstimator(EmptyHistoryService)

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import cascading.flow.FlowDef
@@ -44,7 +44,8 @@ class TypedSinkWithTypedImplementationRecursive(path: String) extends TypedSink[
 }
 
 class TypedSinkWithTypedImplementationJob(args: Args) extends Job(args) {
-  TypedPipe.from(List("test"))
+  TypedPipe
+    .from(List("test"))
     .write(new TypedSinkWithTypedImplementation("output"))
 }
 
@@ -61,7 +62,8 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
   "A TypedSinkWithTypedImplementation" should {
     "should work with .writeExecution" in {
       val elements = List("test")
-      val elementsFromExecution = TypedPipe.from(elements)
+      val elementsFromExecution = TypedPipe
+        .from(elements)
         .writeExecution(new TypedSinkWithTypedImplementation("output"))
         .flatMap(_ => TypedPipe.from(TypedTsv[String]("output")).toIterableExecution)
         .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
@@ -75,12 +77,13 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
   "A TypedSinkWithTypedImplementation" should {
     "should work with Execution.fromFn" in {
       val elements = List("test")
-      val elementsFromExecution = Execution.fromFn { case (confArg, modeArg) =>
-        implicit val flowDef = new FlowDef
-        implicit val mode = modeArg
-        TypedPipe.from(elements).write(new TypedSinkWithTypedImplementation("output"))
-        flowDef
-      }
+      val elementsFromExecution = Execution
+        .fromFn { case (confArg, modeArg) =>
+          implicit val flowDef = new FlowDef
+          implicit val mode = modeArg
+          TypedPipe.from(elements).write(new TypedSinkWithTypedImplementation("output"))
+          flowDef
+        }
         .flatMap(_ => TypedPipe.from(TypedTsv[String]("output")).toIterableExecution)
         .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
         .get
@@ -92,10 +95,13 @@ class TypedSinkWithTypedImplementationTest extends WordSpec with Matchers {
 
   "A TypedSinkWithTypedImplementationRecursive" should {
     "should fail" in {
-      assert(TypedPipe.from(List("test"))
-        .writeExecution(new TypedSinkWithTypedImplementationRecursive("output"))
-        .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
-        .isFailure)
+      assert(
+        TypedPipe
+          .from(List("test"))
+          .writeExecution(new TypedSinkWithTypedImplementationRecursive("output"))
+          .waitFor(Config.default, HadoopTest(new Configuration(), _ => None))
+          .isFailure
+      )
     }
   }
 }

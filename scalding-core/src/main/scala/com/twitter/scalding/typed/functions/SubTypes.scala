@@ -1,8 +1,7 @@
 package com.twitter.scalding.typed.functions
 
 /**
- * This is a more powerful version of <:< that can allow
- * us to remove casts and also not have any runtime cost
+ * This is a more powerful version of <:< that can allow us to remove casts and also not have any runtime cost
  * for our function calls in some cases of trivial functions
  */
 sealed abstract class SubTypes[-A, +B] extends java.io.Serializable {
@@ -19,7 +18,9 @@ sealed abstract class SubTypes[-A, +B] extends java.io.Serializable {
     type G[-T] = SubTypes[F[T], F[B]]
     subst[G](SubTypes.fromSubType[F[B], F[B]])
   }
-  /** create a new evidence for a contravariant type F[_]
+
+  /**
+   * create a new evidence for a contravariant type F[_]
    */
   def liftContra[F[-_]]: SubTypes[F[B], F[A]] = {
     type G[-T] = SubTypes[F[B], F[T]]
@@ -56,8 +57,7 @@ object SubTypes extends java.io.Serializable {
   }
 
   def compose[A, B, C](sub0: SubTypes[A, B], sub1: SubTypes[B, C]): SubTypes[A, C] = {
-     type SubC[-X] = SubTypes[X, C]
-     sub0.subst[SubC](sub1)
+    type SubC[-X] = SubTypes[X, C]
+    sub0.subst[SubC](sub1)
   }
 }
-

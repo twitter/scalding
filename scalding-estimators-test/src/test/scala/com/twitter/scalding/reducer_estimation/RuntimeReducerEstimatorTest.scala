@@ -1,12 +1,12 @@
 package com.twitter.scalding.reducer_estimation
 
 import com.twitter.scalding._
-import RuntimeReducerEstimator.{ EstimationScheme, IgnoreInputSize, RuntimePerReducer }
-import com.twitter.scalding.estimation.{ Estimator, FlowStepHistory, FlowStrategyInfo, HistoryService }
-import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
-import org.scalatest.{ Matchers, WordSpec }
+import RuntimeReducerEstimator.{EstimationScheme, IgnoreInputSize, RuntimePerReducer}
+import com.twitter.scalding.estimation.{Estimator, FlowStepHistory, FlowStrategyInfo, HistoryService}
+import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopSharedPlatformTest}
+import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
-import scala.util.{ Success, Try }
+import scala.util.{Success, Try}
 
 object HistoryService1 extends HistoryService {
   import HistoryServiceWithData._
@@ -16,7 +16,9 @@ object HistoryService1 extends HistoryService {
       Seq(
         makeHistory(inputSize * 2, 0, List(10, 1000, 3000)),
         makeHistory(inputSize / 2, 0, List(10, 200, 400)),
-        makeHistory(inputSize * 4, 0, List(10, 2400, 3000))))
+        makeHistory(inputSize * 4, 0, List(10, 2400, 3000))
+      )
+    )
 }
 
 class Estimator1 extends RuntimeReducerEstimator {

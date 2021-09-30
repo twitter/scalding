@@ -1,17 +1,17 @@
 package com.twitter.scalding.hellcats
 
-import cats.{ Eq, MonadError }
+import cats.{Eq, MonadError}
 import cats.laws.discipline.SemigroupalTests.Isomorphisms
-import cats.effect.{ Effect, IO }
+import cats.effect.{Effect, IO}
 import cats.effect.laws.discipline.EffectTests
 import com.twitter.scalding.typed.memory_backend.MemoryMode
-import com.twitter.scalding.{ Execution, Config }
+import com.twitter.scalding.{Config, Execution}
 import org.scalatest.FunSuite
-import org.scalacheck.{ Arbitrary, Gen }
+import org.scalacheck.{Arbitrary, Gen}
 import org.typelevel.discipline.scalatest.Discipline
-import scala.concurrent.{ Await, ExecutionContext }
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 import HellCats._
 import cats.implicits._
@@ -35,10 +35,7 @@ object ExecutionGen {
         aOrB <- Gen.oneOf(a, b)
       } yield aOrB
 
-      Gen.frequency(
-        (4, g0),
-        (4, genFlatMap),
-        (1, zip)) // use zip less because it branches
+      Gen.frequency((4, g0), (4, genFlatMap), (1, zip)) // use zip less because it branches
     }
   }
   def genExecution[A](depth: Int, g: Gen[A]): Gen[Execution[A]] =
@@ -59,19 +56,18 @@ object ExecutionGen {
         (get(l), get(r)) match {
           case (Success(a), Success(b)) => Eq[A].eqv(a, b)
           case (Failure(_), Failure(_)) => true
-          case _ => false
+          case _                        => false
         }
     }
 
   implicit def eqIO[A: Eq]: Eq[IO[A]] =
     new Eq[IO[A]] {
       def eqv(l: IO[A], r: IO[A]) =
-        (Try(l.unsafeRunTimed(Duration(10, SECONDS))),
-          Try(r.unsafeRunTimed(Duration(10, SECONDS)))) match {
-            case (Success(a), Success(b)) => Eq[Option[A]].eqv(a, b)
-            case (Failure(_), Failure(_)) => true
-            case _ => false
-          }
+        (Try(l.unsafeRunTimed(Duration(10, SECONDS))), Try(r.unsafeRunTimed(Duration(10, SECONDS)))) match {
+          case (Success(a), Success(b)) => Eq[Option[A]].eqv(a, b)
+          case (Failure(_), Failure(_)) => true
+          case _                        => false
+        }
     }
 
   // We consider all failures the same, we don't care about failure order

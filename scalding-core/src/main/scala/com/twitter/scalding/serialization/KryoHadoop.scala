@@ -12,15 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-import com.twitter.scalding.{ Args, CascadingTokenUpdater, DateRange, RichDate, Config => ScaldingConfig }
+import com.twitter.scalding.{Args, CascadingTokenUpdater, Config => ScaldingConfig, DateRange, RichDate}
 import com.twitter.chill.algebird._
 import com.twitter.chill.config.Config
-import com.twitter.chill.{ IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiator, SingletonSerializer }
+import com.twitter.chill.{IKryoRegistrar, KryoInstantiator, ScalaKryoInstantiator, SingletonSerializer}
 
 class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   // keeping track of references is costly for memory, and often triggers OOM on Hadoop
@@ -28,13 +28,10 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
   val cascadingSerializationTokens = config.get(ScaldingConfig.CascadingSerializationTokens)
 
   /**
-   * TODO!!!
-   * Deal with this issue.  The problem is grouping by Kryo serialized
-   * objects silently breaks the results.  If Kryo gets in front of TupleSerialization
-   * (and possibly Writable, unclear at this time), grouping is broken.
-   * There are two issues here:
-   * 1) Kryo objects not being compared properly.
-   * 2) Kryo being used instead of cascading.
+   * TODO!!! Deal with this issue. The problem is grouping by Kryo serialized objects silently breaks the
+   * results. If Kryo gets in front of TupleSerialization (and possibly Writable, unclear at this time),
+   * grouping is broken. There are two issues here: 1) Kryo objects not being compared properly. 2) Kryo being
+   * used instead of cascading.
    *
    * We must identify each and fix these bugs.
    */
@@ -63,38 +60,46 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     }
 
     /**
-     * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer
-     * (which is its own bug), force using the fields serializer here
+     * AdaptiveVector is IndexedSeq, which picks up the chill IndexedSeq serializer (which is its own bug),
+     * force using the fields serializer here
      */
-    newK.register(classOf[com.twitter.algebird.DenseVector[_]],
-      new FieldSerializer[com.twitter.algebird.DenseVector[_]](newK,
-        classOf[com.twitter.algebird.DenseVector[_]]))
+    newK.register(
+      classOf[com.twitter.algebird.DenseVector[_]],
+      new FieldSerializer[com.twitter.algebird.DenseVector[_]](
+        newK,
+        classOf[com.twitter.algebird.DenseVector[_]]
+      )
+    )
 
-    newK.register(classOf[com.twitter.algebird.SparseVector[_]],
-      new FieldSerializer[com.twitter.algebird.SparseVector[_]](newK,
-        classOf[com.twitter.algebird.SparseVector[_]]))
+    newK.register(
+      classOf[com.twitter.algebird.SparseVector[_]],
+      new FieldSerializer[com.twitter.algebird.SparseVector[_]](
+        newK,
+        classOf[com.twitter.algebird.SparseVector[_]]
+      )
+    )
 
-    newK.addDefaultSerializer(classOf[com.twitter.algebird.AdaptiveVector[_]],
-      classOf[FieldSerializer[_]])
+    newK.addDefaultSerializer(classOf[com.twitter.algebird.AdaptiveVector[_]], classOf[FieldSerializer[_]])
 
     /**
-     * Pipes can be swept up into closures inside of case classes.  This can generally
-     * be safely ignored.  If the case class has a method that actually accesses something
-     * in the pipe (what would that even be?), you will get a null pointer exception,
-     * so it shouldn't cause data corruption.
-     * a more robust solution is to use Spark's closure cleaner approach on every object that
-     * is serialized, but that's very expensive.
+     * Pipes can be swept up into closures inside of case classes. This can generally be safely ignored. If
+     * the case class has a method that actually accesses something in the pipe (what would that even be?),
+     * you will get a null pointer exception, so it shouldn't cause data corruption. a more robust solution is
+     * to use Spark's closure cleaner approach on every object that is serialized, but that's very expensive.
      */
     newK.addDefaultSerializer(classOf[cascading.pipe.Pipe], new SingletonSerializer(null))
     newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.TypedPipe[_]], new SingletonSerializer(null))
     newK.addDefaultSerializer(classOf[com.twitter.scalding.Execution[_]], new SingletonSerializer(null))
-    newK.addDefaultSerializer(classOf[com.twitter.scalding.Execution.ToWrite[_]], new SingletonSerializer(null))
+    newK.addDefaultSerializer(
+      classOf[com.twitter.scalding.Execution.ToWrite[_]],
+      new SingletonSerializer(null)
+    )
 
     newK.setReferences(useRefs)
 
     /**
-     * Make sure we use the thread's context class loader to ensure the classes of the
-     * submitted jar and any -libjars arguments can be found
+     * Make sure we use the thread's context class loader to ensure the classes of the submitted jar and any
+     * -libjars arguments can be found
      */
     val classLoader = Thread.currentThread.getContextClassLoader
     newK.setClassLoader(classLoader)
@@ -129,8 +134,8 @@ class KryoHadoop(@transient config: Config) extends KryoInstantiator {
     }
 
   /**
-   * If you override KryoHadoop, prefer to add registrations here instead of overriding [[newKryo]].
-   * That way, any additional default serializers will be used for registering cascading tokenized classes.
+   * If you override KryoHadoop, prefer to add registrations here instead of overriding [[newKryo]]. That way,
+   * any additional default serializers will be used for registering cascading tokenized classes.
    */
   def customRegistrar: IKryoRegistrar = new IKryoRegistrar {
     override def apply(k: Kryo): Unit = {}

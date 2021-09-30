@@ -1,7 +1,7 @@
 package com.twitter.scalding
 package typed
 
-import com.twitter.algebird.Monoid.{ plus, sum, zero }
+import com.twitter.algebird.Monoid.{plus, sum, zero}
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 

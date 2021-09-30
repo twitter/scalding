@@ -3,6 +3,7 @@ package com.twitter.scalding.estimation.memory
 import org.apache.hadoop.mapred.JobConf
 
 object MemoryEstimatorConfig {
+
   /** Output param: what the original job map memory was. */
   val originalMapMemory = "scalding.map.memory.estimator.original"
 
@@ -10,9 +11,8 @@ object MemoryEstimatorConfig {
   val originalReduceMemory = "scalding.reduce.memory.estimator.original"
 
   /**
-   * Value of alpha for exponential smoothing.
-   * Lower values ensure more smoothing and less importance to newer data
-   * Higher values provide lesser smoothing and more importance to newer data
+   * Value of alpha for exponential smoothing. Lower values ensure more smoothing and less importance to newer
+   * data Higher values provide lesser smoothing and more importance to newer data
    */
   val alphaKey = "scalding.memory.estimator.alpha"
 
@@ -25,7 +25,7 @@ object MemoryEstimatorConfig {
 
   val minContainerMemoryKey = "scalding.memory.estimator.container.min"
 
-  /** yarn allocates in increments. So we might as well round up our container ask **/
+  /** yarn allocates in increments. So we might as well round up our container ask * */
   val yarnSchedulerIncrementAllocationMB = "yarn.scheduler.increment-allocation-mb"
 
   /** Maximum number of history items to use for memory estimation. */

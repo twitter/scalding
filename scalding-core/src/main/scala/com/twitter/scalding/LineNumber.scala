@@ -12,15 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
 
 object LineNumber {
+
   /**
-   * depth 0 means the StackTraceElement for the caller
-   * of this method (skipping getCurrent and the Thread.currentThread
+   * depth 0 means the StackTraceElement for the caller of this method (skipping getCurrent and the
+   * Thread.currentThread
    */
   def getCurrent(depth: Int): StackTraceElement =
     getCurrent(depth, Thread.currentThread().getStackTrace)
@@ -34,8 +35,12 @@ object LineNumber {
 
   private val LOG: Logger = LoggerFactory.getLogger(LineNumber.getClass)
 
-  private[this] def ignorePaths(classPrefixes: Set[String], stack: Seq[StackTraceElement]): Option[StackTraceElement] =
-    stack.drop(2)
+  private[this] def ignorePaths(
+      classPrefixes: Set[String],
+      stack: Seq[StackTraceElement]
+  ): Option[StackTraceElement] =
+    stack
+      .drop(2)
       .dropWhile { ste =>
         classPrefixes.exists { prefix =>
           ste.getClassName.startsWith(prefix)
@@ -72,20 +77,21 @@ object LineNumber {
       if (it.hasNext) Some(it.next)
       else None
 
-    val scaldingJobCaller = headOption(stack
-      .iterator
-      .filter { se => se.getClassName.startsWith(scaldingPrefix) }
-      .filter { se =>
-        try {
-          val cls = Class.forName(se.getClassName)
-          jobClass.isAssignableFrom(cls)
-        } catch {
-          // skip classes that we don't find. We seem to run into this for some lambdas on Scala 2.12 in travis
-          case cnf: ClassNotFoundException =>
-            LOG.warn(s"Skipping $se.getClassName as we can't find the class")
-            false
+    val scaldingJobCaller = headOption(
+      stack.iterator
+        .filter(se => se.getClassName.startsWith(scaldingPrefix))
+        .filter { se =>
+          try {
+            val cls = Class.forName(se.getClassName)
+            jobClass.isAssignableFrom(cls)
+          } catch {
+            // skip classes that we don't find. We seem to run into this for some lambdas on Scala 2.12 in travis
+            case cnf: ClassNotFoundException =>
+              LOG.warn(s"Skipping $se.getClassName as we can't find the class")
+              false
+          }
         }
-      })
+    )
 
     scaldingJobCaller
       .orElse(nonScalding)

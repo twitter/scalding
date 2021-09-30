@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.maple.tap.MemorySourceTap
@@ -22,7 +22,7 @@ import cascading.tap.SinkMode
 import cascading.tap.Tap
 import cascading.scheme.NullScheme
 import com.twitter.scalding.tap.ScaldingHfs
-import java.io.{ InputStream, OutputStream, Serializable }
+import java.io.{InputStream, OutputStream, Serializable}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.OutputCollector
 import org.apache.hadoop.mapred.RecordReader
@@ -40,42 +40,47 @@ object TestTapFactory extends Serializable {
     "each sink in your job has a corresponding sink in the test sinks that is EXACTLY " +
     "equal.  Call the '.sink' method on your JobTest to add test buffers for each sink."
 
-  def apply(src: Source, fields: Fields, sinkMode: SinkMode = SinkMode.REPLACE): TestTapFactory = new TestTapFactory(src, sinkMode) {
-    override def sourceFields: Fields = fields
-    override def sinkFields: Fields = fields
-  }
-  def apply[A, B](src: Source, scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
-  def apply[A, B](src: Source,
-    scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B], sinkMode: SinkMode): TestTapFactory =
+  def apply(src: Source, fields: Fields, sinkMode: SinkMode = SinkMode.REPLACE): TestTapFactory =
+    new TestTapFactory(src, sinkMode) {
+      override def sourceFields: Fields = fields
+      override def sinkFields: Fields = fields
+    }
+  def apply[A, B](
+      src: Source,
+      scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B]
+  ): TestTapFactory = apply(src, scheme, SinkMode.REPLACE)
+  def apply[A, B](
+      src: Source,
+      scheme: Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], A, B],
+      sinkMode: SinkMode
+  ): TestTapFactory =
     new TestTapFactory(src, sinkMode) { override def hdfsScheme = Some(scheme) }
 }
 
 class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
   def sourceFields: Fields =
-    hdfsScheme.map { _.getSourceFields }.getOrElse(sys.error("No sourceFields defined"))
+    hdfsScheme.map(_.getSourceFields).getOrElse(sys.error("No sourceFields defined"))
 
   def sinkFields: Fields =
-    hdfsScheme.map { _.getSinkFields }.getOrElse(sys.error("No sinkFields defined"))
+    hdfsScheme.map(_.getSinkFields).getOrElse(sys.error("No sinkFields defined"))
 
   def hdfsScheme: Option[Scheme[JobConf, RecordReader[_, _], OutputCollector[_, _], _, _]] = None
 
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
-  def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] = {
+  def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     mode match {
       case Test(buffers) => {
         /*
-        * There MUST have already been a registered sink or source in the Test mode.
-        * to access this.  You must explicitly name each of your test sources in your
-        * JobTest.
-        */
+         * There MUST have already been a registered sink or source in the Test mode.
+         * to access this.  You must explicitly name each of your test sources in your
+         * JobTest.
+         */
         val errorMsg = readOrWrite match {
-          case Read => TestTapFactory.sourceNotFoundError
+          case Read  => TestTapFactory.sourceNotFoundError
           case Write => TestTapFactory.sinkNotFoundError
         }
 
-        require(
-          buffers(src).isDefined,
-          errorMsg.format(src))
+        require(buffers(src).isDefined, errorMsg.format(src))
         val buffer =
           if (readOrWrite == Write) {
             val buf = buffers(src).get
@@ -86,9 +91,7 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
             // if the source is also used as a sink, we don't want its contents to get modified
             buffers(src).get.clone()
           }
-        new MemoryTap[InputStream, OutputStream](
-          new NullScheme(sourceFields, sinkFields),
-          buffer)
+        new MemoryTap[InputStream, OutputStream](new NullScheme(sourceFields, sinkFields), buffer)
       }
       case hdfsTest @ HadoopTest(conf, buffers) =>
         readOrWrite match {
@@ -111,5 +114,4 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
         throw new RuntimeException("TestTapFactory doesn't support mode: " + mode.toString)
       }
     }
-  }
 }

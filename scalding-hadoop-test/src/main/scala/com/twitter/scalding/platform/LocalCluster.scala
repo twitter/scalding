@@ -12,19 +12,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.platform
 
 import com.twitter.scalding._
 
-import java.io.{ File, RandomAccessFile }
+import java.io.{File, RandomAccessFile}
 import java.nio.channels.FileLock
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.filecache.DistributedCache
-import org.apache.hadoop.fs.{ FileUtil, Path }
+import org.apache.hadoop.fs.{FileUtil, Path}
 import org.apache.hadoop.hdfs.MiniDFSCluster
-import org.apache.hadoop.mapred.{ JobConf, MiniMRCluster }
+import org.apache.hadoop.mapred.{JobConf, MiniMRCluster}
 import org.slf4j.LoggerFactory
 import org.slf4j.impl.Log4jLoggerAdapter
 
@@ -66,7 +66,7 @@ class LocalCluster(mutex: Boolean = true) {
 
   private[this] def releaseMutex(): Unit = {
     LOG.debug("Releasing mutex")
-    lock.foreach { _.release() }
+    lock.foreach(_.release())
     LOG.debug("Mutex released")
     lock = None
   }
@@ -74,7 +74,8 @@ class LocalCluster(mutex: Boolean = true) {
   /**
    * Start up the local cluster instance.
    *
-   * @param inConf  override default configuration
+   * @param inConf
+   *   override default configuration
    */
   def initialize(inConf: Config = Config.empty): this.type = {
     if (mutex) {
@@ -113,7 +114,7 @@ class LocalCluster(mutex: Boolean = true) {
     fileSystem.mkdirs(LocalCluster.HADOOP_CLASSPATH_DIR)
 
     // merge in input configuration
-    inConf.toMap.foreach{ case (k, v) => mrJobConf.set(k, v) }
+    inConf.toMap.foreach { case (k, v) => mrJobConf.set(k, v) }
 
     hadoop = Some(dfs, cluster, mrJobConf)
 
@@ -145,13 +146,13 @@ class LocalCluster(mutex: Boolean = true) {
       classOf[com.esotericsoftware.kryo.KryoSerializable],
       classOf[com.twitter.chill.hadoop.KryoSerialization],
       classOf[com.twitter.maple.tap.TupleMemoryInputFormat],
-      classOf[org.apache.commons.configuration.Configuration]).foreach { addClassSourceToClassPath(_) }
+      classOf[org.apache.commons.configuration.Configuration]
+    ).foreach(addClassSourceToClassPath(_))
     this
   }
 
-  def addClassSourceToClassPath[T](clazz: Class[T]): Unit = {
+  def addClassSourceToClassPath[T](clazz: Class[T]): Unit =
     addFileToHadoopClassPath(getFileForClass(clazz))
-  }
 
   def addFileToHadoopClassPath(resourceDir: File): Boolean =
     if (classpath.contains(resourceDir)) {
@@ -182,10 +183,9 @@ class LocalCluster(mutex: Boolean = true) {
 
   //TODO is there a way to know if we need to wait on anything to shut down, etc?
   def shutdown(): Unit = {
-    hadoop.foreach {
-      case (dfs, mr, _) =>
-        dfs.shutdown()
-        mr.shutdown()
+    hadoop.foreach { case (dfs, mr, _) =>
+      dfs.shutdown()
+      mr.shutdown()
     }
     hadoop = None
     if (mutex) {

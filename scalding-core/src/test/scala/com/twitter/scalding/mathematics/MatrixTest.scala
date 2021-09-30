@@ -12,18 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding._
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import com.twitter.algebird.Group
 import com.twitter.algebird.field._
 
 object TUtil {
-  def printStack(fn: => Unit): Unit = {
-    try { fn } catch { case e: Throwable => e.printStackTrace; throw e }
-  }
+  def printStack(fn: => Unit): Unit =
+    try { fn }
+    catch { case e: Throwable => e.printStackTrace; throw e }
 }
 
 class MatrixProd(args: Args) extends Job(args) {
@@ -42,13 +42,13 @@ class MatrixBlockProd(args: Args) extends Job(args) {
   import Matrix._
 
   val mat1 = Tsv("mat1", ('x1, 'y1, 'v1))
-    .mapToBlockMatrix(('x1, 'y1, 'v1)) { (rcv: (String, Int, Double)) => (rcv._1(0), rcv._1, rcv._2, rcv._3) }
+    .mapToBlockMatrix(('x1, 'y1, 'v1))((rcv: (String, Int, Double)) => (rcv._1(0), rcv._1, rcv._2, rcv._3))
 
   val mat2 = Tsv("mat1", ('x1, 'y1, 'v1))
     .toMatrix[String, Int, Double]('x1, 'y1, 'v1)
     .toBlockMatrix(s => (s(0), s))
 
-  val gram = mat1 dotProd mat2.transpose
+  val gram = mat1.dotProd(mat2.transpose)
   gram.pipe.write(Tsv("product"))
 }
 
@@ -140,8 +140,7 @@ class ScalarOps(args: Args) extends Job(args) {
 
 class DiagonalOps(args: Args) extends Job(args) {
   import Matrix._
-  val mat = Tsv("mat1", ('x1, 'y1, 'v1))
-    .read
+  val mat = Tsv("mat1", ('x1, 'y1, 'v1)).read
     .toMatrix[Int, Int, Double]('x1, 'y1, 'v1)
   (mat * mat.diagonal).write(Tsv("mat-diag"))
   (mat.diagonal * mat).write(Tsv("diag-mat"))
@@ -167,8 +166,8 @@ class MatrixMapWithVal(args: Args) extends Job(args) {
   val mat = TypedTsv[(Int, Int, Int)]("graph").toMatrix
   val row = TypedTsv[(Int, Double)]("row").toRow
 
-  mat.mapWithIndex { (v, r, c) => if (r == c) v else 0 }.write(Tsv("diag"))
-  row.mapWithIndex { (v, c) => if (c == 0) v else 0.0 }.write(Tsv("first"))
+  mat.mapWithIndex((v, r, c) => if (r == c) v else 0).write(Tsv("diag"))
+  row.mapWithIndex((v, c) => if (c == 0) v else 0.0).write(Tsv("first"))
 }
 
 class RowMatProd(args: Args) extends Job(args) {
@@ -218,7 +217,7 @@ class RowRowHad(args: Args) extends Job(args) {
   val mat1 = new Matrix[Int, Int, Double]('x1, 'y1, 'v1, p1)
 
   val row1 = mat1.getRow(1)
-  val rowSum = row1 hProd row1
+  val rowSum = row1.hProd(row1)
   rowSum.pipe.write(Tsv("rowRowHad"))
 }
 
@@ -274,7 +273,7 @@ class ScalarRowRight(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (row1 * sca1).write(Tsv("scalarObjRowRight"))
@@ -289,7 +288,7 @@ class ScalarRowLeft(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (sca1 * row1).write(Tsv("scalarObjRowLeft"))
@@ -304,7 +303,7 @@ class ScalarColRight(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (col1 * sca1).write(Tsv("scalarObjColRight"))
@@ -319,7 +318,7 @@ class ScalarColLeft(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (sca1 * col1).write(Tsv("scalarObjColLeft"))
@@ -334,7 +333,7 @@ class ScalarDiagRight(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (diag1 * sca1).write(Tsv("scalarObjDiagRight"))
@@ -349,7 +348,7 @@ class ScalarDiagLeft(args: Args) extends Job(args) {
 
   // now with a scalar object
 
-  val p2 = Tsv("sca1", ('v)).read
+  val p2 = Tsv("sca1", 'v).read
   val sca1 = new Scalar[Double]('v, p2)
 
   (sca1 * diag1).write(Tsv("scalarObjDiagLeft"))
@@ -383,12 +382,10 @@ class RowNormalize(args: Args) extends Job(args) {
 class MatrixTest extends WordSpec with Matchers {
   import Dsl._
 
-  def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] = {
-    iter.map { it => ((it._1, it._2), it._3) }.toMap
-  }
-  def oneDtoSparseMat[Idx, V](iter: Iterable[(Idx, V)]): Map[(Idx, Idx), V] = {
-    iter.map { it => ((it._1, it._1), it._2) }.toMap
-  }
+  def toSparseMat[Row, Col, V](iter: Iterable[(Row, Col, V)]): Map[(Row, Col), V] =
+    iter.map(it => ((it._1, it._2), it._3)).toMap
+  def oneDtoSparseMat[Idx, V](iter: Iterable[(Idx, V)]): Map[(Idx, Idx), V] =
+    iter.map(it => ((it._1, it._1), it._2)).toMap
 
   "A MatrixProd job" should {
     TUtil.printStack {
@@ -407,7 +404,19 @@ class MatrixTest extends WordSpec with Matchers {
   "A MatrixBlockProd job" should {
     TUtil.printStack {
       JobTest(new MatrixBlockProd(_))
-        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List(("alpha1", 1, 1.0), ("alpha1", 2, 2.0), ("beta1", 1, 5.0), ("beta1", 2, 6.0), ("alpha2", 1, 3.0), ("alpha2", 2, 4.0), ("beta2", 1, 7.0), ("beta2", 2, 8.0)))
+        .source(
+          Tsv("mat1", ('x1, 'y1, 'v1)),
+          List(
+            ("alpha1", 1, 1.0),
+            ("alpha1", 2, 2.0),
+            ("beta1", 1, 5.0),
+            ("beta1", 2, 6.0),
+            ("alpha2", 1, 3.0),
+            ("alpha2", 2, 4.0),
+            ("beta2", 1, 7.0),
+            ("beta2", 2, 8.0)
+          )
+        )
         .sink[(String, String, Double)](Tsv("product")) { ob =>
           "correctly compute block products" in {
             toSparseMat(ob) shouldBe Map(
@@ -418,7 +427,8 @@ class MatrixTest extends WordSpec with Matchers {
               ("beta1", "beta1") -> 61.0,
               ("beta1", "beta2") -> 83.0,
               ("beta2", "beta1") -> 83.0,
-              ("beta2", "beta2") -> 113.0)
+              ("beta2", "beta2") -> 113.0
+            )
           }
         }
         .run
@@ -433,7 +443,13 @@ class MatrixTest extends WordSpec with Matchers {
         .source(Tsv("mat2", ('x2, 'y2, 'v2)), List((1, 3, 3.0), (2, 1, 8.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("sum")) { ob =>
           "correctly compute sums" in {
-            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 8.0, (1, 3) -> 3.0, (2, 1) -> 8.0, (2, 2) -> 3.0)
+            toSparseMat(ob) shouldBe Map(
+              (1, 1) -> 1.0,
+              (1, 2) -> 8.0,
+              (1, 3) -> 3.0,
+              (2, 1) -> 8.0,
+              (2, 2) -> 3.0
+            )
           }
         }
         .run
@@ -444,10 +460,17 @@ class MatrixTest extends WordSpec with Matchers {
   "A MatrixSum job, where the Matrix contains tuples as values," should {
     TUtil.printStack {
       JobTest("com.twitter.scalding.mathematics.MatrixSum3")
-        .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0))))
+        .source(
+          Tsv("mat1", ('x1, 'y1, 'v1)),
+          List((1, 1, (1.0, 3.0, 5.0)), (2, 2, (3.0, 2.0, 1.0)), (1, 2, (4.0, 5.0, 2.0)))
+        )
         .sink[(Int, Int, (Double, Double, Double))](Tsv("sum")) { ob =>
           "correctly compute sums" in {
-            toSparseMat(ob) shouldBe Map((1, 1) -> (2.0, 6.0, 10.0), (2, 2) -> (6.0, 4.0, 2.0), (1, 2) -> (8.0, 10.0, 4.0))
+            toSparseMat(ob) shouldBe Map(
+              (1, 1) -> (2.0, 6.0, 10.0),
+              (2, 2) -> (6.0, 4.0, 2.0),
+              (1, 2) -> (8.0, 10.0, 4.0)
+            )
           }
         }
         .run
@@ -459,15 +482,15 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       JobTest(new Randwalk(_))
         /*
-       * 1.0 4.0
-       * 0.0 3.0
-       * row normalized:
-       * 1.0/5.0 4.0/5.0
-       * 0.0 1.0
-       * product with itself:
-       * 1.0/25.0 (4.0/25.0 + 4.0/5.0)
-       * 0.0 1.0
-       */
+         * 1.0 4.0
+         * 0.0 3.0
+         * row normalized:
+         * 1.0/5.0 4.0/5.0
+         * 0.0 1.0
+         * product with itself:
+         * 1.0/25.0 (4.0/25.0 + 4.0/5.0)
+         * 0.0 1.0
+         */
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("randwalk")) { ob =>
           "correctly compute matrix randwalk" in {
@@ -475,9 +498,10 @@ class MatrixTest extends WordSpec with Matchers {
             val exact = Map((1, 1) -> (1.0 / 25.0), (1, 2) -> (4.0 / 25.0 + 4.0 / 5.0), (2, 2) -> 1.0)
             val grp = implicitly[Group[Map[(Int, Int), Double]]]
             // doubles are hard to compare
-            grp.minus(pMap, exact)
-              .mapValues { x => x * x }
-              .map { _._2 }
+            grp
+              .minus(pMap, exact)
+              .mapValues(x => x * x)
+              .map(_._2)
               .sum should be < 0.0001
           }
         }
@@ -491,7 +515,12 @@ class MatrixTest extends WordSpec with Matchers {
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("cosine")) { ob =>
           "correctly compute cosine similarity" in {
-            toSparseMat(ob) shouldBe Map((1, 1) -> 1.0, (1, 2) -> 0.9701425001453319, (2, 1) -> 0.9701425001453319, (2, 2) -> 1.0)
+            toSparseMat(ob) shouldBe Map(
+              (1, 1) -> 1.0,
+              (1, 2) -> 0.9701425001453319,
+              (2, 1) -> 0.9701425001453319,
+              (2, 2) -> 1.0
+            )
           }
         }
         .run
@@ -579,8 +608,8 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       JobTest(new DiagonalOps(_))
         /* [[1.0 4.0]
-       *  [0.0 3.0]]
-       */
+         *  [0.0 3.0]]
+         */
         .source(Tsv("mat1", ('x1, 'y1, 'v1)), List((1, 1, 1.0), (2, 2, 3.0), (1, 2, 4.0)))
         .sink[(Int, Int, Double)](Tsv("diag-mat")) { ob =>
           "correctly compute diag * matrix" in {
@@ -616,10 +645,10 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       JobTest(new PropJob(_))
         /* [[0 1 1],
-        *  [0 0 1],
-        *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
-        * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
-        */
+         *  [0 0 1],
+         *  [1 0 0]] = List((0,1,1), (0,2,1), (1,2,1), (2,0,1))
+         * [1.0 2.0 4.0] = List((0,1.0), (1,2.0), (2,4.0))
+         */
         .source(TypedTsv[(Int, Int, Int)]("graph"), List((0, 1, 1), (0, 2, 1), (1, 2, 1), (2, 0, 1)))
         .source(TypedTsv[(Int, Double)]("row"), List((0, 1.0), (1, 2.0), (2, 4.0)))
         .source(TypedTsv[(Int, Double)]("col"), List((0, 1.0), (1, 2.0), (2, 4.0)))
@@ -804,7 +833,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarRowRight(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("row1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarRowRight")) { ob =>
           s"$idx: correctly compute a new row vector" in {
@@ -827,7 +856,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarRowLeft(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("row1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarRowLeft")) { ob =>
           s"$idx: correctly compute a new row vector" in {
@@ -850,7 +879,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarColRight(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("col1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarColRight")) { ob =>
           s"$idx: correctly compute a new col vector" in {
@@ -873,7 +902,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarColLeft(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("col1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarColLeft")) { ob =>
           s"$idx: correctly compute a new col vector" in {
@@ -896,7 +925,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarDiagRight(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("diag1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarDiagRight")) { ob =>
           s"$idx: correctly compute a new diag matrix" in {
@@ -919,7 +948,7 @@ class MatrixTest extends WordSpec with Matchers {
     TUtil.printStack {
       var idx = 0
       JobTest(new ScalarDiagLeft(_))
-        .source(Tsv("sca1", ('v)), List(3.0))
+        .source(Tsv("sca1", 'v), List(3.0))
         .source(Tsv("diag1", ('x, 'v)), List((1, 1.0), (2, 2.0), (3, 6.0)))
         .sink[(Int, Double)](Tsv("scalarDiagLeft")) { ob =>
           s"$idx: correctly compute a new diag matrix" in {

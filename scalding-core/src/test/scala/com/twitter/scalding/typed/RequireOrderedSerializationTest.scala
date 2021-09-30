@@ -12,20 +12,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.scalding.serialization.OrderedSerialization
 import com.twitter.scalding.serialization.StringOrderedSerialization
 import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class NoOrderdSerJob(args: Args, requireOrderedSerializationMode: String) extends Job(args) {
 
-  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
+  override def config =
+    super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
 
-  TypedPipe.from(TypedTsv[(String, String)]("input"))
+  TypedPipe
+    .from(TypedTsv[(String, String)]("input"))
     .group
     .max
     .write(TypedTsv[(String, String)]("output"))
@@ -35,9 +37,11 @@ class OrderdSerJob(args: Args, requireOrderedSerializationMode: String) extends 
 
   implicit def stringOS: OrderedSerialization[String] = new StringOrderedSerialization
 
-  override def config = super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
+  override def config =
+    super.config + (Config.ScaldingRequireOrderedSerialization -> requireOrderedSerializationMode)
 
-  TypedPipe.from(TypedTsv[(String, String)]("input"))
+  TypedPipe
+    .from(TypedTsv[(String, String)]("input"))
     .group
     .sorted
     .max
@@ -51,7 +55,7 @@ class RequireOrderedSerializationTest extends WordSpec with Matchers {
     def test(job: Args => Job) =
       JobTest(job)
         .source(TypedTsv[(String, String)]("input"), List(("a", "a"), ("b", "b")))
-        .sink[(String, String)](TypedTsv[(String, String)]("output")) { outBuf => () }
+        .sink[(String, String)](TypedTsv[(String, String)]("output"))(outBuf => ())
         .run
         .finish()
 

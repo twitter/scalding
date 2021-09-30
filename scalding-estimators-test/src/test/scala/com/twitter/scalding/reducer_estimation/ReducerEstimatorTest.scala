@@ -2,9 +2,9 @@ package com.twitter.scalding.reducer_estimation
 
 import cascading.flow.FlowException
 import com.twitter.scalding._
-import com.twitter.scalding.platform.{ HadoopPlatformJobTest, HadoopSharedPlatformTest }
+import com.twitter.scalding.platform.{HadoopPlatformJobTest, HadoopSharedPlatformTest}
 import java.io.FileNotFoundException
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
 
 object HipJob {
@@ -12,7 +12,8 @@ object HipJob {
   val inPath = getClass.getResource("/hipster.txt") // file size is 2496 bytes
   val inSrc = TextLine(inPath.toString)
   val InScoresFileSize = 174L
-  val inScores = TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString) // file size is 174 bytes
+  val inScores =
+    TypedTsv[(String, Double)](getClass.getResource("/scores.tsv").toString) // file size is 174 bytes
   val out = TypedTsv[Double]("output")
   val counts = TypedTsv[(String, Int)]("counts.tsv")
   val size = TypedTsv[Long]("size.tsv")
@@ -28,7 +29,8 @@ class HipJob(args: Args, customConfig: Config) extends Job(args) {
       .replaceAll("[^a-zA-Z0-9\\s]", "")
       .split("\\s+")
 
-  val wordCounts = TypedPipe.from(inSrc)
+  val wordCounts = TypedPipe
+    .from(inSrc)
     .flatMap(tokenize)
     .map(_ -> 1)
     .group
@@ -36,14 +38,18 @@ class HipJob(args: Args, customConfig: Config) extends Job(args) {
 
   val scores = TypedPipe.from(inScores).group
 
-  wordCounts.leftJoin(scores)
-    .mapValues{ case (count, score) => (count, score.getOrElse(0.0)) }
+  wordCounts
+    .leftJoin(scores)
+    .mapValues { case (count, score) => (count, score.getOrElse(0.0)) }
     // force another M/R step - should use reducer estimation
     .toTypedPipe
-    .map{ case (word, (count, score)) => (count, score) }
-    .group.sum
+    .map { case (word, (count, score)) => (count, score) }
+    .group
+    .sum
     // force another M/R step - this should force 1 reducer because it is essentially a groupAll
-    .toTypedPipe.values.sum
+    .toTypedPipe
+    .values
+    .sum
     .write(out)
 
 }
@@ -53,7 +59,8 @@ class SimpleJob(args: Args, customConfig: Config) extends Job(args) {
 
   override def config = super.config ++ customConfig.toMap.toMap
 
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
     .group
@@ -71,7 +78,8 @@ class SimpleGlobJob(args: Args, customConfig: Config) extends Job(args) {
 
   override def config = super.config ++ customConfig.toMap.toMap
 
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
     .group
@@ -84,13 +92,17 @@ class SimpleGlobJob(args: Args, customConfig: Config) extends Job(args) {
 class SimpleMemoryJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
 
-  val inSrc = IterableSource(List(
-    "Direct trade American Apparel squid umami tote bag. Lo-fi XOXO gluten-free meh literally, typewriter readymade wolf salvia whatever drinking vinegar organic. Four loko literally bicycle rights drinking vinegar Cosby sweater hella stumptown. Dreamcatcher iPhone 90's organic chambray cardigan, wolf fixie gluten-free Brooklyn four loko. Mumblecore ennui twee, 8-bit food truck sustainable tote bag Williamsburg mixtape biodiesel. Semiotics Helvetica put a bird on it, roof party fashion axe organic post-ironic readymade Wes Anderson Pinterest keffiyeh. Craft beer meggings sartorial, butcher Marfa kitsch art party mustache Brooklyn vinyl.",
-    "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."))
+  val inSrc = IterableSource(
+    List(
+      "Direct trade American Apparel squid umami tote bag. Lo-fi XOXO gluten-free meh literally, typewriter readymade wolf salvia whatever drinking vinegar organic. Four loko literally bicycle rights drinking vinegar Cosby sweater hella stumptown. Dreamcatcher iPhone 90's organic chambray cardigan, wolf fixie gluten-free Brooklyn four loko. Mumblecore ennui twee, 8-bit food truck sustainable tote bag Williamsburg mixtape biodiesel. Semiotics Helvetica put a bird on it, roof party fashion axe organic post-ironic readymade Wes Anderson Pinterest keffiyeh. Craft beer meggings sartorial, butcher Marfa kitsch art party mustache Brooklyn vinyl.",
+      "Wolf flannel before they sold out vinyl, selfies four loko Bushwick Banksy Odd Future. Chillwave banh mi iPhone, Truffaut shabby chic craft beer keytar DIY. Scenester selvage deep v YOLO paleo blog photo booth fap. Sustainable wolf mixtape small batch skateboard, pop-up brunch asymmetrical seitan butcher Thundercats disrupt twee Etsy. You probably haven't heard of them freegan skateboard before they sold out, mlkshk pour-over Echo Park keytar retro farm-to-table. Tattooed sustainable beard, Helvetica Wes Anderson pickled vinyl yr pop-up Vice. Wolf bespoke lomo photo booth ethnic cliche."
+    )
+  )
 
   override def config = super.config ++ customConfig.toMap.toMap
 
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
     .group
@@ -107,7 +119,8 @@ class SimpleFileNotFoundJob(args: Args, customConfig: Config) extends Job(args) 
 
   override def config = super.config ++ customConfig.toMap.toMap
 
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .map(_.toLowerCase -> 1)
     .group
@@ -122,7 +135,8 @@ class GroupAllJob(args: Args, customConfig: Config) extends Job(args) {
   import HipJob._
   override def config = super.config ++ customConfig.toMap.toMap
 
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .groupAll
     .size
@@ -136,7 +150,8 @@ class SimpleMapOnlyJob(args: Args, customConfig: Config) extends Job(args) {
   override def config = super.config ++ customConfig.toMap.toMap
 
   // simple job with no reduce phase
-  TypedPipe.from(inSrc)
+  TypedPipe
+    .from(inSrc)
     .flatMap(_.split("[^\\w]+"))
     .write(TypedTsv[String]("mapped_output"))
 }
@@ -155,8 +170,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (2)
-          conf.get(ReducerEstimatorConfig.originalNumReducers) should be (None)
+          conf.getNumReducers should contain(2)
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should be(None)
         }
         .run()
     }
@@ -172,8 +187,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (3)
-          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
+          conf.getNumReducers should contain(3)
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain("2")
         }
         .run()
     }
@@ -189,8 +204,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (3)
-          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
+          conf.getNumReducers should contain(3)
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain("2")
         }
         .run()
     }
@@ -208,9 +223,9 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.get(ReducerEstimatorConfig.estimatedNumReducers) should contain ("2496")
-          conf.get(ReducerEstimatorConfig.cappedEstimatedNumReducersKey) should contain ("10")
-          conf.getNumReducers should contain (10)
+          conf.get(ReducerEstimatorConfig.estimatedNumReducers) should contain("2496")
+          conf.get(ReducerEstimatorConfig.cappedEstimatedNumReducersKey) should contain("10")
+          conf.getNumReducers should contain(10)
         }
         .run()
     }
@@ -226,8 +241,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (2)
-          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain ("2")
+          conf.getNumReducers should contain(2)
+          conf.get(ReducerEstimatorConfig.originalNumReducers) should contain("2")
         }
         .run()
     }
@@ -238,9 +253,8 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
         (Config.ReducerEstimatorOverride -> "true")
 
       HadoopPlatformJobTest(new SimpleFileNotFoundJob(_, customConfig), cluster)
-        .runExpectFailure {
-          case error: FlowException =>
-            error.getCause.getClass should be(classOf[FileNotFoundException])
+        .runExpectFailure { case error: FlowException =>
+          error.getCause.getClass should be(classOf[FileNotFoundException])
         }
     }
   }
@@ -256,7 +270,7 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
           steps should have size 1
 
           val conf = Config.fromHadoop(steps.head.getConfig)
-          conf.getNumReducers should contain (1)
+          conf.getNumReducers should contain(1)
         }
         .run()
     }
@@ -296,4 +310,3 @@ class ReducerEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatf
     }
   }
 }
-

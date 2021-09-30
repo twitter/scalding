@@ -28,13 +28,13 @@ object BeamFunctions {
   }
 
   case class MapSideAggregator[K, V](
-    size: Int, semigroup: Semigroup[V]
+      size: Int,
+      semigroup: Semigroup[V]
   ) extends DoFn[(K, V), (K, V)] {
     var cache: SummingCache[K, V] = _
     @StartBundle
-    def startBundle(): Unit = {
+    def startBundle(): Unit =
       cache = new SummingCache[K, V](size)(semigroup)
-    }
 
     @ProcessElement
     def processElement(c: DoFn[(K, V), (K, V)]#ProcessContext): Unit = {
@@ -64,8 +64,8 @@ object BeamFunctions {
   }
 
   case class HashJoinFn[K, V, U, W](
-    joiner: (K, V, Iterable[U]) => Iterator[W],
-    sideInput: PCollectionView[java.util.Map[K, java.lang.Iterable[U]]]
+      joiner: (K, V, Iterable[U]) => Iterator[W],
+      sideInput: PCollectionView[java.util.Map[K, java.lang.Iterable[U]]]
   ) extends DoFn[(K, V), (K, W)] {
     private[this] var mapRight: java.util.Map[K, java.lang.Iterable[U]] = null
     private[this] val emptyUs: Iterable[U] = Seq.empty[U]
@@ -78,7 +78,7 @@ object BeamFunctions {
       val key = c.element()._1
       val value = c.element()._2
       val it = mapRight.get(key) match {
-        case null => joiner(key, value, emptyUs)
+        case null     => joiner(key, value, emptyUs)
         case notEmpty => joiner(key, value, notEmpty.asScala)
       }
       while (it.hasNext) {
@@ -87,9 +87,8 @@ object BeamFunctions {
     }
 
     @FinishBundle
-    def finishBundle(c: DoFn[(K, V), (K, W)]#FinishBundleContext): Unit = {
+    def finishBundle(c: DoFn[(K, V), (K, W)]#FinishBundleContext): Unit =
       mapRight = null
-    }
   }
 
   def widenPCollection[A, B >: A](p: PCollection[_ <: A]): PCollection[B] = p.asInstanceOf[PCollection[B]]
