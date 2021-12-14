@@ -195,6 +195,45 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     )
   }
 
+  test("Multiple LeftJoins") {
+    beamMatchesSeq(
+      {
+        val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+        val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+
+        val thirdPipe: TypedPipe[(Int, String)] = TypedPipe.from(Seq((0, "a"), (1, "b")))
+
+        leftPipe.join(rightPipe).leftJoin(thirdPipe)
+      },
+      Seq(
+        (0, ((0, 0), Some("a"))),
+        (0, ((0, 3), Some("a"))),
+        (0, ((1, 0), Some("a"))),
+        (0, ((1, 3), Some("a")))
+      )
+    )
+  }
+
+  test("Multiple Joins") {
+    beamMatchesSeq(
+      {
+        val firstPipe: TypedPipe[(Int, Float)] = TypedPipe.from(Seq((0, 0f), (0, 1.5f), (1, 1.5f), (3, 3.5f)))
+        val secondPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+        val thirdPipe: TypedPipe[(Int, String)] = TypedPipe.from(Seq((0, "a"), (1, "b")))
+
+        firstPipe.leftJoin(secondPipe).leftJoin(thirdPipe)
+      },
+      Seq(
+        (0, ((0f, Some(0)), Some("a"))),
+        (0, ((0f, Some(3)), Some("a"))),
+        (0, ((1.5f, Some(0)), Some("a"))),
+        (0, ((1.5f, Some(3)), Some("a"))),
+        (1, ((1.5f, None), Some("b"))),
+        (3, ((3.5f, None), None))
+      )
+    )
+  }
+
   test("RightJoin") {
     beamMatchesSeq(
       {
@@ -246,6 +285,18 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
         (2, 5),
         (3, 3)
       )
+    )
+  }
+
+  test("Merge (++)") {
+    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
+    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14))
+    val c = TypedPipe.from(Seq(25, 23, 22, 26, 21, 24))
+    val d = TypedPipe.from(Seq(35, 33, 32, 36, 31, 34))
+
+    beamMatchesSeq(
+      a ++ b ++ c ++ d,
+      Seq(1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 35, 36)
     )
   }
 

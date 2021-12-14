@@ -339,7 +339,9 @@ lazy val scaldingBeam = module("beam")
       "org.apache.beam" % "beam-runners-direct-java" % beamVersion % "test",
       // Including this dependency since scalding configuration depends on hadoop
       "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided"
-    )
+    ),
+    // Useful for the BeamPlanner implementation so we know if anything is missing
+    scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "200")
   )
   .dependsOn(scaldingCore)
 
