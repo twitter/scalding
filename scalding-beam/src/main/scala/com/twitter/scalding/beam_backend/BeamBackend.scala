@@ -119,9 +119,9 @@ object BeamPlanner {
           rec(input)
         case (m @ MergedTypedPipe(_, _), rec) =>
           OptimizationRules.unrollMerge(m) match {
-            case Nil        => rec(EmptyTypedPipe)
-            case one :: Nil => rec(one)
-            case many       => MergedBeamOp(many.map(rec(_)))
+            case Nil                     => rec(EmptyTypedPipe)
+            case single :: Nil           => rec(single)
+            case first :: second :: tail => MergedBeamOp(rec(first), rec(second), tail.map(rec(_)))
           }
       }
     })

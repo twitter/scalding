@@ -202,12 +202,15 @@ object BeamOp extends Serializable {
     }
   }
 
-  final case class MergedBeamOp[A](operations: Seq[BeamOp[A]]) extends BeamOp[A] {
+  final case class MergedBeamOp[A](first: BeamOp[A], second: BeamOp[A], tail: Seq[BeamOp[A]])
+      extends BeamOp[A] {
     override def run(pipeline: Pipeline): PCollection[_ <: A] = {
-      val collections: Seq[PCollection[A]] =
-        operations.map(op => widenPCollection(op.run(pipeline)): PCollection[A])
+      val collections = PCollectionList
+        .of(widenPCollection(first.run(pipeline)): PCollection[A])
+        .and(widenPCollection(second.run(pipeline)): PCollection[A])
+        .and(tail.map(op => widenPCollection(op.run(pipeline)): PCollection[A]).asJava)
 
-      PCollectionList.of(collections.asJava).apply(Flatten.pCollections[A]())
+      collections.apply(Flatten.pCollections[A]())
     }
   }
 
