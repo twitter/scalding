@@ -288,7 +288,17 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     )
   }
 
-  test("Merge (++)") {
+  test("Merge (++) two pipes") {
+    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
+    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14))
+
+    beamMatchesSeq(
+      a ++ b,
+      Seq(1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16)
+    )
+  }
+
+  test("Merge (++) many pipes") {
     val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
     val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14))
     val c = TypedPipe.from(Seq(25, 23, 22, 26, 21, 24))
