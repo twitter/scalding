@@ -1,11 +1,11 @@
 package com.twitter.scalding.beam_backend
 
-import com.twitter.algebird.mutable.PriorityQueueMonoid
 import com.twitter.algebird.{AveragedValue, Semigroup}
+import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
 import com.twitter.scalding.{Config, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
-import java.util.PriorityQueue
+import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scala.io.Source
@@ -23,6 +23,13 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     assert(result == expectedResult.map(_.toString).sorted)
   }
 
+  def beamPlan[A](t: TypedPipe[A], config: Config = Config.empty): (Pipeline, BeamOp[A]) = {
+    val bmode = BeamMode.default(pipelineOptions)
+    val planner = BeamPlanner.plan(config, bmode.sources)
+    val pipeline = Pipeline.create(bmode.pipelineOptions)
+    (pipeline, planner(t))
+  }
+
   before {
     testPath = Paths.get(System.getProperty("java.io.tmpdir"), "scalding", "beam_backend").toString
     pipelineOptions = PipelineOptionsFactory.create()
@@ -34,6 +41,63 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
 
   def tmpPath(suffix: String): String =
     Paths.get(testPath, suffix).toString
+
+  test("BeamOp caching: FromIterable") {
+    val a = TypedPipe.from(0 to 5)
+
+    val (pipeline, op) = beamPlan(a)
+
+    assert(op.isInstanceOf[FromIterable[Int]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
+
+  test("BeamOp caching: CoGroupedOp") {
+    val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+    val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+
+    val (pipeline, op) = beamPlan(leftPipe.join(rightPipe))
+
+    assert(op.isInstanceOf[CoGroupedOp[Int, Int]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
+
+  test("BeamOp caching: HashJoinOp") {
+    val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
+    val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
+
+    val (pipeline, op) = beamPlan(leftPipe.hashJoin(rightPipe))
+
+    assert(op.isInstanceOf[HashJoinOp[Int, Int, Int, Int]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
+
+  test("BeamOp caching: MergedBeamOp") {
+    val a = TypedPipe.from(0 to 5)
+    val b = TypedPipe.from(6 to 10)
+
+    val (pipeline, op) = beamPlan(a ++ b)
+
+    assert(op.isInstanceOf[MergedBeamOp[Int]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
+
+  test("BeamOp caching: Source") {
+    val source = TypedPipe.from(TextLine("/"))
+
+    val (pipeline, op) = beamPlan(source)
+
+    assert(op.isInstanceOf[BeamOp.Source[String]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
+
+  test("BeamOp caching: TransformBeamOp") {
+    val pipe = TypedPipe.from(0 to 5).filter(_ % 2 == 0)
+
+    val (pipeline, op) = beamPlan(pipe)
+
+    assert(op.isInstanceOf[BeamOp.TransformBeamOp[Int, Int]])
+    assert(op.run(pipeline) == op.run(pipeline))
+  }
 
   test("map") {
     beamMatchesSeq(
