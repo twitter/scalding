@@ -23,7 +23,7 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     assert(result == expectedResult.map(_.toString).sorted)
   }
 
-  def beamPlan[A](t: TypedPipe[A], config: Config = Config.empty): (Pipeline, BeamOp[A]) = {
+  def beamUnoptimizedPlan[A](t: TypedPipe[A], config: Config = Config.empty): (Pipeline, BeamOp[A]) = {
     val bmode = BeamMode.default(pipelineOptions)
     val planner = BeamPlanner.plan(config, bmode.sources)
     val pipeline = Pipeline.create(bmode.pipelineOptions)
@@ -45,58 +45,58 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
   test("BeamOp caching: FromIterable") {
     val a = TypedPipe.from(0 to 5)
 
-    val (pipeline, op) = beamPlan(a)
+    val (pipeline, op) = beamUnoptimizedPlan(a)
 
     assert(op.isInstanceOf[FromIterable[Int]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("BeamOp caching: CoGroupedOp") {
     val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
     val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
 
-    val (pipeline, op) = beamPlan(leftPipe.join(rightPipe))
+    val (pipeline, op) = beamUnoptimizedPlan(leftPipe.join(rightPipe))
 
     assert(op.isInstanceOf[CoGroupedOp[Int, Int]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("BeamOp caching: HashJoinOp") {
     val leftPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 1), (1, 1), (3, 3)))
     val rightPipe: TypedPipe[(Int, Int)] = TypedPipe.from(Seq((0, 0), (0, 3), (2, 2), (2, 3)))
 
-    val (pipeline, op) = beamPlan(leftPipe.hashJoin(rightPipe))
+    val (pipeline, op) = beamUnoptimizedPlan(leftPipe.hashJoin(rightPipe))
 
     assert(op.isInstanceOf[HashJoinOp[Int, Int, Int, Int]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("BeamOp caching: MergedBeamOp") {
     val a = TypedPipe.from(0 to 5)
     val b = TypedPipe.from(6 to 10)
 
-    val (pipeline, op) = beamPlan(a ++ b)
+    val (pipeline, op) = beamUnoptimizedPlan(a ++ b)
 
     assert(op.isInstanceOf[MergedBeamOp[Int]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("BeamOp caching: Source") {
     val source = TypedPipe.from(TextLine("/"))
 
-    val (pipeline, op) = beamPlan(source)
+    val (pipeline, op) = beamUnoptimizedPlan(source)
 
     assert(op.isInstanceOf[BeamOp.Source[String]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("BeamOp caching: TransformBeamOp") {
     val pipe = TypedPipe.from(0 to 5).filter(_ % 2 == 0)
 
-    val (pipeline, op) = beamPlan(pipe)
+    val (pipeline, op) = beamUnoptimizedPlan(pipe)
 
     assert(op.isInstanceOf[BeamOp.TransformBeamOp[Int, Int]])
-    assert(op.run(pipeline) == op.run(pipeline))
+    assert(op.run(pipeline) eq op.run(pipeline))
   }
 
   test("map") {
@@ -353,24 +353,38 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
   }
 
   test("Merge (++) two pipes") {
-    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
-    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14))
+    // 5 in both typed pipes
+    // duplicate element in both typed pipes
+    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4, 1))
+    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14, 5, 11))
 
     beamMatchesSeq(
       a ++ b,
-      Seq(1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16)
+      Seq(1, 1, 2, 3, 4, 5, 5, 6, 11, 11, 12, 13, 14, 15, 16)
     )
   }
 
   test("Merge (++) many pipes") {
-    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
-    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14))
-    val c = TypedPipe.from(Seq(25, 23, 22, 26, 21, 24))
-    val d = TypedPipe.from(Seq(35, 33, 32, 36, 31, 34))
+    // 5 in all typed pipes
+    // duplicate element in all typed pipes
+    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4, 1))
+    val b = TypedPipe.from(Seq(15, 13, 12, 16, 11, 14, 5, 11))
+    val c = TypedPipe.from(Seq(25, 23, 22, 26, 21, 24, 5, 21))
+    val d = TypedPipe.from(Seq(35, 33, 32, 36, 31, 34, 5, 31))
 
     beamMatchesSeq(
       a ++ b ++ c ++ d,
-      Seq(1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 35, 36)
+      Seq(1, 1, 2, 3, 4, 5, 5, 5, 5, 6, 11, 11, 12, 13, 14, 15, 16, 21, 21, 22, 23, 24, 25, 26, 31, 31, 32,
+        33, 34, 35, 36)
+    )
+  }
+
+  test("Merge (++) same pipe") {
+    val a = TypedPipe.from(Seq(5, 3, 2, 6, 1, 4))
+
+    beamMatchesSeq(
+      a ++ a ++ a ++ a,
+      Seq(1, 2, 3, 4, 5, 6).flatMap(x => Seq(x, x, x, x))
     )
   }
 
