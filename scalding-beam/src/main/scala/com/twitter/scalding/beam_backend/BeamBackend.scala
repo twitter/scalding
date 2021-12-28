@@ -4,7 +4,7 @@ import com.stripe.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
-import com.twitter.scalding.beam_backend.BeamOp.CoGroupedOp
+import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, MergedBeamOp}
 import com.twitter.scalding.serialization.KryoHadoop
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{
@@ -115,6 +115,14 @@ object BeamPlanner {
             CoGroupedOp(cg, ops)
           }
           go(cg)
+        case (Fork(input), rec) =>
+          rec(input)
+        case (m @ MergedTypedPipe(_, _), rec) =>
+          OptimizationRules.unrollMerge(m) match {
+            case Nil                     => rec(EmptyTypedPipe)
+            case single :: Nil           => rec(single)
+            case first :: second :: tail => MergedBeamOp(rec(first), rec(second), tail.map(rec(_)))
+          }
       }
     })
   }
