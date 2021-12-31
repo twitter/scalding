@@ -23,10 +23,7 @@ object BeamJoiner {
       case f: Joiner.FilteredHashJoin[K, v1, v2, r]       => FilteredHashJoin(beamHashJoin(f.jf), f.fn)
       case f: Joiner.MappedHashJoin[K, v1, v2, r, r1]     => MappedHashJoin(beamHashJoin(f.jf), f.fn)
       case f: Joiner.FlatMappedHashJoin[K, v1, v2, r, r1] => FlatMappedHashJoin(beamHashJoin(f.jf), f.fn)
-      case f =>
-        throw new UnsupportedOperationException(
-          s"Beam backend does not support arbitrary Hash Join functions but got $f"
-        )
+      case f                                              => ArbitraryHashJoin(f)
     }
 
   private def beamJoin[K, A, B, C](
@@ -43,10 +40,7 @@ object BeamJoiner {
       case join: Joiner.MappedGroupJoin[K, v1, v2, r, r1] =>
         MappedGroupJoin(beamJoin(join.jf), beamMapGroupJoin(join.fn))
       case join: Joiner.JoinFromHashJoin[K, v1, v2, r] => JoinFromHashJoin(beamHashJoin(join.hj))
-      case join =>
-        throw new UnsupportedOperationException(
-          s"Beam backend does not support arbitrary cogroup functions. Replace cogroup with join, outerJoin, leftJoin or rightJoin"
-        )
+      case join                                        => ArbitraryJoin(join)
     }
 
   def beamMultiJoin[A, B](m: typed.MultiJoinFunction[A, B]): MultiJoinFunction[A, B] =
@@ -212,6 +206,14 @@ object BeamJoiner {
     def apply(k: K, left: V1, right: Iterable[V2]) =
       jf.apply(k, left, right).flatMap(fn)
   }
+  final case class ArbitraryHashJoin[K, V1, V2, R](
+      hj: (K, V1, Iterable[V2]) => Iterator[R]
+  ) extends HashJoinFunction[K, V1, V2, R] {
+    def apply(k: K, left: V1, right: Iterable[V2]): Iterable[R] =
+      new Iterable[R] {
+        def iterator: Iterator[R] = hj.apply(k, left, right)
+      }
+  }
 
   /**
    * As opposed to Scalding's JoinFunction, in Beam we make 'right' be the one iterated once and 'left' many
@@ -268,6 +270,14 @@ object BeamJoiner {
       extends JoinFunction[K, V1, V2, R] {
     def apply(k: K, left: Iterable[V1], right: Iterable[V2]): Iterable[R] =
       left.flatMap(hj(k, _, right))
+  }
+
+  final case class ArbitraryJoin[K, V1, V2, R](fn: (K, Iterator[V1], Iterable[V2]) => Iterator[R])
+      extends JoinFunction[K, V1, V2, R] {
+    def apply(k: K, left: Iterable[V1], right: Iterable[V2]): Iterable[R] =
+      new Iterable[R] {
+        def iterator: Iterator[R] = fn(k, left.iterator, right)
+      }
   }
 
 }
