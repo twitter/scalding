@@ -4,10 +4,11 @@ import com.stripe.dagon.Memoize
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamFunctions._
+import com.twitter.scalding.beam_backend.BeamJoiner.MultiJoinFunction
 import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import com.twitter.scalding.typed.functions.{EmptyGuard, MapValueStream, ScaldingPriorityQueueMonoid, SumAll}
-import com.twitter.scalding.typed.{CoGrouped, MultiJoinFunction, TypedSource}
+import com.twitter.scalding.typed.{CoGrouped, TypedSource}
 import java.util.{Comparator, PriorityQueue}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.{Coder, IterableCoder, KvCoder}
@@ -231,7 +232,7 @@ object BeamOp extends Serializable {
 
       keyedPCollectionTuple
         .apply(CoGroupByKey.create())
-        .apply(ParDo.of(new CoGroupDoFn[K, V](joinFunction, tupleTags.head, tupleTags.tail)))
+        .apply(ParDo.of(new CoGroupDoFn[K, V](joinFunction, tupleTags)))
         .setCoder(KvCoder.of(keyCoder, kryoCoder))
         .apply(KVToTuple[K, V](keyCoder, kryoCoder))
     }
@@ -250,26 +251,24 @@ object BeamOp extends Serializable {
       }
 
       val tupleTags = (1 to inputOps.size).map(idx => new TupleTag[Any](idx.toString))
+      val joinFunction = BeamJoiner.beamMultiJoin(cg.joinFunction)
 
-      PCollectionList.of(pcols.asJava).apply(CoGroupedTransform(cg.joinFunction, tupleTags, keyCoder))
+      PCollectionList
+        .of(pcols.asJava)
+        .apply(CoGroupedTransform(joinFunction, tupleTags, keyCoder))
     }
   }
 
   final case class CoGroupDoFn[K, V](
       joinFunction: MultiJoinFunction[K, V],
-      firstTag: TupleTag[Any],
-      otherTags: Seq[TupleTag[Any]]
+      tags: Seq[TupleTag[Any]]
   ) extends DoFn[KV[K, CoGbkResult], KV[K, V]] {
     @ProcessElement
     def processElement(c: DoFn[KV[K, CoGbkResult], KV[K, V]]#ProcessContext): Unit = {
       val key = c.element().getKey
       val value = c.element().getValue
 
-      val outputIter = joinFunction(
-        key,
-        value.getAll(firstTag).iterator.asScala,
-        otherTags.map(t => value.getAll(t).asScala)
-      )
+      val outputIter = joinFunction(key, tags.map(t => value.getAll(t).asScala)).iterator
 
       while (outputIter.hasNext) {
         c.output(KV.of(key, outputIter.next()))
