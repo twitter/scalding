@@ -1,39 +1,33 @@
 package com.twitter.scalding.examples
 
 import com.twitter.scalding._
-import com.twitter.scalding.mathematics.{ Matrix, ColVector }
+import com.twitter.scalding.mathematics.{ColVector, Matrix}
 import com.twitter.scalding.mathematics.Matrix._
 
 /**
- * A weighted PageRank implementation using the Scalding Matrix API. This
- * assumes that all rows and columns are of type {@link Int} and values or egde
- * weights are {@link Double}. If you want an unweighted PageRank, simply set
- * the weights on the edges to 1.
+ * A weighted PageRank implementation using the Scalding Matrix API. This assumes that all rows and columns
+ * are of type {@link Int} and values or egde weights are {@link Double}. If you want an unweighted PageRank,
+ * simply set the weights on the edges to 1.
  *
  * Input arguments:
  *
- *  d -- damping factor
- *  n -- number of nodes in the graph
- *  currentIteration -- start with 0 probably
- *  maxIterations -- stop after n iterations
- *  convergenceThreshold -- using the sum of the absolute difference between
- *                          iteration solutions, iterating stops once we reach
- *                          this threshold
- *  rootDir -- the root directory holding all starting, intermediate and final
- *             data/output
+ * d -- damping factor n -- number of nodes in the graph currentIteration -- start with 0 probably
+ * maxIterations -- stop after n iterations convergenceThreshold -- using the sum of the absolute difference
+ * between iteration solutions, iterating stops once we reach this threshold rootDir -- the root directory
+ * holding all starting, intermediate and final data/output
  *
  * The expected structure of the rootDir is:
  *
- *   rootDir
- *     |- iterations
- *     |  |- 0       <-- a TSV of (row, value) of size n, value can be 1/n (generate this)
- *     |  |- n       <-- holds future iterations/solutions
- *     |- edges      <-- a TSV of (row, column, value) for edges in the graph
- *     |- onesVector <-- a TSV of (row, 1) of size n (generate this)
- *     |- diff       <-- a single line representing the difference between the last iterations
- *     |- constants  <-- built at iteration 0, these are constant for any given matrix/graph
- *        |- M_hat
- *        |- priorVector
+ * rootDir
+ * |- iterations
+ * | |- 0 <-- a TSV of (row, value) of size n, value can be 1/n (generate this)
+ * | |- n <-- holds future iterations/solutions
+ * |- edges <-- a TSV of (row, column, value) for edges in the graph
+ * |- onesVector <-- a TSV of (row, 1) of size n (generate this)
+ * |- diff <-- a single line representing the difference between the last iterations
+ * |- constants <-- built at iteration 0, these are constant for any given matrix/graph
+ * |- M_hat
+ * |- priorVector
  *
  * Don't forget to set the number of reducers for this job:
  * -D mapred.reduce.tasks=n
@@ -68,8 +62,7 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
   measureConvergenceAndStore()
 
   /**
-   * Recurse and iterate again iff we are under the max number of iterations and
-   * vector has not converged.
+   * Recurse and iterate again iff we are under the max number of iterations and vector has not converged.
    */
   override def next = {
     val diff = TypedTsv[Double](diffLoc).toIterator.next
@@ -83,22 +76,19 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
   }
 
   /**
-   * Measure convergence by  calculating the total of the absolute difference
-   * between the previous and next vectors. This stores the result after
-   * calculation.
+   * Measure convergence by calculating the total of the absolute difference between the previous and next
+   * vectors. This stores the result after calculation.
    */
-  def measureConvergenceAndStore(): Unit = {
-    (previousVector - nextVector).
-      mapWithIndex { case (value, index) => math.abs(value) }.
-      sum.
-      write(TypedTsv[Double](diffLoc))
-  }
+  def measureConvergenceAndStore(): Unit =
+    (previousVector - nextVector)
+      .mapWithIndex { case (value, index) => math.abs(value) }
+      .sum
+      .write(TypedTsv[Double](diffLoc))
 
   /**
    * Load or generate on first iteration the matrix M^ given A.
    */
-  def M_hat: Matrix[Int, Int, Double] = {
-
+  def M_hat: Matrix[Int, Int, Double] =
     if (currentIteration == 0) {
       val A = matrixFromTsv(edgesLoc)
       val M = A.rowL1Normalize.transpose
@@ -108,13 +98,11 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     } else {
       matrixFromTsv(rootDir + "/constants/M_hat")
     }
-  }
 
   /**
    * Load or generate on first iteration the prior vector given d and n.
    */
-  def priorVector: ColVector[Int, Double] = {
-
+  def priorVector: ColVector[Int, Double] =
     if (currentIteration == 0) {
       val onesVector = colVectorFromTsv(onesVectorLoc)
       val priorVector = ((1 - d) / n) * onesVector.toMatrix(0)
@@ -123,7 +111,6 @@ class WeightedPageRankFromMatrix(args: Args) extends Job(args) {
     } else {
       colVectorFromTsv(rootDir + "/constants/priorVector")
     }
-  }
 
   def matrixFromTsv(input: String): Matrix[Int, Int, Double] =
     TypedTsv[(Int, Int, Double)](input).toMatrix

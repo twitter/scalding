@@ -5,29 +5,27 @@ import org.scalatest.WordSpec
 import com.twitter.scalding.typed.CumulativeSum._
 
 class AddRankingWithCumulativeSum(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(String, Double)]("input1"))
-    .map {
-      case (gender, height) =>
-        (gender, (height, 1L))
+  TypedPipe
+    .from(TypedTsv[(String, Double)]("input1"))
+    .map { case (gender, height) =>
+      (gender, (height, 1L))
     }
     .cumulativeSum
-    .map {
-      case (gender, (height, rank)) =>
-        (gender, height, rank)
+    .map { case (gender, (height, rank)) =>
+      (gender, height, rank)
     }
     .write(TypedTsv("result1"))
 }
 
 class AddRankingWithPartitionedCumulativeSum(args: Args) extends Job(args) {
-  TypedPipe.from(TypedTsv[(String, Double)]("input1"))
-    .map {
-      case (gender, height) =>
-        (gender, (height, 1L))
+  TypedPipe
+    .from(TypedTsv[(String, Double)]("input1"))
+    .map { case (gender, height) =>
+      (gender, (height, 1L))
     }
-    .cumulativeSum { h => (h / 100).floor.toLong }
-    .map {
-      case (gender, (height, rank)) =>
-        (gender, height, rank)
+    .cumulativeSum(h => (h / 100).floor.toLong)
+    .map { case (gender, (height, rank)) =>
+      (gender, height, rank)
     }
     .write(TypedTsv("result1"))
 }
@@ -45,7 +43,8 @@ class CumulativeSumTest1 extends WordSpec {
     ("female", "272.2"),
     ("male", "284.1"),
     ("male", "225.4"),
-    ("female", "228.6"))
+    ("female", "228.6")
+  )
 
   // Each group sorted and ranking added highest person to shortest
   val expectedOutput1 = Set(
@@ -58,7 +57,8 @@ class CumulativeSumTest1 extends WordSpec {
     ("male", 265.2, 5),
     ("male", 225.4, 4),
     ("female", 272.2, 4),
-    ("female", 228.6, 3))
+    ("female", 228.6, 3)
+  )
 
   "A simple ranking cumulative sum job" should {
     JobTest("com.twitter.scalding.AddRankingWithCumulativeSum")

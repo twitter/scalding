@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
 import com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.MacroEqualityOrderedSerialization
@@ -21,18 +21,19 @@ import java.nio.file.Files
 import java.io.File
 import java.util
 import java.util.concurrent.CountDownLatch
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
-import scala.concurrent.{ Future, Promise, ExecutionContext => ConcurrentExecutionContext }
-import scala.util.{ Failure, Success, Try }
-import cascading.flow.{ Flow, FlowDef, FlowListener }
+import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
+import scala.util.{Failure, Success, Try}
+import cascading.flow.{Flow, FlowDef, FlowListener}
 import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileCleanup
 import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import org.apache.hadoop.conf.Configuration
 
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
-    TypedPipe.from(TextLine(in))
+    TypedPipe
+      .from(TextLine(in))
       .flatMap(_.split("\\s+"))
       .map((_, 1L))
       .sumByKey
@@ -57,10 +58,10 @@ object ExecutionTestJobs {
   }
 
   def writeExecutionWithTempFile(tempFile: String, testData: List[String]): Execution[List[String]] = {
-    val forced = TypedPipe.from(testData).map(s => s)
-      .forceToDiskExecution
+    val forced = TypedPipe.from(testData).map(s => s).forceToDiskExecution
 
-    Execution.withConfig(forced) { conf => conf + ("hadoop.tmp.dir" -> tempFile) }
+    Execution
+      .withConfig(forced)(conf => conf + ("hadoop.tmp.dir" -> tempFile))
       .flatMap(_.toIterableExecution)
       .map(_.toList)
   }
@@ -79,11 +80,18 @@ class WordCountEc(args: Args) extends TestExecutionJob[Unit](args) {
   def execution = ExecutionTestJobs.wordCount(args("input"), args("output"))
 }
 
-class ExecutionWithTempFiles(args: Args, tempFile: String, testData: List[String]) extends TestExecutionJob[List[String]](args) {
+class ExecutionWithTempFiles(args: Args, tempFile: String, testData: List[String])
+    extends TestExecutionJob[List[String]](args) {
   override def execution = ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
 }
 
-class ZippedExecutionWithTempFiles(args: Args, tempFileOne: String, tempFileTwo: String, testDataOne: List[String], testDataTwo: List[String]) extends TestExecutionJob[(List[String], List[String])](args) {
+class ZippedExecutionWithTempFiles(
+    args: Args,
+    tempFileOne: String,
+    tempFileTwo: String,
+    testDataOne: List[String],
+    testDataTwo: List[String]
+) extends TestExecutionJob[(List[String], List[String])](args) {
   override def execution = {
     val executionOne = ExecutionTestJobs.writeExecutionWithTempFile(tempFileOne, testDataOne)
     val executionTwo = ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo)
@@ -94,16 +102,16 @@ class ZippedExecutionWithTempFiles(args: Args, tempFileOne: String, tempFileTwo:
 case class MyCustomType(s: String)
 
 class NormalJobToExecutionTestJob(args: Args) extends Job(args) {
-  TypedPipe.from(0 to 100)
+  TypedPipe
+    .from(0 to 100)
     .groupBy(_ % 3)
     .sum
     .write(source.NullSink)
 }
 
 class FlowListenerWithException extends FlowListener {
-  override def onStarting(flow: Flow[_]): Unit = {
+  override def onStarting(flow: Flow[_]): Unit =
     throw new RuntimeException("something goes wrong")
-  }
 
   override def onCompleted(flow: Flow[_]): Unit = {}
 
@@ -153,21 +161,27 @@ class ExecutionTest extends WordSpec with Matchers {
 
   "An Execution" should {
     "run" in {
-      ExecutionTestJobs.wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
-        .waitFor(Config.default, Local(false)).get.toMap shouldBe Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L)
+      ExecutionTestJobs
+        .wordCount2(TypedPipe.from(List("a b b c c c", "d d d d")))
+        .waitFor(Config.default, Local(false))
+        .get
+        .toMap shouldBe Map("a" -> 1L, "b" -> 2L, "c" -> 3L, "d" -> 4L)
     }
     "run with zip" in {
-      (ExecutionTestJobs.zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
+      (ExecutionTestJobs
+        .zipped(TypedPipe.from(0 until 100), TypedPipe.from(100 until 200))
         .shouldSucceed() match {
-          case (it1, it2) => (it1.head, it2.head)
-        }) shouldBe ((0 until 100).sum, (100 until 200).sum)
+        case (it1, it2) => (it1.head, it2.head)
+      }) shouldBe ((0 until 100).sum, (100 until 200).sum)
     }
     "run with exception in flow listener" in {
       val exec = ExecutionTestJobs.wordCount2(TypedPipe.from(List("a", "b")))
 
-      Execution.withConfig(exec) { config =>
-        config.addFlowListener((_, _) => new FlowListenerWithException())
-      }.shouldFailWith("Flow was stopped")
+      Execution
+        .withConfig(exec) { config =>
+          config.addFlowListener((_, _) => new FlowListenerWithException())
+        }
+        .shouldFailWith("Flow was stopped")
     }
     "lift to try" in {
       val res = ExecutionTestJobs
@@ -201,15 +215,18 @@ class ExecutionTest extends WordSpec with Matchers {
     }
     "If either fails, zip fails, else we get success" in {
       val neverHappens = Promise[Int]().future
-      Execution.fromFuture { _ => neverHappens }
+      Execution
+        .fromFuture(_ => neverHappens)
         .zip(Execution.failed(new Exception("oh no")))
         .shouldFail()
 
-      Execution.failed(new Exception("oh no"))
-        .zip(Execution.fromFuture { _ => neverHappens })
+      Execution
+        .failed(new Exception("oh no"))
+        .zip(Execution.fromFuture(_ => neverHappens))
         .shouldFail()
       // If both are good, we succeed:
-      Execution.from(1)
+      Execution
+        .from(1)
         .zip(Execution.from("1"))
         .shouldSucceed() shouldBe (1, "1")
     }
@@ -217,7 +234,8 @@ class ExecutionTest extends WordSpec with Matchers {
     "If one write fails, the other gets cancelled" in {
       @volatile var cancelledEx: Option[Throwable] = None
 
-      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedTp: TypedPipe[Int] =
+        TypedPipe.from(Seq(0)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
 
       val mapCountDownLatch = new CountDownLatch(1)
@@ -253,7 +271,8 @@ class ExecutionTest extends WordSpec with Matchers {
       // do the same on the other side
       @volatile var cancelledEx2: Option[Throwable] = None
 
-      val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedTp2: TypedPipe[Int] =
+        TypedPipe.from(Seq(0)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
 
       val mapCountDownLatch2 = new CountDownLatch(1)
@@ -290,7 +309,8 @@ class ExecutionTest extends WordSpec with Matchers {
     "If one write fails, the flatmapped execution gets cancelled" in {
       @volatile var cancelledEx: Option[Throwable] = None
 
-      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedTp: TypedPipe[Int] =
+        TypedPipe.from(Seq(0)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
 
       val mapCountDownLatch = new CountDownLatch(1)
@@ -298,19 +318,27 @@ class ExecutionTest extends WordSpec with Matchers {
       val otherTp: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values
 
       val onCompleteCountDownLatch = new CountDownLatch(1)
-      val otherEx: Execution[Iterable[Int]] = otherTp.toIterableExecution.flatMap { _ =>
-        TypedPipe.from(Seq(2)).groupAll.sum.values.map { i =>
-          // block until we are done
-          mapCountDownLatch.await()
-          i
-        }.toIterableExecution
-      }.onComplete { t =>
-        if (t.isFailure) {
-          // capture the exception
-          cancelledEx = t.failed.toOption
+      val otherEx: Execution[Iterable[Int]] = otherTp.toIterableExecution
+        .flatMap { _ =>
+          TypedPipe
+            .from(Seq(2))
+            .groupAll
+            .sum
+            .values
+            .map { i =>
+              // block until we are done
+              mapCountDownLatch.await()
+              i
+            }
+            .toIterableExecution
         }
-        onCompleteCountDownLatch.countDown()
-      }
+        .onComplete { t =>
+          if (t.isFailure) {
+            // capture the exception
+            cancelledEx = t.failed.toOption
+          }
+          onCompleteCountDownLatch.countDown()
+        }
 
       val zipped = failedEx.zip(otherEx)
 
@@ -328,7 +356,8 @@ class ExecutionTest extends WordSpec with Matchers {
       // do the same on the other side
       @volatile var cancelledEx2: Option[Throwable] = None
 
-      val failedTp2: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedTp2: TypedPipe[Int] =
+        TypedPipe.from(Seq(0)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val failedEx2: Execution[Iterable[Int]] = failedTp2.toIterableExecution
 
       val mapCountDownLatch2 = new CountDownLatch(1)
@@ -336,19 +365,27 @@ class ExecutionTest extends WordSpec with Matchers {
       val otherTp2: TypedPipe[Int] = TypedPipe.from(Seq(1)).groupAll.sum.values
 
       val onCompleteCountDownLatch2 = new CountDownLatch(1)
-      val otherEx2: Execution[Iterable[Int]] = otherTp2.toIterableExecution.flatMap { _ =>
-        TypedPipe.from(Seq(2)).groupAll.sum.values.map { i =>
-          // block until we are done
-          mapCountDownLatch2.await()
-          i
-        }.toIterableExecution
-      }.onComplete { t =>
-        if (t.isFailure) {
-          // capture the exception
-          cancelledEx2 = t.failed.toOption
+      val otherEx2: Execution[Iterable[Int]] = otherTp2.toIterableExecution
+        .flatMap { _ =>
+          TypedPipe
+            .from(Seq(2))
+            .groupAll
+            .sum
+            .values
+            .map { i =>
+              // block until we are done
+              mapCountDownLatch2.await()
+              i
+            }
+            .toIterableExecution
         }
-        onCompleteCountDownLatch2.countDown()
-      }
+        .onComplete { t =>
+          if (t.isFailure) {
+            // capture the exception
+            cancelledEx2 = t.failed.toOption
+          }
+          onCompleteCountDownLatch2.countDown()
+        }
 
       val zipped2 = otherEx2.zip(failedEx2)
 
@@ -364,8 +401,23 @@ class ExecutionTest extends WordSpec with Matchers {
       mapCountDownLatch2.countDown()
     }
 
+    "recoverWith may fail to match" in {
+      val exception = new RuntimeException()
+
+      val result = Execution
+        .from[Unit] {
+          throw exception
+        }
+        .recoverWith { case _: NullPointerException =>
+          Execution.unit
+        }
+        .waitFor(Config.default, Local(true))
+
+      result shouldBe Failure(exception)
+    }
+
     "recover from failure" in {
-      val tp = TypedPipe.from(Seq(1)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val tp = TypedPipe.from(Seq(1)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val recoveredTp = TypedPipe.from(Seq(2)).groupAll.sum.values
       val recoveredEx = tp.toIterableExecution.recoverWith { case t: Throwable =>
         recoveredTp.toIterableExecution
@@ -378,7 +430,8 @@ class ExecutionTest extends WordSpec with Matchers {
     "not recover when cancelled by another execution" in {
       @volatile var cancelledEx: Option[Throwable] = None
 
-      val failedTp: TypedPipe[Int] = TypedPipe.from(Seq(0)).groupAll.sum.values.map { _ => throw new Exception("oh no") }
+      val failedTp: TypedPipe[Int] =
+        TypedPipe.from(Seq(0)).groupAll.sum.values.map(_ => throw new Exception("oh no"))
       val failedEx: Execution[Iterable[Int]] = failedTp.toIterableExecution
 
       val mapCountDownLatch = new CountDownLatch(1)
@@ -391,15 +444,17 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val onCompleteCountDownLatch = new CountDownLatch(1)
       val recoveredTp = TypedPipe.from(Seq(2))
-      val otherEx: Execution[Iterable[Int]] = blockingTp.toIterableExecution.recoverWith { case t: Throwable =>
-        recoveredTp.toIterableExecution
-      }.onComplete { t =>
-        if (t.isFailure) {
-          // capture the exception
-          cancelledEx = t.failed.toOption
+      val otherEx: Execution[Iterable[Int]] = blockingTp.toIterableExecution
+        .recoverWith { case t: Throwable =>
+          recoveredTp.toIterableExecution
         }
-        onCompleteCountDownLatch.countDown()
-      }
+        .onComplete { t =>
+          if (t.isFailure) {
+            // capture the exception
+            cancelledEx = t.failed.toOption
+          }
+          onCompleteCountDownLatch.countDown()
+        }
 
       val zipped = failedEx.zip(otherEx)
 
@@ -415,11 +470,10 @@ class ExecutionTest extends WordSpec with Matchers {
       mapCountDownLatch.countDown()
     }
 
-
     "Config transformer will isolate Configs" in {
       def doesNotHaveVariable(message: String) = Execution.getConfig.flatMap { cfg =>
         if (cfg.get("test.cfg.variable").isDefined)
-          Execution.failed(new Exception(s"${message}\n: var: ${cfg.get("test.cfg.variable")}"))
+          Execution.failed(new Exception(s"$message\n: var: ${cfg.get("test.cfg.variable")}"))
         else
           Execution.from(())
       }
@@ -431,10 +485,10 @@ class ExecutionTest extends WordSpec with Matchers {
           Execution.from(())
       }
 
-      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+      def addOption(cfg: Config) = cfg.+("test.cfg.variable", "dummyValue")
 
       doesNotHaveVariable("Should not see variable before we've started transforming")
-        .flatMap{ _ => Execution.withConfig(hasVariable)(addOption) }
+        .flatMap(_ => Execution.withConfig(hasVariable)(addOption))
         .flatMap(_ => doesNotHaveVariable("Should not see variable in flatMap's after the isolation"))
         .map(_ => true)
         .shouldSucceed() shouldBe true
@@ -451,11 +505,11 @@ class ExecutionTest extends WordSpec with Matchers {
         Execution.from(())
       }
 
-      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+      def addOption(cfg: Config) = cfg.+("test.cfg.variable", "dummyValue")
 
       // Here we run without the option, with the option, and finally without again.
       incrementor
-        .flatMap{ _ => Execution.withConfig(incrementor)(addOption) }
+        .flatMap(_ => Execution.withConfig(incrementor)(addOption))
         .flatMap(_ => incrementor)
         .map(_ => true)
         .shouldSucceed() shouldBe true
@@ -480,19 +534,23 @@ class ExecutionTest extends WordSpec with Matchers {
 
       val sink = TypedTsv[Int](sinkF)
       val src = TypedTsv[Int](srcF)
-      val operationTP = (TypedPipe.from(src) ++ TypedPipe.from((1 until 100).toList)).writeExecution(sink).getCounters.map(_._2.toMap)
+      val operationTP = (TypedPipe.from(src) ++ TypedPipe
+        .from((1 until 100).toList)).writeExecution(sink).getCounters.map(_._2.toMap)
 
-      def addOption(cfg: Config) = cfg.+ ("test.cfg.variable", "dummyValue")
+      def addOption(cfg: Config) = cfg.+("test.cfg.variable", "dummyValue")
 
       // Here we run without the option, with the option, and finally without again.
       val (oldCounters, newCounters) = operationTP
-        .flatMap{ oc =>
+        .flatMap { oc =>
           writeNums(List(1, 2, 3, 4, 5, 6, 7))
-          Execution.withConfig(operationTP)(addOption).map { nc => (oc, nc) }
+          Execution.withConfig(operationTP)(addOption).map(nc => (oc, nc))
         }
         .shouldSucceed()
 
-      assert(oldCounters != newCounters, "With new configs given the source changed we shouldn't cache so the counters should be different")
+      assert(
+        oldCounters != newCounters,
+        "With new configs given the source changed we shouldn't cache so the counters should be different"
+      )
 
     }
 
@@ -530,11 +588,11 @@ class ExecutionTest extends WordSpec with Matchers {
     val parser = new ExecutionApp { def job = Execution.from(()) }
     "parse hadoop args correctly" in {
       val conf = parser.config(Array("-Dmapred.reduce.tasks=100", "--local"))._1
-      conf.get("mapred.reduce.tasks") should contain ("100")
+      conf.get("mapred.reduce.tasks") should contain("100")
       conf.getArgs.boolean("local") shouldBe true
 
       val (conf1, Hdfs(_, hconf)) = parser.config(Array("--test", "-Dmapred.reduce.tasks=110", "--hdfs"))
-      conf1.get("mapred.reduce.tasks") should contain ("110")
+      conf1.get("mapred.reduce.tasks") should contain("110")
       conf1.getArgs.boolean("test") shouldBe true
       hconf.get("mapred.reduce.tasks") shouldBe "110"
     }
@@ -565,12 +623,12 @@ class ExecutionTest extends WordSpec with Matchers {
             Execution.fromFn((_, _) => flowDef)
           }
 
-        def pipeBuilder(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Int] = {
-          TypedPipe.from(TextLine(args("input")))
+        def pipeBuilder(implicit flowDef: FlowDef, mode: Mode): TypedPipe[Int] =
+          TypedPipe
+            .from(TextLine(args("input")))
             .map(_.toInt)
             .map(_ * 2)
             .write(TypedTsv[Int]("out"))
-        }
       }
 
       val input = List((0, "1"), (1, "2"), (2, "3"), (3, "4"), (4, "5"))
@@ -595,7 +653,8 @@ class ExecutionTest extends WordSpec with Matchers {
       Files.exists(tempFileOne) should be(true)
       Files.exists(tempFileTwo) should be(true)
 
-      val cleanupThread = TempFileCleanup(List(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
+      val cleanupThread =
+        TempFileCleanup(List(tempFileOne.toFile.getAbsolutePath, tempFileTwo.toFile.getAbsolutePath), mode)
       cleanupThread.run()
 
       Files.exists(tempFileOne) should be(false)
@@ -609,7 +668,8 @@ class ExecutionTest extends WordSpec with Matchers {
         isTempFileCleanupHook(hook) should be(false)
       }
 
-      ExecutionTestJobs.writeExecutionWithTempFile(tempFile, testData)
+      ExecutionTestJobs
+        .writeExecutionWithTempFile(tempFile, testData)
         .shouldSucceedHadoop()
 
       // This is hacky, but there's a small chance that the new cleanup hook isn't registered by the time we get here
@@ -656,7 +716,8 @@ class ExecutionTest extends WordSpec with Matchers {
         isTempFileCleanupHook(hook) should be(false)
       }
 
-      ExecutionTestJobs.writeExecutionWithTempFile(tempFileOne, testDataOne)
+      ExecutionTestJobs
+        .writeExecutionWithTempFile(tempFileOne, testDataOne)
         .zip(ExecutionTestJobs.writeExecutionWithTempFile(tempFileTwo, testDataTwo))
         .shouldSucceedHadoop()
 
@@ -680,12 +741,13 @@ class ExecutionTest extends WordSpec with Matchers {
       var first = 0
       var second = 0
       var third = 0
-      val e1 = Execution.from({ first += 1; 42 })
+      val e1 = Execution.from { first += 1; 42 }
       val e2 = e1.flatMap { x =>
         second += 1
         Execution.from(2 * x)
       }
       val e3 = e1.map { x => third += 1; x * 3 }
+
       /**
        * Notice both e3 and e2 need to evaluate e1.
        */
@@ -694,56 +756,64 @@ class ExecutionTest extends WordSpec with Matchers {
       assert((first, second, third) == (1, 1, 1))
     }
     "zip does not duplicate counters" in {
-      val c1 = Execution.withId { implicit uid =>
-        val stat = Stat("test")
-        val e1 = TypedPipe.from(0 until 100).map { x =>
-          stat.inc
-          x
+      val c1 = Execution
+        .withId { implicit uid =>
+          val stat = Stat("test")
+          val e1 = TypedPipe
+            .from(0 until 100)
+            .map { x =>
+              stat.inc
+              x
+            }
+            .writeExecution(source.NullSink)
+
+          e1.zip(e1)
         }
-          .writeExecution(source.NullSink)
+        .getCounters
+        .map { case (_, c) => c("test") }
 
-        e1.zip(e1)
-      }
-        .getCounters.map { case (_, c) => c("test") }
+      val c2 = Execution
+        .withId { implicit uid =>
+          val stat = Stat("test")
+          val e2 = TypedPipe
+            .from(0 until 100)
+            .map { x =>
+              stat.inc
+              x
+            }
+            .writeExecution(source.NullSink)
 
-      val c2 = Execution.withId { implicit uid =>
-        val stat = Stat("test")
-        val e2 = TypedPipe.from(0 until 100).map { x =>
-          stat.inc
-          x
+          e2.flatMap(Execution.from(_)).zip(e2)
         }
-          .writeExecution(source.NullSink)
-
-        e2.flatMap(Execution.from(_)).zip(e2)
-      }
-        .getCounters.map { case (_, c) => c("test") }
+        .getCounters
+        .map { case (_, c) => c("test") }
 
       c1.shouldSucceed() should ===(100)
       c2.shouldSucceed() should ===(100)
     }
     "zip does not duplicate pure counters" in {
       val c1 = {
-        val e1 = TypedPipe.from(0 until 100)
+        val e1 = TypedPipe
+          .from(0 until 100)
           .tallyAll("scalding", "test")
           .writeExecution(source.NullSink)
 
-        e1.zip(e1)
-          .getCounters.map { case (_, c) =>
-            println(c.toMap)
-            c(("test", "scalding"))
-          }
+        e1.zip(e1).getCounters.map { case (_, c) =>
+          println(c.toMap)
+          c(("test", "scalding"))
+        }
       }
 
       val c2 = {
-        val e2 = TypedPipe.from(0 until 100)
+        val e2 = TypedPipe
+          .from(0 until 100)
           .tallyAll("scalding", "test")
           .writeExecution(source.NullSink)
 
-        e2.flatMap(Execution.from(_)).zip(e2)
-          .getCounters.map { case (_, c) =>
-            println(c.toMap)
-            c(("test", "scalding"))
-          }
+        e2.flatMap(Execution.from(_)).zip(e2).getCounters.map { case (_, c) =>
+          println(c.toMap)
+          c(("test", "scalding"))
+        }
       }
 
       c1.shouldSucceed() should ===(100)
@@ -754,33 +824,45 @@ class ExecutionTest extends WordSpec with Matchers {
       var timesEvaluated = 0
       import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
       // Attempt to use up 4 boxed classes for every execution
-      def baseExecution(idx: Int): Execution[Unit] = TypedPipe.from(0 until 1000).map(_.toShort).flatMap { i =>
-        timesEvaluated += 1
-        List((i, i), (i, i))
-      }.sumByKey.map {
-        case (k, v) =>
+      def baseExecution(idx: Int): Execution[Unit] = TypedPipe
+        .from(0 until 1000)
+        .map(_.toShort)
+        .flatMap { i =>
+          timesEvaluated += 1
+          List((i, i), (i, i))
+        }
+        .sumByKey
+        .map { case (k, v) =>
           (k.toInt, v)
-      }.sumByKey.map {
-        case (k, v) =>
+        }
+        .sumByKey
+        .map { case (k, v) =>
           (k.toLong, v)
-      }.sumByKey.map {
-        case (k, v) =>
+        }
+        .sumByKey
+        .map { case (k, v) =>
           (k.toString, v)
-      }.sumByKey.map {
-        case (k, v) =>
+        }
+        .sumByKey
+        .map { case (k, v) =>
           (MyCustomType(k), v)
-      }.sumByKey.writeExecution(TypedTsv(s"/tmp/asdf_${idx}"))
+        }
+        .sumByKey
+        .writeExecution(TypedTsv(s"/tmp/asdf_$idx"))
 
       implicitly[OrderedSerialization[MyCustomType]] match {
-        case mos: MacroEqualityOrderedSerialization[_] => assert(mos.uniqueId == "com.twitter.scalding.MyCustomType")
-        case _ => sys.error("Ordered serialization should have been the MacroEqualityOrderedSerialization for this test")
+        case mos: MacroEqualityOrderedSerialization[_] =>
+          assert(mos.uniqueId == "com.twitter.scalding.MyCustomType")
+        case _ =>
+          sys.error(
+            "Ordered serialization should have been the MacroEqualityOrderedSerialization for this test"
+          )
       }
-      def executionLoop(idx: Int): Execution[Unit] = {
+      def executionLoop(idx: Int): Execution[Unit] =
         if (idx > 0)
           baseExecution(idx).flatMap(_ => executionLoop(idx - 1))
         else
           Execution.unit
-      }
 
       executionLoop(55).shouldSucceed()
       assert(timesEvaluated == 55 * 1000, "Should run the 55 execution loops for 1000 elements")
@@ -789,61 +871,80 @@ class ExecutionTest extends WordSpec with Matchers {
     "evaluate shared portions just once, writeExecution" in {
 
       var timesEvaluated = 0
-      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
-        timesEvaluated += 1
-        List(i, i)
-      }.fork
+      val baseTp = TypedPipe
+        .from(0 until 1000)
+        .flatMap { i =>
+          timesEvaluated += 1
+          List(i, i)
+        }
+        .fork
 
-      val fde1 = baseTp.map{ _ * 3 }.writeExecution(TypedTsv("/tmp/asdf"))
-      val fde2 = baseTp.map{ _ * 5 }.writeExecution(TypedTsv("/tmp/asdf2"))
+      val fde1 = baseTp.map(_ * 3).writeExecution(TypedTsv("/tmp/asdf"))
+      val fde2 = baseTp.map(_ * 5).writeExecution(TypedTsv("/tmp/asdf2"))
 
       val res = fde1.zip(fde2)
 
       res.shouldSucceed()
-      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
+      assert(
+        timesEvaluated == 1000,
+        "Should share the common sub section of the graph when we zip two write Executions"
+      )
     }
 
     "evaluate shared portions just once, forceToDiskExecution" in {
 
       var timesEvaluated = 0
-      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
-        timesEvaluated += 1
-        List(i, i)
-      }.fork
+      val baseTp = TypedPipe
+        .from(0 until 1000)
+        .flatMap { i =>
+          timesEvaluated += 1
+          List(i, i)
+        }
+        .fork
 
-      val fde1 = baseTp.map{ _ * 3 }.forceToDiskExecution
-      val fde2 = baseTp.map{ _ * 5 }.forceToDiskExecution
+      val fde1 = baseTp.map(_ * 3).forceToDiskExecution
+      val fde2 = baseTp.map(_ * 5).forceToDiskExecution
 
       val res = fde1.zip(fde2)
 
       res.shouldSucceed()
-      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions")
+      assert(
+        timesEvaluated == 1000,
+        "Should share the common sub section of the graph when we zip two write Executions"
+      )
     }
 
     "evaluate shared portions just once, forceToDiskExecution with execution cache" in {
 
       var timesEvaluated = 0
-      val baseTp = TypedPipe.from(0 until 1000).flatMap { i =>
-        timesEvaluated += 1
-        List(i, i)
-      }.fork
+      val baseTp = TypedPipe
+        .from(0 until 1000)
+        .flatMap { i =>
+          timesEvaluated += 1
+          List(i, i)
+        }
+        .fork
 
-      val fde1 = baseTp.map{ _ * 3 }.forceToDiskExecution
-      val fde2 = baseTp.map{ _ * 5 }.forceToDiskExecution
+      val fde1 = baseTp.map(_ * 3).forceToDiskExecution
+      val fde2 = baseTp.map(_ * 5).forceToDiskExecution
 
-      val res = fde1.zip(fde2).flatMap{ _ => fde1 }.flatMap(_.toIterableExecution)
+      val res = fde1.zip(fde2).flatMap(_ => fde1).flatMap(_.toIterableExecution)
 
       res.shouldSucceed()
-      assert(timesEvaluated == 1000, "Should share the common sub section of the graph when we zip two write Executions and then flatmap")
+      assert(
+        timesEvaluated == 1000,
+        "Should share the common sub section of the graph when we zip two write Executions and then flatmap"
+      )
     }
 
     "Ability to do isolated caches so we don't exhaust memory" in {
 
-      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] = Execution.withNewCache(Execution.from(id).flatMap{ idx =>
-        Execution.from(Array.fill(4000000)(idx.toLong))
-      })
+      def memoryWastingExecutionGenerator(id: Int): Execution[Array[Long]] =
+        Execution.withNewCache(Execution.from(id).flatMap { idx =>
+          Execution.from(Array.fill(4000000)(idx.toLong))
+        })
 
-      def writeAll(numExecutions: Int): Execution[Unit] = {
+      def writeAll(numExecutions: Int): Execution[Unit] =
         if (numExecutions > 0) {
           memoryWastingExecutionGenerator(numExecutions).flatMap { _ =>
             writeAll(numExecutions - 1)
@@ -851,7 +952,6 @@ class ExecutionTest extends WordSpec with Matchers {
         } else {
           Execution.from(())
         }
-      }
 
       writeAll(400).shouldSucceed()
     }
@@ -862,7 +962,8 @@ class ExecutionTest extends WordSpec with Matchers {
     }
 
     "handle an error running in parallel" in {
-      val executions = Execution.failed(new Exception("failed")) :: 0.to(10).map(i => Execution.from[Int](i)).toList
+      val executions =
+        Execution.failed(new Exception("failed")) :: 0.to(10).map(i => Execution.from[Int](i)).toList
 
       val result = Execution.withParallelism(executions, 3)
 
@@ -884,12 +985,16 @@ class ExecutionTest extends WordSpec with Matchers {
         seen += 1
       }
 
-      val executions = 0.to(10).map{ i =>
-        Execution
-          .from[Int](i)
-          .map{ i => Thread.sleep(10 - i); i }
-          .onComplete(t => updateSeen(t.get))
-      }.toList.reverse
+      val executions = 0
+        .to(10)
+        .map { i =>
+          Execution
+            .from[Int](i)
+            .map { i => Thread.sleep(10 - i); i }
+            .onComplete(t => updateSeen(t.get))
+        }
+        .toList
+        .reverse
 
       val result = Execution.withParallelism(executions, 1)
 
@@ -950,27 +1055,29 @@ class ExecutionTest extends WordSpec with Matchers {
       }
 
       "Execution#map" in {
-        reconstructibleLaws(
-          Execution.fromFuture(futureF).map(mapF),
-          Execution.fromFuture(futureF).map(mapF2))
+        reconstructibleLaws(Execution.fromFuture(futureF).map(mapF), Execution.fromFuture(futureF).map(mapF2))
       }
 
       "Execution.zip" in {
         reconstructibleLaws(
           Execution.zip(Execution.fromFuture(futureF2), Execution.withId(withIdF)),
-          Execution.zip(Execution.fromFuture(futureF2), Execution.withId(withIdF2)))
+          Execution.zip(Execution.fromFuture(futureF2), Execution.withId(withIdF2))
+        )
       }
 
       "Execution.sequence" in {
         reconstructibleLaws(
-          Execution.sequence(Seq(
-            Execution.fromFuture(futureF),
-            Execution.withId(withIdF),
-            Execution.fromFuture(futureF2).map(mapF))),
-          Execution.sequence(Seq(
-            Execution.fromFuture(futureF),
-            Execution.withId(withIdF),
-            Execution.fromFn(fnF))))
+          Execution.sequence(
+            Seq(
+              Execution.fromFuture(futureF),
+              Execution.withId(withIdF),
+              Execution.fromFuture(futureF2).map(mapF)
+            )
+          ),
+          Execution.sequence(
+            Seq(Execution.fromFuture(futureF), Execution.withId(withIdF), Execution.fromFn(fnF))
+          )
+        )
       }
     }
 
@@ -979,11 +1086,13 @@ class ExecutionTest extends WordSpec with Matchers {
       // want equality to be consistent
       trait MutableX[T] {
         protected var x: Int
-        def setX(newX: Int): Unit = { x = newX }
+        def setX(newX: Int): Unit = x = newX
         def makeExecution: Execution[T]
       }
 
-      case class FromFutureMutable(var x: Int = 0) extends Function1[ConcurrentExecutionContext, Future[Int]] with MutableX[Int] {
+      case class FromFutureMutable(var x: Int = 0)
+          extends Function1[ConcurrentExecutionContext, Future[Int]]
+          with MutableX[Int] {
         def apply(context: ConcurrentExecutionContext) = Future.successful(x)
         def makeExecution = Execution.fromFuture(this)
       }
@@ -991,7 +1100,9 @@ class ExecutionTest extends WordSpec with Matchers {
         def apply(config: Config, mode: Mode) = null
         def makeExecution = Execution.fromFn(this)
       }
-      case class WithIdMutable(var x: Int = 0) extends Function1[UniqueID, Execution[Int]] with MutableX[Int] {
+      case class WithIdMutable(var x: Int = 0)
+          extends Function1[UniqueID, Execution[Int]]
+          with MutableX[Int] {
         def apply(id: UniqueID) = Execution.fromFuture(FromFutureMutable(x))
         def makeExecution = Execution.withId(this)
       }
@@ -1025,17 +1136,14 @@ class ExecutionTest extends WordSpec with Matchers {
         def makeExecution = Execution.sequence(Seq(m1.makeExecution, m2.makeExecution))
       }
 
-      def mutableLaws[T, U <: MutableX[T]](
-        mutableGen: => U,
-        expectedOpt: Option[Int => T] = None): Unit = {
+      def mutableLaws[T, U <: MutableX[T]](mutableGen: => U, expectedOpt: Option[Int => T] = None): Unit = {
         expectedOpt.foreach { expected =>
           require(expected(10) != expected(20))
         }
-        def validate(ex: Execution[T], seed: Int): Unit = {
+        def validate(ex: Execution[T], seed: Int): Unit =
           expectedOpt.foreach { expected =>
             assert(ex.shouldSucceed() == expected(seed))
           }
-        }
 
         val mutable1 = mutableGen
         mutable1.setX(10)
@@ -1072,7 +1180,7 @@ class ExecutionTest extends WordSpec with Matchers {
       }
 
       "Execution.fromFuture" in {
-        mutableLaws(FromFutureMutable(), Some({ x: Int => x }))
+        mutableLaws(FromFutureMutable(), Some { x: Int => x })
       }
 
       "Execution.fromFn" in {
@@ -1080,26 +1188,29 @@ class ExecutionTest extends WordSpec with Matchers {
       }
 
       "Execution.withId" in {
-        mutableLaws(WithIdMutable(), Some({ x: Int => x }))
+        mutableLaws(WithIdMutable(), Some { x: Int => x })
       }
 
       "Execution#map" in {
-        mutableLaws(MapMutable(), Some({ x: Int => x * x }))
+        mutableLaws(MapMutable(), Some { x: Int => x * x })
       }
 
       "Execution#zip" in {
-        mutableLaws(ZipMutable(), Some({ x: Int => (x, x + 20) }))
+        mutableLaws(ZipMutable(), Some { x: Int => (x, x + 20) })
       }
 
       "Execution.sequence" in {
-        mutableLaws(SequenceMutable(), Some({ x: Int => Seq(x, x * 3) }))
+        mutableLaws(SequenceMutable(), Some { x: Int => Seq(x, x * 3) })
       }
     }
   }
 
   "Simple jobs" should {
     "convert to Execution and run" in {
-      val ex = Job.toExecutionFromClass(classOf[NormalJobToExecutionTestJob], Execution.failed(new Exception("couldn't run")))
+      val ex = Job.toExecutionFromClass(
+        classOf[NormalJobToExecutionTestJob],
+        Execution.failed(new Exception("couldn't run"))
+      )
       val res = ex.waitFor(Config.empty, Local(true))
       assert(res.isSuccess)
     }
@@ -1133,8 +1244,11 @@ class ExecutionTest extends WordSpec with Matchers {
     }
     "work in a mapped TypedSource" in {
       val workingDir = System.getProperty("user.dir")
-      val job = TypedPipe.from(TextLine(workingDir + "/../tutorial/data/hello.txt")).map(_.size).toIterableExecution
-      assert(job.waitFor(Config.empty, Local(true)).get.toList == List("Hello world", "Goodbye world").map(_.size))
+      val job =
+        TypedPipe.from(TextLine(workingDir + "/../tutorial/data/hello.txt")).map(_.size).toIterableExecution
+      assert(
+        job.waitFor(Config.empty, Local(true)).get.toList == List("Hello world", "Goodbye world").map(_.size)
+      )
     }
   }
 }

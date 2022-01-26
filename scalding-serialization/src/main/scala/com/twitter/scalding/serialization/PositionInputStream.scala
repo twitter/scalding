@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 import java.io.InputStream
@@ -21,7 +21,7 @@ import JavaStreamEnrichments._
 object PositionInputStream {
   def apply(in: InputStream): PositionInputStream = in match {
     case p: PositionInputStream => p
-    case nonPos => new PositionInputStream(nonPos)
+    case nonPos                 => new PositionInputStream(nonPos)
   }
 }
 
@@ -32,7 +32,7 @@ class PositionInputStream(val wraps: InputStream) extends InputStream {
 
   override def available = wraps.available
 
-  override def close(): Unit = { wraps.close() }
+  override def close(): Unit = wraps.close()
 
   override def mark(limit: Int): Unit = {
     wraps.mark(limit)

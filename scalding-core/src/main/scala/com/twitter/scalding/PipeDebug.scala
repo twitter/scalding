@@ -12,24 +12,25 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import cascading.pipe.{ Pipe, Each }
+import cascading.pipe.{Each, Pipe}
 import cascading.operation.Debug
 import cascading.operation.Debug.Output
 
 /**
- * This is a builder for Cascading's Debug object.
- * The default instance is the same default as cascading's new Debug()
+ * This is a builder for Cascading's Debug object. The default instance is the same default as cascading's new
+ * Debug()
  * https://github.com/cwensel/cascading/blob/wip-2.5/cascading-core/src/main/java/cascading/operation/Debug.java#L46
- * This is based on work by: https://github.com/granthenke
- * https://github.com/twitter/scalding/pull/559
+ * This is based on work by: https://github.com/granthenke https://github.com/twitter/scalding/pull/559
  */
-case class PipeDebug(output: Output = Output.STDERR,
-  prefix: String = null,
-  printFieldsEvery: Option[Int] = None,
-  printTuplesEvery: Int = 1) {
+case class PipeDebug(
+    output: Output = Output.STDERR,
+    prefix: String = null,
+    printFieldsEvery: Option[Int] = None,
+    printTuplesEvery: Int = 1
+) {
 
   def toStdOut: PipeDebug = copy(output = Output.STDOUT)
   def toStdErr: PipeDebug = copy(output = Output.STDERR)
@@ -49,4 +50,3 @@ case class PipeDebug(output: Output = Output.STDERR,
 
   def apply(p: Pipe): Pipe = new Each(p, toDebug)
 }
-

@@ -50,9 +50,9 @@ object ByteBufferOrderedBuf {
       val $lenA: _root_.scala.Int = $inputStreamA.readPosVarInt
       val $lenB: _root_.scala.Int = $inputStreamB.readPosVarInt
 
-      val $queryLength = _root_.scala.math.min($lenA, $lenB)
-      var $incr = 0
-      var $state = 0
+      val $queryLength: _root_.scala.Int = _root_.scala.math.min($lenA, $lenB)
+      var $incr: _root_.scala.Int = 0
+      var $state: _root_.scala.Int = 0
 
       while($incr < $queryLength && $state == 0) {
         $state = _root_.java.lang.Byte.compare($inputStreamA.readByte, $inputStreamB.readByte)
@@ -68,15 +68,15 @@ object ByteBufferOrderedBuf {
       override def put(inputStream: ctx.TermName, element: ctx.TermName) =
         q"""
       $inputStream.writePosVarInt($element.remaining)
-      $inputStream.writeBytes($element.array, $element.arrayOffset + $element.position, $element.remaining)
+      $inputStream.writeBytes($element.array, $element.arrayOffset + $element.position(), $element.remaining)
       """
 
       override def get(inputStream: ctx.TermName): ctx.Tree = {
         val lenA = freshT("lenA")
         val bytes = freshT("bytes")
         q"""
-      val $lenA = $inputStream.readPosVarInt
-      val $bytes = new _root_.scala.Array[Byte]($lenA)
+      val $lenA: _root_.scala.Int = $inputStream.readPosVarInt
+      val $bytes: _root_.scala.Array[_root_.scala.Byte] = new _root_.scala.Array[_root_.scala.Byte]($lenA)
       $inputStream.readFully($bytes)
       _root_.java.nio.ByteBuffer.wrap($bytes)
     """
@@ -87,7 +87,7 @@ object ByteBufferOrderedBuf {
       override def length(element: Tree): CompileTimeLengthTypes[c.type] = {
         val tmpLen = freshT("tmpLen")
         FastLengthCalculation(c)(q"""
-          val $tmpLen = $element.remaining
+          val $tmpLen: _root_.scala.Int = $element.remaining
           posVarIntSize($tmpLen) + $tmpLen
         """)
       }

@@ -15,8 +15,7 @@ class AtomicBox[T <: AnyRef](init: T) {
     ref.getAndSet(t)
 
   /**
-   * use a pure function to update the state.
-   * fn may be called more than once
+   * use a pure function to update the state. fn may be called more than once
    */
   def update[R](fn: T => (T, R)): R = {
 
@@ -33,4 +32,3 @@ class AtomicBox[T <: AnyRef](init: T) {
 
   def get(): T = ref.get
 }
-

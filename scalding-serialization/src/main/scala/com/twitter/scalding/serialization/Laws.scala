@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding.serialization
 
 /**
- * This is a simple trait for describing laws on single parameter
- * type classes (Serialization, Monoid, Ordering, etc...)
+ * This is a simple trait for describing laws on single parameter type classes (Serialization, Monoid,
+ * Ordering, etc...)
  */
 sealed trait Law[T] {
   def name: String

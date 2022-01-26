@@ -16,18 +16,22 @@ package com.twitter.scalding
 package typed
 
 import cascading.tap.hadoop.PartitionTap
-import cascading.tap.local.{ FileTap, PartitionTap => LocalPartitionTap }
-import cascading.tap.{ SinkMode, Tap }
+import cascading.tap.local.{FileTap, PartitionTap => LocalPartitionTap}
+import cascading.tap.{SinkMode, Tap}
 import cascading.tuple.Fields
 
 /**
  * Trait to assist with creating partitioned sources.
  *
- * Apart from the abstract members below, `hdfsScheme` and `localScheme` also need to be set.
- * Note that for both of them the sink fields need to be set to only include the actual fields
- * that should be written to file and not the partition fields.
+ * Apart from the abstract members below, `hdfsScheme` and `localScheme` also need to be set. Note that for
+ * both of them the sink fields need to be set to only include the actual fields that should be written to
+ * file and not the partition fields.
  */
-trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with Mappable[(P, T)] with HfsTapProvider {
+trait PartitionSchemed[P, T]
+    extends SchemedSource
+    with TypedSink[(P, T)]
+    with Mappable[(P, T)]
+    with HfsTapProvider {
   def path: String
   def template: String
   def valueSetter: TupleSetter[T]
@@ -48,17 +52,17 @@ trait PartitionSchemed[P, T] extends SchemedSource with TypedSink[(P, T)] with M
   override def sinkFields: Fields = fields.append(partitionFields)
 
   /**
-   * Combine both the partition and value converter to extract the data from a flat cascading tuple
-   * into a pair of `P` and `T`.
+   * Combine both the partition and value converter to extract the data from a flat cascading tuple into a
+   * pair of `P` and `T`.
    */
   override def converter[U >: (P, T)] =
     PartitionUtil.converter[P, T, U](valueConverter, partitionConverter)
 
-  /** Flatten a pair of `P` and `T` into a cascading tuple.*/
+  /** Flatten a pair of `P` and `T` into a cascading tuple. */
   override def setter[U <: (P, T)] =
     PartitionUtil.setter[P, T, U](valueSetter, partitionSetter)
 
-  /** Creates the taps for local and hdfs mode.*/
+  /** Creates the taps for local and hdfs mode. */
   override def createTap(readOrWrite: AccessMode)(implicit mode: Mode): Tap[_, _, _] =
     mode match {
       case Local(_) => {

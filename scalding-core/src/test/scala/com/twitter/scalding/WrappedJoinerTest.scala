@@ -2,11 +2,11 @@ package com.twitter.scalding
 
 import cascading.flow.FlowException
 import cascading.pipe.CoGroup
-import cascading.pipe.joiner.{ JoinerClosure, InnerJoin }
+import cascading.pipe.joiner.{InnerJoin, JoinerClosure}
 import cascading.tuple.Tuple
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
-import java.util.{ Iterator => JIterator }
+import java.util.{Iterator => JIterator}
 
 class CheckFlowProcessJoiner(uniqueID: UniqueID) extends InnerJoin {
   override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
@@ -64,7 +64,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
         fail("The test Job without WrappedJoiner should fail.")
       } catch {
         case ex: FlowException =>
-          ex.getCause.getMessage should include ("the FlowProcess for unique id")
+          ex.getCause.getMessage should include("the FlowProcess for unique id")
       }
     }
   }

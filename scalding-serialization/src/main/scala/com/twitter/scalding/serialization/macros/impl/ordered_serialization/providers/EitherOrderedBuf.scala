@@ -24,13 +24,17 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
 import CompileTimeLengthTypes._
 
 object EitherOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Either[Any, Any]] =>
       EitherOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-    outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher
@@ -45,9 +49,9 @@ object EitherOrderedBuf {
       val valueOfB = freshT("valueOfB")
       val tmpHolder = freshT("tmpHolder")
       q"""
-        val $valueOfA = $inputStreamA.readByte
-        val $valueOfB = $inputStreamB.readByte
-        val $tmpHolder = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
+        val $valueOfA: _root_.scala.Byte = $inputStreamA.readByte
+        val $valueOfB: _root_.scala.Byte = $inputStreamB.readByte
+        val $tmpHolder: _root_.scala.Int = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
         if($tmpHolder != 0) {
           //they are different, return comparison on type
           $tmpHolder
@@ -65,15 +69,15 @@ object EitherOrderedBuf {
       val innerValue = freshT("innerValue")
       q"""
         if($element.isLeft) {
-          val $innerValue = $element.left.get
-          val x = ${leftBuf.hash(innerValue)}
+          val $innerValue: ${leftBuf.tpe} = $element.left.get
+          val x: _root_.scala.Int = ${leftBuf.hash(innerValue)}
           // x * (2^31 - 1) which is a mersenne prime
           (x << 31) - x
         }
         else {
-          val $innerValue = $element.right.get
+          val $innerValue: ${rightBuf.tpe} = $element.right.get
           // x * (2^19 - 1) which is a mersenne prime
-          val x = ${rightBuf.hash(innerValue)}
+          val x: _root_.scala.Int = ${rightBuf.hash(innerValue)}
           (x << 19) - x
         }
       """
@@ -82,9 +86,10 @@ object EitherOrderedBuf {
     def genGetFn(inputStreamA: TermName) = {
       val tmpGetHolder = freshT("tmpGetHolder")
       q"""
-        val $tmpGetHolder = $inputStreamA.readByte
-        if($tmpGetHolder == (0: _root_.scala.Byte)) _root_.scala.util.Left(${leftBuf.get(inputStreamA)})
-        else _root_.scala.util.Right(${rightBuf.get(inputStreamA)})
+        val $tmpGetHolder: _root_.scala.Byte = $inputStreamA.readByte
+        if($tmpGetHolder == (0: _root_.scala.Byte)) _root_.scala.util.Left[${leftBuf.tpe}, ${rightBuf.tpe}](${leftBuf
+        .get(inputStreamA)})
+        else _root_.scala.util.Right[${leftBuf.tpe}, ${rightBuf.tpe}](${rightBuf.get(inputStreamA)})
       """
     }
 
@@ -94,11 +99,11 @@ object EitherOrderedBuf {
       q"""
         if($element.isRight) {
           $inputStream.writeByte(1: _root_.scala.Byte)
-          val $innerValue = $element.right.get
+          val $innerValue: ${rightBuf.tpe} = $element.right.get
           ${rightBuf.put(inputStream, innerValue)}
         } else {
           $inputStream.writeByte(0: _root_.scala.Byte)
-          val $innerValue = $element.left.get
+          val $innerValue: ${leftBuf.tpe} = $element.left.get
           ${leftBuf.put(inputStream, innerValue)}
         }
       """
@@ -151,7 +156,8 @@ object EitherOrderedBuf {
           q"""_root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen"""
 
         (leftBuf.length(q"$element.left.get"), rightBuf.length(q"$element.right.get")) match {
-          case (lconst: ConstantLengthCalculation[_], rconst: ConstantLengthCalculation[_]) if lconst.toInt == rconst.toInt =>
+          case (lconst: ConstantLengthCalculation[_], rconst: ConstantLengthCalculation[_])
+              if lconst.toInt == rconst.toInt =>
             // We got lucky, they are the same size:
             ConstantLengthCalculation(c)(1 + rconst.toInt)
           case (_: NoLengthCalculationAvailable[_], _) => NoLengthCalculationAvailable(c)

@@ -24,13 +24,17 @@ import com.twitter.scalding.serialization.macros.impl.ordered_serialization.{
 import CompileTimeLengthTypes._
 
 object OptionOrderedBuf {
-  def dispatch(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
+  def dispatch(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]]
+  ): PartialFunction[c.Type, TreeOrderedBuf[c.type]] = {
     case tpe if tpe.erasure =:= c.universe.typeOf[Option[Any]] =>
       OptionOrderedBuf(c)(buildDispatcher, tpe)
   }
 
-  def apply(c: Context)(buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
-    outerType: c.Type): TreeOrderedBuf[c.type] = {
+  def apply(c: Context)(
+      buildDispatcher: => PartialFunction[c.Type, TreeOrderedBuf[c.type]],
+      outerType: c.Type
+  ): TreeOrderedBuf[c.type] = {
     import c.universe._
     def freshT(id: String) = TermName(c.freshName(id))
     val dispatcher = buildDispatcher
@@ -43,9 +47,9 @@ object OptionOrderedBuf {
       val valueOfB = freshT("valueOfB")
       val tmpHolder = freshT("tmpHolder")
       q"""
-        val $valueOfA = $inputStreamA.readByte
-        val $valueOfB = $inputStreamB.readByte
-        val $tmpHolder = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
+        val $valueOfA: _root_.scala.Byte = $inputStreamA.readByte
+        val $valueOfB: _root_.scala.Byte = $inputStreamB.readByte
+        val $tmpHolder: _root_.scala.Int = _root_.java.lang.Byte.compare($valueOfA, $valueOfB)
         if($tmpHolder != 0 || $valueOfA == (0: _root_.scala.Byte)) {
           //either one is defined (different), or both are None (equal)
           $tmpHolder
@@ -82,7 +86,7 @@ object OptionOrderedBuf {
       q"""
         if($element.isDefined) {
           $inputStream.writeByte(1: _root_.scala.Byte)
-          val $innerValue = $element.get
+          val $innerValue: ${innerBuf.tpe} = $element.get
           ${innerBuf.put(inputStream, innerValue)}
         } else {
           $inputStream.writeByte(0: _root_.scala.Byte)
@@ -96,8 +100,8 @@ object OptionOrderedBuf {
       val innerValueA = freshT("innerValueA")
       val innerValueB = freshT("innerValueB")
       q"""
-        val $aIsDefined = $elementA.isDefined
-        val $bIsDefined = $elementB.isDefined
+        val $aIsDefined: _root_.scala.Boolean = $elementA.isDefined
+        val $bIsDefined: _root_.scala.Boolean = $elementB.isDefined
         if(!$aIsDefined) {
           if (!$bIsDefined) 0 // None == None
           else -1 // None < Some(_)
@@ -105,8 +109,8 @@ object OptionOrderedBuf {
         else {
           if(!$bIsDefined) 1 // Some > None
           else { // both are defined
-            val $innerValueA = $elementA.get
-            val $innerValueB = $elementB.get
+            val $innerValueA: ${innerBuf.tpe} = $elementA.get
+            val $innerValueB: ${innerBuf.tpe} = $elementB.get
             ${innerBuf.compare(innerValueA, innerValueB)}
           }
         }

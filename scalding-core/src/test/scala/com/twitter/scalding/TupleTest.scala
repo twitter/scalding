@@ -12,12 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package com.twitter.scalding
 
-import cascading.tuple.{ TupleEntry, Tuple => CTuple }
+import cascading.tuple.{Tuple => CTuple, TupleEntry}
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class TupleTest extends WordSpec with Matchers {
   def get[T](ctup: CTuple)(implicit tc: TupleConverter[T]) = tc(new TupleEntry(ctup))
@@ -94,7 +94,10 @@ class TupleTest extends WordSpec with Matchers {
 
       assert(TupleConverter.tuple2Converter[Int, Int] == TupleConverter.tuple2Converter[Int, Int])
       assert(TupleConverter.tuple2Converter[Int, String] == TupleConverter.tuple2Converter[Int, String])
-      assert(TupleConverter.tuple2Converter[Int, (Int, String)] == TupleConverter.tuple2Converter[Int, (Int, String)])
+      assert(
+        TupleConverter.tuple2Converter[Int, (Int, String)] == TupleConverter
+          .tuple2Converter[Int, (Int, String)]
+      )
 
       assert(TupleSetter.singleSetter[Int] == TupleSetter.singleSetter[Int])
       assert(TupleSetter.singleSetter[String] == TupleSetter.singleSetter[String])
@@ -102,15 +105,26 @@ class TupleTest extends WordSpec with Matchers {
 
       assert(TupleSetter.tup2Setter[(Int, Int)] == TupleSetter.tup2Setter[(Int, Int)])
       assert(TupleSetter.tup2Setter[(String, Int)] == TupleSetter.tup2Setter[(String, Int)])
-      assert(TupleSetter.tup2Setter[((Int, String), String)] == TupleSetter.tup2Setter[((Int, String), String)])
+      assert(
+        TupleSetter.tup2Setter[((Int, String), String)] == TupleSetter.tup2Setter[((Int, String), String)]
+      )
     }
 
     "CascadingBackend can tell Converter/Setter inverses" in {
       import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 
-      assert(CascadingBackend.areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.singleSetter[Any]))
-      assert(!CascadingBackend.areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.tup2Setter[(Any, Any)]))
-      assert(CascadingBackend.areDefiniteInverse(TupleConverter.tuple2Converter[Any, Any], TupleSetter.tup2Setter[(Any, Any)]))
+      assert(
+        CascadingBackend
+          .areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.singleSetter[Any])
+      )
+      assert(
+        !CascadingBackend
+          .areDefiniteInverse(TupleConverter.singleConverter[Any], TupleSetter.tup2Setter[(Any, Any)])
+      )
+      assert(
+        CascadingBackend
+          .areDefiniteInverse(TupleConverter.tuple2Converter[Any, Any], TupleSetter.tup2Setter[(Any, Any)])
+      )
     }
   }
 }

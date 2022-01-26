@@ -1,6 +1,6 @@
 package com.twitter.scalding.estimation.memory
 
-import com.twitter.scalding.estimation.{ FlowStepHistory, FlowStrategyInfo, HistoryEstimator, Task }
+import com.twitter.scalding.estimation.{FlowStepHistory, FlowStrategyInfo, HistoryEstimator, Task}
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.LoggerFactory
 
@@ -26,7 +26,11 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
 
   override def maxHistoryItems(conf: JobConf): Int = MemoryEstimatorConfig.getMaxHistory(conf)
 
-  override protected def estimate(info: FlowStrategyInfo, conf: JobConf, history: Seq[FlowStepHistory]): Option[MemoryEstimate] = {
+  override protected def estimate(
+      info: FlowStrategyInfo,
+      conf: JobConf,
+      history: Seq[FlowStepHistory]
+  ): Option[MemoryEstimate] = {
     // iterate over mem history
     // collect: for maps, list of max memory in past runs
     //          for reduce, list of max memory in past runs
@@ -41,9 +45,12 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
     val containerMemoryOfMapper = containerMemory(xmxMemoryOfMapper, conf)
     val containerMemoryOfReducer = containerMemory(xmxMemoryOfReducer, conf)
 
-    Some(MemoryEstimate(
-      cappedMemory(containerMemoryOfMapper, conf),
-      cappedMemory(containerMemoryOfReducer, conf)))
+    Some(
+      MemoryEstimate(
+        cappedMemory(containerMemoryOfMapper, conf),
+        cappedMemory(containerMemoryOfReducer, conf)
+      )
+    )
   }
 
   private def xmxMemory(historyMemory: Seq[Long], conf: JobConf): Double = {
@@ -55,14 +62,15 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
 
     //TODO handle gc
 
-    LOG.info(s"Calculated xmx memory for: $historyMemory smoothAvg = $smoothEstimation, scaled: $scaledEstimation")
+    LOG.info(
+      s"Calculated xmx memory for: $historyMemory smoothAvg = $smoothEstimation, scaled: $scaledEstimation"
+    )
 
     scaledEstimation / (1024L * 1024)
   }
 
-  private def containerMemory(xmxMemory: Double, conf: JobConf): Double = {
+  private def containerMemory(xmxMemory: Double, conf: JobConf): Double =
     xmxMemory * MemoryEstimatorConfig.getXmxScaleFactor(conf)
-  }
 
   private def cappedMemory(containerMemory: Double, conf: JobConf): Option[(Long, Long)] = {
     val schedulerIncrement = MemoryEstimatorConfig.getYarnSchedulerIncrement(conf)
@@ -85,8 +93,8 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
 
   private def historyMemory(history: FlowStepHistory): (Option[Long], Option[Long]) = {
     LOG.debug(s"Processing tasks: ${history.tasks}")
-    val reduceTasks: Seq[Task] = history.tasks.filter { t => t.taskType.contains("REDUCE") }
-    val mapTasks: Seq[Task] = history.tasks.filter { t => t.taskType.contains("MAP") }
+    val reduceTasks: Seq[Task] = history.tasks.filter(t => t.taskType.contains("REDUCE"))
+    val mapTasks: Seq[Task] = history.tasks.filter(t => t.taskType.contains("MAP"))
 
     // handle empty task list due to either no task history / lack of reducers
     val maxReduceCommittedHeap: Option[Long] =
@@ -101,7 +109,9 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
       else
         Some(mapTasks.flatMap(_.committedHeapBytes).max)
 
-    LOG.info(s"Calculated max committed heap for job: ${history.keys}, map: $maxMapCommittedHeap reduce: $maxReduceCommittedHeap")
+    LOG.info(
+      s"Calculated max committed heap for job: ${history.keys}, map: $maxMapCommittedHeap reduce: $maxReduceCommittedHeap"
+    )
     (maxMapCommittedHeap, maxReduceCommittedHeap)
   }
 

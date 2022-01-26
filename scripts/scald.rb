@@ -154,15 +154,17 @@ def scala_libs(version)
  ["scala-library", "scala-reflect", "scala-compiler"]
 end
 
-def find_dependencies(org, dep, version)
-  res = %x[./sbt 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
+def find_dependencies(org, dep, version, scala_version=SCALA_VERSION)
+  # We need to set scalaVersion because otherwise resolving of scala artifacts fails if version of artifact differs from scalaVersion.
+  res = %x[cd #{CONFIG["repo_root"]} && ./sbt '++#{scala_version}' 'set libraryDependencies := Seq("#{org}" % "#{dep}" % "#{version}")' 'printDependencyClasspath'].split("\n")
   mapVer = {}
   res.map { |l|
     l,m,r = l.partition(" => ")
     if (m == " => ")
       removedSome = l.sub(/Some\(/, '').sub(/\)$/,'')
       removeExtraBraces = removedSome.sub(/ .*/, '') # In 2.10.4 for resolution for some reason there is a " ()" at the end
-      mapVer[removeExtraBraces] = r
+      removeExtraQualifiers = removeExtraBraces.split(":").first(3).join(":") # sbt adds qualifier for some of artifacts
+      mapVer[removeExtraQualifiers] = r
     else
       []
     end
@@ -171,14 +173,14 @@ def find_dependencies(org, dep, version)
   mapVer
 end
 
-def find_dependency(org, reqDep, version)
-  retDeps = find_dependencies(org, reqDep, version)
+def find_scala_dependency(org, reqDep, version)
+  retDeps = find_dependencies(org, reqDep, version, version)
   dep = retDeps["#{org}:#{reqDep}:#{version}"]
   raise "Dependency #{org}:#{reqDep}:#{version} not found\n#{retDeps}" unless dep
   dep
 end
 
-def get_dep_location(org, dep, version)
+def get_scala_dep_location(org, dep, version)
   f = "#{SCALA_LIB_DIR}/#{dep}-#{version}.jar"
   ivyPath = "#{ENV['HOME']}/.ivy2/cache/#{org}/#{dep}/jars/#{dep}-#{version}.jar"
   if File.exists?(f)
@@ -188,14 +190,14 @@ def get_dep_location(org, dep, version)
     f = ivyPath
   else
     puts "#{dep} was not where it was expected, #{SCALA_LIB_DIR}...finding..."
-    f = find_dependency(org, dep, version)
+    f = find_scala_dependency(org, dep, version)
     raise "Unable to find jar library: #{dep}" unless f and File.exists?(f)
     puts "Found #{dep} in #{File.dirname(f)}"
     f
   end
 end
 
-libs = scala_libs(SCALA_VERSION).map { |l| get_dep_location("org.scala-lang", l, SCALA_VERSION) }
+libs = scala_libs(SCALA_VERSION).map { |l| get_scala_dep_location("org.scala-lang", l, SCALA_VERSION) }
 lib_dirs = libs.map { |f| File.dirname(f) }
 
 FileUtils.mkdir_p(SCALA_LIB_DIR)

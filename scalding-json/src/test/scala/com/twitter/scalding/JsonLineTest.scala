@@ -12,14 +12,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.json
 
 import cascading.flow.FlowException
 import cascading.tap.SinkMode
 import cascading.tuple.Fields
-import com.twitter.scalding.{ JsonLine => StandardJsonLine, _ }
+import com.twitter.scalding.{JsonLine => StandardJsonLine, _}
 import org.scalatest.WordSpec
 
 object JsonLine {
@@ -27,9 +27,15 @@ object JsonLine {
     new JsonLine(p, fields, failOnEmptyLines)
 }
 
-class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean) extends StandardJsonLine(p, fields, SinkMode.REPLACE,
-  // We want to test the actual transformation here.
-  transformInTest = true, failOnEmptyLines = failOnEmptyLines)
+class JsonLine(p: String, fields: Fields, failOnEmptyLines: Boolean)
+    extends StandardJsonLine(
+      p,
+      fields,
+      SinkMode.REPLACE,
+      // We want to test the actual transformation here.
+      transformInTest = true,
+      failOnEmptyLines = failOnEmptyLines
+    )
 
 class JsonLineJob(args: Args) extends Job(args) {
   try {
@@ -72,7 +78,7 @@ class JsonLineInputJobSkipEmptyLines(args: Args) extends Job(args) {
 class JsonLineNestedInputJob(args: Args) extends Job(args) {
   try {
     JsonLine("input0", (Symbol("foo.too"), 'bar)).read
-      .rename((Symbol("foo.too") -> ('foo)))
+      .rename((Symbol("foo.too") -> 'foo))
       .project('foo, 'bar)
       .write(Tsv("output0"))
 
@@ -111,11 +117,10 @@ class JsonLineTest extends WordSpec {
 
     JobTest(new JsonLineInputJob(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json)))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "read json line input" in {
-            assert(outBuf.toList === List((3, "baz")))
-          }
+      .sink[(Int, String)](Tsv("output0")) { outBuf =>
+        "read json line input" in {
+          assert(outBuf.toList === List((3, "baz")))
+        }
       }
       .run
       .finish()
@@ -124,11 +129,10 @@ class JsonLineTest extends WordSpec {
 
     JobTest(new JsonLineInputJob(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2)))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "handle missing fields" in {
-            assert(outBuf.toList === List((3, "baz"), (7, null)))
-          }
+      .sink[(Int, String)](Tsv("output0")) { outBuf =>
+        "handle missing fields" in {
+          assert(outBuf.toList === List((3, "baz"), (7, null)))
+        }
       }
       .run
       .finish()
@@ -137,11 +141,10 @@ class JsonLineTest extends WordSpec {
 
     JobTest(new JsonLineNestedInputJob(_))
       .source(JsonLine("input0", (Symbol("foo.too"), 'bar)), List((0, json), (1, json3)))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "handle nested fields" in {
-            assert(outBuf.toList === List((0, "baz"), (9, null)))
-          }
+      .sink[(Int, String)](Tsv("output0")) { outBuf =>
+        "handle nested fields" in {
+          assert(outBuf.toList === List((0, "baz"), (9, null)))
+        }
       }
       .run
       .finish()
@@ -150,8 +153,8 @@ class JsonLineTest extends WordSpec {
       intercept[FlowException] {
         JobTest(new JsonLineInputJob(_))
           .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
-          .sink[(Int, String)](Tsv("output0")) {
-            outBuf => outBuf.toList
+          .sink[(Int, String)](Tsv("output0")) { outBuf =>
+            outBuf.toList
 
           }
           .run
@@ -161,11 +164,10 @@ class JsonLineTest extends WordSpec {
 
     JobTest(new JsonLineInputJobSkipEmptyLines(_))
       .source(JsonLine("input0", ('foo, 'bar)), List((0, json), (1, json2), (2, ""), (3, "   ")))
-      .sink[(Int, String)](Tsv("output0")) {
-        outBuf =>
-          "handle empty lines when `failOnEmptyLines` is set to false" in {
-            assert(outBuf.toList.size === 2)
-          }
+      .sink[(Int, String)](Tsv("output0")) { outBuf =>
+        "handle empty lines when `failOnEmptyLines` is set to false" in {
+          assert(outBuf.toList.size === 2)
+        }
       }
       .run
       .finish()

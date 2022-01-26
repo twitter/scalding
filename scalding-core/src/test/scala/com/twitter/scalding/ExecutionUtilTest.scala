@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 class ExecutionUtilTest extends WordSpec with Matchers {
   import ExecutionUtil._

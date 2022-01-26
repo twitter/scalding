@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.typed
 
@@ -23,11 +23,10 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
 trait TypedSource[+T] extends java.io.Serializable {
+
   /**
-   * Because TupleConverter cannot be covariant, we need to jump through this hoop.
-   * A typical implementation might be:
-   * (implicit conv: TupleConverter[T])
-   * and then:
+   * Because TupleConverter cannot be covariant, we need to jump through this hoop. A typical implementation
+   * might be: (implicit conv: TupleConverter[T]) and then:
    *
    * override def converter[U >: T] = TupleConverter.asSuperConverter[T, U](conv)
    */
@@ -37,8 +36,8 @@ trait TypedSource[+T] extends java.io.Serializable {
   def sourceFields: Fields = Dsl.intFields(0 until converter.arity)
 
   /**
-   * Transform this TypedSource into another by mapping after.
-   * We don't call this map because of conflicts with Mappable, unfortunately
+   * Transform this TypedSource into another by mapping after. We don't call this map because of conflicts
+   * with Mappable, unfortunately
    */
   def andThen[U](fn: T => U): TypedSource[U] = {
     val self = this // compiler generated self can cause problems with serialization

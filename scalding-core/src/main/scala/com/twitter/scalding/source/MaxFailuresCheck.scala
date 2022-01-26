@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding.source
 
@@ -21,20 +21,17 @@ import java.util.concurrent.atomic.AtomicInteger
 
 // TODO: this should actually increment an read a Hadoop counter
 class MaxFailuresCheck[T, U](val maxFailures: Int)(implicit override val injection: Injection[T, U])
-  extends CheckedInversion[T, U] {
+    extends CheckedInversion[T, U] {
 
   private val failures = new AtomicInteger(0)
-  def apply(input: U): Option[T] = {
+  def apply(input: U): Option[T] =
     try {
       Some(injection.invert(input).get)
     } catch {
       case e: Exception =>
         // TODO: use proper logging
         e.printStackTrace()
-        assert(
-          failures.incrementAndGet <= maxFailures,
-          "maximum decoding errors exceeded")
+        assert(failures.incrementAndGet <= maxFailures, "maximum decoding errors exceeded")
         None
     }
-  }
 }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.twitter.scalding
 
@@ -29,19 +29,19 @@ class RangeSpecs extends WordSpec {
 
     "throw errors for misordered ranges" in {
       Range(4, 4)
-      intercept[AssertionError] { Range(5, 4) }
+      intercept[AssertionError](Range(5, 4))
     }
 
     "assert lower bounds" in {
       testRange.assertLowerBound(3)
       testRange.assertLowerBound(4)
-      intercept[AssertionError] { testRange.assertLowerBound(5) }
+      intercept[AssertionError](testRange.assertLowerBound(5))
     }
 
     "assert upper bounds" in {
       testRange.assertUpperBound(6)
       testRange.assertUpperBound(5)
-      intercept[AssertionError] { testRange.assertUpperBound(4) }
+      intercept[AssertionError](testRange.assertUpperBound(4))
     }
 
     "print nicely with mkString" should {
