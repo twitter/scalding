@@ -115,11 +115,12 @@ object BeamOp extends Serializable {
             KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder))
           )
       case notComposedOrSum =>
+        val fn = BeamJoiner.beamMapGroupJoin(notComposedOrSum)
         pcoll
           .apply(ParDo.of(MapFn[KV[K, java.lang.Iterable[V]], KV[K, java.lang.Iterable[U]]] { elem =>
             KV.of(
               elem.getKey,
-              notComposedOrSum(elem.getKey, elem.getValue.asScala.toIterator).toIterable.asJava
+              fn(elem.getKey, elem.getValue.asScala).asJava
             )
           }))
           .setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder)))
