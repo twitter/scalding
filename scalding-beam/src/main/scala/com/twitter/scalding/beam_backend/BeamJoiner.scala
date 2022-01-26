@@ -6,7 +6,7 @@ import com.twitter.scalding.typed
 import java.io.Serializable
 
 object BeamJoiner {
-  private def beamMapGroupJoin[K, R, R1](
+  def beamMapGroupJoin[K, R, R1](
       fn: (K, Iterator[R]) => Iterator[R1]
   ): (K, Iterable[R]) => Iterable[R1] = { (k: K, iter: Iterable[R]) =>
     new Iterable[R1] {
