@@ -33,6 +33,7 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
   before {
     testPath = Paths.get(System.getProperty("java.io.tmpdir"), "scalding", "beam_backend").toString
     pipelineOptions = PipelineOptionsFactory.create()
+    pipelineOptions.setTempLocation(testPath)
   }
 
   after {
@@ -386,6 +387,29 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       a ++ a ++ a ++ a,
       Seq(1, 2, 3, 4, 5, 6).flatMap(x => Seq(x, x, x, x))
     )
+  }
+
+  test("toIterableExecutionTest1") {
+    val input = Seq(5, 3, 2, 6, 1, 4)
+    val bmode = BeamMode.default(pipelineOptions)
+
+    val iter = TypedPipe.from(input).toIterableExecution.waitFor(Config.empty, bmode).get
+    assert(iter.toSet == input.toSet)
+  }
+
+  test("toIterableExecutionWithJoin") {
+    val bmode = BeamMode.default(pipelineOptions)
+    val tp1 = TypedPipe.from(1 to 10).map(x => (x, 1))
+    val tp2 = TypedPipe.from(1 to 10).map(x => (x, 2))
+    val output = tp1
+      .join(tp2)
+      .map(x => (x._1, x._2._1 + x._2._2))
+      .filter(_._1 % 5 == 0)
+      .toIterableExecution
+      .waitFor(Config.empty, bmode)
+      .get
+
+    assert(output.toSet == Seq((5, 3), (10, 3)).toSet)
   }
 
   private def getContents(path: String, prefix: String): List[String] =
