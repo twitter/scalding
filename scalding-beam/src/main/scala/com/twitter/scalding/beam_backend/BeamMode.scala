@@ -73,8 +73,10 @@ object BeamSink extends Serializable {
 
   def textLine(path: String): BeamSink[String] =
     new BeamSink[String] {
-      override def write(pc: PCollection[_ <: String], config: Config): Unit =
-        pc.asInstanceOf[PCollection[String]].apply(TextIO.write().to(path))
+      override def write(pc: PCollection[_ <: String], config: Config): Unit = {
+        val stringPCollection: PCollection[String] = BeamFunctions.widenPCollection(pc)
+        stringPCollection.apply(TextIO.write().to(path))
+      }
     }
 }
 

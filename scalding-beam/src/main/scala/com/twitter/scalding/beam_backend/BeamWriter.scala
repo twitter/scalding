@@ -4,6 +4,7 @@ import com.stripe.dagon.Rule
 import com.twitter.scalding.Execution.{ToWrite, Writer}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters}
+import java.io.InputStream
 import java.nio.channels.Channels
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.ConcurrentHashMap
@@ -39,13 +40,23 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
           // Single dir by default just matches the dir, we need to match files inside
           val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
 
-          override def iterator: Iterator[T] =
-            matchedResources
-              .map { resource =>
-                val inputStream = Channels.newInputStream(FileSystems.open(resource.resourceId()))
-                new InputStreamIterator(inputStream, c)
+          override def iterator: Iterator[T] = {
+            // an empty Iterator that closes an InputStream when it is iterated
+            def closeIt(is: InputStream): Iterator[T] =
+              new Iterator[T] {
+                def hasNext: Boolean = {
+                  is.close()
+                  false
+                }
+                def next = Iterator.empty.next
               }
-              .fold(Iterator.empty)(_ ++ _)
+
+            matchedResources.iterator
+              .flatMap { resource =>
+                val is = Channels.newInputStream(FileSystems.open(resource.resourceId()))
+                new InputStreamIterator(is, c) ++ closeIt(is)
+              }
+          }
         })
     }
 
