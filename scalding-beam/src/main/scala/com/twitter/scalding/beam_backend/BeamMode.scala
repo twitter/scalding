@@ -3,14 +3,13 @@ package com.twitter.scalding.beam_backend
 import com.twitter.scalding.Execution.Writer
 import com.twitter.scalding.typed.{Resolver, TypedSink, TypedSource}
 import com.twitter.scalding.{Config, Mode, TextLine}
-import java.io.InputStream
+import java.io.{EOFException, InputStream}
 import java.nio.channels.{Channels, WritableByteChannel}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.Coder
 import org.apache.beam.sdk.io.{FileIO, TextIO}
 import org.apache.beam.sdk.options.PipelineOptions
 import org.apache.beam.sdk.values.PCollection
-import scala.util.{Failure, Success, Try}
 
 case class BeamMode(
     pipelineOptions: PipelineOptions,
@@ -54,7 +53,7 @@ object BeamSource extends Serializable {
 }
 
 trait BeamSink[-A] extends Serializable {
-  def write(pipeline: Pipeline, config: Config, pc: PCollection[_ <: A]): Unit
+  def write(pc: PCollection[_ <: A], config: Config): Unit
 }
 
 object BeamSink extends Serializable {
@@ -74,16 +73,15 @@ object BeamSink extends Serializable {
 
   def textLine(path: String): BeamSink[String] =
     new BeamSink[String] {
-      override def write(pipeline: Pipeline, config: Config, pc: PCollection[_ <: String]): Unit =
+      override def write(pc: PCollection[_ <: String], config: Config): Unit =
         pc.asInstanceOf[PCollection[String]].apply(TextIO.write().to(path))
     }
 }
 
 class BeamFileIO[T](output: String) extends BeamSink[T] {
   override def write(
-      pipeline: Pipeline,
-      config: Config,
-      pc: PCollection[_ <: T]
+      pc: PCollection[_ <: T],
+      config: Config
   ): Unit = {
     val pColT: PCollection[T] = BeamFunctions.widenPCollection(pc)
 
@@ -92,7 +90,6 @@ class BeamFileIO[T](output: String) extends BeamSink[T] {
         .write()
         .via(new CoderFileSink(pColT.getCoder))
         .to(output)
-        .withNumShards(1)
     )
   }
 }
@@ -121,11 +118,11 @@ class InputStreamIterator[T](stream: InputStream, coder: Coder[T]) extends Itera
   }
 
   private def fetchNext(): Unit =
-    Try(coder.decode(stream)) match {
-      case Success(value) =>
-        nextRecord = value
-        hasNextRecord = true
-      case Failure(_) =>
+    try {
+      nextRecord = coder.decode(stream)
+      hasNextRecord = true
+    } catch {
+      case _: EOFException =>
         hasNextRecord = false
     }
 }

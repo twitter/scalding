@@ -6,18 +6,20 @@ import com.twitter.scalding.typed._
 import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters}
 import java.nio.channels.Channels
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.ConcurrentHashMap
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.Coder
 import org.apache.beam.sdk.io.FileSystems
 import scala.annotation.tailrec
+import scala.collection.convert.decorateAsScala._
 import scala.concurrent.{ExecutionContext, Future}
 
 class BeamWriter(val beamMode: BeamMode) extends Writer {
   private val state = new AtomicLong()
 
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
-  private val iterablePipes: scala.collection.mutable.Map[TypedPipe[_], (Coder[_], String)] =
-    scala.collection.mutable.Map.empty
+  private val iterablePipes: scala.collection.concurrent.Map[TypedPipe[_], (Coder[_], String)] =
+    new ConcurrentHashMap[TypedPipe[_], (Coder[_], String)]().asScala
 
   override def start(): Unit = ()
 
@@ -34,21 +36,17 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
       case Some((coder, path)) =>
         val c: Coder[T] = coder.asInstanceOf[Coder[T]]
         Future(new Iterable[T] {
-          override def iterator: Iterator[T] = {
-            // Single dir by default just matches the dir, we need to match files inside
-            val matchedResources = FileSystems.`match`(s"$path*").metadata()
-            matchedResources.size() match {
-              case 0 => Iterator.empty
-              case 1 =>
-                val resource = matchedResources.get(0).resourceId()
-                val inputStream = Channels.newInputStream(FileSystems.open(resource))
+          // Single dir by default just matches the dir, we need to match files inside
+          val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
+
+          override def iterator: Iterator[T] =
+            matchedResources
+              .map { resource =>
+                val inputStream = Channels.newInputStream(FileSystems.open(resource.resourceId()))
                 new InputStreamIterator(inputStream, c)
-              // We enforce num shards = 1, so exactly one file should exist
-              case size => sys.error(s"More than 1 file found. Total: $size")
-            }
-          }
+              }
+              .fold(Iterator.empty)(_ ++ _)
         })
-      case None => sys.error(s"No mapping exists for the TypedPipe: $initial")
     }
 
   override def execute(conf: Config, writes: List[ToWrite[_]])(implicit
@@ -70,7 +68,7 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
               val pcoll = planner(opt).run(pipeline)
               beamMode.sink(sink) match {
                 case Some(ssink) =>
-                  ssink.write(pipeline, conf, pcoll)
+                  ssink.write(pcoll, conf)
                 case _ => throw new Exception(s"unknown sink: $sink when writing $pipe")
               }
               rec(xs)
@@ -78,10 +76,12 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
             case OptimizedWrite(pipe, ToWrite.ToIterable(opt)) =>
               val pcoll = planner(opt).run(pipeline)
               val tempLocation = pcoll.getPipeline.getOptions.getTempLocation
-              assert(tempLocation != null, "Temp location cannot be null when using toIterableExecution")
+              require(tempLocation != null, "Temp location cannot be null when using toIterableExecution")
 
               val outputPath = BeamWriter.addPaths(tempLocation, sourceCounter.getAndIncrement().toString)
-              new BeamFileIO(outputPath).write(pipeline, conf, pcoll)
+              // Here we add a sink transformation on the PCollection.
+              // This does not run till the final `pipeline.run` step
+              new BeamFileIO(outputPath).write(pcoll, conf)
               iterablePipes += ((pipe, (pcoll.getCoder, outputPath)))
 
             //TODO: handle Force
