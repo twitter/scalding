@@ -132,7 +132,9 @@ public class ScroogeReadSupport<T extends ThriftStruct> extends ThriftReadSuppor
    */
   public static MessageType getSchemaForRead(MessageType fileMessageType, MessageType projectedMessageType) {
     assertGroupsAreCompatible(fileMessageType, projectedMessageType);
-    return projectedMessageType;
+    return ParquetCollectionFormatCompatibility.projectFileSchema(
+        fileMessageType, projectedMessageType
+    );
   }
 
   /**
