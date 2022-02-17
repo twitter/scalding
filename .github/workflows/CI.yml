@@ -46,7 +46,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
@@ -54,7 +54,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
@@ -62,7 +62,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-hadoop-test"
@@ -70,7 +70,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-hadoop-test"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-estimators-test"
@@ -78,7 +78,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-estimators-test"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-serialization scalding-spark"
@@ -86,7 +86,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-serialization scalding-spark"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "scalding-thrift-macros"
@@ -94,7 +94,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-thrift-macros"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "sh scripts/run_test.sh"
+        run: ./scripts/run_test.sh
 
 
       - name: "test tutorials and matrix tutorials and repl"
@@ -103,11 +103,11 @@ jobs:
           TEST_TARGET: "scalding-repl"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
         run: |
-          sh scripts/run_test.sh
-          sh scripts/build_assembly_no_test.sh scalding-assembly
-          sh scripts/test_tutorials.sh
-          sh scripts/build_assembly_no_test.sh scalding-assembly
-          sh scripts/test_matrix_tutorials.sh
+          ./scripts/run_test.sh
+          ./scripts/build_assembly_no_test.sh scalding-assembly
+          ./scripts/test_tutorials.sh
+          ./scripts/build_assembly_no_test.sh scalding-assembly
+          ./scripts/test_matrix_tutorials.sh
 
       - name: "test repl and typed tutorials and microsite"
         env:
@@ -115,9 +115,9 @@ jobs:
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
         run: |
           ./sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite
-          sh scripts/build_assembly_no_test.sh scalding-repl"
-          sh scripts/test_repl_tutorial.sh"
-          sh scripts/build_assembly_no_test.sh scalding-core"
-          sh scripts/test_typed_tutorials.sh"
-          sh scripts/build_assembly_no_test.sh execution-tutorial"
-          sh scripts/test_execution_tutorial.sh"
+          ./scripts/build_assembly_no_test.sh scalding-repl"
+          ./scripts/test_repl_tutorial.sh"
+          ./scripts/build_assembly_no_test.sh scalding-core"
+          ./scripts/test_typed_tutorials.sh"
+          ./scripts/build_assembly_no_test.sh execution-tutorial"
+          ./scripts/test_execution_tutorial.sh"
