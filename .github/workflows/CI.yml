@@ -25,11 +25,11 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.3.0
+          ruby-version: 2.4
 
       - name: Install Ruby Gems
         run: |
-          gem install sass
+          gem install sass -v 3.7.4
           gem install jekyll -v 3.2.1
 
       - name: Install APT Packages
