@@ -6,6 +6,7 @@ on:
       - develop
       - master
       - main
+      - add_github_ci
 
 env:
   CI_SCALA_11_VERSION: 2.11.12
