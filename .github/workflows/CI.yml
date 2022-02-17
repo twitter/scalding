@@ -45,6 +45,7 @@ jobs:
 
   # these are tests that are run in both scala11 and scala12
   run-base-tests:
+    runs-on: ubuntu-latest
     needs: base-build-env
     strategy:
       matrix:
