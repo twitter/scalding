@@ -10,12 +10,6 @@ on:
     branches:
       - add_github_ci
 
-env:
-  CI_SCALA_11_VERSION: 2.11.12
-  CI_SCALA_12_VERSION: 2.12.14
-  CI_RUBY_VERSION: 2.3.0
-  CI_JAVA_VERSION: 8
-
 jobs:
   base-build-env:
     runs-on: ubuntu-latest
@@ -26,12 +20,12 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt-openj9'
-          java-version: $CI_JAVA_VERSION
+          java-version: 8
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: $CI_RUBY_VERSION
+          ruby-version: 2.3.0
 
       - name: Install Ruby Gems
         run: |
@@ -49,7 +43,7 @@ jobs:
     needs: base-build-env
     strategy:
       matrix:
-        scala-version: [ $CI_SCALA_11_VERSION, $CI_SCALA_12_VERSION ]
+        scala-version: [ 2.11.12, 2.12.14 ]
 
     steps:
 
