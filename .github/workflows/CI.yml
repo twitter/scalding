@@ -34,8 +34,8 @@ jobs:
 
       - name: Install APT Packages
         run : |
-          apt-get update -y
-          apt-get install md5deep -y
+          sudo apt-get update -y
+          sudo apt-get install md5deep -y
 
   # these are tests that are run in both scala11 and scala12
   run-base-tests:
