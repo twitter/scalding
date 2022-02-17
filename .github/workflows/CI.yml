@@ -106,7 +106,7 @@ jobs:
         run: "sh scripts/run_test.sh"
 
 
-      - name: "test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
+      - name: "test tutorials and matrix tutorials and repl"
         env:
           BUILD: "test tutorials and matrix tutorials and repl"
           TEST_TARGET: "scalding-repl"
