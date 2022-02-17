@@ -52,7 +52,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "scripts/run_test.sh"
+        run: "sh scripts/run_test.sh"
 
 
       - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
@@ -60,7 +60,7 @@ jobs:
           BUILD: "base"
           TEST_TARGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-        run: "scripts/run_test.sh"
+        run: "sh scripts/run_test.sh"
 
 
       - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
