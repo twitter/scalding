@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+      - main
+
+env:
+  CI_SCALA_11_VERSION: 2.11.12
+  CI_SCALA_12_VERSION: 2.12.14
+  CI_RUBY_VERSION: 2.3.0
+  CI_JAVA_VERSION: 8
+
+jobs:
+  base-build-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt-openj9'
+          java-version: $CI_JAVA_VERSION
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: $CI_RUBY_VERSION
+
+      - name: Install Ruby Gems
+        run: |
+          gem install sass
+          gem install jekyll -v 3.2.1
+
+      - name: Install APT Packages
+        run : |
+          apt-get update -y
+          apt-get install md5deep -y
+
+  # these are tests that are run in both scala11 and scala12
+  run-base-tests:
+    needs: base-build-env
+    strategy:
+      matrix:
+        scala-version: [ $CI_SCALA_11_VERSION, $CI_SCALA_12_VERSION ]
+
+    steps:
+
+      - name: "scalding-args scalding-date maple scalding-quotation"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "scripts/run_test.sh"
+
+
+      - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "scripts/run_test.sh"
+
+
+      - name: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "sh scripts/run_test.sh"
+
+
+      - name: "scalding-hadoop-test"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-hadoop-test"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "sh scripts/run_test.sh"
+
+
+      - name: "scalding-estimators-test"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-estimators-test"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "sh scripts/run_test.sh"
+
+
+      - name: "scalding-serialization scalding-spark"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-serialization scalding-spark"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "sh scripts/run_test.sh"
+
+
+      - name: "scalding-thrift-macros"
+        env:
+          BUILD: "base"
+          TEST_TARGET: "scalding-thrift-macros"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: "sh scripts/run_test.sh"
+
+
+      - name: "test tutorials and matrix tutorials and repl" TEST_TARGET="scalding-repl"
+        env:
+          BUILD: "test tutorials and matrix tutorials and repl"
+          TEST_TARGET: "scalding-repl"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: |
+          sh scripts/run_test.sh
+          sh scripts/build_assembly_no_test.sh scalding-assembly
+          sh scripts/test_tutorials.sh
+          sh scripts/build_assembly_no_test.sh scalding-assembly
+          sh scripts/test_matrix_tutorials.sh
+
+      - name: "test repl and typed tutorials and microsite"
+        env:
+          BUILD: "test repl and typed tutorials and microsite"
+          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+        run: |
+          ./sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite
+          sh scripts/build_assembly_no_test.sh scalding-repl"
+          sh scripts/test_repl_tutorial.sh"
+          sh scripts/build_assembly_no_test.sh scalding-core"
+          sh scripts/test_typed_tutorials.sh"
+          sh scripts/build_assembly_no_test.sh execution-tutorial"
+          sh scripts/test_execution_tutorial.sh"
