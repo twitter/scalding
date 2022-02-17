@@ -11,8 +11,12 @@ on:
       - add_github_ci
 
 jobs:
-  base-build-env:
+  run-base-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        scala-version: [ 2.11.12, 2.12.14 ]
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -33,19 +37,9 @@ jobs:
           gem install jekyll -v 3.2.1
 
       - name: Install APT Packages
-        run : |
+        run: |
           sudo apt-get update -y
           sudo apt-get install md5deep -y
-
-  # these are tests that are run in both scala11 and scala12
-  run-base-tests:
-    runs-on: ubuntu-latest
-    needs: base-build-env
-    strategy:
-      matrix:
-        scala-version: [ 2.11.12, 2.12.14 ]
-
-    steps:
 
       - name: "scalding-args scalding-date maple scalding-quotation"
         env:
