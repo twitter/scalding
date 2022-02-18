@@ -121,9 +121,9 @@ jobs:
 
       - name: "Run Test Variant"
         env:
-          TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
-          BUILD: "${{ matrix.BUILD }}"
-          TEST_TARGET: "${{ matrix.TEST_TARGET }}"
+          TRAVIS_SCALA_VERSION: ${{ matrix.scala-version }}
+          BUILD: ${{ matrix.BUILD }}
+          TEST_TARGET: ${{ matrix.TEST_TARGET }}
 
         run: |
           "${{ matrix.script }}"
