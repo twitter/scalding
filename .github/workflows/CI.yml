@@ -16,68 +16,83 @@ jobs:
     strategy:
       matrix:
         include:
+
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && TEST_TARGET="scalding-args scalding-date maple scalding-quotation"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && TEST_TARGET="scalding-args scalding-date maple scalding-quotation"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"'
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TAGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-hadoop-test"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-hadoop-test"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-hadoop-test"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-hadoop-test"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-estimators-test"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-estimators-test"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-estimators-test"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-estimators-test"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-serialization scalding-spark"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-serialization scalding-spark"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-serialization scalding-spark"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && export TEST_TARGET="scalding-serialization scalding-spark"'
 
           - scala-version: "2.11.12"
+            BUILD: "base"
+            TEST_TARGET: "scalding-thrift-macros"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && TEST_TARGET="scalding-thrift-macros"'
           - scala-version: "2.12.14"
+            BUILD: "base"
+            TEST_TARGET: "scalding-thrift-macros"
             script: './scripts/run_test.sh'
-            env: 'export BUILD="base" && TEST_TARGET="scalding-thrift-macros"'
 
           - scala-version: "2.11.12"
+            BUILD: "test tutorials and matrix tutorials and repl"
             script: './scripts/run_test.sh && ./scripts/build_assembly_no_test.sh scalding-assembly && ./scripts/test_tutorials.sh && ./scripts/build_assembly_no_test.sh scalding-assembly && ./scripts/test_matrix_tutorials.sh'
-            env: 'export BUILD="test tutorials and matrix tutorials and repl"'
           - scala-version: "2.12.14"
+            BUILD: "test tutorials and matrix tutorials and repl"
             script: './scripts/run_test.sh && ./scripts/build_assembly_no_test.sh scalding-assembly && ./scripts/test_tutorials.sh && ./scripts/build_assembly_no_test.sh scalding-assembly && ./scripts/test_matrix_tutorials.sh'
-            env: 'export BUILD="test tutorials and matrix tutorials and repl"'
 
           - scala-version: "2.11.12"
+            BUILD: "test repl and typed tutorials and microsite"
             script: './sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite && ./scripts/build_assembly_no_test.sh scalding-repl && ./scripts/test_repl_tutorial.sh && ./scripts/build_assembly_no_test.sh scalding-core && ./scripts/test_typed_tutorials.sh && ./scripts/build_assembly_no_test.sh execution-tutorial && ./scripts/test_execution_tutorial.sh'
-            env: 'export BUILD="test repl and typed tutorials and microsit"'
           - scala-version: "2.12.14"
+            BUILD: "test repl and typed tutorials and microsite"
             script: './sbt ++$TRAVIS_SCALA_VERSION clean docs/makeMicrosite && ./scripts/build_assembly_no_test.sh scalding-repl && ./scripts/test_repl_tutorial.sh && ./scripts/build_assembly_no_test.sh scalding-core && ./scripts/test_typed_tutorials.sh && ./scripts/build_assembly_no_test.sh execution-tutorial && ./scripts/test_execution_tutorial.sh'
-            env: 'export BUILD="test repl and typed tutorials and microsit"'
 
 
     steps:
@@ -107,5 +122,8 @@ jobs:
       - name: "Run Test Variant"
         env:
           TRAVIS_SCALA_VERSION: "${{ matrix.scala-version }}"
+          BUILD: "${{ matrix.BUILD }}"
+          TEST_TARGET: "${{ matrix.TEST_TARGET }}"
+
         run: |
-          "${{ matrix.env }} && ${{ matrix.script }}"
+          "${{ matrix.script }}"
