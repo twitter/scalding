@@ -15,9 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        scala-version: [ 2.11.12, 2.12.14 ]
         include:
-
           - scala-version: "2.11.12"
             script: './scripts/run_test.sh'
             env: 'export BUILD="base" && TEST_TARGET="scalding-args scalding-date maple scalding-quotation"'
