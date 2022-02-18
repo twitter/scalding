@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -exv
 
 # Identify the bin dir in the distribution, and source the common include script
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"

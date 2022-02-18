@@ -1,4 +1,4 @@
-set -e # first error should stop execution of this script
+#!/bin/bash -exv
 
 # Identify the bin dir in the distribution, and source the common include script
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"

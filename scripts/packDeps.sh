@@ -1,3 +1,5 @@
+#!/bin/bash -exv
+
 echo "Packing environment after success... this make take ~10mins or more"
 bash -c "while true; do echo -n .; sleep 5; done" &
 

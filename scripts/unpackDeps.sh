@@ -1,3 +1,5 @@
+#!/bin/bash -exv
+
 echo "Preparing environment... this make take ~10mins or more"
 bash -c "while true; do echo -n .; sleep 5; done" &
 PROGRESS_REPORTER_PID=$!

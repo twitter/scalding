@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -exv
 
 # Not sure what the right default is here: trying nonzero.
 SCALA_EXIT_STATUS=127
