@@ -14,9 +14,13 @@ jobs:
   run-base-tests:
     runs-on: ubuntu-latest
     strategy:
+      # it's helpful to see exactly which test modules passed/failed
+      # this finishes all matrix nodes even if one fails along the way
+      fail-fast: false
+
+      # all combinations that we will run in parallel to increase throughput
       matrix:
         include:
-
           - scala-version: "2.11.12"
             BUILD: "base"
             TEST_TARGET: "scalding-args scalding-date maple scalding-quotation"
