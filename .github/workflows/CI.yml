@@ -126,4 +126,4 @@ jobs:
           TEST_TARGET: ${{ matrix.TEST_TARGET }}
 
         run: |
-          "${{ matrix.script }}"
+          ${{ matrix.script }}
