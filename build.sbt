@@ -96,7 +96,7 @@ val sharedSettings = Seq(
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 
   // Uncomment if you don't want to run all the tests before building assembly
-  // test in assembly := {},
+  test in assembly := {},
   assembly / logLevel := Level.Warn,
 
   // Publishing options:

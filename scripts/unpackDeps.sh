@@ -1,8 +1,6 @@
 #!/bin/bash -exv
 
 echo "Preparing environment... this make take ~10mins or more"
-bash -c "while true; do echo -n .; sleep 5; done" &
-PROGRESS_REPORTER_PID=$!
 
 DEP_CACHE_PATH=$HOME/.scalding.dep.cache
 ORIG_PATH=`pwd`
@@ -28,5 +26,4 @@ if [ -f ~/.ivy2/cache/scalding-cache.tar.gz ]; then
   rm ~/.ivy2/cache/scalding-cache.tar.gz
 fi
 
-kill -9 $PROGRESS_REPORTER_PID
 

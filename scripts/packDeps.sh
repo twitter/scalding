@@ -1,11 +1,9 @@
 #!/bin/bash -exv
 
 echo "Packing environment after success... this make take ~10mins or more"
-bash -c "while true; do echo -n .; sleep 5; done" &
 
 ORIG_PATH=`pwd`
 
-PROGRESS_REPORTER_PID=$!
 DEP_CACHE_PATH=$HOME/.scalding.dep.cache
 mkdir -p $DEP_CACHE_PATH
 
@@ -32,5 +30,4 @@ else
   mv cache-new.tar cache.tar
 fi
 
-kill -9 $PROGRESS_REPORTER_PID
 
