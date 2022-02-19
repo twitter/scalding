@@ -4,9 +4,6 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 source ${BASE_DIR}/scripts/common.sh
 
-# also trap errors, to reenable terminal settings
-trap onExit ERR
-
 # Now run a basic test for the REPL
 # If the content of the output is different, diff will fail with a non-zero exit code
 time $SCALD_REPL < tutorial/ReplTutorial1.scala
@@ -25,7 +22,3 @@ System.exit(1)
 cd $BASE_DIR
 # We need to clean SBT_OPTS, because on travis default SBT_OPTS enable sbt batch mode, which finishes repl process immediately before passing `System.exit`.
 echo 'System.exit(0)' | SBT_OPTS='' ./sbt ++$TRAVIS_SCALA_VERSION 'scalding-repl/run --local'
-
-# restore stty
-SCALA_EXIT_STATUS=0
-onExit

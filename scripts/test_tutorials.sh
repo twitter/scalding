@@ -4,9 +4,6 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 source ${BASE_DIR}/scripts/common.sh
 
-# also trap errors, to reenable terminal settings
-trap onExit ERR
-
 time $SCALD tutorial/Tutorial0.scala
 time $SCALD tutorial/Tutorial1.scala
 time $SCALD tutorial/Tutorial2.scala
@@ -30,9 +27,5 @@ time $SCALD tutorial/MatrixTutorial5.scala \
 time $SCALD --json tutorial/JsonTutorial0.scala
 
 time $SCALD --avro --json tutorial/AvroTutorial0.scala
-
-# restore stty
-SCALA_EXIT_STATUS=0
-onExit
 
 

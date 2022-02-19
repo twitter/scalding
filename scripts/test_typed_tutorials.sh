@@ -4,9 +4,6 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 source ${BASE_DIR}/scripts/common.sh
 
-# also trap errors, to reenable terminal settings
-trap onExit ERR
-
 # Test TypedTutorial cases
 for t in 1 2 3 4 5 pipes block; do
   echo "--------------------"
@@ -21,8 +18,5 @@ for t in 1 2 3 4 5 pipes block; do
   cat tutorial/data/output0.txt
 done
 
-# restore stty
-SCALA_EXIT_STATUS=0
-onExit
 
 
