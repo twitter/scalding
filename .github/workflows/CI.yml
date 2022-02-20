@@ -1,14 +1,13 @@
 name: CI
 
+# run on all branches
 on:
   pull_request:
     branches:
-      - develop
-      - master
-      - main
+      - '**'
   push:
     branches:
-      - add_github_ci
+      - '**'
 
 jobs:
   run-base-tests:
