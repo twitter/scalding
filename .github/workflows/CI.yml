@@ -33,7 +33,7 @@ jobs:
             BUILD: "base"
             TEST_TARGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
             script: './scripts/run_test.sh'
-          - scala-version: "2.11.12"
+          - scala-version: "2.12.14"
             BUILD: "base"
             TEST_TAGET: "scalding-avro scalding-hraven scalding-commons scalding-parquet scalding-parquet-scrooge"
             script: './scripts/run_test.sh'
@@ -67,11 +67,11 @@ jobs:
 
           - scala-version: "2.11.12"
             BUILD: "base"
-            TEST_TARGET: "scalding-serialization scalding-spark"
+            TEST_TARGET: "scalding-serialization scalding-spark scalding-beam"
             script: './scripts/run_test.sh'
           - scala-version: "2.12.14"
             BUILD: "base"
-            TEST_TARGET: "scalding-serialization scalding-spark"
+            TEST_TARGET: "scalding-serialization scalding-spark scalding-beam"
             script: './scripts/run_test.sh'
 
           - scala-version: "2.11.12"
@@ -107,6 +107,7 @@ jobs:
           distribution: 'adopt-openj9'
           java-version: 8
 
+      - uses: coursier/cache-action@v6
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -116,11 +117,6 @@ jobs:
         run: |
           gem install sass -v 3.7.4
           gem install jekyll -v 3.2.1
-
-      - name: Install APT Packages
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install md5deep -y
 
       - name: "Run Test Variant"
         env:

@@ -5,7 +5,6 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 cd $BASE_DIR
 
 export JVM_OPTS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:ReservedCodeCacheSize=96m -XX:+TieredCompilation -XX:MaxPermSize=256m -Xms256m -Xmx512m -Xss2m"
-$BASE_DIR/scripts/unpackDeps.sh
 
 
 INNER_JAVA_OPTS="set javaOptions += \"-Dlog4j.configuration=file://$TRAVIS_BUILD_DIR/project/travis-log4j.properties\""
@@ -42,5 +41,4 @@ COMPILE_DOC_EXIT_CODE=$?
 
 echo "all done"
 
-$BASE_DIR/scripts/packDeps.sh
 exit $(( $TST_EXIT_CODE || $MIMA_EXIT_CODE || $COMPILE_DOC_EXIT_CODE ))
