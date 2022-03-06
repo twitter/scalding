@@ -403,7 +403,7 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     val tp2 = TypedPipe.from(1 to 10).map(x => (x, 2))
     val output = tp1
       .join(tp2)
-      .map(x => (x._1, x._2._1 + x._2._2))
+      .mapValues { case (left, right) => left + right }
       .filter(_._1 % 5 == 0)
       .toIterableExecution
       .waitFor(Config.empty, bmode)
