@@ -2,7 +2,7 @@ package com.twitter.scalding.beam_backend
 
 import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
-import com.twitter.scalding.{Config, TextLine, TypedPipe}
+import com.twitter.scalding.{Config, Execution, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
 import org.apache.beam.sdk.Pipeline
@@ -387,6 +387,31 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       a ++ a ++ a ++ a,
       Seq(1, 2, 3, 4, 5, 6).flatMap(x => Seq(x, x, x, x))
     )
+  }
+
+  test("Force to Disk execution") {
+    val bmode = BeamMode.default(pipelineOptions)
+    val tmpPath1 = tmpPath("tp1")
+    val tmpPath2 = tmpPath("tp2")
+
+    val forcedExecution =
+      TypedPipe
+        .from(Seq(5, 3, 2, 6, 1, 4))
+        .forceToDiskExecution
+
+    val tp1 = forcedExecution.flatMap { forced =>
+      forced.filter(_ % 2 == 0).map(_.toString).writeExecution(TextLine(tmpPath1))
+    }
+
+    val tp2 = forcedExecution.flatMap { forced =>
+      forced.filter(_ % 2 == 1).map(_.toString).writeExecution(TextLine(tmpPath2))
+    }
+
+    Execution.zip(tp1, tp2).waitFor(Config.empty, bmode)
+    val result1 = getContents(testPath, tmpPath1).sorted
+    val result2 = getContents(testPath, tmpPath2).sorted
+
+    assert(result1 == Seq("2", "4", "6") && result2 == Seq("1", "3", "5"))
   }
 
   test("toIterableExecutionTest1") {
