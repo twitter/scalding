@@ -1,13 +1,14 @@
 name: CI
 
-# run on all branches
 on:
   pull_request:
     branches:
       - '**'
+  # it's annoying to have CI double run on PR/push
+  # limit push to only final integration branches like develop
   push:
     branches:
-      - '**'
+      - 'develop'
 
 jobs:
   run-base-tests:

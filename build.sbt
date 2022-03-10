@@ -196,7 +196,6 @@ lazy val scalding = Project(id = "scalding", base = file("."))
     scaldingHRaven,
     scaldingRepl,
     scaldingJson,
-    scaldingJdbc,
     scaldingHadoopTest,
     scaldingEstimatorsTest,
     scaldingDb,
@@ -222,7 +221,6 @@ lazy val scaldingAssembly = Project(id = "scalding-assembly", base = file("assem
     scaldingHRaven,
     scaldingRepl,
     scaldingJson,
-    scaldingJdbc,
     maple,
     scaldingSerialization
   )
@@ -261,9 +259,6 @@ lazy val scaldingDate = module("date")
 
 lazy val cascadingVersion =
   System.getenv.asScala.getOrElse("SCALDING_CASCADING_VERSION", "2.6.1")
-
-lazy val cascadingJDBCVersion =
-  System.getenv.asScala.getOrElse("SCALDING_CASCADING_JDBC_VERSION", "2.6.0")
 
 lazy val scaldingBenchmarks = module("benchmarks")
   .settings(
@@ -536,16 +531,6 @@ lazy val scaldingJson = module("json")
   )
   .dependsOn(scaldingCore)
 
-lazy val scaldingJdbc = module("jdbc")
-  .settings(
-    libraryDependencies ++= Seq(
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "provided",
-      "cascading" % "cascading-jdbc-core" % cascadingJDBCVersion,
-      "cascading" % "cascading-jdbc-mysql" % cascadingJDBCVersion
-    )
-  )
-  .dependsOn(scaldingCore)
-
 lazy val scaldingHadoopTest = module("hadoop-test")
   .settings(
     libraryDependencies ++= Seq(
@@ -684,7 +669,6 @@ def docsSourcesAndProjects(sv: String): Seq[ProjectReference] =
     // scaldingHRaven,
     // scaldingRepl,
     // scaldingJson,
-    // scaldingJdbc,
     // scaldingDb,
     // maple,
     // scaldingSerialization,
