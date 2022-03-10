@@ -41,11 +41,11 @@ jobs:
 
           - scala-version: "2.11.12"
             BUILD: "base"
-            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
+            TEST_TARGET: "scalding-core scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
           - scala-version: "2.12.14"
             BUILD: "base"
-            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
+            TEST_TARGET: "scalding-core scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
 
           - scala-version: "2.11.12"
