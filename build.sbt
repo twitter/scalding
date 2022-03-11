@@ -111,7 +111,7 @@ val sharedSettings = Seq(
     inquireVersions,
     runClean,
     runTest,
-    setReleaseVersion,
+    //setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,

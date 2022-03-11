@@ -40,4 +40,4 @@ jobs:
           echo "setting release version to $RELEASE_VERSION"
 
           # release snapshot
-          ./sbt release release-version $RELEASE_VERSION next-version $RELEASE_VERSION skip-tests
+          ./sbt "release release-version $RELEASE_VERSION next-version $RELEASE_VERSION skip-tests"
