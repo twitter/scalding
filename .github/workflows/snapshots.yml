@@ -1,0 +1,43 @@
+name: Snapshots
+
+# this provides snapshots from the develop branch that can be used for testing before a final release is available.
+# versioning: take version file and prepend SNAPSHOT to it.
+# version bump is not needed afterwards since we are still in the same development cycle.
+
+on:
+  push:
+    branches:
+      - 'develop'
+
+jobs:
+  run-base-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt-openj9'
+          java-version: 8
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.4
+
+      - name: Install Ruby Gems
+        run: |
+          gem install sass -v 3.7.4
+          gem install jekyll -v 3.2.1
+
+      - name: "Publish Snapshot"
+        run: |
+          # set release to be SNAPSHOT of whatever is in version.sbt
+          RELEASE_VERSION=`cat ./version`
+          RELEASE_VERSION="$RELEASE_VERSION-SNAPSHOT"
+          echo "setting release version to $RELEASE_VERSION"
+
+          # release snapshot
+          release release-version $RELEASE_VERSION next-version $RELEASE_VERSION skip-tests

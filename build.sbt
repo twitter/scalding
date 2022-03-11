@@ -118,7 +118,6 @@ val sharedSettings = Seq(
     setNextVersion,
     commitNextVersion,
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-    pushChanges
   ),
   publishTo := Some(
     if (version.value.trim.endsWith("SNAPSHOT"))
