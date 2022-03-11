@@ -1,17 +1,17 @@
 package com.twitter.scalding
 
 import cascading.flow.FlowException
+import cascading.flow.FlowProcess
 import cascading.pipe.CoGroup
 import cascading.pipe.joiner.{InnerJoin, JoinerClosure}
 import cascading.tuple.Tuple
 import org.scalatest.{Matchers, WordSpec}
-
 import java.util.{Iterator => JIterator}
 
 class CheckFlowProcessJoiner(uniqueID: UniqueID) extends InnerJoin {
   override def getIterator(joinerClosure: JoinerClosure): JIterator[Tuple] = {
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueID)
-    if (flowProcess == null) {
+    if (flowProcess == FlowProcess.NULL) {
       throw new NullPointerException("No active FlowProcess was available.")
     }
 
@@ -64,7 +64,7 @@ class WrappedJoinerTest extends WordSpec with Matchers {
         fail("The test Job without WrappedJoiner should fail.")
       } catch {
         case ex: FlowException =>
-          ex.getCause.getMessage should include("the FlowProcess for unique id")
+          ex.getCause.getMessage should include("No active FlowProcess was available")
       }
     }
   }

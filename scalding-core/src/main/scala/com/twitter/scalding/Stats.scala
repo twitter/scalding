@@ -169,7 +169,10 @@ object RuntimeStats extends java.io.Serializable {
     } yield {
       flowProcess
     }).getOrElse {
-      sys.error("Error in job deployment, the FlowProcess for unique id %s isn't available".format(uniqueId))
+      logger.debug(
+        s"The FlowProcess for unique id $uniqueId isn't available. Returning a NullFlowProcess instead."
+      )
+      FlowProcess.NULL
     }
 
   private[this] var prevFP: FlowProcess[_] = null
