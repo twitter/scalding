@@ -109,7 +109,6 @@ val sharedSettings = Seq(
   releaseProcess := (
     if (version.value.trim.endsWith("SNAPSHOT"))
       Seq[ReleaseStep](
-        inquireVersions,
         runClean,
         publishArtifacts,
         ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
