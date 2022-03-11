@@ -1,13 +1,14 @@
 name: CI
 
-# run on all branches
 on:
   pull_request:
     branches:
       - '**'
+  # it's annoying to have CI double run on PR/push
+  # limit push to only final integration branches like develop
   push:
     branches:
-      - '**'
+      - 'develop'
 
 jobs:
   run-base-tests:
@@ -40,11 +41,11 @@ jobs:
 
           - scala-version: "2.11.12"
             BUILD: "base"
-            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
+            TEST_TARGET: "scalding-core scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
           - scala-version: "2.12.14"
             BUILD: "base"
-            TEST_TARGET: "scalding-core scalding-jdbc scalding-json scalding-db scalding-cats"
+            TEST_TARGET: "scalding-core scalding-json scalding-db scalding-cats"
             script: './scripts/run_test.sh'
 
           - scala-version: "2.11.12"

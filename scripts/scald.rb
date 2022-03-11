@@ -87,7 +87,6 @@ OPTS_PARSER = Trollop::Parser.new do
   opt :reducers, "Specify the number of reducers", :type => :int
   opt :avro, "Add scalding-avro to classpath"
   opt :commons, "Add scalding-commons to classpath"
-  opt :jdbc, "Add scalding-jdbc to classpath"
   opt :json, "Add scalding-json to classpath"
   opt :parquet, "Add scalding-parquet to classpath"
   opt :repl, "Add scalding-repl to classpath"
@@ -231,10 +230,6 @@ end
 
 if OPTS[:commons]
   MODULEJARPATHS.push(repo_root + "/scalding-commons/target/scala-#{SHORT_SCALA_VERSION}/scalding-commons-assembly-#{SCALDING_VERSION}.jar")
-end
-
-if OPTS[:jdbc]
-  MODULEJARPATHS.push(repo_root + "/scalding-jdbc/target/scala-#{SHORT_SCALA_VERSION}/scalding-jdbc-assembly-#{SCALDING_VERSION}.jar")
 end
 
 if OPTS[:json]
