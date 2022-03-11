@@ -371,7 +371,14 @@ object CascadingBackend {
               val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
               CascadingPipe.single[T](merged, flowDef)
           }
-        case SourcePipe(typedSrc) =>
+        case SourcePipe(input) =>
+          val typedSrc = input match {
+            case ts: TypedSource[_] =>
+              ts.asInstanceOf[TypedSource[T]]
+            case notCascading =>
+              throw new IllegalArgumentException(
+                s"cascading mode requires TypedSource, found: $notCascading of class ${notCascading.getClass}")
+          }
           val fd = new FlowDef
           val pipe = typedSrc.read(fd, mode)
           CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
@@ -389,22 +396,6 @@ object CascadingBackend {
           }
 
           go(sblk)
-        case trapped: TrappedPipe[u] =>
-          val cp = rec(trapped.input)
-          import trapped._
-          // TODO: with diamonds in the graph, this might not be correct
-          // it seems cascading requires puts the immediate tuple that
-          // caused the exception, so if you addTrap( ).map(f).map(g)
-          // and f changes the tuple structure, if we don't collapse the
-          // maps into 1 operation, cascading can write two different
-          // schemas into the trap, making it unreadable.
-          // this basically means there can only be one operation in between
-          // a trap and a forceToDisk or a groupBy/cogroupBy (any barrier).
-          val fd = new FlowDef
-          val pp: Pipe = cp.toPipe[u](sink.sinkFields, fd, TupleSetter.asSubSetter(sink.setter))
-          val pipe = RichPipe.assignName(pp)
-          fd.addTrap(pipe, sink.createTap(Write)(mode))
-          CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
         case WithDescriptionTypedPipe(input, descs) =>
           @annotation.tailrec
           def loop[A](

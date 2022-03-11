@@ -1,3 +1,4 @@
+
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,16 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-/*
 package com.twitter.scalding.typed
 
 import java.io.{InputStream, OutputStream, Serializable}
 
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
-import cascading.tuple.Fields
 import com.twitter.algebird.{Aggregator, Batched, Monoid, Semigroup}
-import com.twitter.scalding.TupleConverter.singleConverter
 import com.twitter.scalding._
 import com.twitter.scalding.typed.functions.{
   AsLeft,
@@ -50,6 +46,22 @@ import scala.util.Try
 import scala.util.hashing.MurmurHash3
 
 /**
+ * This is an identifier which should
+ * have a good equals and hashCode and
+ * has a Type. Different backends
+ * are responsible for reading/writing
+ */
+trait Input[+A] extends Serializable
+
+/**
+ * This is an identifier which should
+ * have a good equals and hashCode and
+ * has a Type. Different backends
+ * are responsible for reading/writing
+ */
+trait Output[-A] extends Serializable
+
+/**
  * factory methods for TypedPipe, which is the typed representation of distributed lists in scalding. This
  * object is here rather than in the typed package because a lot of code was written using the functions in
  * the object, which we do not see how to hide with package object tricks.
@@ -57,52 +69,9 @@ import scala.util.hashing.MurmurHash3
 object TypedPipe extends Serializable {
 
   /**
-   * Create a TypedPipe from a cascading Pipe, some Fields and the type T Avoid this if you can. Prefer
-   * from(TypedSource).
+   * Create a TypedPipe from a Input. This is the preferred way to make a TypedPipe
    */
-  def from[T](pipe: Pipe, fields: Fields)(implicit
-      flowDef: FlowDef,
-      mode: Mode,
-      conv: TupleConverter[T]
-  ): TypedPipe[T] = {
-
-    /*
-     * This could be in TypedSource, but we don't want to encourage users
-     * to work directly with Pipe
-     */
-    case class WrappingSource[T](
-        pipe: Pipe,
-        fields: Fields,
-        @transient localFlow: FlowDef, // FlowDef is not serializable. We shouldn't need to, but being paranoid
-        mode: Mode,
-        conv: TupleConverter[T]
-    ) extends TypedSource[T] {
-
-      def converter[U >: T]: TupleConverter[U] =
-        TupleConverter.asSuperConverter[T, U](conv)
-
-      def read(implicit fd: FlowDef, m: Mode): Pipe = {
-        // This check is not likely to fail unless someone does something really strange.
-        // for historical reasons, it is not checked by the typed system
-        require(
-          m == mode,
-          s"Cannot switch Mode between TypedPipe.from and toPipe calls. Pipe: $pipe, pipe mode: $m, outer mode: $mode"
-        )
-        Dsl.flowDefToRichFlowDef(fd).mergeFrom(localFlow)
-        pipe
-      }
-
-      override def sourceFields: Fields = fields
-    }
-
-    val localFlow = Dsl.flowDefToRichFlowDef(flowDef).onlyUpstreamFrom(pipe)
-    from(WrappingSource(pipe, fields, localFlow, mode, conv))
-  }
-
-  /**
-   * Create a TypedPipe from a TypedSource. This is the preferred way to make a TypedPipe
-   */
-  def from[T](source: TypedSource[T]): TypedPipe[T] =
+  def from[T](source: Input[T]): TypedPipe[T] =
     SourcePipe(source)
 
   /**
@@ -110,12 +79,6 @@ object TypedPipe extends Serializable {
    */
   def from[T](iter: Iterable[T]): TypedPipe[T] =
     if (iter.isEmpty) empty else IterablePipe[T](iter)
-
-  /**
-   * Input must be a Pipe with exactly one Field Avoid this method and prefer from(TypedSource) if possible
-   */
-  def fromSingleField[T](pipe: Pipe)(implicit fd: FlowDef, mode: Mode): TypedPipe[T] =
-    from(pipe, new Fields(0))(fd, mode, singleConverter[T])
 
   /**
    * Create an empty TypedPipe. This is sometimes useful when a method must return a TypedPipe, but sometimes
@@ -218,14 +181,9 @@ object TypedPipe extends Serializable {
   final case class MergedTypedPipe[T](left: TypedPipe[T], right: TypedPipe[T]) extends TypedPipe[T]
   final case class ReduceStepPipe[K, V1, V2](@transient reduce: ReduceStep[K, V1, V2])
       extends TypedPipe[(K, V2)]
-  final case class SourcePipe[T](@transient source: TypedSource[T]) extends TypedPipe[T]
+  final case class SourcePipe[T](@transient source: Input[T]) extends TypedPipe[T]
   final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], @transient semigroup: Semigroup[V])
       extends TypedPipe[(K, V)]
-  final case class TrappedPipe[T](
-      input: TypedPipe[T],
-      @transient sink: Source with TypedSink[T],
-      @transient conv: TupleConverter[T]
-  ) extends TypedPipe[T]
 
   /**
    * descriptions carry a boolean that is true if we should deduplicate the message. This is used for line
@@ -258,15 +216,6 @@ object TypedPipe extends Serializable {
     def distinct(implicit ord: Ordering[T]): TypedPipe[T] =
       pipe.asKeys.sum.keys
 
-    /**
-     * If any errors happen below this line, but before a groupBy, write to a TypedSink
-     */
-    @deprecated(
-      "semantics of addTrap are hard to follow, prefer to use Either and manually write out error branchs",
-      "0.18.0"
-    )
-    def addTrap(trapSink: Source with TypedSink[T])(implicit conv: TupleConverter[T]): TypedPipe[T] =
-      TypedPipe.TrappedPipe[T](pipe, trapSink, conv).withLine
   }
 
   /**
@@ -523,8 +472,6 @@ object TypedPipe extends Serializable {
       case (RefPair(SourcePipe(srcA), SourcePipe(srcB)), _) => srcA == srcB
       case (RefPair(SumByLocalKeys(leftIn, leftSg), SumByLocalKeys(rightIn, rightSg)), rec) =>
         (leftSg == rightSg) && rec(RefPair(leftIn, rightIn))
-      case (RefPair(TrappedPipe(inA, sinkA, convA), TrappedPipe(inB, sinkB, convB)), rec) =>
-        (sinkA == sinkB) && (convA == convB) && rec(RefPair(inA, inB))
       case (
             RefPair(WithDescriptionTypedPipe(leftIn, leftDesc), WithDescriptionTypedPipe(rightIn, rightDesc)),
             rec
@@ -568,7 +515,7 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
     case _ => false
   }
 
-  protected def withLine: TypedPipe[T] =
+  private[scalding] def withLine: TypedPipe[T] =
     LineNumber.tryNonScaldingCaller.map(_.toString) match {
       case None =>
         this
@@ -618,17 +565,6 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    */
   def flatMap[U](f: T => TraversableOnce[U]): TypedPipe[U] =
     TypedPipe.FlatMapped(this, f).withLine
-
-  /**
-   * Export back to a raw cascading Pipe. useful for interop with the scalding Fields API or with Cascading
-   * code. Avoid this if possible. Prefer to write to TypedSink.
-   */
-  final def toPipe[U >: T](
-      fieldNames: Fields
-  )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
-    // we have to be cafeful to pass the setter we want since a low priority implicit can always be
-    // found :(
-    cascading_backend.CascadingBackend.toPipe[U](withLine, fieldNames)(flowDef, mode, setter)
 
   /**
    * Merge two TypedPipes (no order is guaranteed) This is only realized when a group (or join) is performed.
@@ -856,14 +792,6 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
   def toIterableExecution: Execution[Iterable[T]] =
     Execution.toIterable(this)
 
-  /** use a TupleUnpacker to flatten U out into a cascading Tuple */
-  def unpackToPipe[U >: T](
-      fieldNames: Fields
-  )(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
-    val setter = up.newSetter(fieldNames)
-    toPipe[U](fieldNames)(fd, mode, setter)
-  }
-
   /**
    * This attaches a function that is called at the end of the map phase on EACH of the tasks that are
    * executing. This is for expert use only. You probably won't ever need it. Try hard to avoid it. Execution
@@ -873,44 +801,18 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
     TypedPipe.WithOnComplete[T](this, fn).withLine
 
   /**
-   * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink) you need to do something
-   * like: toPipe(fieldNames).write(dest)
-   * @return
-   *   a pipe equivalent to the current pipe.
-   */
-  def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-    // We do want to record the line number that this occurred at
-    val next = withLine
-    FlowStateMap.merge(flowDef, FlowState.withTypedWrite(next, dest, mode))
-    next
-  }
-
-  /**
    * This is the functionally pure approach to building jobs. Note, that you have to call run on the result or
    * flatMap/zip it into an Execution that is run for anything to happen here.
    */
-  def writeExecution(dest: TypedSink[T]): Execution[Unit] =
+  def writeExecution(dest: Output[T]): Execution[Unit] =
     Execution.write(this, dest)
 
   /**
    * If you want to write to a specific location, and then read from that location going forward, use this.
    */
-  def writeThrough[U >: T](dest: TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+  def writeThrough[U >: T](dest: Output[T] with Input[U]): Execution[TypedPipe[U]] =
     Execution.write(this, dest, TypedPipe.from(dest))
 
-  /**
-   * If you want to writeThrough to a specific file if it doesn't already exist, and otherwise just read from
-   * it going forward, use this.
-   */
-  def make[U >: T](dest: Source with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
-    Execution.getMode.flatMap { mode =>
-      try {
-        dest.validateTaps(mode)
-        Execution.from(TypedPipe.from(dest))
-      } catch {
-        case ivs: InvalidSourceException => writeThrough(dest)
-      }
-    }
 
   /**
    * ValuePipe may be empty, so, this attaches it as an Option cross is the same as leftCross(p).collect {
@@ -989,4 +891,3 @@ object Syntax {
   implicit def joinOnMappablePipe[T](p: TypedPipe[T]): MappablePipeJoinEnrichment[T] =
     new MappablePipeJoinEnrichment(p)
 }
-*/

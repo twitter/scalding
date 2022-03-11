@@ -70,7 +70,7 @@ object LineNumber {
     val scaldingPrefix = "com.twitter.scalding."
     val ignoredPrefixes = Set(scaldingPrefix, "scala.")
     val nonScalding = ignorePaths(ignoredPrefixes, stack)
-    val jobClass = classOf[com.twitter.scalding.Job]
+    val jobClass = "com.twitter.scalding.Job"
 
     // there is no .headOption on Iterator. WTF?
     def headOption[T](it: Iterator[T]): Option[T] =
@@ -83,7 +83,7 @@ object LineNumber {
         .filter { se =>
           try {
             val cls = Class.forName(se.getClassName)
-            jobClass.isAssignableFrom(cls)
+            Class.forName(jobClass).isAssignableFrom(cls)
           } catch {
             // skip classes that we don't find. We seem to run into this for some lambdas on Scala 2.12 in travis
             case cnf: ClassNotFoundException =>

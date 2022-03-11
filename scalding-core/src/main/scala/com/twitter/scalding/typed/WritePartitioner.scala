@@ -277,7 +277,6 @@ object WritePartitioner {
         case MergedTypedPipe(_, _)          => false
         case ReduceStepPipe(_)              => true
         case SumByLocalKeys(p, _)           => isLogicalReduce(p)
-        case TrappedPipe(p, _, _)           => isLogicalReduce(p)
         case CoGroupedPipe(_)               => true
         case WithOnComplete(p, _)           => isLogicalReduce(p)
         case WithDescriptionTypedPipe(p, _) => isLogicalReduce(p)
@@ -369,9 +368,6 @@ object WritePartitioner {
           mat.pure(src)
         case ((p: SumByLocalKeys[a, b], bs), rec) =>
           mat.map(rec((p.input, bs | OnlyMapping)))(SumByLocalKeys(_: TypedPipe[(a, b)], p.semigroup))
-        case ((p: TrappedPipe[a], bs), rec) =>
-          // TODO: it is a bit unclear if a trap is allowed on the back of a reduce?
-          mat.map(rec((p.input, bs)))(TrappedPipe[a](_: TypedPipe[a], p.sink, p.conv))
         case ((p: WithDescriptionTypedPipe[a], bs), rec) =>
           mat.map(rec((p.input, bs)))(WithDescriptionTypedPipe(_: TypedPipe[a], p.descriptions))
         case ((p: WithOnComplete[a], bs), rec) =>

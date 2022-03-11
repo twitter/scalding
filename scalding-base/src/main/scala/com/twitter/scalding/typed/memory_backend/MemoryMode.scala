@@ -5,7 +5,7 @@ import com.twitter.scalding.{Execution, Mode}
 import com.twitter.scalding.typed._
 import Execution.Writer
 
-final case class MemoryMode(srcs: Resolver[TypedSource, MemorySource], sinks: Resolver[TypedSink, MemorySink])
+final case class MemoryMode(srcs: Resolver[Input, MemorySource], sinks: Resolver[Output, MemorySink])
     extends Mode {
 
   def newWriter(): Writer =
@@ -14,31 +14,31 @@ final case class MemoryMode(srcs: Resolver[TypedSource, MemorySource], sinks: Re
   /**
    * Add a new source resolver whose sources take precedence over any currently registered sources
    */
-  def addSourceResolver(res: Resolver[TypedSource, MemorySource]): MemoryMode =
+  def addSourceResolver(res: Resolver[Input, MemorySource]): MemoryMode =
     MemoryMode(res.orElse(srcs), sinks)
 
-  def addSource[T](src: TypedSource[T], ts: MemorySource[T]): MemoryMode =
+  def addSource[T](src: Input[T], ts: MemorySource[T]): MemoryMode =
     addSourceResolver(Resolver.pair(src, ts))
 
-  def addSourceFn[T](src: TypedSource[T])(fn: ConcurrentExecutionContext => Future[Iterator[T]]): MemoryMode =
+  def addSourceFn[T](src: Input[T])(fn: ConcurrentExecutionContext => Future[Iterator[T]]): MemoryMode =
     addSource(src, MemorySource.Fn(fn))
 
-  def addSourceIterable[T](src: TypedSource[T], iter: Iterable[T]): MemoryMode =
+  def addSourceIterable[T](src: Input[T], iter: Iterable[T]): MemoryMode =
     addSource(src, MemorySource.FromIterable(iter))
 
   /**
    * Add a new sink resolver whose sinks take precedence over any currently registered sinks
    */
-  def addSinkResolver(res: Resolver[TypedSink, MemorySink]): MemoryMode =
+  def addSinkResolver(res: Resolver[Output, MemorySink]): MemoryMode =
     MemoryMode(srcs, res.orElse(sinks))
 
-  def addSink[T](sink: TypedSink[T], msink: MemorySink[T]): MemoryMode =
+  def addSink[T](sink: Output[T], msink: MemorySink[T]): MemoryMode =
     addSinkResolver(Resolver.pair(sink, msink))
 
   /**
    * This has a side effect of mutating the corresponding MemorySink
    */
-  def writeSink[T](t: TypedSink[T], iter: Iterable[T])(implicit
+  def writeSink[T](t: Output[T], iter: Iterable[T])(implicit
       ec: ConcurrentExecutionContext
   ): Future[Unit] =
     sinks(t) match {
@@ -54,5 +54,5 @@ final case class MemoryMode(srcs: Resolver[TypedSource, MemorySource], sinks: Re
 
 object MemoryMode {
   def empty: MemoryMode =
-    apply(Resolver.empty[TypedSource, MemorySource], Resolver.empty[TypedSink, MemorySink])
+    apply(Resolver.empty[Input, MemorySource], Resolver.empty[Output, MemorySink])
 }

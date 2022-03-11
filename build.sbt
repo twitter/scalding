@@ -278,6 +278,18 @@ lazy val scaldingQuotation = module("quotation").settings(
   )
 )
 
+lazy val scaldingBase = module("base")
+  .settings(
+    libraryDependencies ++= Seq(
+    "com.twitter" %% "algebird-core" % algebirdVersion,
+      "com.stripe" %% "dagon-core" % dagonVersion,
+      "com.twitter" %% "chill" % chillVersion,
+      "com.twitter" % "chill-java" % chillVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion
+    )
+  )
+  .dependsOn(scaldingArgs, scaldingSerialization)
+
 lazy val scaldingCore = module("core")
   .settings(
     libraryDependencies ++= Seq(
@@ -302,7 +314,7 @@ lazy val scaldingCore = module("core")
     ),
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
-  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+  .dependsOn(scaldingArgs, scaldingBase, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
 
 lazy val scaldingCats = module("cats")
   .settings(

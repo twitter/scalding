@@ -38,18 +38,6 @@ trait Stat extends java.io.Serializable {
   def key: StatKey
 }
 
-case class StatKey(counter: String, group: String) extends java.io.Serializable
-
-object StatKey {
-  // This is implicit to allow Stat("c", "g") to work.
-  implicit def fromCounterGroup(counterGroup: (String, String)): StatKey = counterGroup match {
-    case (c, g) => StatKey(c, g)
-  }
-  // Create a Stat in the ScaldingGroup
-  implicit def fromCounterDefaultGroup(counter: String): StatKey =
-    StatKey(counter, Stats.ScaldingGroup)
-  implicit def fromStat(stat: Stat): StatKey = stat.key
-}
 
 private[scalding] object CounterImpl {
   def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
@@ -100,11 +88,13 @@ object Stat {
     def incBy(amount: Long): Unit = cntr.increment(amount)
     def key: StatKey = k
   }
+
+  implicit def toStatKey(stat: Stat): StatKey = stat.key
 }
 
 object Stats {
   // This is the group that we assign all custom counters to
-  val ScaldingGroup = "Scalding Custom"
+  val ScaldingGroup = StatKey.ScaldingGroup
 
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.

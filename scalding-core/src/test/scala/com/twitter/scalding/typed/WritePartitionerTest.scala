@@ -237,7 +237,6 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
               WithDescriptionTypedPipe(
                 CrossValue(
                   WithDescriptionTypedPipe(
-                    TrappedPipe(
                       WithDescriptionTypedPipe(
                         ForceToDisk(
                           WithDescriptionTypedPipe(
@@ -279,10 +278,8 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                           )
                         ),
                         List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
-                      ),
-                      TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac"),
-                      TupleConverter.Single(implicitly[TupleGetter[Int]])
-                    ),
+                      )
+                    ,
                     List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
                   ),
                   LiteralValue(2)

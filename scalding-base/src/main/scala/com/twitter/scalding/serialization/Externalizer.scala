@@ -15,26 +15,37 @@ limitations under the License.
  */
 package com.twitter.scalding.serialization
 
-import com.twitter.chill.{Externalizer => ChillExtern}
-
 import com.esotericsoftware.kryo.DefaultSerializer
+import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers.JavaSerializer
-
-import com.twitter.chill.config.ScalaAnyRefMapConfig
+import com.twitter.chill.{Externalizer => ChillExtern}
+import com.twitter.chill.{KryoInstantiator, ScalaKryoInstantiator}
 
 /**
  * We need to control the Kryo created
  */
-object Externalizer {
+object Externalizer extends Serializable {
   def apply[T](t: T): Externalizer[T] = {
     val e = new Externalizer[T]
     e.set(t)
     e
   }
+
+  private class ExternalizerInstantitator extends KryoInstantiator {
+
+    override def newKryo: Kryo = {
+      val newK = (new ScalaKryoInstantiator).newKryo
+      newK.setReferences(true)
+      // These are scalding objects:
+      newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.TypedPipe[_]], new SerializeAsUnit)
+      newK.addDefaultSerializer(classOf[com.twitter.scalding.typed.ReduceStep[_, _, _]], new SerializeAsUnit)
+      newK
+    }
+  }
 }
 
 @DefaultSerializer(classOf[JavaSerializer])
 class Externalizer[T] extends ChillExtern[T] {
-  protected override def kryo =
-    new KryoHadoop(ScalaAnyRefMapConfig(Map("scalding.kryo.setreferences" -> "true")))
+  protected override def kryo: KryoInstantiator =
+    new Externalizer.ExternalizerInstantitator
 }

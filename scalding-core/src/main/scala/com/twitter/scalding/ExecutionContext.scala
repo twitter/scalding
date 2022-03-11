@@ -22,12 +22,14 @@ import cascading.pipe.Pipe
 import com.twitter.scalding.estimation.memory.MemoryEstimatorStepStrategy
 import com.twitter.scalding.reducer_estimation.ReducerEstimatorStepStrategy
 import com.twitter.scalding.serialization.CascadingBinaryComparator
-import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import com.twitter.scalding.typed.cascading_backend.{CascadingBackend, CascadingExtensions}
 import org.apache.hadoop.mapred.JobConf
 import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+
+import CascadingExtensions._
 
 /*
  * This has all the state needed to build a single flow

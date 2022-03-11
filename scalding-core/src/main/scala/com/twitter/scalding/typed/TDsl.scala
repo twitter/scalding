@@ -21,6 +21,8 @@ import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions
+
 import com.twitter.scalding._
 
 /**
@@ -28,7 +30,7 @@ import com.twitter.scalding._
  * Pipe, to get the .toTypedPipe method on standard cascading Pipes. to get automatic conversion of
  * Mappable[T] to TypedPipe[T]
  */
-object TDsl extends Serializable with GeneratedTupleAdders {
+object TDsl extends Serializable with GeneratedTupleAdders with CascadingExtensions {
   implicit def pipeTExtensions(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): PipeTExtensions =
     new PipeTExtensions(pipe, flowDef, mode)
 
@@ -49,6 +51,8 @@ object TDsl extends Serializable with GeneratedTupleAdders {
  * This is an Enrichment pattern of adding methods to Pipe relevant to TypedPipe
  */
 class PipeTExtensions(pipe: Pipe, flowDef: FlowDef, mode: Mode) extends Serializable {
+  import CascadingExtensions._
+
   /* Give you a syntax (you must put the full type on the TypedPipe, else type inference fails
    *   pipe.typed(('in0, 'in1) -> 'out) { tpipe : TypedPipe[(Int,Int)] =>
    *    // let's group all:
@@ -62,10 +66,10 @@ class PipeTExtensions(pipe: Pipe, flowDef: FlowDef, mode: Mode) extends Serializ
   def typed[T, U](fielddef: (Fields, Fields))(
       fn: TypedPipe[T] => TypedPipe[U]
   )(implicit conv: TupleConverter[T], setter: TupleSetter[U]): Pipe =
-    fn(TypedPipe.from(pipe, fielddef._1)(flowDef, mode, conv)).toPipe(fielddef._2)(flowDef, mode, setter)
+    fn(TypedPipe.fromPipe(pipe, fielddef._1)(flowDef, mode, conv)).toPipe(fielddef._2)(flowDef, mode, setter)
 
   def toTypedPipe[T](fields: Fields)(implicit conv: TupleConverter[T]): TypedPipe[T] =
-    TypedPipe.from[T](pipe, fields)(flowDef, mode, conv)
+    TypedPipe.fromPipe[T](pipe, fields)(flowDef, mode, conv)
 
   def packToTypedPipe[T](fields: Fields)(implicit tp: TuplePacker[T]): TypedPipe[T] = {
     val conv = tp.newConverter(fields)

@@ -13,7 +13,7 @@ object MemoryPlanner {
    * Note, this assumes all forks are made explicit in the graph, so it is up to any caller to make sure that
    * optimization rule has first been applied
    */
-  def planner(conf: Config, srcs: Resolver[TypedSource, MemorySource]): FunctionK[TypedPipe, Op] =
+  def planner(conf: Config, srcs: Resolver[Input, MemorySource]): FunctionK[TypedPipe, Op] =
     Memoize.functionK(new Memoize.RecursiveK[TypedPipe, Op] {
       import TypedPipe._
 
@@ -112,13 +112,6 @@ object MemoryPlanner {
             }
           }
           sum(slk)
-
-        case (TrappedPipe(input, _, _), rec) =>
-          // this can be interpretted as catching any exception
-          // on the map-phase until the next partition, so it can
-          // be made to work by changing Op to return all
-          // the values that fail on error
-          rec(input)
 
         case (WithDescriptionTypedPipe(pipe, descriptions), rec) =>
           // TODO we could optionally print out the descriptions

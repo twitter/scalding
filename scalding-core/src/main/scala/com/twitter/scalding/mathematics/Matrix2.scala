@@ -25,6 +25,8 @@ import scala.collection.mutable.HashMap
 
 import java.io.Serializable
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 /**
  * This is the future Matrix API. The old one will be removed in scalding 0.10.0 (or 1.0.0).
  *

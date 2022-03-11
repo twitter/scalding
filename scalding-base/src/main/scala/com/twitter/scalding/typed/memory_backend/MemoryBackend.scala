@@ -1,9 +1,6 @@
 package com.twitter.scalding.typed.memory_backend
 
-import cascading.flow.FlowDef
-import cascading.pipe.Pipe
 import com.twitter.scalding.typed._
-import com.twitter.scalding.Mode
 import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
@@ -86,31 +83,9 @@ object MemorySink {
 /**
  * These are just used as type markers which are connected to inputs via the MemoryMode
  */
-case class SourceT[T](ident: String) extends TypedSource[T] {
-
-  /**
-   * note that ??? in scala is the same as not implemented
-   *
-   * These methods are not needed for use with the Execution API, and indeed don't make sense outside of
-   * cascading, but backwards compatibility currently requires them on TypedSource. Ideally we will find
-   * another solution to this in the future
-   */
-  def converter[U >: T] = ???
-  def read(implicit flowDef: FlowDef, mode: Mode): Pipe = ???
-}
+case class SourceT[T](ident: String) extends Input[T]
 
 /**
  * These are just used as type markers which are connected to outputs via the MemoryMode
  */
-case class SinkT[T](indent: String) extends TypedSink[T] {
-
-  /**
-   * note that ??? in scala is the same as not implemented
-   *
-   * These methods are not needed for use with the Execution API, and indeed don't make sense outside of
-   * cascading, but backwards compatibility currently requires them on TypedSink. Ideally we will find another
-   * solution to this in the future
-   */
-  def setter[U <: T] = ???
-  def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = ???
-}
+case class SinkT[T](indent: String) extends Output[T]

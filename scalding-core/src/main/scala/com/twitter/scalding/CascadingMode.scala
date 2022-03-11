@@ -19,6 +19,8 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.{Buffer, Map => MMap, Set => MSet}
 import scala.util.{Failure, Success}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 /**
  * Any Mode running on cascading extends CascadingMode
  */
