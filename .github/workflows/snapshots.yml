@@ -35,9 +35,10 @@ jobs:
       - name: "Publish Snapshot"
         run: |
           # set release to be SNAPSHOT of whatever is in version.sbt
-          RELEASE_VERSION=`cat ./version`
+          RELEASE_VERSION=`grep "ThisBuild / version" version.sbt | cut -d\" -f2`
           RELEASE_VERSION="$RELEASE_VERSION-SNAPSHOT"
-          echo "setting release version to $RELEASE_VERSION"
+          echo "ThisBuild / version := \"$RELEASE_VERSION\"" > version.sbt
+          cat version.sbt
 
           # release snapshot
-          ./sbt "release release-version $RELEASE_VERSION next-version $RELEASE_VERSION skip-tests"
+          ./sbt "release"

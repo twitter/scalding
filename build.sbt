@@ -106,18 +106,18 @@ val sharedSettings = Seq(
   publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    //setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+  releaseProcess := (
+    if (version.value.trim.endsWith("SNAPSHOT"))
+      Seq[ReleaseStep](
+        inquireVersions,
+        runClean,
+        publishArtifacts,
+        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      )
+    // todo : implement workflow for final tagged releases that are not snapshots
+    else Seq[ReleaseStep](
+
+    )
   ),
   publishTo := Some(
     if (version.value.trim.endsWith("SNAPSHOT"))
