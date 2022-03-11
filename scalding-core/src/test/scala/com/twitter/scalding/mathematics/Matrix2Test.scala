@@ -187,7 +187,7 @@ class Matrix2ProdSum(args: Args) extends Job(args) {
 class Matrix2PropJob(args: Args) extends Job(args) {
   import com.twitter.scalding.TDsl._
 
-  val tsv1 = TypedText.tsv[(Int, Int, Int)]("graph")
+  val tsv1 = TypedPipe.from(TypedText.tsv[(Int, Int, Int)]("graph"))
   val p1 = tsv1.toPipe(('x1, 'y1, 'v1))
   val tp1 = p1.toTypedPipe[(Int, Int, Int)](('x1, 'y1, 'v1))
   val mat = MatrixLiteral(tp1, NoClue)

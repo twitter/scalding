@@ -273,8 +273,6 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
  * computations in scalding libraries.
  */
 object Execution {
-  abstract class FatalExecutionError extends Exception
-
   private[Execution] class AsyncSemaphore(initialPermits: Int = 0) {
     private[this] val waiters = new mutable.Queue[() => Unit]
     private[this] var availablePermits = initialPermits
@@ -1075,6 +1073,11 @@ object Execution {
     Execution.sequence(executions.map(waitRun))
   }
 }
+
+/**
+ * Any exception extending this is never recovered
+ */
+abstract class FatalExecutionError(msg: String) extends Exception(msg)
 
 /**
  * This represents the counters portion of the JobStats that are returned. Counters are just a vector of longs

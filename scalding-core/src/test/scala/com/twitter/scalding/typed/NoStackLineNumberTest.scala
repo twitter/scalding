@@ -25,6 +25,8 @@ import scala.concurrent.duration.{Duration => SDuration}
 import cascading.flow.FlowDef
 import org.apache.hadoop.conf.Configuration
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 class NoStackLineNumberTest extends WordSpec {
 
   "No Stack Shouldn't block getting line number info" should {

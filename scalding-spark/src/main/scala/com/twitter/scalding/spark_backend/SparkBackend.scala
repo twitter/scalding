@@ -62,7 +62,7 @@ object SparkPlanner {
   /**
    * Convert a TypedPipe to an RDD
    */
-  def plan(config: Config, srcs: Resolver[TypedSource, SparkSource]): FunctionK[TypedPipe, Op] =
+  def plan(config: Config, srcs: Resolver[Input, SparkSource]): FunctionK[TypedPipe, Op] =
     Memoize.functionK(new Memoize.RecursiveK[TypedPipe, Op] {
       import TypedPipe._
 
@@ -158,12 +158,6 @@ object SparkPlanner {
             rec(p).mapPartitions(CachingSum(capacity, sg))
           }
           sum(slk)
-
-        case (tp: TrappedPipe[a], rec) => rec[a](tp.input)
-        // this can be interpretted as catching any exception
-        // on the map-phase until the next partition, so it can
-        // be made to work by changing Op to return all
-        // the values that fail on error
 
         case (wd: WithDescriptionTypedPipe[a], rec) =>
           // TODO we could optionally print out the descriptions

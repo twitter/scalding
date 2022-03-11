@@ -4,6 +4,8 @@ import com.twitter.scalding.{Config, Execution, TypedPipe, TypedTsv}
 import org.scalatest.{Matchers, WordSpec}
 import scala.io.Source
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 object InAndOutExecution extends Function[Config, Execution[Unit]] {
   override def apply(config: Config): Execution[Unit] =
     TypedPipe

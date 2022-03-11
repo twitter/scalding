@@ -21,6 +21,8 @@ import org.scalatest.WordSpec
 import scala.collection.JavaConverters._
 import org.apache.hadoop.mapred.JobConf
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 class ReplTest extends WordSpec {
   import ReplImplicits._
   import ReplImplicitContext._

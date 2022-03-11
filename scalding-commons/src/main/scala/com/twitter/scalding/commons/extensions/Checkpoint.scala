@@ -24,6 +24,8 @@ import cascading.pipe.Pipe
 import cascading.tuple.Fields
 import org.slf4j.{Logger, LoggerFactory => LogManager}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 /**
  * Checkpoint provides a simple mechanism to read and write intermediate results from a Scalding flow to HDFS.
  *
@@ -112,7 +114,7 @@ object Checkpoint {
     val rPipe = apply(checkpointName, Dsl.intFields(0 until conv.arity)) {
       flow.toPipe(Dsl.intFields(0 until conv.arity))
     }
-    TypedPipe.from[A](rPipe, Dsl.intFields(0 until conv.arity))
+    TypedPipe.fromPipe[A](rPipe, Dsl.intFields(0 until conv.arity))
   }
 
   // Helper class for looking up checkpoint arguments, either the base value from

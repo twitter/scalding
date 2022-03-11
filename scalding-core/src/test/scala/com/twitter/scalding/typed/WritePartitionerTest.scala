@@ -118,11 +118,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                         WithDescriptionTypedPipe(
                           Fork(
                             WithDescriptionTypedPipe(
-                              TrappedPipe(
-                                SourcePipe(TypedText.tsv[Int]("oyg")),
-                                TypedText.tsv[Int]("a3QasphTfqhd1namjb"),
-                                TupleConverter.Single(implicitly[TupleGetter[Int]])
-                              ),
+                              SourcePipe(TypedText.tsv[Int]("oyg")),
                               List(("org.scalacheck.Gen$R $class.map(Gen.scala:237)", true))
                             )
                           ),

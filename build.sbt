@@ -335,7 +335,7 @@ lazy val scaldingSpark = module("spark")
       "org.apache.spark" %% "spark-sql" % sparkVersion
     )
   )
-  .dependsOn(scaldingCore)
+  .dependsOn(scaldingBase)
 
 lazy val scaldingBeam = module("beam")
   .settings(

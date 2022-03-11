@@ -4,7 +4,9 @@ import org.scalatest.FunSuite
 
 import cascading.flow.FlowDef
 import com.twitter.scalding.source.{NullSink, TypedText}
-import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import com.twitter.scalding.typed.cascading_backend.{CascadingBackend, CascadingExtensions}
+
+import CascadingExtensions._
 
 class FlowStateMapTest extends FunSuite {
   test("make sure sure sourcemap isn't empty after planning") {

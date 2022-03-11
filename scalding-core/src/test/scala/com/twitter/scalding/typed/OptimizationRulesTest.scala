@@ -344,10 +344,8 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("some past failures of the optimizationLaw") {
-    import TypedPipe._
-
     val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar"))
-    optimizationLaw(arg01, Rule.empty)
+    optimizationLaw[Int](arg01, Rule.empty)
   }
 
   test("all optimization rules do not increase steps") {

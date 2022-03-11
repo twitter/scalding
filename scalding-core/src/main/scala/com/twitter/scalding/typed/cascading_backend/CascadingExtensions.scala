@@ -12,6 +12,8 @@ import scala.util.Try
 
 import com.twitter.scalding._
 
+import com.twitter.scalding.typed.KeyedListLike
+
 import TupleConverter.singleConverter
 import scala.collection.JavaConverters._
 
@@ -116,6 +118,32 @@ trait CascadingExtensions {
     }
   }
 
+  implicit class KeyedListCascadingExtensions[K, V, S[K, +V] <: KeyedListLike[K, V, S]](keyed: KeyedListLike[K, V, S]) {
+    final def toPipe[U >: (K, V)](
+        fieldNames: Fields
+    )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+      keyed.toTypedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+
+    def make[U >: (K, V)](dest: Source with TypedSink[(K, V)] with TypedSource[U]): Execution[TypedPipe[U]] =
+      keyed.toTypedPipe.make(dest)
+
+    def write(dest: TypedSink[(K, V)])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)] =
+      keyed.toTypedPipe.write(dest)
+  }
+
+  implicit class ValuePipeCascadingExtensions[T](value: ValuePipe[T]) {
+    final def toPipe[U >: T](
+        fieldNames: Fields
+    )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
+      value.toTypedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+
+    def make[U >: T](dest: Source with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
+      value.toTypedPipe.make(dest)
+
+    def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
+      value.toTypedPipe.write(dest)
+  }
+
   implicit class ExecutionCompanionCascadingExtensions(ex: Execution.type) {
     def fromFn(fn: (Config, Mode) => FlowDef): Execution[Unit] = ???
 
@@ -131,7 +159,7 @@ trait CascadingExtensions {
         Execution.getMode.flatMap { mode =>
         val cachedFile = DistributedCacheFile.cachedFile(path, mode)
 
-        withConfig(fn(cachedFile))(_.addDistributedCacheFiles(cachedFile))
+        Execution.withConfig(fn(cachedFile))(_.addDistributedCacheFiles(cachedFile))
     }
 
     /*

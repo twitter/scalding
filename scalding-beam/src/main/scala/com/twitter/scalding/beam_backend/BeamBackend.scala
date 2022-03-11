@@ -17,7 +17,7 @@ import com.twitter.scalding.typed.functions.{
 object BeamPlanner {
   def plan(
       config: Config,
-      srcs: Resolver[TypedSource, BeamSource]
+      srcs: Resolver[Input, BeamSource]
   ): FunctionK[TypedPipe, BeamOp] = {
     implicit val kryoCoder: KryoCoder = new KryoCoder(defaultKryoCoderConfiguration(config))
     Memoize.functionK(f = new Memoize.RecursiveK[TypedPipe, BeamOp] {

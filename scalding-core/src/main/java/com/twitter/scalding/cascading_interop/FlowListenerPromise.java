@@ -26,12 +26,14 @@ import scala.concurrent.Promise$;
 import scala.concurrent.Promise;
 import scala.concurrent.Future;
 
+import com.twitter.scalding.FatalExecutionError;
+
 /*
  * The cascading API uses a raw type here which is difficult to
  * deal with in scala
  */
 public class FlowListenerPromise {
-  public static class FlowStopException extends Exception {
+  public static class FlowStopException extends FatalExecutionError {
     public FlowStopException(String message) {
       super(message);
     }

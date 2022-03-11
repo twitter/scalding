@@ -25,6 +25,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.bijection.Injection
 import com.twitter.chill.Externalizer
 import com.twitter.scalding.TDsl._
+import com.twitter.scalding.Dsl._
 import com.twitter.scalding._
 import com.twitter.scalding.commons.scheme.KeyValueByteScheme
 import com.twitter.scalding.commons.tap.VersionedTap
@@ -72,8 +73,6 @@ class VersionedKeyValSource[K, V](
     extends Source
     with Mappable[(K, V)]
     with TypedSink[(K, V)] {
-
-  import Dsl._
 
   val keyField = "key"
   val valField = "value"
@@ -236,8 +235,6 @@ object RichPipeEx extends java.io.Serializable {
 }
 
 class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends java.io.Serializable {
-  import Dsl._
-
   // Tap reads existing data from the `sourceVersion` (or latest
   // version) of data specified in `src`, merges the K,V pairs from
   // the pipe in using an implicit `Monoid[V]` and sinks all results
@@ -252,7 +249,7 @@ class TypedRichPipeEx[K: Ordering, V: Monoid](pipe: TypedPipe[(K, V)]) extends j
         pipe
       else {
         val oldPairs = TypedPipe
-          .from[(K, V)](src.read, (0, 1))
+          .fromPipe[(K, V)](src.read, (0, 1))
           .map { case (k, v) => (k, v, 0) }
 
         val newPairs = pipe.sumByLocalKeys.map { case (k, v) => (k, v, 1) }
