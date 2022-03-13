@@ -20,6 +20,8 @@ import com.twitter.scalding._
 
 import org.apache.hadoop.mapred.JobConf
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCompanionCascadingExtensions
+
 /**
  * This class is used to construct unit tests in scalding which use Hadoop's MiniCluster to more fully
  * simulate and test the logic which is deployed in a job.

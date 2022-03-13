@@ -35,6 +35,8 @@ object ExecutionOptimizationRules {
             Literal.Const(e)
           case (e: Execution.UniqueIdExecution[a], _) =>
             Literal.Const(e)
+          case (e: Execution.BackendExecution[a], _) =>
+            Literal.Const(e)
           case (e: Execution.WriteExecution[a], _) =>
             Literal.Const(e)
           case (e: Execution.GetCounters[a], f) =>
@@ -94,6 +96,7 @@ object ExecutionOptimizationRules {
           case Execution.UniqueIdExecution(_)    => false
           case Execution.WriteExecution(_, _, _) => false
           case Execution.FlatMapped(_, _)        => false
+          case Execution.BackendExecution(_)     => false
 
           case Execution.ReaderExecution         => areFastExecution(tail)
           case Execution.FutureConst(_)          => areFastExecution(tail)

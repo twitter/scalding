@@ -47,7 +47,7 @@ val sharedSettings = Seq(
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   doc / javacOptions := Seq("-source", "1.8"),
   Compile / compile / wartremoverErrors ++= Seq(
-    Wart.OptionPartial,
+    //Wart.OptionPartial, // this kills the ability to use serialization macros
     Wart.ExplicitImplicitTypes,
     Wart.LeakingSealed,
     Wart.Return,
@@ -335,7 +335,7 @@ lazy val scaldingSpark = module("spark")
       "org.apache.spark" %% "spark-sql" % sparkVersion
     )
   )
-  .dependsOn(scaldingBase)
+  .dependsOn(scaldingCore)
 
 lazy val scaldingBeam = module("beam")
   .settings(

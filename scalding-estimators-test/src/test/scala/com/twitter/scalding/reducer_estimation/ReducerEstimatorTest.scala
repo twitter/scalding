@@ -7,6 +7,8 @@ import java.io.FileNotFoundException
 import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCompanionCascadingExtensions
+
 object HipJob {
   val InSrcFileSize = 2496L
   val inPath = getClass.getResource("/hipster.txt") // file size is 2496 bytes

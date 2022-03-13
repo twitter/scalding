@@ -114,35 +114,6 @@ object Stats {
 }
 
 /**
- * Used to inject a typed unique identifier to uniquely name each scalding flow. This is here mostly to deal
- * with the case of testing where there are many concurrent threads running Flows. Users should never have to
- * worry about these
- */
-case class UniqueID(get: String) {
-  assert(get.indexOf(',') == -1, "UniqueID cannot contain ,: " + get)
-}
-
-object UniqueID {
-  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
-  private val id = new java.util.concurrent.atomic.AtomicInteger(0)
-
-  def getRandom: UniqueID = {
-    // This number is unique as long as we don't create more than 10^6 per milli
-    // across separate jobs. which seems very unlikely.
-    val unique = (System.currentTimeMillis << 20) ^ (id.getAndIncrement.toLong)
-    UniqueID(unique.toString)
-  }
-
-  implicit def getIDFor(implicit fd: FlowDef): UniqueID =
-    /*
-     * In real deploys, this can even be a constant, but for testing
-     * we need to allocate unique IDs to prevent different jobs running
-     * at the same time from touching each other's counters.
-     */
-    UniqueID(System.identityHashCode(fd).toString)
-}
-
-/**
  * Wrapper around a FlowProcess useful, for e.g. incrementing counters.
  */
 object RuntimeStats extends java.io.Serializable {
@@ -189,7 +160,7 @@ object RuntimeStats extends java.io.Serializable {
    */
   def getKeepAliveFunction(implicit flowDef: FlowDef): () => Unit = {
     // Don't capture the flowDef, just the id
-    val id = UniqueID.getIDFor(flowDef)
+    val id = UniqueID.fromSystemHashCode(flowDef)
     () => {
       val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
       flowProcess.keepAlive()

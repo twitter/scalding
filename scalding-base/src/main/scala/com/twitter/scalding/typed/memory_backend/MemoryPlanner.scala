@@ -112,6 +112,12 @@ object MemoryPlanner {
             }
           }
           sum(slk)
+        case (TrappedPipe(input, _), rec) =>
+          // this can be interpretted as catching any exception
+          // on the map-phase until the next partition, so it can
+          // be made to work by changing Op to return all
+          // the values that fail on error
+          rec(input)
 
         case (WithDescriptionTypedPipe(pipe, descriptions), rec) =>
           // TODO we could optionally print out the descriptions

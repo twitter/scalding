@@ -108,6 +108,43 @@ object Job {
     }
 }
 
+trait UntypedPipeExtensions0 extends UntypedPipeExtensions1 {
+
+  /**
+   * you should never call this directly, it is here to make the DSL work. Just know, you can treat a Pipe as
+   * a RichPipe within a Job
+   */
+  implicit def pipeToRichPipe(pipe: Pipe): RichPipe = new RichPipe(pipe)
+
+  // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
+  implicit def toPipe[T](iter: Iterable[T])(implicit set: TupleSetter[T], conv: TupleConverter[T]): Pipe =
+    IterableSource[T](iter)(set, conv).read(flowDef, mode)
+
+  implicit def iterableToRichPipe[T](
+      iter: Iterable[T]
+  )(implicit set: TupleSetter[T], conv: TupleConverter[T]): RichPipe =
+    RichPipe(toPipe(iter)(set, conv))
+}
+
+trait UntypedPipeExtensions1 {
+  def mode: Mode
+  protected def flowDef: FlowDef
+
+  // We do put things here to lower the priority below typed extensions we
+  // mix in at the same level as UntypedCascadingExtensions0
+  // this is using subclassing to control priority
+
+  /**
+   * This implicit is to enable RichPipe methods directly on Source objects, such as map/flatMap, etc...
+   *
+   * Note that Mappable is a subclass of Source, and Mappable already has mapTo and flatMapTo BUT WITHOUT
+   * incoming fields used (see the Mappable trait). This creates some confusion when using these methods (this
+   * is an unfortunate mistake in our design that was not noticed until later). To remove ambiguity,
+   * explicitly call .read on any Source that you begin operating with a mapTo/flatMapTo.
+   */
+  implicit def sourceToRichPipe(src: Source): RichPipe = new RichPipe(src.read(flowDef, mode))
+}
+
 /**
  * Job is a convenience class to make using Scalding easier. Subclasses of Job automatically have a number of
  * nice implicits to enable more concise syntax, including: conversion from Pipe, Source or Iterable to
@@ -127,7 +164,7 @@ object Job {
  * write code that rather than returning values, it returns a (FlowDef, Mode) => T, these functions can be
  * combined Monadically using algebird.monad.Reader.
  */
-class Job(val args: Args) extends FieldConversions with CascadingExtensions with java.io.Serializable {
+class Job(val args: Args) extends FieldConversions with CascadingExtensions with UntypedPipeExtensions0 with java.io.Serializable {
   Tracing.init()
 
   // Set specific Mode
@@ -140,31 +177,6 @@ class Job(val args: Args) extends FieldConversions with CascadingExtensions with
     val flowProcess = RuntimeStats.getFlowProcessForUniqueId(uniqueId)
     flowProcess.keepAlive()
   }
-
-  /**
-   * you should never call this directly, it is here to make the DSL work. Just know, you can treat a Pipe as
-   * a RichPipe within a Job
-   */
-  implicit def pipeToRichPipe(pipe: Pipe): RichPipe = new RichPipe(pipe)
-
-  /**
-   * This implicit is to enable RichPipe methods directly on Source objects, such as map/flatMap, etc...
-   *
-   * Note that Mappable is a subclass of Source, and Mappable already has mapTo and flatMapTo BUT WITHOUT
-   * incoming fields used (see the Mappable trait). This creates some confusion when using these methods (this
-   * is an unfortunate mistake in our design that was not noticed until later). To remove ambiguity,
-   * explicitly call .read on any Source that you begin operating with a mapTo/flatMapTo.
-   */
-  implicit def sourceToRichPipe(src: Source): RichPipe = new RichPipe(src.read)
-
-  // This converts an Iterable into a Pipe or RichPipe with index (int-based) fields
-  implicit def toPipe[T](iter: Iterable[T])(implicit set: TupleSetter[T], conv: TupleConverter[T]): Pipe =
-    IterableSource[T](iter)(set, conv).read
-
-  implicit def iterableToRichPipe[T](
-      iter: Iterable[T]
-  )(implicit set: TupleSetter[T], conv: TupleConverter[T]): RichPipe =
-    RichPipe(toPipe(iter)(set, conv))
 
   // Provide args as an implicit val for extensions such as the Checkpoint extension.
   implicit protected def _implicitJobArgs: Args = args
@@ -181,7 +193,7 @@ class Job(val args: Args) extends FieldConversions with CascadingExtensions with
   }
 
   // Do this before the job is submitted, because the flowDef is transient
-  private[this] val uniqueId = UniqueID.getIDFor(flowDef)
+  protected implicit val uniqueId: UniqueID = UniqueID.fromSystemHashCode(flowDef)
 
   /**
    * Copy this job By default, this uses reflection and the single argument Args constructor

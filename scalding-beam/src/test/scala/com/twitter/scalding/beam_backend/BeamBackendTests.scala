@@ -10,6 +10,8 @@ import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scala.io.Source
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
+
 class BeamBackendTests extends FunSuite with BeforeAndAfter {
 
   private var pipelineOptions: PipelineOptions = _

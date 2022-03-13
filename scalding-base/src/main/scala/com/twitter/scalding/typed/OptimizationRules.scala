@@ -93,6 +93,8 @@ object OptimizationRules {
           Literal.Const(src)
         case (p: SumByLocalKeys[a, b], f) =>
           widen(Unary(f(p.input), SumByLocalKeys(_: TypedPipe[(a, b)], p.semigroup)))
+        case (p: TrappedPipe[a], f) =>
+          Unary(f(p.input), TrappedPipe[a](_: TypedPipe[a], p.sink))
         case (p: WithDescriptionTypedPipe[a], f) =>
           Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.descriptions))
         case (p: WithOnComplete[a], f) =>
@@ -440,6 +442,12 @@ object OptimizationRules {
       case MergedTypedPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(MergedTypedPipe(a, _))
       case ReduceStepPipe(rs)                        => forkReduceStep(on, rs).map(ReduceStepPipe(_))
       case SumByLocalKeys(p, sg)                     => maybeFork(on, p).map(SumByLocalKeys(_, sg))
+      case t @ TrappedPipe(_, _) =>
+        def go[A](t: TrappedPipe[A]): Option[TypedPipe[A]] = {
+          val TrappedPipe(p, sink) = t
+          maybeFork(on, p).map(TrappedPipe(_, sink))
+        }
+        go(t)
       case CoGroupedPipe(cgp)              => forkCoGroup(on, cgp).map(CoGroupedPipe(_))
       case WithOnComplete(p, fn)           => maybeFork(on, p).map(WithOnComplete(_, fn))
       case WithDescriptionTypedPipe(p, ds) => maybeFork(on, p).map(WithDescriptionTypedPipe(_, ds))
@@ -763,7 +771,7 @@ object OptimizationRules {
         // First, these are non-mapped pipes.
         case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_) | ReduceStepPipe(_) | CoGroupedPipe(_) |
             CrossPipe(_, _) | CounterPipe(_) | CrossValue(_, _) | DebugPipe(_) | ForceToDisk(_) | Fork(_) |
-            HashCoGroup(_, _, _) | SumByLocalKeys(_, _) | WithOnComplete(_, _) =>
+            HashCoGroup(_, _, _) | SumByLocalKeys(_, _) | TrappedPipe(_, _) | WithOnComplete(_, _) =>
           Mapper.unmapped(tp) :: Nil
         case FilterKeys(p, fn) =>
           toMappers(p).map(_.combine(FlatMappedFn.fromFilter(FilterKeysToFilter(fn))))
@@ -1026,6 +1034,7 @@ object OptimizationRules {
       case MergedTypedPipe(a, EmptyTypedPipe)                                     => a
       case ReduceStepPipe(rs: ReduceStep[_, _, _]) if rs.mapped == EmptyTypedPipe => EmptyTypedPipe
       case SumByLocalKeys(EmptyTypedPipe, _)                                      => EmptyTypedPipe
+      case TrappedPipe(EmptyTypedPipe, _)                                      => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp)                                => EmptyTypedPipe
       case WithOnComplete(EmptyTypedPipe, _) =>
         EmptyTypedPipe // there is nothing to do, so we never have workers complete

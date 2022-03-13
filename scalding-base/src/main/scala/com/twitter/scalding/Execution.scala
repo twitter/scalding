@@ -36,16 +36,8 @@ import scala.concurrent.{
   Promise
 }
 import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 import scala.util.hashing.MurmurHash3
-
-trait Config {
-  def getArgs: Args
-  def setScaldingExecutionId(eid: String): Config
-  def ensureUniqueId: (UniqueID, Config)
-  def getExecutionOptimization: Boolean
-}
-
-trait UniqueID
 
 /**
  * Execution[T] represents and computation that can be run and will produce a value T and keep track of
@@ -233,6 +225,8 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
           import Execution._
           val fn = Memoize.function[RefPair[Execution[Any], Execution[Any]], Boolean] {
             case (RefPair(a, b), _) if a eq b => true
+            case (RefPair(BackendExecution(fn0), BackendExecution(fn1)), rec) =>
+              fn0 == fn1
             case (RefPair(FlatMapped(ex0, fn0), FlatMapped(ex1, fn1)), rec) =>
               (fn0 == fn1) && rec(RefPair(ex0, ex1))
             case (RefPair(FutureConst(fn0), FutureConst(fn1)), rec) =>
@@ -654,10 +648,13 @@ object Execution {
         )
       )
   }
+
   /*
-   * This allows you to run any cascading flowDef as an Execution.
-  private[scalding] final case class FlowDefExecution(result: (Config, Mode) => FlowDef)
-      extends Execution[Unit] {
+   * This allows you to run platform specific executions
+   */
+  private[scalding] final case class BackendExecution[A](
+    result: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)])
+    extends Execution[A] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit
         cec: ConcurrentExecutionContext
     ) =
@@ -665,20 +662,13 @@ object Execution {
         cache.getOrElseInsert(
           conf,
           this,
-          cache.writer match {
-            case ar: AsyncFlowDefRunner =>
-              ar.validateAndRun(conf)(result(_, mode)).map(m => ((), Map(m)))
-            case other =>
-              CFuture.failed(
-                new IllegalArgumentException(
-                  s"requires cascading Mode producing AsyncFlowDefRunner, found mode: $mode and writer ${other.getClass}: $other"
-                )
-              )
+          try result(conf, mode, cache.writer, cec).map { case (id, c, a) => (a, Map(id -> c))}
+          catch {
+            case NonFatal(e) => CFuture.failed(e)
           }
         )
       )
   }
-   */
 
   /*
    * This is here so we can call without knowing the type T
@@ -942,6 +932,19 @@ object Execution {
   /** Returns a constant Execution[Unit] */
   val unit: Execution[Unit] = from(())
 
+  /**
+   * This should be avoided if at all possible. It is here to allow backend authors to implement
+   * custom executions which should very rarely be needed.
+   * 
+   * The CFuture returned should have three elements:
+   * 1. unique ID (Long) for the scope of the Writer
+   * 2. Counter values created by this Execution
+   * 3. the final result of the Execution (maybe Unit)
+   */
+  def backendSpecific[A](
+    fn: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)]
+  ): Execution[A] =
+      BackendExecution(fn)
 
   def forceToDisk[T](t: TypedPipe[T]): Execution[TypedPipe[T]] =
     WriteExecution(ToWrite.Force(t), Nil, { case (conf, _, w, cec) => w.getForced(conf, t)(cec) })

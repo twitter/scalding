@@ -14,6 +14,8 @@ import com.twitter.scalding.typed.functions.{
   ScaldingPriorityQueueMonoid
 }
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
+
 object BeamPlanner {
   def plan(
       config: Config,

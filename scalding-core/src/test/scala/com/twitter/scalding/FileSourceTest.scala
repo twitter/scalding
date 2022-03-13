@@ -41,7 +41,7 @@ class SequenceFileInputJob(args: Args) extends Job(args) {
 
 class MultipleTextLineFilesJob(args: Args) extends Job(args) {
   try {
-    MultipleTextLineFiles(args.list("input"): _*).write(Tsv("output0"))
+    MultipleTextLineFiles(args.list("input"): _*).pipe.write(Tsv("output0"))
   } catch {
     case e: Exception => e.printStackTrace()
   }

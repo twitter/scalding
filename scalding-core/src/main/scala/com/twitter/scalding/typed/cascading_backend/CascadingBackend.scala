@@ -16,13 +16,13 @@ import com.twitter.scalding.{
   FlowState,
   FlowStateMap,
   GroupBuilder,
-  HadoopMode,
   IncrementCounters,
   IterableSource,
   MapsideReduce,
   Mode,
   RichFlowDef,
   RichPipe,
+  Source,
   TupleConverter,
   TupleGetter,
   TupleSetter,
@@ -372,16 +372,16 @@ object CascadingBackend {
               CascadingPipe.single[T](merged, flowDef)
           }
         case SourcePipe(input) =>
-          val typedSrc = input match {
+          input match {
             case ts: TypedSource[_] =>
-              ts.asInstanceOf[TypedSource[T]]
+              val typedSrc = ts.asInstanceOf[TypedSource[T]]
+              val fd = new FlowDef
+              val pipe = typedSrc.read(fd, mode)
+              CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
             case notCascading =>
               throw new IllegalArgumentException(
                 s"cascading mode requires TypedSource, found: $notCascading of class ${notCascading.getClass}")
           }
-          val fd = new FlowDef
-          val pipe = typedSrc.read(fd, mode)
-          CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
         case sblk @ SumByLocalKeys(_, _) =>
           def go[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] = {
             val cp = rec(sblk.input)
@@ -396,6 +396,34 @@ object CascadingBackend {
           }
 
           go(sblk)
+        case trapped: TrappedPipe[u] =>
+          val cp: CascadingPipe[_ <: u] = rec(trapped.input)
+          val tc: TupleConverter[u] =
+            TupleConverter.asSuperConverter(cp.converter)
+          import trapped._
+          // TODO: with diamonds in the graph, this might not be correct
+          // it seems cascading requires puts the immediate tuple that
+          // caused the exception, so if you addTrap( ).map(f).map(g)
+          // and f changes the tuple structure, if we don't collapse the
+          // maps into 1 operation, cascading can write two different
+          // schemas into the trap, making it unreadable.
+          // this basically means there can only be one operation in between
+          // a trap and a forceToDisk or a groupBy/cogroupBy (any barrier).
+          (sink, sink) match {
+            case (src: Source, tsink: TypedSink[u @ unchecked]) =>
+              val fd = new FlowDef
+              val pp: Pipe = cp.toPipe[u](tsink.sinkFields, fd, TupleSetter.asSubSetter(tsink.setter))
+              val pipe = RichPipe.assignName(pp)
+              fd.addTrap(pipe, src.createTap(Write)(mode))
+              CascadingPipe[u](pipe, tsink.sinkFields, fd, tc)
+            case _ =>
+              // it should be safe to only warn here because
+              // if the trap is removed and there is a failure the job should fail
+              logger.warn(
+                s"Trap on ${trapped.input} does not have a valid output: ${trapped.sink}" +
+                  ", a subclass of Source and TypedSink is required\nTrap ignored")
+              cp
+          }
         case WithDescriptionTypedPipe(input, descs) =>
           @annotation.tailrec
           def loop[A](
@@ -468,10 +496,7 @@ object CascadingBackend {
       setter: TupleSetter[U]
   ): Pipe = {
 
-    val phases = defaultOptimizationRules(mode match {
-      case h: HadoopMode => Config.fromHadoop(h.jobConf)
-      case _             => Config.empty
-    })
+    val phases = defaultOptimizationRules(Config.defaultFrom(mode))
     val (d, id) = Dag(p, OptimizationRules.toLiteral)
     val d1 = d.applySeq(phases)
     val p1 = d1.evaluate(id)
@@ -498,10 +523,7 @@ object CascadingBackend {
         require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
         (nextDag, (id, tw.sink) :: items)
       }
-      val phases = defaultOptimizationRules(mode match {
-        case h: HadoopMode => Config.fromHadoop(h.jobConf)
-        case _             => Config.empty
-      })
+      val phases = defaultOptimizationRules(Config.defaultFrom(mode))
       val optDag = rootedDag.applySeq(phases)
       def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
         val optPipe = optDag.evaluate(pair._1)

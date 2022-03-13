@@ -15,8 +15,6 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import scala.collection.JavaConverters._
-
 import scala.util.{Failure, Try}
 
 object JobStats {

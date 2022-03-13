@@ -208,6 +208,7 @@ abstract class Source extends java.io.Serializable {
   def readAtSubmitter[T](implicit mode: Mode, conv: TupleConverter[T]): Stream[T] = {
     validateTaps(mode)
     val tap = createTap(Read)(mode)
+
     CascadingMode
       .cast(mode)
       .openForRead(Config.defaultFrom(mode), tap)

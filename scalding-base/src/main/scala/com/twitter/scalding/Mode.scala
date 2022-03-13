@@ -6,6 +6,13 @@ trait Mode extends java.io.Serializable {
    * Make the Execution.Writer for this platform
    */
   def newWriter(): Execution.Writer
+
+  /**
+   * Config.defaultForMode converts this map into
+   * a Config (we don't use Config here to avoid
+   * a circular dependency)
+   */
+  def defaultConfig: Map[String, String] = Map.empty
 }
 
 object Mode {

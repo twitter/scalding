@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, Local, TupleConverter, TupleGetter}
+import com.twitter.scalding.{Config, Execution, Local}
 import com.twitter.scalding.source.{NullSink, TypedText}
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import com.stripe.dagon.Dag
@@ -118,7 +118,10 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                         WithDescriptionTypedPipe(
                           Fork(
                             WithDescriptionTypedPipe(
-                              SourcePipe(TypedText.tsv[Int]("oyg")),
+                              TrappedPipe(
+                                SourcePipe(TypedText.tsv[Int]("oyg")),
+                                TypedText.tsv[Int]("a3QasphTfqhd1namjb")
+                              ),
                               List(("org.scalacheck.Gen$R $class.map(Gen.scala:237)", true))
                             )
                           ),
@@ -233,6 +236,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
               WithDescriptionTypedPipe(
                 CrossValue(
                   WithDescriptionTypedPipe(
+                    TrappedPipe[Int](
                       WithDescriptionTypedPipe(
                         ForceToDisk(
                           WithDescriptionTypedPipe(
@@ -274,8 +278,9 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                           )
                         ),
                         List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
-                      )
-                    ,
+                      ),
+                      TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac")
+                    ),
                     List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
                   ),
                   LiteralValue(2)

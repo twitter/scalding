@@ -28,6 +28,12 @@ trait CascadingMode extends Mode {
   def newWriter(): Execution.Writer =
     new AsyncFlowDefRunner(this)
 
+  override def defaultConfig: Map[String, String] =
+    (this match {
+      case m: HadoopMode => Config.hadoopWithDefaults(m.jobConf)
+      case _             => Config.unitTestDefault
+    }).toMap
+
   /*
    * Using a new FlowProcess, which is only suitable for reading outside
    * of a map/reduce job, open a given tap and return the TupleEntryIterator

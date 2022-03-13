@@ -6,8 +6,9 @@ import cascading.tap.Tap
 import cascading.tuple.{Fields, TupleEntryIterator}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
+import java.net.URI
 import org.apache.hadoop.conf.Configuration
-import scala.concurrent.Future
+import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.Try
 
 import com.twitter.scalding._
@@ -70,7 +71,8 @@ trait CascadingExtensions {
 
   }
 
-  implicit class TypedPipeCascadingExtensions[T](pipe: TypedPipe[T]) {
+  abstract class TypedPipeLikeExtensions[A, T <: A] {
+    def toTypedPipe: TypedPipe[T]
     /**
      * Export back to a raw cascading Pipe. useful for interop with the scalding Fields API or with Cascading
      * code. Avoid this if possible. Prefer to write to TypedSink.
@@ -80,7 +82,7 @@ trait CascadingExtensions {
     )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
         // we have to be cafeful to pass the setter we want since a low priority implicit can always be
         // found :(
-        CascadingBackend.toPipe[U](pipe.withLine, fieldNames)(flowDef, mode, setter)
+        CascadingBackend.toPipe[U](toTypedPipe.withLine, fieldNames)(flowDef, mode, setter)
 
     /** use a TupleUnpacker to flatten U out into a cascading Tuple */
     def unpackToPipe[U >: T](
@@ -100,7 +102,7 @@ trait CascadingExtensions {
             dest.validateTaps(mode)
             Execution.from(TypedPipe.from(dest))
         } catch {
-            case ivs: InvalidSourceException => pipe.writeThrough(dest)
+            case ivs: InvalidSourceException => toTypedPipe.writeThrough(dest)
         }
     }
 
@@ -112,40 +114,30 @@ trait CascadingExtensions {
      */
     def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
         // We do want to record the line number that this occurred at
-        val next = pipe.withLine
+        val next = toTypedPipe.withLine
         FlowStateMap.merge(flowDef, FlowState.withTypedWrite(next, dest, mode))
         next
     }
   }
 
-  implicit class KeyedListCascadingExtensions[K, V, S[K, +V] <: KeyedListLike[K, V, S]](keyed: KeyedListLike[K, V, S]) {
-    final def toPipe[U >: (K, V)](
-        fieldNames: Fields
-    )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
-      keyed.toTypedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+  implicit class TypedPipeCascadingExtensions[T](val toTypedPipe: TypedPipe[T]) extends TypedPipeLikeExtensions[Any, T]
 
-    def make[U >: (K, V)](dest: Source with TypedSink[(K, V)] with TypedSource[U]): Execution[TypedPipe[U]] =
-      keyed.toTypedPipe.make(dest)
-
-    def write(dest: TypedSink[(K, V)])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[(K, V)] =
-      keyed.toTypedPipe.write(dest)
+  implicit class KeyedListCascadingExtensions[K, V, S[K, +V] <: KeyedListLike[K, V, S]](
+    keyed: KeyedListLike[K, V, S]) extends TypedPipeLikeExtensions[(K, V), (K, V)] {
+    def toTypedPipe = keyed.toTypedPipe
   }
 
-  implicit class ValuePipeCascadingExtensions[T](value: ValuePipe[T]) {
-    final def toPipe[U >: T](
-        fieldNames: Fields
-    )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
-      value.toTypedPipe.toPipe[U](fieldNames)(flowDef, mode, setter)
+  implicit class ValuePipeCascadingExtensions[T](value: ValuePipe[T]) extends TypedPipeLikeExtensions[Any, T] {
+    def toTypedPipe = value.toTypedPipe
+  }
 
-    def make[U >: T](dest: Source with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
-      value.toTypedPipe.make(dest)
-
-    def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] =
-      value.toTypedPipe.write(dest)
+  implicit class MappableCascadingExtensions[T](mappable: Mappable[T]) extends TypedPipeLikeExtensions[Any, T] {
+    def toTypedPipe = TypedPipe.from(mappable)
   }
 
   implicit class ExecutionCompanionCascadingExtensions(ex: Execution.type) {
-    def fromFn(fn: (Config, Mode) => FlowDef): Execution[Unit] = ???
+    def fromFn(fn: (Config, Mode) => FlowDef): Execution[Unit] =
+      Execution.backendSpecific(CascadingExtensions.FromFnToBackend(fn))
 
     /**
      * Distributes the file onto each map/reduce node, so you can use it for Scalding source creation and
@@ -298,6 +290,271 @@ trait CascadingExtensions {
         )
 
   }
+
+  implicit class ConfigCascadingExtensions(config: Config) {
+    import cascading.flow.{FlowListener, FlowProps, FlowStepListener, FlowStepStrategy}
+    import com.twitter.bijection.{Base64String, Injection}
+    import com.twitter.chill.{Externalizer, ExternalizerCodec, ExternalizerInjection, KryoInstantiator}
+    import com.twitter.chill.config.{ConfiguredInstantiator, ScalaMapConfig}
+    import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
+    import org.apache.hadoop.mapreduce.MRJobConfig
+    import org.apache.hadoop.mapred.JobConf
+    import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
+    /**
+     * Add files to be localized to the config. Intended to be used by user code.
+     * @param cachedFiles
+     *   CachedFiles to be added
+     * @return
+     *   new Config with cached files
+     */
+    def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
+      cachedFiles.foldLeft(config) { case (config, file) =>
+        file match {
+          case hadoopFile: HadoopCachedFile =>
+            /*
+             * @see
+             *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
+             */
+            val newFile = DistributedCacheFile
+              .symlinkedUriFor(hadoopFile.sourceUri)
+              .toString
+
+            val newFiles = config
+              .get(MRJobConfig.CACHE_FILES)
+              .map(files => files + "," + newFile)
+              .getOrElse(newFile)
+
+            config + (MRJobConfig.CACHE_FILES -> newFiles)
+          case _ => config
+        }
+      }
+
+    /**
+     * Get cached files from config
+     */
+    def getDistributedCachedFiles: Seq[CachedFile] =
+      config
+        .get(MRJobConfig.CACHE_FILES)
+        .toSeq
+        .flatMap(_.split(","))
+        .filter(_.nonEmpty)
+        .map { file =>
+          val symlinkedUri = new URI(file)
+          val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
+          HadoopCachedFile(qualifiedUri)
+        }
+
+
+    def getCascadingSerializationTokens: Map[Int, String] =
+      config.get(Config.CascadingSerializationTokens)
+        .map(CascadingTokenUpdater.parseTokens)
+        .getOrElse(Map.empty[Int, String])
+
+    /*
+    * If a ConfiguredInstantiator has been set up, this returns it
+    */
+    def getKryo: Option[KryoInstantiator] =
+      if (config.toMap.contains(ConfiguredInstantiator.KEY))
+        Some((new ConfiguredInstantiator(ScalaMapConfig(config.toMap))).getDelegate)
+      else None
+
+    /**
+     * This function gets the set of classes that have been registered to Kryo. They may or may not be used in
+     * this job, but Cascading might want to be made aware that these classes exist
+     */
+    def getKryoRegisteredClasses: Set[Class[_]] =
+      // Get an instance of the Kryo serializer (which is populated with registrations)
+      config.getKryo
+        .map { kryo =>
+          val cr = kryo.newKryo.getClassResolver
+
+          @annotation.tailrec
+          def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
+            Option(cr.getRegistration(idx)) match {
+              case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
+              case None      => acc // The first null is the end of the line
+            }
+
+          kryoClasses(0, Set[Class[_]]())
+        }
+        .getOrElse(Set())
+
+    /*
+    * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
+    * needs to be last and this method handles this for you:
+    * hadoop, cascading, [userHadoop,] kyro
+    * is the order.
+    *
+    * Kryo uses the ConfiguredInstantiator, which is configured either by reflection:
+    * Right(classOf[MyInstantiator]) or by serializing given Instantiator instance
+    * with a class to serialize to bootstrap the process:
+    * Left((classOf[serialization.KryoHadoop], myInstance))
+    */
+    def setSerialization(
+        kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
+        userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil
+    ): Config = {
+
+      // Hadoop and Cascading should come first
+      val first: Seq[Class[_ <: HSerialization[_]]] =
+        Seq(
+          classOf[org.apache.hadoop.io.serializer.WritableSerialization],
+          classOf[cascading.tuple.hadoop.TupleSerialization],
+          classOf[serialization.WrappedSerialization[_]]
+        )
+      // this must come last
+      val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
+      val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
+      // Make sure we keep the order correct and don't add the required fields twice
+      val hadoopSer = first ++ (userHadoop.filterNot(required)) ++ last
+
+      val hadoopKV = Config.IoSerializationsKey -> hadoopSer.map(_.getName).mkString(",")
+
+      // Now handle the Kryo portion which uses another mechanism
+      val chillConf = ScalaMapConfig(config.toMap)
+      kryo match {
+        case Left((bootstrap, inst)) => ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
+        case Right(refl)             => ConfiguredInstantiator.setReflect(chillConf, refl)
+      }
+      val withKryo = Config(chillConf.toMap + hadoopKV)
+
+      val kryoClasses = withKryo.getKryoRegisteredClasses
+        .filterNot(_.isPrimitive) // Cascading handles primitives and arrays
+        .filterNot(_.isArray)
+
+      withKryo.addCascadingClassSerializationTokens(kryoClasses)
+    }
+
+    def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
+      config + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
+
+    /**
+     * The serialization of your data will be smaller if any classes passed between tasks in your job are listed
+     * here. Without this, strings are used to write the types IN EACH RECORD, which compression probably takes
+     * care of, but compression acts AFTER the data is serialized into buffers and spilling has been triggered.
+     */
+    def addCascadingClassSerializationTokens(clazzes: Set[Class[_]]): Config =
+      CascadingTokenUpdater.update(config, clazzes)
+
+    def getSubmittedTimestamp: Option[RichDate] =
+      config.get(Config.ScaldingFlowSubmittedTimestamp).map(ts => RichDate(ts.toLong))
+    /*
+    * Sets the timestamp only if it was not already set. This is here
+    * to prevent overwriting the submission time if it was set by an
+    * previously (or externally)
+    */
+    def maybeSetSubmittedTimestamp(date: RichDate = RichDate.now): (Option[RichDate], Config) =
+      config.update(Config.ScaldingFlowSubmittedTimestamp) {
+        case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
+        case None         => (Some(date.timestamp.toString), None)
+      }
+    /**
+     * configure flow listeneres for observability
+     */
+    def addFlowListener(flowListenerProvider: (Mode, Config) => FlowListener): Config = {
+      val serializedListener = flowListenerSerializer(flowListenerProvider)
+      config.update(Config.FlowListeners) {
+        case None      => (Some(serializedListener), ())
+        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+      }._2
+    }
+
+    def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
+      config.get(Config.FlowListeners).toList
+        .flatMap(s => StringUtility.fastSplit(s, ","))
+        .map(flowListenerSerializer.invert(_))
+
+    def addFlowStepListener(flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
+      val serializedListener = flowStepListenerSerializer(flowListenerProvider)
+      config.update(Config.FlowStepListeners) {
+        case None      => (Some(serializedListener), ())
+        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+      }._2
+    }
+
+    def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
+      config.get(Config.FlowStepListeners).toList
+        .flatMap(s => StringUtility.fastSplit(s, ","))
+        .map(flowStepListenerSerializer.invert(_))
+
+    def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
+      val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
+      config.update(Config.FlowStepStrategies) {
+        case None      => (Some(serializedListener), ())
+        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+      }._2
+    }
+
+    def clearFlowStepStrategies: Config =
+      config.-(Config.FlowStepStrategies)
+
+    def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
+      config.get(Config.FlowStepStrategies).toList
+        .flatMap(s => StringUtility.fastSplit(s, ","))
+        .map(flowStepStrategiesSerializer.invert(_))
+
+    private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =
+      Injection.connect[T, Externalizer[T], Array[Byte], Base64String, String]
+
+    private[scalding] def flowStepListenerSerializer =
+      buildInj[(Mode, Config) => FlowStepListener]
+    private[scalding] def flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
+    private[scalding] def flowStepStrategiesSerializer =
+      buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
+    private[scalding] def argsSerializer = buildInj[Map[String, List[String]]]
+  }
+
+  implicit class ConfigCompanionCascadingExtensions(config: Config.type) {
+    import org.apache.hadoop.conf.Configuration
+    /*
+    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
+    * made on calling here. If you need to update Config, you do it by modifying it.
+    * This copy also forces all expressions in values to be evaluated, freezing them
+    * as well.
+    */
+    def fromHadoop(conf: Configuration): Config =
+      // use `conf.get` to force JobConf to evaluate expressions
+      Config(conf.asScala.map(e => e.getKey -> conf.get(e.getKey)).toMap)
+
+    /*
+    * For everything BUT SERIALIZATION, this prefers values in conf,
+    * but serialization is generally required to be set up with Kryo
+    * (or some other system that handles general instances at runtime).
+    */
+    def hadoopWithDefaults(conf: Configuration): Config =
+      ((Config.default ++ fromHadoop(conf))
+        .setSerialization(Right(classOf[serialization.KryoHadoop]))
+        .setScaldingVersion
+        .setHRavenHistoryUserName)
+  }
+
+  implicit class UniqueIDCompanionCascadingExtensions(uid: UniqueID.type) {
+    def getIDFor(implicit fd: FlowDef): UniqueID =
+      /*
+      * In real deploys, this can even be a constant, but for testing
+      * we need to allocate unique IDs to prevent different jobs running
+      * at the same time from touching each other's counters.
+      */
+      UniqueID.fromSystemHashCode(fd)
+  }
 }
 
-object CascadingExtensions extends CascadingExtensions
+object CascadingExtensions extends CascadingExtensions {
+  // This case class preserves equality on Executions
+  private case class FromFnToBackend(fn: (Config, Mode) => FlowDef) extends
+    Function4[Config, Mode, Execution.Writer, ConcurrentExecutionContext, CFuture[(Long, ExecutionCounters, Unit)]] {
+    def apply(conf: Config, mode: Mode, writer: Execution.Writer, ec: ConcurrentExecutionContext) =
+      writer match {
+        case afdr: AsyncFlowDefRunner =>
+          afdr
+            .validateAndRun(conf)(fn(_, mode))(ec)
+            .map { case (id, cnt) => (id, cnt, ()) }(ec)
+        case _ =>
+          CFuture.failed(
+            new IllegalArgumentException(
+              s"Execution.fromFn requires cascading Mode producing AsyncFlowDefRunner, found mode: $mode and writer ${writer.getClass}: $writer"
+            )
+          )
+      }
+  }
+}

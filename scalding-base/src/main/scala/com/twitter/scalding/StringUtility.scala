@@ -1,6 +1,8 @@
 package com.twitter.scalding
 
 object StringUtility {
+  private[this] val emptyCons = "" :: Nil
+
   private def fastSplitHelper(
       text: String,
       key: String,
@@ -11,9 +13,9 @@ object StringUtility {
     val firstIndex = text.indexOf(key, from)
     if (firstIndex == -1) {
       if (from < textLength) {
-        List(text.substring(from))
+        text.substring(from) :: Nil
       } else {
-        List("")
+        emptyCons
       }
     } else {
       // the text till the separator should be kept in any case

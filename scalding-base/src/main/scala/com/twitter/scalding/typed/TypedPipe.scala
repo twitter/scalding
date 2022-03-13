@@ -185,6 +185,11 @@ object TypedPipe extends Serializable {
   final case class SumByLocalKeys[K, V](input: TypedPipe[(K, V)], @transient semigroup: Semigroup[V])
       extends TypedPipe[(K, V)]
 
+  final case class TrappedPipe[T](
+      input: TypedPipe[T],
+      @transient sink: Output[T]
+  ) extends TypedPipe[T]
+
   /**
    * descriptions carry a boolean that is true if we should deduplicate the message. This is used for line
    * numbers which are otherwise often duplicated
@@ -215,7 +220,15 @@ object TypedPipe extends Serializable {
     )
     def distinct(implicit ord: Ordering[T]): TypedPipe[T] =
       pipe.asKeys.sum.keys
-
+    /**
+     * If any errors happen below this line, but before a groupBy, write to a TypedSink
+     */
+    @deprecated(
+      "semantics of addTrap are hard to follow, prefer to use Either and manually write out error branchs",
+      "0.18.0"
+    )
+    def addTrap(trapSink: Output[T]): TypedPipe[T] =
+      TypedPipe.TrappedPipe[T](pipe, trapSink).withLine
   }
 
   /**
@@ -472,6 +485,8 @@ object TypedPipe extends Serializable {
       case (RefPair(SourcePipe(srcA), SourcePipe(srcB)), _) => srcA == srcB
       case (RefPair(SumByLocalKeys(leftIn, leftSg), SumByLocalKeys(rightIn, rightSg)), rec) =>
         (leftSg == rightSg) && rec(RefPair(leftIn, rightIn))
+      case (RefPair(TrappedPipe(inA, sinkA), TrappedPipe(inB, sinkB)), rec) =>
+        (sinkA == sinkB) && rec(RefPair(inA, inB))
       case (
             RefPair(WithDescriptionTypedPipe(leftIn, leftDesc), WithDescriptionTypedPipe(rightIn, rightDesc)),
             rec
