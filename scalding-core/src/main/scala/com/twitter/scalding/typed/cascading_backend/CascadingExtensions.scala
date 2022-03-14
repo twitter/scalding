@@ -6,7 +6,6 @@ import cascading.tap.Tap
 import cascading.tuple.{Fields, TupleEntryIterator}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
-import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.Try
@@ -148,11 +147,7 @@ trait CascadingExtensions {
      * [[com.twitter.scalding.filecache.DistributedCacheFile]]
      */
      def withCachedFile[T](path: String)(fn: CachedFile => Execution[T]): Execution[T] =
-        Execution.getMode.flatMap { mode =>
-        val cachedFile = DistributedCacheFile.cachedFile(path, mode)
-
-        Execution.withConfig(fn(cachedFile))(_.addDistributedCacheFiles(cachedFile))
-    }
+       DistributedCacheFile.execution(path)(fn)
 
     /*
     * This runs a Flow using Cascading's built in threads. The resulting JobStats
@@ -296,8 +291,7 @@ trait CascadingExtensions {
     import com.twitter.bijection.{Base64String, Injection}
     import com.twitter.chill.{Externalizer, ExternalizerCodec, ExternalizerInjection, KryoInstantiator}
     import com.twitter.chill.config.{ConfiguredInstantiator, ScalaMapConfig}
-    import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
-    import org.apache.hadoop.mapreduce.MRJobConfig
+    import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
     import org.apache.hadoop.mapred.JobConf
     import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
     /**
@@ -308,42 +302,13 @@ trait CascadingExtensions {
      *   new Config with cached files
      */
     def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
-      cachedFiles.foldLeft(config) { case (config, file) =>
-        file match {
-          case hadoopFile: HadoopCachedFile =>
-            /*
-             * @see
-             *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
-             */
-            val newFile = DistributedCacheFile
-              .symlinkedUriFor(hadoopFile.sourceUri)
-              .toString
-
-            val newFiles = config
-              .get(MRJobConfig.CACHE_FILES)
-              .map(files => files + "," + newFile)
-              .getOrElse(newFile)
-
-            config + (MRJobConfig.CACHE_FILES -> newFiles)
-          case _ => config
-        }
-      }
+      DistributedCacheFile.addDistributedCacheFiles(config, cachedFiles: _*)
 
     /**
      * Get cached files from config
      */
     def getDistributedCachedFiles: Seq[CachedFile] =
-      config
-        .get(MRJobConfig.CACHE_FILES)
-        .toSeq
-        .flatMap(_.split(","))
-        .filter(_.nonEmpty)
-        .map { file =>
-          val symlinkedUri = new URI(file)
-          val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
-          HadoopCachedFile(qualifiedUri)
-        }
-
+      DistributedCacheFile.getDistributedCachedFiles(config)
 
     def getCascadingSerializationTokens: Map[Int, String] =
       config.get(Config.CascadingSerializationTokens)
