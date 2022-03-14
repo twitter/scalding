@@ -440,22 +440,30 @@ object CascadingBackend {
           // a trap and a forceToDisk or a groupBy/cogroupBy (any barrier).
           (sink, sink) match {
             case (src: Source, tsink: TypedSink[u @ unchecked]) =>
-              val fd = new FlowDef
-              val tc: TupleConverter[u] =
-                TupleConverter.asSuperConverter(
-                  converterFrom(tsink.setter) match {
-                    case Some(c) => c
-                    case None =>
-                      logger.warn(
-                        s"Add trap inverse of sink not found: ${trapped}, using: ${cp.converter}")
-                      cp.converter
-                  }
-                )
+              val optTC: Option[TupleConverter[u]] =
+                (sink match {
+                  case tsrc: TypedSource[u @ unchecked] if tsrc.converter.arity == tsink.setter.arity =>
+                    Some(tsrc.converter)
+                  case _ =>
+                      converterFrom(tsink.setter)
+                }).map(TupleConverter.asSuperConverter(_))
 
-              val pp: Pipe = cp.toPipe[u](tsink.sinkFields, fd, TupleSetter.asSubSetter(tsink.setter))
-              val pipe = RichPipe.assignName(pp)
-              fd.addTrap(pipe, src.createTap(Write)(mode))
-              CascadingPipe[u](pipe, tsink.sinkFields, fd, tc)
+
+              optTC match {
+                case Some(tc) =>
+                  val fd = new FlowDef
+                  val pp: Pipe = cp.toPipe[u](tsink.sinkFields, fd, TupleSetter.asSubSetter(tsink.setter))
+                  val pipe = RichPipe.assignName(pp)
+                  fd.addTrap(pipe, src.createTap(Write)(mode))
+                  CascadingPipe[u](pipe, tsink.sinkFields, fd, tc)
+                case None =>
+                  logger.warn(
+                    s"No TupleConverter found for ${trapped}. Use a TypedSink that is also a TypedSource. Found sink: ${sink}")
+                  // we just ignore the trap in this case.
+                  // if the job doesn't fail, the trap would be empty anyway,
+                  // if the job does fail, we will see the failure
+                  cp
+              }
             case _ =>
               // it should be safe to only warn here because
               // if the trap is removed and there is a failure the job should fail
