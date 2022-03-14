@@ -40,7 +40,24 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
+// these are override functions for sbt-dynver (plugin for resolving project version from git tags)
+// by default, "dirty" SNAPSHOTS include hour-minute in the version string
+// we can't have this behaviour because some tests write files to the repo while also expecting a stable version string
+// here we disable this feature of appending timestamps to snapshot versions
+def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
+  val dirtySuffix = "" // do not append dirty suffix
+  if (out.isCleanAfterTag) out.ref.dropPrefix + dirtySuffix // no commit info if clean after tag
+  else out.ref.dropPrefix + out.commitSuffix.mkString("-", "-", "") + dirtySuffix
+}
+def fallbackVersion(d: java.util.Date): String = "HEAD" // this edge case is not relevant as it is only triggered on non-git repos
+
+
 val sharedSettings = Seq(
+  version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
+  dynver := {
+    val d = new java.util.Date
+    sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
+  },
   organization := "com.twitter",
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
