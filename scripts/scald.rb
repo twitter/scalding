@@ -58,8 +58,7 @@ CONFIG_RC = begin
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
 BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
-SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
+SCALDING_VERSION=`./sbt -Dsbt.supershell=false "print scalding-core / version" -error`
 
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
