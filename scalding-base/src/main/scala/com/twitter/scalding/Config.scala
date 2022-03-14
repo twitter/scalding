@@ -17,6 +17,7 @@ package com.twitter.scalding
 
 import com.twitter.scalding.serialization.{Serialization, RequireOrderedSerializationMode}
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering.{ordSer => serializer}
+import java.util.Base64
 import java.security.MessageDigest
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import scala.util.{Failure, Success, Try}
@@ -104,25 +105,17 @@ abstract class Config extends Serializable {
   def getArgs: Args = get(Config.ScaldingJobArgsSerialized) match {
     case None => new Args(Map.empty)
     case Some(str) =>
-      val mapSer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
-      // TODO replace this with base64 from jdk
-      val bytes = (0 until str.length / 2).map { idx =>
-        Integer.parseInt(str.substring(2 * idx, 2 * idx + 2), 16).toByte
-      }
-      .toArray
-
+      val bytes = Base64.getDecoder.decode(str)
       val bais = new ByteArrayInputStream(bytes)
-      new Args(mapSer.read(bais).get)
+      new Args(argMapSerializer.read(bais).get)
   }
 
   def setArgs(args: Args): Config = {
     val mapSer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
     val baos = new ByteArrayOutputStream()
-    mapSer.write(baos, args.m).get
+    argMapSerializer.write(baos, args.m).get
     val bytes = baos.toByteArray
-    // TODO replace this with base64 from jdk
-    def toHexString(bytes: Array[Byte]): String = bytes.map("%02X".format(_)).mkString
-    val str = toHexString(bytes)
+    val str = Base64.getEncoder.encodeToString(bytes)
 
     this
       .+(Config.ScaldingJobArgs -> args.toString)
@@ -532,4 +525,6 @@ object Config {
         else Failure(new Exception("unhandled configurations: " + unhandled.toString))
       }
   }
+
+  private def argMapSerializer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
 }
