@@ -4,8 +4,7 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 source ${BASE_DIR}/scripts/common.sh
 SHORT_SCALA_VERSION=${TRAVIS_SCALA_VERSION%.*}
-SCALDING_VERSION=`./sbt -Dsbt.supershell=false "print scalding-core / version" -error`
-SCALDING_VERSION=`echo $SCALDING_VERSION | xargs` # trim trailing whitepace chars
+SCALDING_VERSION=`./sbt -Dsbt.log.noformat=true -Dsbt.supershell=false "print scalding-core / version" -error`
 
 export CLASSPATH=tutorial/execution-tutorial/target/scala-${SHORT_SCALA_VERSION}/execution-tutorial-assembly-${SCALDING_VERSION}.jar
 time java -jar tutorial/execution-tutorial/target/scala-${SHORT_SCALA_VERSION}/execution-tutorial-assembly-${SCALDING_VERSION}.jar \

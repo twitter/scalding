@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # fetch all tags for sbt-dynver to properly resolve scalding version
 
       - uses: actions/setup-java@v2
         with:
@@ -39,14 +41,8 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         run: |
-          # add any file to mark git history with unstaged changes
-          # this triggers sbt-dynver to enter "SNAPSHOT" mode
-          # see this table for more info: https://github.com/sbt/sbt-dynver#detail
-          touch RELEASE_IS_SNAPSHOT
-
-          # release snapshot
-          # snapshots will be versioned in the form of <latest version tag>-<head of commit SHA>-<hour><minute>-SNAPSHOT
-          # example: 0.16.1-RC2-360-be812e7b-20220314-0959-SNAPSHOT
+          # snapshots will be versioned in the form of <latest version tag>-<commit SHA>-SNAPSHOT
+          # example: 0.16.1-RC2-377-0c41d610-SNAPSHOT
           ./sbt "release"
 
       # whenever a release is triggered through Github UI, this will run to publish a final release

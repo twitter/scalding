@@ -41,23 +41,24 @@ val jlineVersion = "2.14.3"
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
 // these are override functions for sbt-dynver (plugin for resolving project version from git tags)
-// by default, "dirty" SNAPSHOTS include hour-minute in the version string
-// we can't have this behaviour because some tests write files to the repo while also expecting a stable version string
-// here we disable this feature of appending timestamps to snapshot versions
+// the default behaviour includes timestamps in SNAPSHOT versions which is incompatible with tests and unnecessary
+// implementation based on source in https://github.com/sbt/sbt-dynver/blob/master/dynver/src/main/scala/sbtdynver/DynVer.scala
 def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
-  val dirtySuffix = "" // do not append dirty suffix
-  if (out.isCleanAfterTag) out.ref.dropPrefix + dirtySuffix // no commit info if clean after tag
-  else out.ref.dropPrefix + out.commitSuffix.mkString("-", "-", "") + dirtySuffix
+  // head commit has a version tag, in this case we know that we have a final release
+  // we should publish in the form of <VERSION>
+  if (out.commitSuffix.isEmpty) {
+    return out.ref.dropPrefix
+  }
+  // head commit has no tag (ie. PR has been merged into develop)
+  // we should publish in the form of <latest VERSION>-<commit SHA>-SNAPSHOT
+  out.ref.dropPrefix + out.commitSuffix.mkString("-", "-", "") + "-SNAPSHOT"
 }
-def fallbackVersion(d: java.util.Date): String = "HEAD" // this edge case is not relevant as it is only triggered on non-git repos
-
+// this edge case is not relevant as it is only triggered on non-git repos
+def fallbackVersion(d: java.util.Date): String = "HEAD"
 
 val sharedSettings = Seq(
   version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
-  dynver := {
-    val d = new java.util.Date
-    sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
-  },
+  dynver := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
   organization := "com.twitter",
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
