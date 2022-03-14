@@ -102,7 +102,8 @@ val sharedSettings = Seq(
   // Publishing options:
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseVersionBump := sbtrelease.Version.Bump.Minor, // need to tweak based on mima results
+  ThisBuild / dynverSonatypeSnapshots := true, // prepend "-SNAPSHOT" to version tag when releasing a snapshot style build
+  ThisBuild / dynverSeparator := "-", // use a URI friendly separator for snapshots instead of '+' char
   publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
@@ -113,12 +114,14 @@ val sharedSettings = Seq(
         publishArtifacts,
         ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       )
-    // todo : implement workflow for final tagged releases that are not snapshots
-    else Seq[ReleaseStep](
-
-    )
-  ),
-  publishTo := Some(
+      else Seq[ReleaseStep](
+        checkSnapshotDependencies,
+        runClean,
+        publishArtifacts,
+        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      )
+    ),
+    publishTo := Some(
     if (version.value.trim.endsWith("SNAPSHOT"))
       Opts.resolver.sonatypeSnapshots
     else Opts.resolver.sonatypeStaging
