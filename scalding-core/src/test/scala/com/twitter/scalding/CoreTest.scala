@@ -1868,6 +1868,40 @@ class ForceToDiskTest extends WordSpec with Matchers {
   }
 }
 
+class ThrowsErrorsJob(args: Args) extends Job(args) {
+   Tsv("input", ('letter, 'x)).read
+     .addTrap(Tsv("trapped"))
+     .map(('letter, 'x) -> 'yPrime) { fields: Product =>
+       val x = fields.productElement(1).asInstanceOf[Int]
+       if (x == 1) throw new Exception("Erroneous Ones") else x
+     }
+     .write(Tsv("output"))
+ }
+
+ class ItsATrapTest extends WordSpec with Matchers {
+   import Dsl._
+
+   "An AddTrap" should {
+     val input = List(("a", 1), ("b", 2), ("c", 3), ("d", 1), ("e", 2))
+
+     JobTest(new ThrowsErrorsJob(_))
+       .source(Tsv("input", ('letter, 'x)), input)
+       .sink[(String, Int)](Tsv("output")) { outBuf =>
+         "must contain all numbers in input except for 1" in {
+           outBuf.toList.sorted shouldBe List(("b", 2), ("c", 3), ("e", 2))
+         }
+       }
+       .sink[(String, Int)](Tsv("trapped")) { outBuf =>
+         "must contain all 1s and fields in input" in {
+           outBuf.toList.sorted shouldBe List(("a", 1), ("d", 1))
+         }
+       }
+       .run
+       .finish()
+   }
+ }
+
+
 object TypedThrowsErrorsJob {
   val input = TypedTsv[(String, Int)]("input")
   val output = TypedTsv[(String, Int)]("output")
@@ -1881,6 +1915,18 @@ object TypedThrowsErrorsJob {
   def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
 }
 
+class TypedThrowsErrorsJob(args: Args) extends Job(args) {
+   import TypedThrowsErrorsJob._
+
+   TypedPipe
+     .from(input)
+     .map(trans1(_))
+     .addTrap(trap1)
+     .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
+     .addTrap(trap2)
+     .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
+     .write(output)
+ }
 
 object TypedThrowsErrorsJob2 {
   val input = TypedTsv[(String, Int)]("input")
@@ -1891,6 +1937,68 @@ object TypedThrowsErrorsJob2 {
   def trans2(x: (String, Int, Int)) = x match { case (str, int1, int2) => (str, int1, int2 * int1, str) }
   def trans3(x: (String, Int, Int, String)) = x match { case (str, int, _, _) => (str, int) }
 }
+
+class TypedThrowsErrorsJob2(args: Args) extends Job(args) {
+   import TypedThrowsErrorsJob2._
+
+   TypedPipe
+     .from(input)
+     .map(trans1(_))
+     .addTrap(trap)
+     .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
+     .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
+     .write(output)
+ }
+
+ class TypedItsATrapTest extends WordSpec with Matchers {
+
+   "A Typed AddTrap with many traps" should {
+     import TypedThrowsErrorsJob._
+
+     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
+
+     JobTest(new TypedThrowsErrorsJob(_))
+       .source(input, data)
+       .typedSink(output) { outBuf =>
+         "output must contain all odd except first" in {
+           outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
+         }
+       }
+       .typedSink(trap1) { outBuf =>
+         "trap1 must contain only the first" in {
+           outBuf.toList.sorted shouldBe List(("a", 1, 1))
+         }
+       }
+       .typedSink(trap2) { outBuf =>
+         "trap2 must contain the even numbered" in {
+           outBuf.toList.sorted shouldBe List(("b", 2, 4, "b"), ("d", 4, 16, "d"))
+         }
+       }
+       .run
+       .finish()
+   }
+
+   "A Typed AddTrap with many erroneous maps" should {
+     import TypedThrowsErrorsJob2._
+
+     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
+
+     JobTest(new TypedThrowsErrorsJob2(_))
+       .source(input, data)
+       .typedSink(output) { outBuf =>
+         "output must contain all odd except first" in {
+           outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
+         }
+       }
+       .typedSink(TypedThrowsErrorsJob2.trap) { outBuf =>
+         "trap must contain the first and the evens" in {
+           outBuf.toList.sorted shouldBe List(("a", 1, 1), ("b", 2, 2), ("d", 4, 4))
+         }
+       }
+       .run
+       .finish()
+   }
+ }
 
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")

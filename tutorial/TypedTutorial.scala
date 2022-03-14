@@ -205,7 +205,7 @@ class TypedTutorial(args : Args) extends Job(args) {
       // To convert to a typed pipe, we must specify the fields we want 
       // and their types:
       val lines: TypedPipe[(Long,String)] =
-        TypedPipe.from[(Long,String)](rawPipe, ('offset,'line))
+        TypedPipe.fromPipe[(Long,String)](rawPipe, ('offset,'line))
       
       // We can operate on this typed pipe as above, and come up with a 
       // different set of fields

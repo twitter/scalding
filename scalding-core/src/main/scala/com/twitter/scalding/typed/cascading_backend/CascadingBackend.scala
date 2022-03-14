@@ -46,6 +46,37 @@ import org.slf4j.LoggerFactory
 object CascadingBackend {
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
+  def converterFrom[A](ts: TupleSetter[A]): Option[TupleConverter[A]] =
+    (ts match {
+      case TupleSetter.TupleSetter1() => Some(TupleConverter.TupleConverter1(TupleGetter.Casting()))
+      case TupleSetter.TupleSetter2() => Some(TupleConverter.TupleConverter2(TupleGetter.Casting(), TupleGetter.Casting()))
+      case TupleSetter.TupleSetter3() => Some(TupleConverter.TupleConverter3(
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting()))
+      case TupleSetter.TupleSetter4() => Some(TupleConverter.TupleConverter4(
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting()))
+      case TupleSetter.TupleSetter5() => Some(TupleConverter.TupleConverter5(
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting()))
+      case TupleSetter.TupleSetter6() => Some(TupleConverter.TupleConverter6(
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting(),
+        TupleGetter.Casting()))
+      case _ =>
+        // TODO: we should generate all 22 of these functions and the inverses
+        None
+    }).asInstanceOf[Option[TupleConverter[A]]]
+
   def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
     (t, s) match {
       case (TupleConverter.Single(TupleGetter.Casting()), TupleSetter.Single())                => true
@@ -398,8 +429,6 @@ object CascadingBackend {
           go(sblk)
         case trapped: TrappedPipe[u] =>
           val cp: CascadingPipe[_ <: u] = rec(trapped.input)
-          val tc: TupleConverter[u] =
-            TupleConverter.asSuperConverter(cp.converter)
           import trapped._
           // TODO: with diamonds in the graph, this might not be correct
           // it seems cascading requires puts the immediate tuple that
@@ -412,6 +441,17 @@ object CascadingBackend {
           (sink, sink) match {
             case (src: Source, tsink: TypedSink[u @ unchecked]) =>
               val fd = new FlowDef
+              val tc: TupleConverter[u] =
+                TupleConverter.asSuperConverter(
+                  converterFrom(tsink.setter) match {
+                    case Some(c) => c
+                    case None =>
+                      logger.warn(
+                        s"Add trap inverse of sink not found: ${trapped}, using: ${cp.converter}")
+                      cp.converter
+                  }
+                )
+
               val pp: Pipe = cp.toPipe[u](tsink.sinkFields, fd, TupleSetter.asSubSetter(tsink.setter))
               val pipe = RichPipe.assignName(pp)
               fd.addTrap(pipe, src.createTap(Write)(mode))
