@@ -300,8 +300,13 @@ lazy val scaldingCore = module("core")
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     ),
+    // builInfo here refers to https://github.com/sbt/sbt-buildinfo
+    // for logging purposes, src/main/scala/com/twitter/package.scala would like to know the scalding-version
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "com.twitter.scalding", // the codegen would be under com.twitter.scalding.BuildInfo
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
+  .enablePlugins(BuildInfoPlugin)
   .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
 
 lazy val scaldingCats = module("cats")
