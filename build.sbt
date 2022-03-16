@@ -40,7 +40,25 @@ val jlineVersion = "2.14.3"
 
 val printDependencyClasspath = taskKey[Unit]("Prints location of the dependencies")
 
+// these are override functions for sbt-dynver (plugin for resolving project version from git tags)
+// the default behaviour includes timestamps in SNAPSHOT versions which is incompatible with tests and unnecessary
+// implementation based on source in https://github.com/sbt/sbt-dynver/blob/master/dynver/src/main/scala/sbtdynver/DynVer.scala
+def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
+  // head commit has a version tag, in this case we know that we have a final release
+  // we should publish in the form of <VERSION>
+  if (out.commitSuffix.isEmpty) {
+    return out.ref.dropPrefix
+  }
+  // head commit has no tag (ie. PR has been merged into develop)
+  // we should publish in the form of <latest VERSION>-<commit SHA>-SNAPSHOT
+  out.ref.dropPrefix + out.commitSuffix.mkString("-", "-", "") + "-SNAPSHOT"
+}
+// this edge case is not relevant as it is only triggered on non-git repos
+def fallbackVersion(d: java.util.Date): String = "HEAD"
+
 val sharedSettings = Seq(
+  version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
+  dynver := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
   organization := "com.twitter",
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
@@ -102,25 +120,26 @@ val sharedSettings = Seq(
   // Publishing options:
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseVersionBump := sbtrelease.Version.Bump.Minor, // need to tweak based on mima results
+  ThisBuild / dynverSonatypeSnapshots := true, // prepend "-SNAPSHOT" to version tag when releasing a snapshot style build
+  ThisBuild / dynverSeparator := "-", // use a URI friendly separator for snapshots instead of '+' char
   publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-    pushChanges
-  ),
-  publishTo := Some(
+  releaseProcess := (
+    if (version.value.trim.endsWith("SNAPSHOT"))
+      Seq[ReleaseStep](
+        runClean,
+        publishArtifacts,
+        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      )
+      else Seq[ReleaseStep](
+        checkSnapshotDependencies,
+        runClean,
+        publishArtifacts,
+        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      )
+    ),
+    publishTo := Some(
     if (version.value.trim.endsWith("SNAPSHOT"))
       Opts.resolver.sonatypeSnapshots
     else Opts.resolver.sonatypeStaging
