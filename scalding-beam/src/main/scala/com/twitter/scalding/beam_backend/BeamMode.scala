@@ -19,7 +19,6 @@ case class BeamMode(
     sources: Resolver[TypedSource, BeamSource],
     sink: Resolver[TypedSink, BeamSink]
 ) extends Mode {
-
   def newWriter(): Writer = new BeamWriter(this)
 }
 
@@ -116,6 +115,7 @@ class BeamTempFileSource[T](coder: Coder[T], output: String) extends BeamSource[
 case class TempSourceDoFn[T](coder: Coder[T]) extends DoFn[MatchResult.Metadata, T] {
   @ProcessElement
   def processElement(c: DoFn[MatchResult.Metadata, T]#ProcessContext): Unit = {
+    // We do not split the files produced in the previous stage and use a single thread per file
     val stream = Channels.newInputStream(FileSystems.open(c.element().resourceId()))
     val it = InputStreamIterator.closingIterator(stream, coder)
     while (it.hasNext) c.output(it.next())

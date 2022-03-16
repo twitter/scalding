@@ -3,7 +3,7 @@ package com.twitter.scalding.beam_backend
 import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
 import com.twitter.scalding.{Config, Execution, TextLine, TypedPipe}
-import java.io.File
+import java.io.{File, FileFilter}
 import java.nio.file.Paths
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
@@ -394,9 +394,18 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     val tmpPath1 = tmpPath("tp1")
     val tmpPath2 = tmpPath("tp2")
 
+    val tmpDir = new File(tmpPath("forced"))
+    tmpDir.mkdirs()
+
     val forcedExecution =
       TypedPipe
         .from(Seq(5, 3, 2, 6, 1, 4))
+        .map { e =>
+          // This tests that forcedExecution runs only once. If it runs twice createFile will return false
+          val fileCreated = new File(tmpDir, e.toString).createNewFile()
+          if (!fileCreated) sys.error("File already exists")
+          e
+        }
         .forceToDiskExecution
 
     val tp1 = forcedExecution.flatMap { forced =>
@@ -407,10 +416,13 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       forced.filter(_ % 2 == 1).map(_.toString).writeExecution(TextLine(tmpPath2))
     }
 
-    Execution.zip(tp1, tp2).waitFor(Config.empty, bmode)
+    tp1.flatMap(_ => tp2).waitFor(Config.empty, bmode)
+
     val result1 = getContents(testPath, tmpPath1).sorted
     val result2 = getContents(testPath, tmpPath2).sorted
 
+    // verify that temp dir contains no files
+    assert(new File(testPath, "0").listFiles.filter(_.isFile).isEmpty)
     assert(result1 == Seq("2", "4", "6") && result2 == Seq("1", "3", "5"))
   }
 
@@ -418,8 +430,14 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     val input = Seq(5, 3, 2, 6, 1, 4)
     val bmode = BeamMode.default(pipelineOptions)
 
-    val iter = TypedPipe.from(input).toIterableExecution.waitFor(Config.empty, bmode).get
-    assert(iter.toSet == input.toSet)
+    val out = TypedPipe
+      .from(input)
+      .toIterableExecution
+      .flatMap(iter => Execution.from(iter.toArray))
+      .waitFor(Config.empty, bmode)
+      .get
+
+    assert(out.toSet == input.toSet)
   }
 
   test("toIterableExecutionWithJoin") {
@@ -431,6 +449,7 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       .mapValues { case (left, right) => left + right }
       .filter(_._1 % 5 == 0)
       .toIterableExecution
+      .flatMap(iter => Execution.from(iter.toArray))
       .waitFor(Config.empty, bmode)
       .get
 

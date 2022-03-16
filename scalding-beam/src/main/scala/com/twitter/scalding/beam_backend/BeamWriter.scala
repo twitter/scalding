@@ -3,7 +3,6 @@ package com.twitter.scalding.beam_backend
 import cascading.flow.FlowDef
 import com.stripe.dagon.Rule
 import com.twitter.scalding.Execution.{ToWrite, Writer}
-import com.twitter.scalding.beam_backend.BeamWriter.tempSources
 import com.twitter.scalding.typed._
 import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters, Mode}
 import java.nio.channels.Channels
@@ -15,6 +14,7 @@ import org.apache.beam.sdk.io.FileSystems
 import scala.annotation.tailrec
 import scala.collection.convert.decorateAsScala._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.JavaConversions._
 
 case class TempSource[A](path: String, coder: Coder[A]) extends TypedSource[A] {
   def error = sys.error("beam sources don't work in cascading")
@@ -27,9 +27,20 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
 
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
+  val tempSources: scala.collection.concurrent.Map[TypedPipe[_], TempSource[_]] =
+    new ConcurrentHashMap[TypedPipe[_], TempSource[_]]().asScala
+
   override def start(): Unit = ()
 
-  override def finished(): Unit = ()
+  override def finished(): Unit = {
+    // `FileSystems.delete` fails to delete dir as it contains files, hence we delete the files in the dir
+    // There is a temp subdir with name starting with "." which is not matched by `match`.
+    // So currently a single empty dir is left behind.
+    val resources = tempSources.values
+      .map(ts => s"${ts.path}*")
+      .flatMap(path => FileSystems.`match`(path).metadata().map(_.resourceId()))
+    FileSystems.delete(resources.toList)
+  }
 
   def getForced[T](conf: Config, initial: TypedPipe[T])(implicit
       cec: ExecutionContext
@@ -81,7 +92,7 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
               }
               rec(xs)
             }
-            case OptimizedWrite(pipe, toWrite) if !tempSources.contains(pipe) =>
+            case OptimizedWrite(pipe, toWrite @ (ToIterable(_) | Force(_))) if !tempSources.contains(pipe) =>
               val opt = toWrite match {
                 case ToIterable(o) => o
                 case Force(o)      => o
@@ -95,7 +106,9 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
               // This does not run till the final `pipeline.run` step
               new BeamTempFileSink(outputPath).write(pcoll, conf)
               tempSources += ((pipe, TempSource(outputPath, pcoll.getCoder)))
-            case _ => ()
+
+            // we know that tempSources.contains(pipe) on this branch, which means it was already computed.
+            case OptimizedWrite(_, ToIterable(_) | Force(_)) => ()
           }
       }
     rec(optimizedWrites)
@@ -114,11 +127,6 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
 }
 
 object BeamWriter {
-  // We create BeamWriter per Execution. To share forcedPipes across executions we are putting
-  // these tempSources in the companion object
-  val tempSources: scala.collection.concurrent.Map[TypedPipe[_], TempSource[_]] =
-    new ConcurrentHashMap[TypedPipe[_], TempSource[_]]().asScala
-
   // This is manually done because java.nio.File.Paths & java.io.File convert "gs://" to "gs:/"
   def addPaths(basePath: String, dir: String): String =
     if (basePath.endsWith("/")) s"$basePath$dir/"
