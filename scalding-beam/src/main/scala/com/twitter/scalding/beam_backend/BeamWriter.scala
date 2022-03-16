@@ -14,6 +14,7 @@ import org.apache.beam.sdk.io.FileSystems
 import scala.annotation.tailrec
 import scala.collection.convert.decorateAsScala._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.blocking
 import scala.collection.JavaConversions._
 
 case class TempSource[A](path: String, coder: Coder[A]) extends TypedSource[A] {
@@ -56,17 +57,20 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
     tempSources.get(initial) match {
       case Some(TempSource(path, coder)) =>
         val c: Coder[T] = coder.asInstanceOf[Coder[T]]
+        Future {
+          blocking {
+            // Single dir by default just matches the dir, we need to match files inside
+            val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
+            val records = matchedResources.iterator.flatMap { resource =>
+              val is = Channels.newInputStream(FileSystems.open(resource.resourceId()))
+              InputStreamIterator.closingIterator(is, c)
+            }.toList
 
-        // Single dir by default just matches the dir, we need to match files inside
-        val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
-        val records = matchedResources.iterator.flatMap { resource =>
-          val is = Channels.newInputStream(FileSystems.open(resource.resourceId()))
-          InputStreamIterator.closingIterator(is, c)
-        }.toList
-
-        Future(new Iterable[T] {
-          override def iterator: Iterator[T] = records.toIterator
-        })
+            new Iterable[T] {
+              override def iterator: Iterator[T] = records.toIterator
+            }
+          }
+        }
       case _ => Future.failed(new IllegalStateException(s"TypedPipe = $initial has no existing Iterable"))
     }
 

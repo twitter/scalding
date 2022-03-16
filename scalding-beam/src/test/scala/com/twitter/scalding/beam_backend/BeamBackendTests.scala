@@ -3,7 +3,7 @@ package com.twitter.scalding.beam_backend
 import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
 import com.twitter.scalding.{Config, Execution, TextLine, TypedPipe}
-import java.io.{File, FileFilter}
+import java.io.File
 import java.nio.file.Paths
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
