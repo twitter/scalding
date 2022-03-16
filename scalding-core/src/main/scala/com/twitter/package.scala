@@ -16,6 +16,7 @@ limitations under the License.
 package com.twitter
 
 import org.apache.hadoop.fs.{Path, PathFilter}
+import com.twitter.scalding.BuildInfo
 
 package object scalding {
 
@@ -32,9 +33,10 @@ package object scalding {
   type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
 
   /**
-   * Make sure this is in sync with version.sbt
+   * scaldingVersion is logged sometimes to inform a user of what scalding version they are using
+   * The value is obtained through code gen with https://github.com/sbt/sbt-buildinfo
    */
-  val scaldingVersion: String = "0.18.0"
+  val scaldingVersion: String = BuildInfo.version
 
   object RichPathFilter {
     implicit def toRichPathFilter(f: PathFilter): RichPathFilter = new RichPathFilter(f)
