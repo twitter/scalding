@@ -47,6 +47,7 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
   ): Future[TypedPipe[T]] =
     tempSources.get(initial) match {
       case Some(source) => Future.successful(TypedPipe.from(source).asInstanceOf[TypedPipe[T]])
+      case None => Future.failed(new IllegalStateException(s"TypedPipe = $initial, has not yet been forced"))
     }
 
   def getIterable[T](conf: Config, initial: TypedPipe[T])(implicit
@@ -55,17 +56,18 @@ class BeamWriter(val beamMode: BeamMode) extends Writer {
     tempSources.get(initial) match {
       case Some(TempSource(path, coder)) =>
         val c: Coder[T] = coder.asInstanceOf[Coder[T]]
-        Future(new Iterable[T] {
-          // Single dir by default just matches the dir, we need to match files inside
-          val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
 
-          override def iterator: Iterator[T] =
-            matchedResources.iterator
-              .flatMap { resource =>
-                val is = Channels.newInputStream(FileSystems.open(resource.resourceId()))
-                InputStreamIterator.closingIterator(is, c)
-              }
+        // Single dir by default just matches the dir, we need to match files inside
+        val matchedResources = FileSystems.`match`(s"$path*").metadata().asScala
+        val records = matchedResources.iterator.flatMap { resource =>
+          val is = Channels.newInputStream(FileSystems.open(resource.resourceId()))
+          InputStreamIterator.closingIterator(is, c)
+        }.toList
+
+        Future(new Iterable[T] {
+          override def iterator: Iterator[T] = records.toIterator
         })
+      case _ => Future.failed(new IllegalStateException(s"TypedPipe = $initial has no existing Iterable"))
     }
 
   override def execute(conf: Config, writes: List[ToWrite[_]])(implicit

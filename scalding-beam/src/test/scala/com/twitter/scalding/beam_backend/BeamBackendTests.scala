@@ -389,6 +389,33 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     )
   }
 
+  test("Testing without force to disk") {
+    val bmode = BeamMode.default(pipelineOptions)
+    val tmpPath1 = tmpPath("tp1")
+    val tmpPath2 = tmpPath("tp2")
+
+    val tmpDir = new File(tmpPath("forced"))
+    tmpDir.mkdirs()
+
+    val forcedExecution = Execution.from {
+      TypedPipe
+        .from(Seq(1, 2))
+        .map { e =>
+          // This is called twice and hence second execution will have false values
+          new File(tmpDir, e.toString).createNewFile()
+        }
+    }
+
+    val tp1 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath1)))
+    val tp2 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath2)))
+    tp1.flatMap(_ => tp2).waitFor(Config.empty, bmode)
+
+    val result1 = getContents(testPath, tmpPath1).sorted
+    val result2 = getContents(testPath, tmpPath2).sorted
+
+    assert(result1 == Seq("true", "true") && result2 == Seq("false", "false"))
+  }
+
   test("Force to Disk execution") {
     val bmode = BeamMode.default(pipelineOptions)
     val tmpPath1 = tmpPath("tp1")
@@ -399,23 +426,15 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
 
     val forcedExecution =
       TypedPipe
-        .from(Seq(5, 3, 2, 6, 1, 4))
+        .from(Seq(1, 2))
         .map { e =>
-          // This tests that forcedExecution runs only once. If it runs twice createFile will return false
-          val fileCreated = new File(tmpDir, e.toString).createNewFile()
-          if (!fileCreated) sys.error("File already exists")
-          e
+          // Since this is forced it is called only once. Hence output is always true
+          new File(tmpDir, e.toString).createNewFile()
         }
         .forceToDiskExecution
 
-    val tp1 = forcedExecution.flatMap { forced =>
-      forced.filter(_ % 2 == 0).map(_.toString).writeExecution(TextLine(tmpPath1))
-    }
-
-    val tp2 = forcedExecution.flatMap { forced =>
-      forced.filter(_ % 2 == 1).map(_.toString).writeExecution(TextLine(tmpPath2))
-    }
-
+    val tp1 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath1)))
+    val tp2 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath2)))
     tp1.flatMap(_ => tp2).waitFor(Config.empty, bmode)
 
     val result1 = getContents(testPath, tmpPath1).sorted
@@ -423,7 +442,7 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
 
     // verify that temp dir contains no files
     assert(new File(testPath, "0").listFiles.filter(_.isFile).isEmpty)
-    assert(result1 == Seq("2", "4", "6") && result2 == Seq("1", "3", "5"))
+    assert(result1 == Seq("true", "true") && result2 == Seq("true", "true"))
   }
 
   test("toIterableExecutionTest1") {
@@ -433,7 +452,6 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     val out = TypedPipe
       .from(input)
       .toIterableExecution
-      .flatMap(iter => Execution.from(iter.toArray))
       .waitFor(Config.empty, bmode)
       .get
 
@@ -449,7 +467,6 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       .mapValues { case (left, right) => left + right }
       .filter(_._1 % 5 == 0)
       .toIterableExecution
-      .flatMap(iter => Execution.from(iter.toArray))
       .waitFor(Config.empty, bmode)
       .get
 
