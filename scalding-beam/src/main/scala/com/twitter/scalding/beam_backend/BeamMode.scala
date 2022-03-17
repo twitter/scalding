@@ -7,8 +7,11 @@ import java.io.{EOFException, InputStream}
 import java.nio.channels.{Channels, WritableByteChannel}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.Coder
-import org.apache.beam.sdk.io.{FileIO, TextIO}
+import org.apache.beam.sdk.io.fs.MatchResult
+import org.apache.beam.sdk.io.{FileIO, FileSystems, TextIO}
 import org.apache.beam.sdk.options.PipelineOptions
+import org.apache.beam.sdk.transforms.DoFn.ProcessElement
+import org.apache.beam.sdk.transforms.{Create, DoFn, ParDo}
 import org.apache.beam.sdk.values.PCollection
 
 case class BeamMode(
@@ -40,7 +43,8 @@ object BeamSource extends Serializable {
               case path :: Nil => Some(textLine(path))
               case _           => throw new Exception("Can not accept multiple paths to BeamSource")
             }
-          case _ => None
+          case TempSource(path, coder) => Some(new BeamTempFileSource(coder, path))
+          case _                       => None
         }
     }
   }
@@ -80,7 +84,7 @@ object BeamSink extends Serializable {
     }
 }
 
-class BeamFileIO[T](output: String) extends BeamSink[T] {
+class BeamTempFileSink[T](output: String) extends BeamSink[T] {
   override def write(
       pc: PCollection[_ <: T],
       config: Config
@@ -93,6 +97,28 @@ class BeamFileIO[T](output: String) extends BeamSink[T] {
         .via(new CoderFileSink(pColT.getCoder))
         .to(output)
     )
+  }
+}
+
+class BeamTempFileSource[T](coder: Coder[T], output: String) extends BeamSource[T] {
+  override def read(
+      pipeline: Pipeline,
+      config: Config
+  ): PCollection[_ <: T] =
+    pipeline
+      .apply(Create.of(s"$output/*"))
+      .apply(FileIO.matchAll())
+      .apply(ParDo.of(new TempSourceDoFn[T](coder)))
+      .setCoder(coder)
+}
+
+case class TempSourceDoFn[T](coder: Coder[T]) extends DoFn[MatchResult.Metadata, T] {
+  @ProcessElement
+  def processElement(c: DoFn[MatchResult.Metadata, T]#ProcessContext): Unit = {
+    // We do not split the files produced in the previous stage and use a single thread per file
+    val stream = Channels.newInputStream(FileSystems.open(c.element().resourceId()))
+    val it = InputStreamIterator.closingIterator(stream, coder)
+    while (it.hasNext) c.output(it.next())
   }
 }
 
@@ -127,4 +153,19 @@ class InputStreamIterator[T](stream: InputStream, coder: Coder[T]) extends Itera
       case _: EOFException =>
         hasNextRecord = false
     }
+}
+
+object InputStreamIterator {
+  // an empty Iterator that closes an InputStream when it is iterated
+  def closingIterator[T](stream: InputStream, coder: Coder[T]): Iterator[T] = {
+    def closeIt(is: InputStream): Iterator[T] =
+      new Iterator[T] {
+        def hasNext: Boolean = {
+          is.close()
+          false
+        }
+        def next = Iterator.empty.next
+      }
+    new InputStreamIterator[T](stream, coder) ++ closeIt(stream)
+  }
 }
