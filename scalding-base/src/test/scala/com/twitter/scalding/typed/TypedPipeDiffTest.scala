@@ -1,12 +1,20 @@
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.MapAlgebra
-import com.twitter.scalding.TypedPipeChecker.InMemoryToListEnrichment
+import com.twitter.scalding.Config
 import org.scalacheck.{Arbitrary, Prop}
 import org.scalatest.prop.{Checkers, PropertyChecks}
 import org.scalatest.{FunSuite, PropSpec}
-
 import scala.reflect.ClassTag
+
+object TypedPipeDiffExtensions {
+  implicit class InMemoryToListEnrichment[A](tp: TypedPipe[A]) {
+    def inMemoryToList: List[A] =
+      tp.toIterableExecution.map(_.toList).waitFor(Config.empty, memory_backend.MemoryMode.empty).get
+  }
+}
+
+import TypedPipeDiffExtensions._
 
 class NoOrdering(val x: String) {
 

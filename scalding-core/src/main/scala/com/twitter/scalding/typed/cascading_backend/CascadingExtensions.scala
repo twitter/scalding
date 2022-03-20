@@ -6,13 +6,13 @@ import cascading.tap.Tap
 import cascading.tuple.{Fields, TupleEntryIterator}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
+import com.twitter.scalding.mathematics.{MatrixLiteral, Matrix2}
+import com.twitter.scalding.typed.KeyedListLike
 import org.apache.hadoop.conf.Configuration
 import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
 import scala.util.Try
 
 import com.twitter.scalding._
-
-import com.twitter.scalding.typed.KeyedListLike
 
 import TupleConverter.singleConverter
 import scala.collection.JavaConverters._
@@ -501,6 +501,13 @@ trait CascadingExtensions {
       * at the same time from touching each other's counters.
       */
       UniqueID.fromSystemHashCode(fd)
+  }
+
+  implicit class Matrix2Extensions[R, C, V](mat: Matrix2[R, C, V]) {
+    def write(sink: TypedSink[(R, C, V)])(implicit fd: FlowDef, m: Mode): Matrix2[R, C, V] = {
+      import mat.{rowOrd, colOrd}
+      MatrixLiteral(mat.toTypedPipe.write(sink), mat.sizeHint)
+    }
   }
 }
 

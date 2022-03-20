@@ -15,17 +15,13 @@ limitations under the License.
  */
 package com.twitter.scalding.mathematics
 
-import cascading.flow.FlowDef
 import com.twitter.scalding.serialization.OrderedSerialization2
-import com.twitter.scalding._
-import com.twitter.scalding.typed.{ComputedValue, EmptyValue, LiteralValue, ValuePipe}
+import com.twitter.scalding.typed.{ComputedValue, EmptyValue, LiteralValue, ValuePipe, TypedPipe, Input}
 import com.twitter.algebird.{Field, Group, Monoid, Ring, Semigroup}
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
 import java.io.Serializable
-
-import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
 
 /**
  * This is the future Matrix API. The old one will be removed in scalding 0.10.0 (or 1.0.0).
@@ -198,9 +194,6 @@ sealed trait Matrix2[R, C, V] extends Serializable {
         .map { case (_, _, x) => x }
         .sum(mon)
     )
-
-  def write(sink: TypedSink[(R, C, V)])(implicit fd: FlowDef, m: Mode): Matrix2[R, C, V] =
-    MatrixLiteral(toTypedPipe.write(sink), sizeHint)
 }
 
 /**
@@ -627,7 +620,7 @@ object Matrix2 {
   def apply[R: Ordering, C: Ordering, V](t: TypedPipe[(R, C, V)], hint: SizeHint): Matrix2[R, C, V] =
     MatrixLiteral(t, hint)
 
-  def read[R, C, V](t: TypedSource[(R, C, V)], hint: SizeHint)(implicit
+  def read[R, C, V](t: Input[(R, C, V)], hint: SizeHint)(implicit
       ordr: Ordering[R],
       ordc: Ordering[C]
   ): Matrix2[R, C, V] =

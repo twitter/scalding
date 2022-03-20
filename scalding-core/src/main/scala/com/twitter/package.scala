@@ -16,7 +16,6 @@ limitations under the License.
 package com.twitter
 
 import org.apache.hadoop.fs.{Path, PathFilter}
-import com.twitter.scalding.BuildInfo
 
 package object scalding {
 
