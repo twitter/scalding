@@ -22,6 +22,8 @@ project/plugins/src_managed/
 bin
 *.iml
 sonatype.sbt
+build.sbt-e # not sure where this comes from some kind of backup?
+tutorial/data/execution_output.txt
 tutorial/data/cofollows.tsv
 tutorial/data/cosineSim.tsv
 tutorial/data/graphFiltered.tsv

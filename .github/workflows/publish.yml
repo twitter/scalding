@@ -1,0 +1,57 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - 'develop'
+    release:
+      types: [ created ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # fetch all tags for sbt-dynver to properly resolve scalding version
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt-openj9'
+          java-version: 8
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.4
+
+      - name: Install Ruby Gems
+        run: |
+          gem install sass -v 3.7.4
+          gem install jekyll -v 3.2.1
+
+      # whenever a push is made to develop, this will run to publish a SNAPSHOT
+      - name: "Publish Snapshot"
+        if: ${{ github.event_name == 'push' }}
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        run: |
+          # snapshots will be versioned in the form of <latest version tag>-<commit SHA>-SNAPSHOT
+          # example: 0.16.1-RC2-377-0c41d610-SNAPSHOT
+          ./sbt "release"
+
+      # whenever a release is triggered through Github UI, this will run to publish a final release
+      - name: "Publish Final Release"
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        run: |
+          ./sbt "release"

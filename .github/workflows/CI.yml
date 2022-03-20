@@ -102,6 +102,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # fetch all tags for sbt-dynver to properly resolve scalding version
 
       - uses: actions/setup-java@v2
         with:

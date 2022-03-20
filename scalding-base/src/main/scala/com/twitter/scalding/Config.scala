@@ -326,17 +326,14 @@ abstract class Config extends Serializable {
   def getScaldingVersion: Option[String] = get(ScaldingVersion)
   def setScaldingVersion: Config =
     (this
-      .+(ScaldingVersion -> CurrentScaldingVersion))
+      .+(ScaldingVersion -> BuildInfo.version))
       .+(
         // This is setting a property for cascading/driven
-        (CascadingAppFrameworks -> ("scalding:" + CurrentScaldingVersion))
+        (CascadingAppFrameworks -> ("scalding:" + BuildInfo.version))
       )
 }
 
 object Config {
-  // TODO: Have sbt generate a file, sbt-buildinfo or something does this
-  private def CurrentScaldingVersion = "0.18.0"
-
   val CascadingAppName: String = "cascading.app.name"
   val CascadingAppId: String = "cascading.app.id"
   val CascadingAppFrameworks: String = "cascading.app.frameworks"

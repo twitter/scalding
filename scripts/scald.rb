@@ -58,8 +58,8 @@ CONFIG_RC = begin
 CONFIG = CONFIG_DEFAULT.merge!(CONFIG_RC)
 
 BUILDFILE = open(CONFIG["repo_root"] + "/build.sbt").read
-VERSIONFILE = open(CONFIG["repo_root"] + "/version.sbt").read
-SCALDING_VERSION=VERSIONFILE.match(/version.*:=\s*\"([^\"]+)\"/)[1]
+SCALDING_VERSION=`cd #{CONFIG["repo_root"]}; ./sbt -Dsbt.log.noformat=true -Dsbt.supershell=false "print scalding-core / version" -error`.strip
+puts "The current SCALDING_VERSION has been resolved to #{SCALDING_VERSION}"
 
 #optionally set variables (not linux often doesn't have this set, and falls back to TMP. Set up a
 #YAML file in .scaldrc with "tmpdir: my_tmp_directory_name" or export TMPDIR="/my/tmp" to set on
@@ -247,6 +247,7 @@ if OPTS[:repl]
   # the repl target itself should suffice (depends on scalding-core)
   if CONFIG["jar"].nil?
     repl_assembly_path = repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/scalding-repl-assembly-#{SCALDING_VERSION}.jar"
+    puts `ls #{repo_root + "/scalding-repl/target/scala-#{SHORT_SCALA_VERSION}/"}`
     if (!File.exist?(repl_assembly_path))
       puts("When trying to run the repl, the #{repl_assembly_path} is missing, you probably need to run ./sbt scalding-repl/assembly")
       exit(1)

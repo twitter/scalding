@@ -2,7 +2,7 @@ package com.twitter.scalding.beam_backend
 
 import com.twitter.algebird.{AveragedValue, Semigroup}
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
-import com.twitter.scalding.{Config, TextLine, TypedPipe}
+import com.twitter.scalding.{Config, Execution, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
 import org.apache.beam.sdk.Pipeline
@@ -391,12 +391,73 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
     )
   }
 
+  test("Testing without force to disk") {
+    val bmode = BeamMode.default(pipelineOptions)
+    val tmpPath1 = tmpPath("tp1")
+    val tmpPath2 = tmpPath("tp2")
+
+    val tmpDir = new File(tmpPath("forced"))
+    tmpDir.mkdirs()
+
+    val forcedExecution = Execution.from {
+      TypedPipe
+        .from(Seq(1, 2))
+        .map { e =>
+          // This is called twice and hence second execution will have false values
+          new File(tmpDir, e.toString).createNewFile()
+        }
+    }
+
+    val tp1 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath1)))
+    val tp2 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath2)))
+    tp1.flatMap(_ => tp2).waitFor(Config.empty, bmode)
+
+    val result1 = getContents(testPath, tmpPath1).sorted
+    val result2 = getContents(testPath, tmpPath2).sorted
+
+    assert(result1 == Seq("true", "true") && result2 == Seq("false", "false"))
+  }
+
+  test("Force to Disk execution") {
+    val bmode = BeamMode.default(pipelineOptions)
+    val tmpPath1 = tmpPath("tp1")
+    val tmpPath2 = tmpPath("tp2")
+
+    val tmpDir = new File(tmpPath("forced"))
+    tmpDir.mkdirs()
+
+    val forcedExecution =
+      TypedPipe
+        .from(Seq(1, 2))
+        .map { e =>
+          // Since this is forced it is called only once. Hence output is always true
+          new File(tmpDir, e.toString).createNewFile()
+        }
+        .forceToDiskExecution
+
+    val tp1 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath1)))
+    val tp2 = forcedExecution.flatMap(f => f.map(_.toString).writeExecution(TextLine(tmpPath2)))
+    tp1.flatMap(_ => tp2).waitFor(Config.empty, bmode)
+
+    val result1 = getContents(testPath, tmpPath1).sorted
+    val result2 = getContents(testPath, tmpPath2).sorted
+
+    // verify that temp dir contains no files
+    assert(new File(testPath, "0").listFiles.filter(_.isFile).isEmpty)
+    assert(result1 == Seq("true", "true") && result2 == Seq("true", "true"))
+  }
+
   test("toIterableExecutionTest1") {
     val input = Seq(5, 3, 2, 6, 1, 4)
     val bmode = BeamMode.default(pipelineOptions)
 
-    val iter = TypedPipe.from(input).toIterableExecution.waitFor(Config.empty, bmode).get
-    assert(iter.toSet == input.toSet)
+    val out = TypedPipe
+      .from(input)
+      .toIterableExecution
+      .waitFor(Config.empty, bmode)
+      .get
+
+    assert(out.toSet == input.toSet)
   }
 
   test("toIterableExecutionWithJoin") {
