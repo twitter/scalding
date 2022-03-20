@@ -9,8 +9,6 @@ import java.util.{LinkedHashMap => JLinkedHashMap, Map => JMap}
 import org.apache.spark.storage.StorageLevel
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 
-import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
-
 object SparkPlanner {
   import SparkMode.SparkConfigMethods
   sealed trait PartitionComputer {
