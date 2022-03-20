@@ -1,6 +1,5 @@
 package com.twitter.scalding.typed
 
-import com.twitter.scalding.serialization.Externalizer
 import java.io.Serializable
 
 /**
@@ -32,10 +31,8 @@ object MultiJoinFunction extends Serializable {
   final case class PairCachedRight[K, A, B, C](
       left: MultiJoinFunction[K, A],
       right: MultiJoinFunction[K, B],
-      @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
+      fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
   ) extends MultiJoinFunction[K, C] {
-
-    private[this] val fnEx = Externalizer(fn)
 
     val inputSize = left.inputSize + right.inputSize
     private[this] val leftSeqCount = left.inputSize - 1
@@ -60,17 +57,15 @@ object MultiJoinFunction extends Serializable {
 
       // we should materialize the final right one time:
       val joinedRight = right(key, rightSeq.head.iterator, rightSeq.tail).toList
-      fnEx.get(key, joinedLeft, joinedRight)
+      fn(key, joinedLeft, joinedRight)
     }
   }
 
   final case class Pair[K, A, B, C](
       left: MultiJoinFunction[K, A],
       right: MultiJoinFunction[K, B],
-      @transient fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
+      fn: (K, Iterator[A], Iterable[B]) => Iterator[C]
   ) extends MultiJoinFunction[K, C] {
-
-    private[this] val fnEx = Externalizer(fn)
 
     val inputSize = left.inputSize + right.inputSize
     private[this] val leftSeqCount = left.inputSize - 1
@@ -105,7 +100,7 @@ object MultiJoinFunction extends Serializable {
         def iterator = right(key, smallerHead.iterator, smallerTail)
       }
 
-      fnEx.get(key, joinedLeft, joinedRight)
+      fn(key, joinedLeft, joinedRight)
     }
   }
 
@@ -114,16 +109,14 @@ object MultiJoinFunction extends Serializable {
    */
   final case class MapGroup[K, A, B](
       input: MultiJoinFunction[K, A],
-      @transient mapGroupFn: (K, Iterator[A]) => Iterator[B]
+      mapGroupFn: (K, Iterator[A]) => Iterator[B]
   ) extends MultiJoinFunction[K, B] {
-
-    private[this] val fnEx = Externalizer(mapGroupFn)
 
     def inputSize = input.inputSize
 
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[B] = {
       val joined = input(key, leftMost, rightStreams)
-      fnEx.get(key, joined)
+      mapGroupFn(key, joined)
     }
   }
 
@@ -131,16 +124,32 @@ object MultiJoinFunction extends Serializable {
    * This is used to join IteratorMappedReduce with others. We could compose Casting[A] with MapGroup[K, A, B]
    * but since it is common enough we give it its own case.
    */
-  final case class MapCast[K, A, B](@transient mapGroupFn: (K, Iterator[A]) => Iterator[B])
+  final case class MapCast[K, A, B](mapGroupFn: (K, Iterator[A]) => Iterator[B])
       extends MultiJoinFunction[K, B] {
-
-    private[this] val fnEx = Externalizer(mapGroupFn)
 
     def inputSize = 1
 
     def apply(key: K, leftMost: Iterator[Any], rightStreams: Seq[Iterable[Any]]): Iterator[B] = {
       require(rightStreams.isEmpty, "this join function should never be called with non-empty right-most")
-      fnEx.get(key, leftMost.asInstanceOf[Iterator[A]])
+      mapGroupFn(key, leftMost.asInstanceOf[Iterator[A]])
     }
+  }
+
+  abstract class Transformer extends Serializable {
+    def transformJoin[A, B, C, D](fn: (A, Iterator[B], Iterable[C]) => Iterator[D]): (A, Iterator[B], Iterable[C]) => Iterator[D]
+    def transformMap[A, B, C](fn: (A, Iterator[B]) => Iterator[C]): (A, Iterator[B]) => Iterator[C]
+
+    def apply[A, B](mjf: MultiJoinFunction[A, B]): MultiJoinFunction[A, B] =
+        mjf match {
+          case c @ Casting() => c
+          case PairCachedRight(l, r, fn) =>
+            PairCachedRight(apply(l), apply(r), transformJoin(fn))
+          case Pair(l, r, fn) =>
+            Pair(apply(l), apply(r), transformJoin(fn))
+          case MapGroup(prev, fn) =>
+            MapGroup(apply(prev), transformMap(fn))
+          case mc: MapCast[A, x, B] =>
+            MapCast[A, x, B](transformMap(mc.mapGroupFn))
+        }
   }
 }

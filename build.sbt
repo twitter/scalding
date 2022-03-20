@@ -302,8 +302,6 @@ lazy val scaldingBase = module("base")
     libraryDependencies ++= Seq(
     "com.twitter" %% "algebird-core" % algebirdVersion,
       "com.stripe" %% "dagon-core" % dagonVersion,
-      "com.twitter" %% "chill" % chillVersion,
-      "com.twitter" % "chill-java" % chillVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion
     ),
     // buildInfo here refers to https://github.com/sbt/sbt-buildinfo

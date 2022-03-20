@@ -3,21 +3,21 @@ package com.twitter.scalding.typed.cascading_backend
 import cascading.pipe.joiner.{Joiner => CJoiner, JoinerClosure}
 import cascading.tuple.{Tuple => CTuple}
 import com.twitter.scalding.TupleGetter
-import com.twitter.scalding.serialization.Externalizer
+import com.twitter.scalding.serialization.{Externalizer, MultiJoinExternalizer}
 import scala.collection.JavaConverters._
 import com.twitter.scalding.typed.MultiJoinFunction
 
 abstract class CoGroupedJoiner[K](
     inputSize: Int,
     getter: TupleGetter[K],
-    @transient inJoinFunction: MultiJoinFunction[K, Any]
+    inJoinFunction: MultiJoinFunction[K, Any]
 ) extends CJoiner {
 
   /**
    * We have a test that should fail if Externalizer is not used here. you can test failure of that test by
    * replacing Externalizer with Some
    */
-  val joinFunction = Externalizer(inJoinFunction)
+  val joinFunction = Externalizer(MultiJoinExternalizer.externalize(inJoinFunction))
   val distinctSize: Int
   def distinctIndexOf(originalPos: Int): Int
 

@@ -18,7 +18,7 @@ package com.twitter.scalding.typed.cascading_backend
 import cascading.pipe.joiner.{Joiner => CJoiner, JoinerClosure}
 import cascading.tuple.{Tuple => CTuple}
 
-import com.twitter.scalding.serialization.Externalizer
+import com.twitter.scalding.serialization.{Externalizer, MultiJoinExternalizer}
 import com.twitter.scalding.typed.MultiJoinFunction
 
 import scala.collection.JavaConverters._
@@ -32,6 +32,7 @@ class HashJoiner[K, V, W, R](
     joiner: (K, V, Iterable[W]) => Iterator[R]
 ) extends CJoiner {
 
+  private[this] val rightGetterEx = Externalizer(MultiJoinExternalizer.externalize(rightGetter))
   private[this] val joinEx = Externalizer(joiner)
 
   override def getIterator(jc: JoinerClosure) = {
@@ -49,12 +50,12 @@ class HashJoiner[K, V, W, R](
       val rightIterable =
         if (rightHasSingleValue) {
           // Materialize this once for all left values
-          rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil).toList
+          rightGetterEx.get(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil).toList
         } else {
           // TODO: it might still be good to count how many there are and materialize
           // in memory without reducing again
           new Iterable[W] {
-            def iterator = rightGetter(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil)
+            def iterator = rightGetterEx.get(key, jc.getIterator(1).asScala.map(_.getObject(1): Any), Nil)
           }
         }
 
