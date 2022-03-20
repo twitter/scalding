@@ -13,7 +13,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
     TypedText.tsv[String](s"source_$id").asInstanceOf[TypedSource[T]]
 
   case class WriteState(
-      writes: List[WritePartitioner.PairK[TypedPipe, TypedSink, _]],
+      writes: List[WritePartitioner.PairK[TypedPipe, Output, _]],
       materializations: List[WritePartitioner.PairK[TypedPipe, TypedSource, _]]
   ) {
 
@@ -42,8 +42,8 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
             (t.value, fakeReader) :: t.writes.materializations
           State(t.writes.copy(materializations = newMats), TypedPipe.from(fakeReader))
         }
-        def write[A](tp: State[TypedPipe[A]], sink: TypedSink[A]): State[Unit] = {
-          val newWrites: List[WritePartitioner.PairK[TypedPipe, TypedSink, _]] =
+        def write[A](tp: State[TypedPipe[A]], sink: Output[A]): State[Unit] = {
+          val newWrites: List[WritePartitioner.PairK[TypedPipe, Output, _]] =
             (tp.value, sink) :: tp.writes.writes
           State(tp.writes.copy(writes = newWrites), ())
         }
