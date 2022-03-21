@@ -1,8 +1,9 @@
 package com.twitter.scalding.dagon
 
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.FunSuite
+import org.scalatest.prop.PropertyChecks
+import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalacheck.{Arbitrary, Cogen, Gen}
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks._
 import scala.util.control.TailCalls
 
 import ScalaVersionCompat.{IterableOnce, iterateOnce, lazyListFromIterator}
@@ -450,7 +451,7 @@ object DataFlowTest {
   }
 }
 
-class DataFlowTest extends AnyFunSuite {
+class DataFlowTest extends FunSuite {
 
   implicit val generatorDrivenConfig =
     PropertyCheckConfiguration(minSuccessful = 5000)

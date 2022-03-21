@@ -61,19 +61,19 @@ sealed trait Expr[N[_], T] extends Serializable { self: Product =>
 
 object Expr {
 
-  case class Const[N[_], T](value: N[T]) extends Expr[N, T] {
+  sealed case class Const[N[_], T](value: N[T]) extends Expr[N, T] {
     override def evaluate(idToExp: HMap[Id, Expr[N, ?]]): N[T] =
       value
   }
 
-  case class Var[N[_], T](name: Id[T]) extends Expr[N, T]
+  sealed case class Var[N[_], T](name: Id[T]) extends Expr[N, T]
 
-  case class Unary[N[_], T1, T2](arg: Id[T1], fn: N[T1] => N[T2]) extends Expr[N, T2]
+  sealed case class Unary[N[_], T1, T2](arg: Id[T1], fn: N[T1] => N[T2]) extends Expr[N, T2]
 
-  case class Binary[N[_], T1, T2, T3](arg1: Id[T1], arg2: Id[T2], fn: (N[T1], N[T2]) => N[T3])
+  sealed case class Binary[N[_], T1, T2, T3](arg1: Id[T1], arg2: Id[T2], fn: (N[T1], N[T2]) => N[T3])
       extends Expr[N, T3]
 
-  case class Variadic[N[_], T1, T2](args: List[Id[T1]], fn: List[N[T1]] => N[T2]) extends Expr[N, T2]
+  sealed case class Variadic[N[_], T1, T2](args: List[Id[T1]], fn: List[N[T1]] => N[T2]) extends Expr[N, T2]
 
   /**
    * What Ids does this expression depend on

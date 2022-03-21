@@ -1,8 +1,8 @@
 package com.twitter.scalding.dagon
 
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.FunSuite
 
-class MemoizeTests extends AnyFunSuite {
+class MemoizeTests extends FunSuite {
   test("fibonacci is linear in time") {
 
     var calls = 0

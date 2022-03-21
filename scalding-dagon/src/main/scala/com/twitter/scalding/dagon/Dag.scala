@@ -200,16 +200,16 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     sealed trait Rest {
       def dependsOn(id: Id[_]): Boolean
     }
-    case class Same(asId: Id[_]) extends Rest {
+    sealed case class Same(asId: Id[_]) extends Rest {
       def dependsOn(id: Id[_]) = id == asId
     }
-    case class MaxInc(a: Id[_], b: Id[_]) extends Rest {
+    sealed case class MaxInc(a: Id[_], b: Id[_]) extends Rest {
       def dependsOn(id: Id[_]) = (id == a) || (id == b)
     }
-    case class Inc(of: Id[_]) extends Rest {
+    sealed case class Inc(of: Id[_]) extends Rest {
       def dependsOn(id: Id[_]) = id == of
     }
-    case class Variadic(ids: List[Id[_]]) extends Rest {
+    sealed case class Variadic(ids: List[Id[_]]) extends Rest {
       def dependsOn(id: Id[_]) = ids.contains(id)
     }
 

@@ -207,6 +207,7 @@ lazy val scalding = Project(id = "scalding", base = file("."))
     scaldingDate,
     scaldingQuotation,
     scaldingCats,
+    scaldingDagon,
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
@@ -298,7 +299,6 @@ lazy val scaldingQuotation = module("quotation").settings(
 )
 
 lazy val scaldingDagon = module("dagon").settings(
-  libraryDependencies ++= Seq(),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
   Compile / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
   Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
