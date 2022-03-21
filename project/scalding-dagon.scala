@@ -15,7 +15,6 @@ object scaldingDagonSettings {
         .resolve("scala" + suffix)
         .toFile
       Seq(scalaCompat)
-      //throw new Exception(scalaCompat.toString)
     }
 
     CrossVersion.partialVersion(scalaVersion) match {
@@ -26,6 +25,5 @@ object scaldingDagonSettings {
       case _ => Nil
     }
   }
-
 
 }
