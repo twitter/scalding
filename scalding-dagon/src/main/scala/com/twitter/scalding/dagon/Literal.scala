@@ -93,7 +93,7 @@ object Literal {
     /*
      * We *non-recursively* use either the fast approach or the slow approach
      */
-    Memoize.functionK[Literal[N, ?], N](new Memoize.RecursiveK[Literal[N, ?], N] {
+    Memoize.functionK[Literal[N, *], N](new Memoize.RecursiveK[Literal[N, *], N] {
       def toFunction[T] = { case (u, _) => onStackGoSlow(u) }
     })
   }
