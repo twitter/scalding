@@ -52,10 +52,10 @@ object Literal {
    *
    * Each call to this creates a new internal memo.
    */
-  def evaluateMemo[N[_]]: FunctionK[Literal[N, ?], N] = {
+  def evaluateMemo[N[_]]: FunctionK[Literal[N, *], N] = {
     import TailCalls._
 
-    val slowAndSafe = Memoize.functionKTailRec[Literal[N, ?], N](new Memoize.RecursiveKTailRec[Literal[N, ?], N] {
+    val slowAndSafe = Memoize.functionKTailRec[Literal[N, *], N](new Memoize.RecursiveKTailRec[Literal[N, *], N] {
       def toFunction[T] = {
         case (Const(n), _) => done(n)
         case (Unary(n, fn), rec) => rec(n).map(fn)
@@ -74,7 +74,7 @@ object Literal {
       }
     })
 
-    val fast = Memoize.functionK[Literal[N, ?], N](new Memoize.RecursiveK[Literal[N, ?], N] {
+    val fast = Memoize.functionK[Literal[N, *], N](new Memoize.RecursiveK[Literal[N, *], N] {
       def toFunction[T] = {
         case (Const(n), _) => n
         case (Unary(n, fn), rec) => fn(rec(n))

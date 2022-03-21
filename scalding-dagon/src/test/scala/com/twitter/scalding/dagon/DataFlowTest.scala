@@ -114,8 +114,8 @@ object DataFlowTest {
     case class Tagged[A, T](input: Flow[T], tag: A) extends Flow[T]
     case class Fork[T](input: Flow[T]) extends Flow[T]
 
-    def toLiteral: FunctionK[Flow, Literal[Flow, ?]] =
-      Memoize.functionK[Flow, Literal[Flow, ?]](new Memoize.RecursiveK[Flow, Literal[Flow, ?]] {
+    def toLiteral: FunctionK[Flow, Literal[Flow, *]] =
+      Memoize.functionK[Flow, Literal[Flow, *]](new Memoize.RecursiveK[Flow, Literal[Flow, *]] {
         import Literal._
 
         def toFunction[T] = {
@@ -129,9 +129,9 @@ object DataFlowTest {
         }
       })
 
-    def toLiteralTail: FunctionK[Flow, Literal[Flow, ?]] =
-      FunctionK.andThen[Flow, Lambda[x => TailCalls.TailRec[Literal[Flow, x]]], Literal[Flow, ?]](
-        Memoize.functionKTailRec[Flow, Literal[Flow, ?]](new Memoize.RecursiveKTailRec[Flow, Literal[Flow, ?]] {
+    def toLiteralTail: FunctionK[Flow, Literal[Flow, *]] =
+      FunctionK.andThen[Flow, Lambda[x => TailCalls.TailRec[Literal[Flow, x]]], Literal[Flow, *]](
+        Memoize.functionKTailRec[Flow, Literal[Flow, *]](new Memoize.RecursiveKTailRec[Flow, Literal[Flow, *]] {
           import Literal._
 
           def toFunction[T] = {
@@ -158,7 +158,7 @@ object DataFlowTest {
 
                 loop(m.inputs).map(Variadic(_, { fs: List[Flow[s]] => Merged(fs) }))
           }
-        }), new FunctionK[Lambda[x => TailCalls.TailRec[Literal[Flow, x]]], Literal[Flow, ?]] {
+        }), new FunctionK[Lambda[x => TailCalls.TailRec[Literal[Flow, x]]], Literal[Flow, *]] {
           def toFunction[T] = _.result
         })
     /*

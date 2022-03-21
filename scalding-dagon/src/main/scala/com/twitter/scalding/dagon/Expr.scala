@@ -38,7 +38,7 @@ import scala.util.hashing.MurmurHash3
  */
 sealed trait Expr[N[_], T] extends Serializable { self: Product =>
 
-  def evaluate(idToExp: HMap[Id, Expr[N, ?]]): N[T] =
+  def evaluate(idToExp: HMap[Id, Expr[N, *]]): N[T] =
     Expr.evaluate(idToExp, this)
 
   /**
@@ -62,7 +62,7 @@ sealed trait Expr[N[_], T] extends Serializable { self: Product =>
 object Expr {
 
   sealed case class Const[N[_], T](value: N[T]) extends Expr[N, T] {
-    override def evaluate(idToExp: HMap[Id, Expr[N, ?]]): N[T] =
+    override def evaluate(idToExp: HMap[Id, Expr[N, *]]): N[T] =
       value
   }
 
@@ -90,7 +90,7 @@ object Expr {
   /**
    * Evaluate the given expression with the given mapping of Id to Expr.
    */
-  def evaluate[N[_], T](idToExp: HMap[Id, Expr[N, ?]], expr: Expr[N, T]): N[T] =
+  def evaluate[N[_], T](idToExp: HMap[Id, Expr[N, *]], expr: Expr[N, T]): N[T] =
     evaluateMemo(idToExp)(expr)
 
   /**
@@ -98,8 +98,8 @@ object Expr {
    * FunctionK is only valid for the given idToExp which is captured in this
    * closure.
    */
-  def evaluateMemo[N[_]](idToExp: HMap[Id, Expr[N, ?]]): FunctionK[Expr[N, ?], N] = {
-    val fast = Memoize.functionK[Expr[N, ?], N](new Memoize.RecursiveK[Expr[N, ?], N] {
+  def evaluateMemo[N[_]](idToExp: HMap[Id, Expr[N, *]]): FunctionK[Expr[N, *], N] = {
+    val fast = Memoize.functionK[Expr[N, *], N](new Memoize.RecursiveK[Expr[N, *], N] {
       def toFunction[T] = {
         case (Const(n), _) => n
         case (Var(id), rec) => rec(idToExp(id))
@@ -114,7 +114,7 @@ object Expr {
 
     import TailCalls._
 
-    val slowAndSafe = Memoize.functionKTailRec[Expr[N, ?], N](new Memoize.RecursiveKTailRec[Expr[N, ?], N] {
+    val slowAndSafe = Memoize.functionKTailRec[Expr[N, *], N](new Memoize.RecursiveKTailRec[Expr[N, *], N] {
       def toFunction[T] = {
         case (Const(n), _) => done(n)
         case (Var(id), rec) => rec(idToExp(id))
@@ -144,7 +144,7 @@ object Expr {
     /*
      * We *non-recursively* use either the fast approach or the slow approach
      */
-    Memoize.functionK[Expr[N, ?], N](new Memoize.RecursiveK[Expr[N, ?], N] {
+    Memoize.functionK[Expr[N, *], N](new Memoize.RecursiveK[Expr[N, *], N] {
       def toFunction[T] = { case (u, _) => onStackGoSlow(u) }
     })
   }

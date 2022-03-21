@@ -114,9 +114,9 @@ object DagTests extends Properties("Dag") {
   /**
    * Here we convert our dag nodes into Literal[Formula, T]
    */
-  def toLiteral: FunctionK[Formula, Literal[Formula, ?]] =
-    Memoize.functionK[Formula, Literal[Formula, ?]](
-      new Memoize.RecursiveK[Formula, Literal[Formula, ?]] {
+  def toLiteral: FunctionK[Formula, Literal[Formula, *]] =
+    Memoize.functionK[Formula, Literal[Formula, *]](
+      new Memoize.RecursiveK[Formula, Literal[Formula, *]] {
         def toFunction[T] = {
           case (c @ Constant(_), _) => Literal.Const(c)
           case (Inc(in, by), f) => Literal.Unary(f(in), Formula.inc(by))

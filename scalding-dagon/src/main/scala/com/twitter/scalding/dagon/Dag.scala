@@ -34,7 +34,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
    * the law that for all Expr, the node they
    * evaluate to is unique
    */
-  protected def idToExp: HMap[Id, Expr[N, ?]]
+  protected def idToExp: HMap[Id, Expr[N, *]]
 
   /**
    * The set of roots that were added by addRoot.
@@ -46,15 +46,15 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   /**
    * Convert a N[T] to a Literal[T, N].
    */
-  def toLiteral: FunctionK[N, Literal[N, ?]]
+  def toLiteral: FunctionK[N, Literal[N, *]]
 
   // Caches polymorphic functions of type Id[T] => Option[N[T]]
   private val idToN: HCache[Id, Lambda[t => Option[N[t]]]] =
     HCache.empty[Id, Lambda[t => Option[N[t]]]]
 
   // Caches polymorphic functions of type Literal[N, T] => Option[Id[T]]
-  private val litToId: HCache[Literal[N, ?], Lambda[t => Option[Id[t]]]] =
-    HCache.empty[Literal[N, ?], Lambda[t => Option[Id[t]]]]
+  private val litToId: HCache[Literal[N, *], Lambda[t => Option[Id[t]]]] =
+    HCache.empty[Literal[N, *], Lambda[t => Option[Id[t]]]]
 
   // Caches polymorphic functions of type Expr[N, T] => N[T]
   private val evalMemo = Expr.evaluateMemo(idToExp)
@@ -111,7 +111,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   def applyOnce(rule: Rule[N]): Dag[N] = {
     type DagT[T] = Dag[N]
 
-    val f = new FunctionK[HMap[Id, Expr[N, ?]]#Pair, Lambda[x => Option[DagT[x]]]] {
+    val f = new FunctionK[HMap[Id, Expr[N, *]]#Pair, Lambda[x => Option[DagT[x]]]] {
       def toFunction[U] = { (kv: (Id[U], Expr[N, U])) =>
         val (id, expr) = kv
 
@@ -341,8 +341,8 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   // Convenient method to produce new, modified DAGs based on this
   // one.
   private def copy(
-      id2Exp: HMap[Id, Expr[N, ?]] = self.idToExp,
-      node2Literal: FunctionK[N, Literal[N, ?]] = self.toLiteral,
+      id2Exp: HMap[Id, Expr[N, *]] = self.idToExp,
+      node2Literal: FunctionK[N, Literal[N, *]] = self.toLiteral,
       gcroots: Set[Id[_]] = self.roots
   ): Dag[N] = new Dag[N] {
     def idToExp = id2Exp
@@ -353,7 +353,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   // these are included for binary compatibility
 
   // $COVERAGE-OFF$
-  private[dagon] def com$stripe$dagon$Dag$$copy$default$2(): com.twitter.scalding.dagon.FunctionK[N, Literal[N, ?]] =
+  private[dagon] def com$stripe$dagon$Dag$$copy$default$2(): com.twitter.scalding.dagon.FunctionK[N, Literal[N, *]] =
     self.toLiteral
 
   private[dagon] def com$stripe$dagon$Dag$$copy$default$3(): scala.collection.immutable.Set[Id[_]] =
@@ -455,7 +455,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     // TODO: this computation is really expensive, 60% of CPU in a recent benchmark
     // maintaining these mappings would be nice, but maybe expensive as we are rewriting
     // nodes
-    val f = new FunctionK[HMap[Id, Expr[N, ?]]#Pair, Lambda[x => Option[Id[x]]]] {
+    val f = new FunctionK[HMap[Id, Expr[N, *]]#Pair, Lambda[x => Option[Id[x]]]] {
       def toFunction[T1] = {
         case (thisId, expr) =>
           if (node == evalMemo(expr)) Some(thisId) else None
@@ -496,7 +496,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   /*
    * This does recursion on the stack, which is faster, but can overflow
    */
-  protected def ensureFast[T](lit: Literal[N, T], memo: FunctionK[Literal[N, ?], N]): (Dag[N], Id[T]) =
+  protected def ensureFast[T](lit: Literal[N, T], memo: FunctionK[Literal[N, *], N]): (Dag[N], Id[T]) =
     findLiteral(lit, memo(lit)) match {
       case Some(id) => (this, id)
       case None =>
@@ -525,7 +525,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
         }
     }
 
-  protected def ensureRec[T](lit: Literal[N, T], memo: FunctionK[Literal[N, ?], N]): TailCalls.TailRec[(Dag[N], Id[T])] =
+  protected def ensureRec[T](lit: Literal[N, T], memo: FunctionK[Literal[N, *], N]): TailCalls.TailRec[(Dag[N], Id[T])] =
     findLiteral(lit, memo(lit)) match {
       case Some(id) => TailCalls.done((this, id))
       case None =>
@@ -702,7 +702,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     }
 
     type SetConst[T] = (N[T], Set[N[_]])
-    val pointsToNode = new FunctionK[HMap[Id, Expr[N, ?]]#Pair, Lambda[x => Option[SetConst[x]]]] {
+    val pointsToNode = new FunctionK[HMap[Id, Expr[N, *]]#Pair, Lambda[x => Option[SetConst[x]]]] {
       def toFunction[T] = {
         case (id, expr) =>
           // here are the nodes we depend on:
@@ -768,9 +768,9 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
 }
 
 object Dag {
-  def empty[N[_]](n2l: FunctionK[N, Literal[N, ?]]): Dag[N] =
+  def empty[N[_]](n2l: FunctionK[N, Literal[N, *]]): Dag[N] =
     new Dag[N] {
-      val idToExp = HMap.empty[Id, Expr[N, ?]]
+      val idToExp = HMap.empty[Id, Expr[N, *]]
       val toLiteral = n2l
       val roots = Set.empty[Id[_]]
     }
@@ -778,7 +778,7 @@ object Dag {
   /**
    * This creates a new Dag rooted at the given tail node
    */
-  def apply[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, ?]]): (Dag[N], Id[T]) =
+  def apply[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, *]]): (Dag[N], Id[T]) =
     empty(nodeToLit).addRoot(n)
 
   /**
@@ -786,7 +786,7 @@ object Dag {
    * apply the given rule until it no longer applies, and return the N[T] which is
    * equivalent under the given rule
    */
-  def applyRule[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, ?]], rule: Rule[N]): N[T] = {
+  def applyRule[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, *]], rule: Rule[N]): N[T] = {
     val (dag, id) = apply(n, nodeToLit)
     dag(rule).evaluate(id)
   }
@@ -798,7 +798,7 @@ object Dag {
    * apply the given rule until it no longer applies, and return the N[T] which is
    * equivalent under the given rule
    */
-  def applyRuleSeq[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, ?]], rules: Seq[Rule[N]]): N[T] = {
+  def applyRuleSeq[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, *]], rules: Seq[Rule[N]]): N[T] = {
     val (dag, id) = apply(n, nodeToLit)
     dag.applySeq(rules).evaluate(id)
   }

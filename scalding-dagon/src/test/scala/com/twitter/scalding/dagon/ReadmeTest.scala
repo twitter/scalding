@@ -26,9 +26,9 @@ object Example {
 
   // 2. set up a transfromation from AST to Literal
 
-  val toLiteral: FunctionK[Eqn, Literal[Eqn, ?]] =
-    Memoize.functionK[Eqn, Literal[Eqn, ?]](
-      new Memoize.RecursiveK[Eqn, Literal[Eqn, ?]] {
+  val toLiteral: FunctionK[Eqn, Literal[Eqn, *]] =
+    Memoize.functionK[Eqn, Literal[Eqn, *]](
+      new Memoize.RecursiveK[Eqn, Literal[Eqn, *]] {
         def toFunction[T] = {
           case (c @ Const(_), f) => Literal.Const(c)
           case (v @ Var(_), f) => Literal.Const(v)

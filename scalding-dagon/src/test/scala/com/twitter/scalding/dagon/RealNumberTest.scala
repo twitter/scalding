@@ -438,8 +438,8 @@ object RealNumbers {
   }
 
   type RealN[A] = Real
-  def toLiteral: FunctionK[RealN, Literal[RealN, ?]] =
-    Memoize.functionK[RealN, Literal[RealN, ?]](new Memoize.RecursiveK[RealN, Literal[RealN, ?]] {
+  def toLiteral: FunctionK[RealN, Literal[RealN, *]] =
+    Memoize.functionK[RealN, Literal[RealN, *]](new Memoize.RecursiveK[RealN, Literal[RealN, *]] {
       import Real._
       def toFunction[T] = {
         case (r@(Const(_) | Variable(_)), _) => Literal.Const(r)
