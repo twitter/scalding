@@ -1,7 +1,6 @@
 package com.twitter.scalding.dagon
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 import scala.util.control.TailCalls
