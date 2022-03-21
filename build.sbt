@@ -297,6 +297,13 @@ lazy val scaldingQuotation = module("quotation").settings(
   )
 )
 
+lazy val scaldingDagon = module("dagon").settings(
+  libraryDependencies ++= Seq(),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
+  Compile / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+)
+
 lazy val scaldingCore = module("core")
   .settings(
     libraryDependencies ++= Seq(
@@ -326,7 +333,7 @@ lazy val scaldingCore = module("core")
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
 
 lazy val scaldingCats = module("cats")
   .settings(
