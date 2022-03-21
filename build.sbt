@@ -16,7 +16,6 @@ val cascadingAvroVersion = "2.1.2"
 val catsEffectVersion = "1.1.0"
 val catsVersion = "1.5.0"
 val chillVersion = "0.8.4"
-val dagonVersion = "0.3.1"
 val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
@@ -310,7 +309,6 @@ lazy val scaldingCore = module("core")
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
-      "com.stripe" %% "dagon-core" % dagonVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "chill-bijection" % chillVersion,

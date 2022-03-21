@@ -1,6 +1,6 @@
 package com.twitter.scalding.typed
 
-import com.stripe.dagon.Rule
+import com.twitter.scalding.dagon.Rule
 
 /**
  * This is a class to allow customization of how we plan typed pipes

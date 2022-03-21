@@ -1,6 +1,6 @@
 package com.twitter.scalding.typed
 
-import com.stripe.dagon.{Dag, FunctionK, Id, Memoize, Rule}
+import com.twitter.scalding.dagon.{Dag, FunctionK, Id, Memoize, Rule}
 import com.twitter.scalding.Execution
 import com.twitter.scalding.typed.functions.EqTypes
 import org.slf4j.LoggerFactory
