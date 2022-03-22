@@ -43,7 +43,7 @@ import com.twitter.scalding.serialization.{EquivSerialization, OrderedSerializat
 import com.twitter.scalding.serialization.OrderedSerialization.Result
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering._
-import com.stripe.dagon.{Memoize, RefPair}
+import com.twitter.scalding.dagon.{Memoize, RefPair}
 
 import scala.util.Try
 import scala.util.hashing.MurmurHash3

@@ -1,7 +1,7 @@
 package com.twitter.scalding.spark_backend
 
 import cascading.flow.FlowDef
-import com.stripe.dagon.{HMap, Rule}
+import com.twitter.scalding.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox

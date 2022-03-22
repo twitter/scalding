@@ -5,7 +5,7 @@ import cascading.pipe.Pipe
 import cascading.scheme.NullScheme
 import cascading.tap.Tap
 import cascading.tuple.{Fields, Tuple}
-import com.stripe.dagon.{Dag, Rule}
+import com.twitter.scalding.dagon.{Dag, Rule}
 import com.twitter.maple.tap.MemorySourceTap
 import com.twitter.scalding.typed.TypedPipeGen
 import java.io.{InputStream, OutputStream}

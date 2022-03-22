@@ -2,7 +2,7 @@ package com.twitter.scalding.typed
 
 import cascading.flow.FlowDef
 import cascading.tuple.Fields
-import com.stripe.dagon.{Dag, Rule}
+import com.twitter.scalding.dagon.{Dag, Rule}
 import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.{NullSink, TypedText}
 import org.apache.hadoop.conf.Configuration

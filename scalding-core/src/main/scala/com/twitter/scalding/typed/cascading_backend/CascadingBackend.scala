@@ -4,7 +4,7 @@ import cascading.flow.FlowDef
 import cascading.operation.Debug
 import cascading.pipe.{CoGroup, Each, HashJoin, Pipe}
 import cascading.tuple.{Fields, Tuple => CTuple}
-import com.stripe.dagon.{Dag, FunctionK, HCache, Id, Rule}
+import com.twitter.scalding.dagon.{Dag, FunctionK, HCache, Id, Rule}
 import com.twitter.scalding.TupleConverter.{singleConverter, tuple2Converter}
 import com.twitter.scalding.TupleSetter.{singleSetter, tup2Setter}
 import com.twitter.scalding.{

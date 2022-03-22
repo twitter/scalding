@@ -1,6 +1,6 @@
 package com.twitter.scalding.typed
 
-import com.stripe.dagon.HMap
+import com.twitter.scalding.dagon.HMap
 import java.io.Serializable
 import scala.util.hashing.MurmurHash3
 

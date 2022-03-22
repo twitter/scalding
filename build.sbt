@@ -16,7 +16,6 @@ val cascadingAvroVersion = "2.1.2"
 val catsEffectVersion = "1.1.0"
 val catsVersion = "1.5.0"
 val chillVersion = "0.8.4"
-val dagonVersion = "0.3.1"
 val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
@@ -207,6 +206,7 @@ lazy val scalding = Project(id = "scalding", base = file("."))
     scaldingDate,
     scaldingQuotation,
     scaldingCats,
+    scaldingDagon,
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
@@ -297,13 +297,18 @@ lazy val scaldingQuotation = module("quotation").settings(
   )
 )
 
+lazy val scaldingDagon = module("dagon").settings(
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full),
+  Compile / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+)
+
 lazy val scaldingCore = module("core")
   .settings(
     libraryDependencies ++= Seq(
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
-      "com.stripe" %% "dagon-core" % dagonVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "chill-bijection" % chillVersion,
@@ -326,7 +331,7 @@ lazy val scaldingCore = module("core")
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
 
 lazy val scaldingCats = module("cats")
   .settings(
