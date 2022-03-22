@@ -132,3 +132,10 @@ jobs:
         run: |
           mkdir -p /home/runner/.ivy2/cache/ # some scripts assume that this folder exists
           ${{ matrix.script }}
+
+      - uses: codecov/codecov-action@v2
+        with:
+          name: codecov
+          fail_ci_if_error: true
+          verbose: true
+          files: /home/runner/work/scalding/scalding/target/scala-2.11/coverage-report/cobertura.xml,/home/runner/work/scalding/scalding/target/scala-2.12/coverage-report/cobertura.xml
