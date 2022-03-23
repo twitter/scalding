@@ -1,11 +1,15 @@
+# note that if an org-wide global config is configured, it will be merged (with duplicate settings taking priority from this file)
+# it's better to explicitly set all configs if you want consistency
+
 codecov:
   require_ci_to_pass: yes
 
 coverage:
   precision: 2
   round: down
-  range: "70...100"
+  range: "0...100" # acceptable coverage range
 
+# default behaviour
 parsers:
   gcov:
     branch_detection:
@@ -14,6 +18,7 @@ parsers:
       method: no
       macro: no
 
+# can be configured in https://docs.codecov.com/docs/pull-request-comments
 comment:
   layout: "reach,diff,flags,files,footer"
   behavior: default
