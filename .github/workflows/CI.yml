@@ -134,6 +134,8 @@ jobs:
           ${{ matrix.script }}
 
       - uses: codecov/codecov-action@v2
+        # for some external tests like scald.rb repl we are not able to easily collect coverage info
+        if: ${{ matrix.TEST_TARGET != null && matrix.TEST_TARGET != '' }}
         with:
           name: codecov
           fail_ci_if_error: true
