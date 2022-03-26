@@ -47,48 +47,14 @@ object CascadingBackend {
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
   def converterFrom[A](ts: TupleSetter[A]): Option[TupleConverter[A]] =
-    (ts match {
-      case TupleSetter.TupleSetter1() => Some(TupleConverter.TupleConverter1(TupleGetter.Casting()))
-      case TupleSetter.TupleSetter2() => Some(TupleConverter.TupleConverter2(TupleGetter.Casting(), TupleGetter.Casting()))
-      case TupleSetter.TupleSetter3() => Some(TupleConverter.TupleConverter3(
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting()))
-      case TupleSetter.TupleSetter4() => Some(TupleConverter.TupleConverter4(
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting()))
-      case TupleSetter.TupleSetter5() => Some(TupleConverter.TupleConverter5(
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting()))
-      case TupleSetter.TupleSetter6() => Some(TupleConverter.TupleConverter6(
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting(),
-        TupleGetter.Casting()))
-      case _ =>
-        // TODO: we should generate all 22 of these functions and the inverses
-        None
-    }).asInstanceOf[Option[TupleConverter[A]]]
+    ts match {
+      case TupleSetter.Single() =>
+        Some(TupleConverter.Single(TupleGetter.Casting()).asInstanceOf[TupleConverter[A]])
+      case _ => TupleSetter.converterFromSetter(ts, TupleConverter)
+    }
 
   def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
-    (t, s) match {
-      case (TupleConverter.Single(TupleGetter.Casting()), TupleSetter.Single())                => true
-      case (TupleConverter.TupleConverter1(TupleGetter.Casting()), TupleSetter.TupleSetter1()) => true
-      case (
-            TupleConverter.TupleConverter2(TupleGetter.Casting(), TupleGetter.Casting()),
-            TupleSetter.TupleSetter2()
-          ) =>
-        true
-      // TODO we could add more, but we only use single and 2 actually
-      case _ => false
-    }
+    converterFrom(s).exists(_ == t)
 
   import TypedPipe._
 
