@@ -15,7 +15,7 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.scalding.typed.Output
+import com.twitter.scalding.typed.{TypedPipe, Output}
 import com.twitter.scalding.dagon.{Dag, Id, Rule}
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{Monad, Monoid, Semigroup}
