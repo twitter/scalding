@@ -1,6 +1,6 @@
 package com.twitter.scalding.spark_backend
 
-import com.stripe.dagon.{HMap, Rule}
+import com.twitter.scalding.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.AtomicBox
 import com.twitter.scalding.{CFuture, Config, Execution, ExecutionCounters}

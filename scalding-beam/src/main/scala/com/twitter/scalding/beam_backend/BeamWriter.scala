@@ -1,7 +1,7 @@
 package com.twitter.scalding.beam_backend
 
 import cascading.flow.FlowDef
-import com.stripe.dagon.Rule
+import com.twitter.scalding.dagon.Rule
 import com.twitter.scalding.Execution.{ToWrite, Writer}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters, Mode}

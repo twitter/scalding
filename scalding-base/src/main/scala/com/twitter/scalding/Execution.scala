@@ -15,13 +15,12 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.scalding.typed.{TypedPipe, Output}
-
-import com.stripe.dagon.{Dag, Id, Rule}
+import com.twitter.scalding.typed.Output
+import com.twitter.scalding.dagon.{Dag, Id, Rule}
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{Monad, Monoid, Semigroup}
 import com.twitter.scalding.typed.functions.{ConsList, ReverseList}
-import com.stripe.dagon.{Memoize, RefPair}
+import com.twitter.scalding.dagon.{Memoize, RefPair}
 import java.io.Serializable
 import java.util.UUID
 import scala.collection.mutable

@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.Monoid
-import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
+import com.twitter.scalding.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
 import com.twitter.scalding.typed.functions.{
   Fill,
   FilterGroup,

@@ -16,7 +16,6 @@ val cascadingAvroVersion = "2.1.2"
 val catsEffectVersion = "1.1.0"
 val catsVersion = "1.5.0"
 val chillVersion = "0.8.4"
-val dagonVersion = "0.3.1"
 val elephantbirdVersion = "4.15"
 val hadoopLzoVersion = "0.4.19"
 val hadoopVersion = "2.5.0"
@@ -109,6 +108,14 @@ val sharedSettings = Seq(
     case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
     case _                         => Seq()
   },
+
+  // Code coverage options
+  jacocoReportSettings := JacocoReportSettings(
+    "Jacoco Coverage Report",
+    None,
+    JacocoThresholds(),
+    Seq(JacocoReportFormats.ScalaHTML, JacocoReportFormats.XML),
+    "utf-8"),
 
   // Enables full stack traces in scalatest
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
@@ -207,6 +214,7 @@ lazy val scalding = Project(id = "scalding", base = file("."))
     scaldingDate,
     scaldingQuotation,
     scaldingCats,
+    scaldingDagon,
     scaldingCore,
     scaldingCommons,
     scaldingAvro,
@@ -297,11 +305,16 @@ lazy val scaldingQuotation = module("quotation").settings(
   )
 )
 
+lazy val scaldingDagon = module("dagon").settings(
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full),
+  Compile / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+)
+
 lazy val scaldingBase = module("base")
   .settings(
     libraryDependencies ++= Seq(
     "com.twitter" %% "algebird-core" % algebirdVersion,
-      "com.stripe" %% "dagon-core" % dagonVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion
     ),
     // buildInfo here refers to https://github.com/sbt/sbt-buildinfo
@@ -310,7 +323,8 @@ lazy val scaldingBase = module("base")
     buildInfoPackage := "com.twitter.scalding", // the codegen would be under com.twitter.scalding.BuildInfo
   )
   .enablePlugins(BuildInfoPlugin)
-  .dependsOn(scaldingArgs, scaldingSerialization)
+  .dependsOn(scaldingArgs, scaldingDagon, scaldingSerialization)
+
 
 lazy val scaldingCore = module("core")
   .settings(
@@ -318,7 +332,6 @@ lazy val scaldingCore = module("core")
       "cascading" % "cascading-core" % cascadingVersion,
       "cascading" % "cascading-hadoop" % cascadingVersion,
       "cascading" % "cascading-local" % cascadingVersion,
-      "com.stripe" %% "dagon-core" % dagonVersion,
       "com.twitter" % "chill-hadoop" % chillVersion,
       "com.twitter" % "chill-java" % chillVersion,
       "com.twitter" %% "chill-bijection" % chillVersion,
@@ -336,7 +349,7 @@ lazy val scaldingCore = module("core")
     ),
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
-  .dependsOn(scaldingArgs, scaldingBase, scaldingDate, scaldingSerialization, maple, scaldingQuotation)
+  .dependsOn(scaldingArgs, scaldingBase, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
 
 lazy val scaldingCats = module("cats")
   .settings(

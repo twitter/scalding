@@ -1,6 +1,6 @@
 package com.twitter.scalding.spark_backend
 
-import com.stripe.dagon.{FunctionK, Memoize}
+import com.twitter.scalding.dagon.{FunctionK, Memoize}
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.typed._

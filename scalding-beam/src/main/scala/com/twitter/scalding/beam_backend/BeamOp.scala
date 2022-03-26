@@ -1,6 +1,6 @@
 package com.twitter.scalding.beam_backend
 
-import com.stripe.dagon.Memoize
+import com.twitter.scalding.dagon.Memoize
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamFunctions._

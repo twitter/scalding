@@ -1,6 +1,6 @@
 package com.twitter.scalding.beam_backend
 
-import com.stripe.dagon.{FunctionK, Memoize, Rule}
+import com.twitter.scalding.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config

@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed.memory_backend
 
 import scala.collection.mutable.ArrayBuffer
-import com.stripe.dagon.{FunctionK, Memoize}
+import com.twitter.scalding.dagon.{FunctionK, Memoize}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.Config
 

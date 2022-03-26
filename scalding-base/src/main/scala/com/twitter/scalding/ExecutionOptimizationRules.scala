@@ -1,6 +1,6 @@
 package com.twitter.scalding
 
-import com.stripe.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
+import com.twitter.scalding.dagon.{Dag, FunctionK, Literal, Memoize, PartialRule, Rule}
 import com.twitter.scalding.ExecutionOptimizationRules.ZipMap.{MapLeft, MapRight}
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapFn
 import com.twitter.scalding.typed.functions.{ComposedFunctions, Identity, Swap}

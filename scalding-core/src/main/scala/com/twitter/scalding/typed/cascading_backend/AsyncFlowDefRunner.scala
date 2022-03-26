@@ -19,7 +19,7 @@ import com.twitter.scalding.{
 import com.twitter.scalding.{CFuture, CPromise, CancellationHandler}
 import com.twitter.scalding.typed.{TypedSink, Output}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
-import com.stripe.dagon.{HMap, Rule}
+import com.twitter.scalding.dagon.{HMap, Rule}
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import org.apache.hadoop.conf.Configuration

@@ -4,7 +4,7 @@ import com.twitter.algebird.Monoid
 import com.twitter.scalding.{Config, Execution, Local}
 import com.twitter.scalding.source.{NullSink, TypedText}
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
-import com.stripe.dagon.Dag
+import com.twitter.scalding.dagon.Dag
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 
