@@ -109,6 +109,14 @@ val sharedSettings = Seq(
     case _                         => Seq()
   },
 
+  // Code coverage options
+  jacocoReportSettings := JacocoReportSettings(
+    "Jacoco Coverage Report",
+    None,
+    JacocoThresholds(),
+    Seq(JacocoReportFormats.ScalaHTML, JacocoReportFormats.XML),
+    "utf-8"),
+
   // Enables full stack traces in scalatest
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
 

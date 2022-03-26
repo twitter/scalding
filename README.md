@@ -1,7 +1,7 @@
 # Scalding
 
 [![Build status](https://github.com/twitter/scalding/actions/workflows/CI.yml/badge.svg?branch=develop)](https://github.com/twitter/scalding/actions)
-[![Coverage Status](https://coveralls.io/repos/twitter/scalding/badge.png?branch=develop)](https://coveralls.io/r/twitter/scalding?branch=develop)
+[![Coverage Status](https://img.shields.io/codecov/c/github/twitter/scalding/develop.svg?maxAge=3600)](https://codecov.io/github/twitter/scalding)
 [![Latest version](https://index.scala-lang.org/twitter/scalding/scalding-core/latest.svg?color=orange)](https://index.scala-lang.org/twitter/scalding/scalding-core)
 [![Chat](https://badges.gitter.im/twitter/scalding.svg)](https://gitter.im/twitter/scalding?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
