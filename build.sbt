@@ -375,6 +375,8 @@ lazy val scaldingSpark = module("spark")
 lazy val scaldingBeam = module("beam")
   .settings(
     libraryDependencies ++= Seq(
+      "com.twitter" % "chill-java" % chillVersion,
+      "com.twitter" %% "chill" % chillVersion,
       "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
       "org.apache.beam" % "beam-sdks-java-extensions-google-cloud-platform-core" % beamVersion,
       "org.apache.beam" % "beam-sdks-java-extensions-sorter" % beamVersion,

@@ -1,10 +1,9 @@
 package com.twitter.scalding.beam_backend
 
-import cascading.flow.FlowDef
 import com.twitter.scalding.dagon.Rule
 import com.twitter.scalding.Execution.{ToWrite, Writer}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters, Mode}
+import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters}
 import java.nio.channels.Channels
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -17,11 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.blocking
 import scala.collection.JavaConversions._
 
-case class TempSource[A](path: String, coder: Coder[A]) extends TypedSource[A] {
-  def error = sys.error("beam sources don't work in cascading")
-  def converter[U >: A] = error
-  def read(implicit flowDef: FlowDef, mode: Mode) = error
-}
+case class TempSource[A](path: String, coder: Coder[A]) extends Input[A]
 
 class BeamWriter(val beamMode: BeamMode) extends Writer {
   private val state = new AtomicLong()
