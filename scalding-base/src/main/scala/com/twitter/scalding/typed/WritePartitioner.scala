@@ -9,12 +9,12 @@ import scala.language.higherKinds
 object WritePartitioner {
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
-  type PairK[F[_], G[_], T] = (F[T], G[T])
+  type PairK[F[_], +G[_], T] = (F[T], G[T])
 
   /**
    * This breaks a job at all the places it explicitly fans out, (and currently after each reduce/join).
    */
-  def breakAtForks[M[+_]](ws: List[PairK[TypedPipe, TypedSink, _]])(implicit M: Materializer[M]): M[Unit] = {
+  def breakAtForks[M[+_]](ws: List[PairK[TypedPipe, Output, _]])(implicit M: Materializer[M]): M[Unit] = {
     val rules = List(OptimizationRules.AddExplicitForks, OptimizationRules.RemoveDuplicateForceFork)
     materialize[M](rules, ws)
   }
@@ -54,7 +54,7 @@ object WritePartitioner {
     def map[A, B](ma: M[A])(fn: A => B): M[B]
     def zip[A, B](ma: M[A], mb: M[B]): M[(A, B)]
     def materialize[A](t: M[TypedPipe[A]]): M[TypedPipe[A]]
-    def write[A](tp: M[TypedPipe[A]], sink: TypedSink[A]): M[Unit]
+    def write[A](tp: M[TypedPipe[A]], sink: Output[A]): M[Unit]
     def sequence_[A](as: Seq[M[A]]): M[Unit]
   }
 
@@ -66,16 +66,16 @@ object WritePartitioner {
         def zip[A, B](ma: Execution[A], mb: Execution[B]): Execution[(A, B)] = ma.zip(mb)
         def materialize[A](t: Execution[TypedPipe[A]]): Execution[TypedPipe[A]] =
           t.flatMap(_.forceToDiskExecution)
-        def write[A](tp: Execution[TypedPipe[A]], sink: TypedSink[A]): Execution[Unit] =
+        def write[A](tp: Execution[TypedPipe[A]], sink: Output[A]): Execution[Unit] =
           tp.flatMap(_.writeExecution(sink))
         def sequence_[A](as: Seq[Execution[A]]): Execution[Unit] = Execution.sequence(as).unit
       }
   }
 
-  def materialize[M[+_]](phases: Seq[Rule[TypedPipe]], ws: List[PairK[TypedPipe, TypedSink, _]])(implicit
+  def materialize[M[+_]](phases: Seq[Rule[TypedPipe]], ws: List[PairK[TypedPipe, Output, _]])(implicit
       mat: Materializer[M]
   ): M[Unit] = {
-    val writes = materialize1[M, TypedSink](phases, ws)(mat)
+    val writes = materialize1[M, Output](phases, ws)(mat)
     val toSeq = writes.map { case (mt, sink) => mat.write(mt, sink) }
     mat.sequence_(toSeq)
   }
@@ -277,7 +277,7 @@ object WritePartitioner {
         case MergedTypedPipe(_, _)          => false
         case ReduceStepPipe(_)              => true
         case SumByLocalKeys(p, _)           => isLogicalReduce(p)
-        case TrappedPipe(p, _, _)           => isLogicalReduce(p)
+        case TrappedPipe(p, _)           => isLogicalReduce(p)
         case CoGroupedPipe(_)               => true
         case WithOnComplete(p, _)           => isLogicalReduce(p)
         case WithDescriptionTypedPipe(p, _) => isLogicalReduce(p)
@@ -371,7 +371,7 @@ object WritePartitioner {
           mat.map(rec((p.input, bs | OnlyMapping)))(SumByLocalKeys(_: TypedPipe[(a, b)], p.semigroup))
         case ((p: TrappedPipe[a], bs), rec) =>
           // TODO: it is a bit unclear if a trap is allowed on the back of a reduce?
-          mat.map(rec((p.input, bs)))(TrappedPipe[a](_: TypedPipe[a], p.sink, p.conv))
+          mat.map(rec((p.input, bs)))(TrappedPipe[a](_: TypedPipe[a], p.sink))
         case ((p: WithDescriptionTypedPipe[a], bs), rec) =>
           mat.map(rec((p.input, bs)))(WithDescriptionTypedPipe(_: TypedPipe[a], p.descriptions))
         case ((p: WithOnComplete[a], bs), rec) =>

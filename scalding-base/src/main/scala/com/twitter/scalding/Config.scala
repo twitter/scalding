@@ -15,26 +15,12 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapreduce.MRJobConfig
-import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
-import com.twitter.chill.{Externalizer, ExternalizerCodec, ExternalizerInjection, KryoInstantiator}
-import com.twitter.chill.config.{ConfiguredInstantiator, ScalaMapConfig}
-import com.twitter.bijection.{Base64String, Injection}
-import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile, HadoopCachedFile}
-
-import cascading.pipe.assembly.AggregateBy
-import cascading.flow.{FlowListener, FlowProps, FlowStepListener, FlowStepStrategy}
-import cascading.property.AppProps
-import cascading.tuple.collect.SpillableProps
-
+import com.twitter.scalding.serialization.{Serialization, RequireOrderedSerializationMode}
+import com.twitter.scalding.serialization.macros.impl.BinaryOrdering.{ordSer => serializer}
+import java.util.Base64
 import java.security.MessageDigest
-import java.net.URI
-
-import scala.collection.JavaConverters._
+import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import scala.util.{Failure, Success, Try}
-import com.twitter.scalding.serialization.RequireOrderedSerializationMode
 
 /**
  * This is a wrapper class on top of Map[String, String]
@@ -58,28 +44,6 @@ abstract class Config extends Serializable {
     get(key).map(_.toBoolean).getOrElse(orElse)
 
   /**
-   * Add files to be localized to the config. Intended to be used by user code.
-   * @param cachedFiles
-   *   CachedFiles to be added
-   * @return
-   *   new Config with cached files
-   */
-  def addDistributedCacheFiles(cachedFiles: CachedFile*): Config =
-    cachedFiles.foldLeft(this) { case (config, file) =>
-      file match {
-        case hadoopFile: HadoopCachedFile =>
-          Config.addDistributedCacheFile(hadoopFile.sourceUri, config)
-        case _ => config
-      }
-    }
-
-  /**
-   * Get cached files from config
-   */
-  def getDistributedCachedFiles: Seq[CachedFile] =
-    Config.getDistributedCacheFile(this)
-
-  /**
    * This is a name that if present is passed to flow.setName, which should appear in the job tracker.
    */
   def getCascadingAppName: Option[String] = get(CascadingAppName)
@@ -95,13 +59,13 @@ abstract class Config extends Serializable {
    * same class here: setScaldingFlowClass
    */
   def setCascadingAppJar(clazz: Class[_]): Config =
-    this + (AppProps.APP_JAR_CLASS -> clazz.getName)
+    this + (CascadingAppAppJarClass -> clazz.getName)
 
   /**
    * Returns None if not set, otherwise reflection is used to create the Class.forName
    */
   def getCascadingAppJar: Option[Try[Class[_]]] =
-    getClassForKey(AppProps.APP_JAR_CLASS)
+    getClassForKey(CascadingAppAppJarClass)
 
   def getClassForKey(k: String): Option[Try[Class[_]]] =
     get(k).map { str =>
@@ -112,34 +76,6 @@ abstract class Config extends Serializable {
         )
       } catch { case err: Throwable => Failure(err) }
     }
-
-  /*
-   * Used in joins to determine how much of the "right hand side" of
-   * the join to keep in memory
-   */
-  def setListSpillThreshold(count: Int): Config =
-    this + (SpillableProps.LIST_THRESHOLD -> count.toString)
-
-  /*
-   * Used in hashJoin/joinWithTiny to determine how big the map
-   * can be before spilling to disk. Generally, as big as you can
-   * allow here without OOM will help performance.
-   */
-  def setMapSpillThreshold(count: Int): Config =
-    this + (SpillableProps.MAP_THRESHOLD -> count.toString)
-
-  /*
-   * Used in map-side aggregation of associative operations (Semigroup/Monoid)
-   * This controls how many keys are in an in-memory cache. If a significant
-   * probability mass of the key-space is far bigger than this value, it
-   * does not help much (and may hurt, so experiment with disabling to get
-   * the best results
-   */
-  def setMapSideAggregationThreshold(count: Int): Config =
-    this + (AggregateBy.AGGREGATE_BY_THRESHOLD -> count.toString)
-
-  def getMapSideAggregationThreshold: Option[Int] =
-    get(AggregateBy.AGGREGATE_BY_THRESHOLD).map(_.toInt)
 
   @deprecated("Use setRequireOrderedSerializationMode", "12/14/17")
   def setRequireOrderedSerialization(b: Boolean): Config =
@@ -166,106 +102,25 @@ abstract class Config extends Serializable {
         case "log"  => RequireOrderedSerializationMode.Log
       }
 
-  def getCascadingSerializationTokens: Map[Int, String] =
-    get(Config.CascadingSerializationTokens)
-      .map(CascadingTokenUpdater.parseTokens)
-      .getOrElse(Map.empty[Int, String])
-
-  /**
-   * This function gets the set of classes that have been registered to Kryo. They may or may not be used in
-   * this job, but Cascading might want to be made aware that these classes exist
-   */
-  def getKryoRegisteredClasses: Set[Class[_]] =
-    // Get an instance of the Kryo serializer (which is populated with registrations)
-    getKryo
-      .map { kryo =>
-        val cr = kryo.newKryo.getClassResolver
-
-        @annotation.tailrec
-        def kryoClasses(idx: Int, acc: Set[Class[_]]): Set[Class[_]] =
-          Option(cr.getRegistration(idx)) match {
-            case Some(reg) => kryoClasses(idx + 1, acc + reg.getType)
-            case None      => acc // The first null is the end of the line
-          }
-
-        kryoClasses(0, Set[Class[_]]())
-      }
-      .getOrElse(Set())
-
-  /*
-   * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
-   * needs to be last and this method handles this for you:
-   * hadoop, cascading, [userHadoop,] kyro
-   * is the order.
-   *
-   * Kryo uses the ConfiguredInstantiator, which is configured either by reflection:
-   * Right(classOf[MyInstantiator]) or by serializing given Instantiator instance
-   * with a class to serialize to bootstrap the process:
-   * Left((classOf[serialization.KryoHadoop], myInstance))
-   */
-  def setSerialization(
-      kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
-      userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil
-  ): Config = {
-
-    // Hadoop and Cascading should come first
-    val first: Seq[Class[_ <: HSerialization[_]]] =
-      Seq(
-        classOf[org.apache.hadoop.io.serializer.WritableSerialization],
-        classOf[cascading.tuple.hadoop.TupleSerialization],
-        classOf[serialization.WrappedSerialization[_]]
-      )
-    // this must come last
-    val last: Seq[Class[_ <: HSerialization[_]]] = Seq(classOf[com.twitter.chill.hadoop.KryoSerialization])
-    val required = (first ++ last).toSet[AnyRef] // Class is invariant, but we use it as a function
-    // Make sure we keep the order correct and don't add the required fields twice
-    val hadoopSer = first ++ (userHadoop.filterNot(required)) ++ last
-
-    val hadoopKV = Config.IoSerializationsKey -> hadoopSer.map(_.getName).mkString(",")
-
-    // Now handle the Kryo portion which uses another mechanism
-    val chillConf = ScalaMapConfig(toMap)
-    kryo match {
-      case Left((bootstrap, inst)) => ConfiguredInstantiator.setSerialized(chillConf, bootstrap, inst)
-      case Right(refl)             => ConfiguredInstantiator.setReflect(chillConf, refl)
-    }
-    val withKryo = Config(chillConf.toMap + hadoopKV)
-
-    val kryoClasses = withKryo.getKryoRegisteredClasses
-      .filterNot(_.isPrimitive) // Cascading handles primitives and arrays
-      .filterNot(_.isArray)
-
-    withKryo.addCascadingClassSerializationTokens(kryoClasses)
-  }
-
-  /*
-   * If a ConfiguredInstantiator has been set up, this returns it
-   */
-  def getKryo: Option[KryoInstantiator] =
-    if (toMap.contains(ConfiguredInstantiator.KEY))
-      Some((new ConfiguredInstantiator(ScalaMapConfig(toMap))).getDelegate)
-    else None
-
   def getArgs: Args = get(Config.ScaldingJobArgsSerialized) match {
     case None => new Args(Map.empty)
     case Some(str) =>
-      argsSerializer
-        .invert(str)
-        .map(new Args(_))
-        .getOrElse(
-          throw new RuntimeException(
-            s"""Could not deserialize Args from Config. Maybe "$ScaldingJobArgsSerialized" was modified without using Config.setArgs?"""
-          )
-        )
+      val bytes = Base64.getDecoder.decode(str)
+      val bais = new ByteArrayInputStream(bytes)
+      new Args(argMapSerializer.read(bais).get)
   }
 
-  def setArgs(args: Args): Config =
+  def setArgs(args: Args): Config = {
+    val mapSer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
+    val baos = new ByteArrayOutputStream()
+    argMapSerializer.write(baos, args.m).get
+    val bytes = baos.toByteArray
+    val str = Base64.getEncoder.encodeToString(bytes)
+
     this
       .+(Config.ScaldingJobArgs -> args.toString)
-      .+(Config.ScaldingJobArgsSerialized -> argsSerializer(args.m))
-
-  def setDefaultComparator(clazz: Class[_ <: java.util.Comparator[_]]): Config =
-    this + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
+      .+(Config.ScaldingJobArgsSerialized -> str)
+  }
 
   def getOptimizationPhases: Option[Try[typed.OptimizationPhases]] =
     getClassForKey(Config.OptimizationPhases).map { tryClass =>
@@ -280,27 +135,10 @@ abstract class Config extends Serializable {
   def setOptimizationPhasesFromName(className: String): Config =
     this + (Config.OptimizationPhases -> className)
 
-  def getScaldingVersion: Option[String] = get(Config.ScaldingVersion)
-  def setScaldingVersion: Config =
-    (this
-      .+(Config.ScaldingVersion -> scaldingVersion))
-      .+(
-        // This is setting a property for cascading/driven
-        (AppProps.APP_FRAMEWORKS -> ("scalding:" + scaldingVersion))
-      )
-
   def getUniqueIds: Set[UniqueID] =
     get(UniqueID.UNIQUE_JOB_ID)
       .map(str => str.split(",").toSet[String].map(UniqueID(_)))
       .getOrElse(Set.empty)
-
-  /**
-   * The serialization of your data will be smaller if any classes passed between tasks in your job are listed
-   * here. Without this, strings are used to write the types IN EACH RECORD, which compression probably takes
-   * care of, but compression acts AFTER the data is serialized into buffers and spilling has been triggered.
-   */
-  def addCascadingClassSerializationTokens(clazzes: Set[Class[_]]): Config =
-    CascadingTokenUpdater.update(this, clazzes)
 
   /*
    * This is *required* if you are using counters. You must use
@@ -347,19 +185,6 @@ abstract class Config extends Serializable {
   def getScaldingFlowCounterValue: Option[Long] =
     get(ScaldingFlowCounterValue).map(_.toLong)
 
-  def getSubmittedTimestamp: Option[RichDate] =
-    get(ScaldingFlowSubmittedTimestamp).map(ts => RichDate(ts.toLong))
-  /*
-   * Sets the timestamp only if it was not already set. This is here
-   * to prevent overwriting the submission time if it was set by an
-   * previously (or externally)
-   */
-  def maybeSetSubmittedTimestamp(date: RichDate = RichDate.now): (Option[RichDate], Config) =
-    update(ScaldingFlowSubmittedTimestamp) {
-      case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
-      case None         => (Some(date.timestamp.toString), None)
-    }
-
   /**
    * Prepend an estimator so it will be tried first. If it returns None, the previously-set estimators will be
    * tried in order.
@@ -380,51 +205,6 @@ abstract class Config extends Serializable {
   /** Set the entire list of reducer estimators (overriding the existing list) */
   def setReducerEstimators(clsList: String): Config =
     this + (Config.ReducerEstimators -> clsList)
-
-  /**
-   * configure flow listeneres for observability
-   */
-  def addFlowListener(flowListenerProvider: (Mode, Config) => FlowListener): Config = {
-    val serializedListener = flowListenerSerializer(flowListenerProvider)
-    update(Config.FlowListeners) {
-      case None      => (Some(serializedListener), ())
-      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-    }._2
-  }
-
-  def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
-    get(Config.FlowListeners).toList
-      .flatMap(s => StringUtility.fastSplit(s, ","))
-      .map(flowListenerSerializer.invert(_))
-
-  def addFlowStepListener(flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
-    val serializedListener = flowStepListenerSerializer(flowListenerProvider)
-    update(Config.FlowStepListeners) {
-      case None      => (Some(serializedListener), ())
-      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-    }._2
-  }
-
-  def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
-    get(Config.FlowStepListeners).toList
-      .flatMap(s => StringUtility.fastSplit(s, ","))
-      .map(flowStepListenerSerializer.invert(_))
-
-  def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
-    val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
-    update(Config.FlowStepStrategies) {
-      case None      => (Some(serializedListener), ())
-      case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-    }._2
-  }
-
-  def clearFlowStepStrategies: Config =
-    this.-(Config.FlowStepStrategies)
-
-  def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
-    get(Config.FlowStepStrategies).toList
-      .flatMap(s => StringUtility.fastSplit(s, ","))
-      .map(flowStepStrategiesSerializer.invert(_))
 
   /** Get the number of reducers (this is the parameter Hadoop will use) */
   def getNumReducers: Option[Int] = get(Config.HadoopNumReducers).map(_.toInt)
@@ -492,18 +272,6 @@ abstract class Config extends Serializable {
   def getExecutionOptimization: Boolean =
     getBoolean(ScaldingExecutionOptimizationEnabled, true)
 
-  /**
-   * Enable/Disable check of taps that we use ScaldingHfs before openForRead
-   */
-  def setCheckHfsTaps(boolean: Boolean): Config =
-    this + (ScaldingCheckHfsTaps -> boolean.toString)
-
-  /**
-   * Should we check taps that we use ScaldingHfs before openForRead
-   */
-  def getCheckHfsTaps: Boolean =
-    getBoolean(ScaldingCheckHfsTaps, false)
-
   // we use Config as a key in Execution caches so we
   // want to avoid recomputing it repeatedly
   override lazy val hashCode = toMap.hashCode
@@ -514,12 +282,67 @@ abstract class Config extends Serializable {
       else toMap == thatConf.toMap
     case _ => false
   }
+
+  /**
+   * Enable/Disable check of taps that we use ScaldingHfs before openForRead
+   */
+  def setCheckHfsTaps(boolean: Boolean): Config =
+    this + (Config.ScaldingCheckHfsTaps -> boolean.toString)
+
+  /**
+   * Should we check taps that we use ScaldingHfs before openForRead
+   */
+  def getCheckHfsTaps: Boolean =
+    getBoolean(Config.ScaldingCheckHfsTaps, false)
+
+  /*
+  * Used in joins to determine how much of the "right hand side" of
+  * the join to keep in memory
+  */
+  def setListSpillThreshold(count: Int): Config =
+    this + (CascadingSpillablePropListThreshold -> count.toString)
+
+  /*
+  * Used in hashJoin/joinWithTiny to determine how big the map
+  * can be before spilling to disk. Generally, as big as you can
+  * allow here without OOM will help performance.
+  */
+  def setMapSpillThreshold(count: Int): Config =
+    this + (CascadingSpillablePropMapThreshold -> count.toString)
+
+  /*
+  * Used in map-side aggregation of associative operations (Semigroup/Monoid)
+  * This controls how many keys are in an in-memory cache. If a significant
+  * probability mass of the key-space is far bigger than this value, it
+  * does not help much (and may hurt, so experiment with disabling to get
+  * the best results
+  */
+  def setMapSideAggregationThreshold(count: Int): Config =
+    this + (CascadingAggregateByThreshold -> count.toString)
+
+  def getMapSideAggregationThreshold: Option[Int] =
+    get(CascadingAggregateByThreshold).map(_.toInt)
+
+  def getScaldingVersion: Option[String] = get(ScaldingVersion)
+  def setScaldingVersion: Config =
+    (this
+      .+(ScaldingVersion -> BuildInfo.version))
+      .+(
+        // This is setting a property for cascading/driven
+        (CascadingAppFrameworks -> ("scalding:" + BuildInfo.version))
+      )
 }
 
 object Config {
   val CascadingAppName: String = "cascading.app.name"
   val CascadingAppId: String = "cascading.app.id"
+  val CascadingAppFrameworks: String = "cascading.app.frameworks"
+  val CascadingAppAppJarClass: String = "cascading.app.appjar.class"
+  val CascadingAggregateByThreshold: String = "cascading.aggregateby.threshold"
   val CascadingSerializationTokens = "cascading.serialization.tokens"
+  val CascadingSpillablePropListThreshold: String = "cascading.spill.list.threshold"
+  val CascadingSpillablePropMapThreshold: String = "cascading.spill.map.threshold"
+
   val IoSerializationsKey: String = "io.serializations"
   val ScaldingFlowClassName: String = "scalding.flow.class.name"
   val ScaldingFlowClassSignature: String = "scalding.flow.class.signature"
@@ -591,37 +414,24 @@ object Config {
   val empty: Config = Config(Map.empty)
 
   /*
-   * Here is a config that will work, but perhaps is not optimally tuned for
-   * your cluster
-   */
-  def default: Config =
-    empty
+  * Here is a config that will work, but perhaps is not optimally tuned for
+  * your cluster
+  */
+  val default: Config =
+    Config.empty
       .setListSpillThreshold(100 * 1000)
       .setMapSpillThreshold(100 * 1000)
       .setMapSideAggregationThreshold(100 * 1000)
-      .setSerialization(Right(classOf[serialization.KryoHadoop]))
       .setScaldingVersion
-      .setHRavenHistoryUserName
 
   /*
-   * Extensions to the Default Config to tune it for unit tests
-   */
+  * Extensions to the Default Config to tune it for unit tests
+  */
   def unitTestDefault: Config =
-    Config(
-      Config.default.toMap ++ Map(
-        "cascading.update.skip" -> "true",
-        RuntimeFrameworkKey -> RuntimeFrameworkValueLocal
-      )
-    )
-
-  /**
-   * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)
-   */
-  def defaultFrom(mode: Mode): Config =
-    default ++ (mode match {
-      case m: HadoopMode => Config.fromHadoop(m.jobConf) - IoSerializationsKey
-      case _             => empty
-    })
+    Config.default ++ Config.from(
+      Map(
+        ("cascading.update.skip" -> "true"),
+        (Config.RuntimeFrameworkKey -> Config.RuntimeFrameworkValueLocal)))
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*
@@ -629,32 +439,11 @@ object Config {
    */
   implicit def from(m: Map[String, String]): Config = apply(m)
 
-  /*
-   * Legacy code that uses Map[AnyRef, AnyRef] can call this
-   * function to get a Config.
-   * If there are unrecognized non-string values, this may fail.
+  /**
+   * Merge Config.default with Hadoop config from the mode (if in Hadoop mode)
    */
-  def tryFrom(maybeConf: Map[AnyRef, AnyRef]): Try[Config] = {
-    val (nonStrings, strings) = stringsFrom(maybeConf)
-    val initConf = from(strings)
-
-    (nonStrings
-      .get(AppProps.APP_JAR_CLASS) match {
-      case Some(clazz) =>
-        // Again, the _ causes problem with Try
-        try {
-          val cls = classOf[Class[_]].cast(clazz)
-          Success((nonStrings - AppProps.APP_JAR_CLASS, initConf.setCascadingAppJar(cls)))
-        } catch {
-          case err: Throwable => Failure(err)
-        }
-      case None => Success((nonStrings, initConf))
-    })
-      .flatMap { case (unhandled, withJar) =>
-        if (unhandled.isEmpty) Success(withJar)
-        else Failure(new Exception("unhandled configurations: " + unhandled.toString))
-      }
-  }
+  def defaultFrom(mode: Mode): Config =
+    Config.from(mode.defaultConfig)
 
   /**
    * Returns all the non-string keys on the left, the string keys/values on the right
@@ -684,28 +473,6 @@ object Config {
     m ++ (conf.toMap.toMap[K, V]) // linter:disable:TypeToType // we are upcasting K, V
 
   /*
-   * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
-   * made on calling here. If you need to update Config, you do it by modifying it.
-   * This copy also forces all expressions in values to be evaluated, freezing them
-   * as well.
-   */
-  def fromHadoop(conf: Configuration): Config =
-    // use `conf.get` to force JobConf to evaluate expressions
-    Config(conf.asScala.map(e => e.getKey -> conf.get(e.getKey)).toMap)
-
-  /*
-   * For everything BUT SERIALIZATION, this prefers values in conf,
-   * but serialization is generally required to be set up with Kryo
-   * (or some other system that handles general instances at runtime).
-   */
-  def hadoopWithDefaults(conf: Configuration): Config =
-    (empty
-      .setListSpillThreshold(100 * 1000)
-      .setMapSpillThreshold(100 * 1000)
-      .setMapSideAggregationThreshold(100 * 1000) ++ fromHadoop(conf))
-      .setSerialization(Right(classOf[serialization.KryoHadoop]))
-      .setScaldingVersion
-  /*
    * This can help with versioning Class files into configurations if they are
    * logged. This allows you to detect changes in the job logic that may correlate
    * with changes in performance
@@ -729,58 +496,32 @@ object Config {
     md5Hex(bytes)
   }
 
-  /**
-   * Add a file to be localized to the config. Intended to be used by user code.
-   *
-   * @param qualifiedURI
-   *   The qualified uri of the cache to be localized
-   * @param config
-   *   Config to add the cache to
-   *
-   * @return
-   *   new Config with cached files
-   *
-   * @see
-   *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
-   */
-  private def addDistributedCacheFile(qualifiedURI: URI, config: Config): Config = {
-    val newFile = DistributedCacheFile
-      .symlinkedUriFor(qualifiedURI)
-      .toString
+  /*
+  * Legacy code that uses Map[AnyRef, AnyRef] can call this
+  * function to get a Config.
+  * If there are unrecognized non-string values, this may fail.
+  */
+  def tryFrom(maybeConf: Map[AnyRef, AnyRef]): Try[Config] = {
+    val (nonStrings, strings) = Config.stringsFrom(maybeConf)
+    val initConf = Config.from(strings)
 
-    val newFiles = config
-      .get(MRJobConfig.CACHE_FILES)
-      .map(files => files + "," + newFile)
-      .getOrElse(newFile)
-
-    config + (MRJobConfig.CACHE_FILES -> newFiles)
+    (nonStrings
+      .get(CascadingAppAppJarClass) match {
+      case Some(clazz) =>
+        // Again, the _ causes problem with Try
+        try {
+          val cls = classOf[Class[_]].cast(clazz)
+          Success((nonStrings - CascadingAppAppJarClass, initConf.setCascadingAppJar(cls)))
+        } catch {
+          case err: Throwable => Failure(err)
+        }
+      case None => Success((nonStrings, initConf))
+    })
+      .flatMap { case (unhandled, withJar) =>
+        if (unhandled.isEmpty) Success(withJar)
+        else Failure(new Exception("unhandled configurations: " + unhandled.toString))
+      }
   }
 
-  /**
-   * Get distributed cache files from config
-   *
-   * @param config
-   *   Config with cached files
-   */
-  private def getDistributedCacheFile(config: Config): Seq[CachedFile] =
-    config
-      .get(MRJobConfig.CACHE_FILES)
-      .toSeq
-      .flatMap(_.split(","))
-      .filter(_.nonEmpty)
-      .map { file =>
-        val symlinkedUri = new URI(file)
-        val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
-        HadoopCachedFile(qualifiedUri)
-      }
-
-  private[this] def buildInj[T: ExternalizerInjection: ExternalizerCodec]: Injection[T, String] =
-    Injection.connect[T, Externalizer[T], Array[Byte], Base64String, String]
-
-  @transient private[scalding] lazy val flowStepListenerSerializer =
-    buildInj[(Mode, Config) => FlowStepListener]
-  @transient private[scalding] lazy val flowListenerSerializer = buildInj[(Mode, Config) => FlowListener]
-  @transient private[scalding] lazy val flowStepStrategiesSerializer =
-    buildInj[(Mode, Config) => FlowStepStrategy[JobConf]]
-  @transient private[scalding] lazy val argsSerializer = buildInj[Map[String, List[String]]]
+  private def argMapSerializer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
 }

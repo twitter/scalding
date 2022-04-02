@@ -31,12 +31,6 @@ class ThrowingSerializer[T] extends KSerializer[T] {
     sys.error(s"Kryo should never be used to serialize an instance, class: $t")
 }
 
-// We use this for TypedPipe subclasses which should never be needed when we run
-class SerializeAsUnit[T >: Null] extends KSerializer[T] {
-  override def write(kryo: Kryo, output: Output, t: T): Unit = ()
-  override def read(kryo: Kryo, input: Input, t: Class[T]): T = null
-}
-
 /**
  * * Below are some serializers for objects in the scalding project.
  */

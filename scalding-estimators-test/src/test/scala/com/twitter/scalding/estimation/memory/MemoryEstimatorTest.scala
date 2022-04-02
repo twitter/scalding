@@ -9,6 +9,8 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.collection.JavaConverters._
 import scala.util.{Success, Try}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCompanionCascadingExtensions
+
 class MemoryEstimatorTest extends WordSpec with Matchers with HadoopSharedPlatformTest {
   "Single-step job with memory estimator" should {
     "without history don't override memory settings" in {

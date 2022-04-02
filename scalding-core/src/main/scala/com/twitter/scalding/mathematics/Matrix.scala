@@ -27,6 +27,8 @@ import cascading.flow._
 
 import com.twitter.scalding.Dsl._
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 /**
  * Matrix class - represents an infinite (hopefully sparse) matrix. any elements without a row are
  * interpretted to be zero. the pipe hold ('rowIdx, 'colIdx, 'val) where in principle each row/col/value type

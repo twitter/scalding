@@ -7,6 +7,7 @@ import java.net.URI
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapreduce.MRJobConfig
 import org.apache.hadoop.mapreduce.filecache.{DistributedCache => HDistributedCache}
 import org.apache.hadoop.fs.Path
 
@@ -63,17 +64,18 @@ object URIHasher {
  * {{{
  * object YourExecJob extends ExecutionApp {
  *   override def job =
- *     Execution.withCachedFile("/path/to/your/file.txt") { file =>
- *       doSomething(theCachedFile.path)
- *     }
+       DistributedCacheFile
+ *       .execution("/path/to/your/file.txt") { file =>
+ *         doSomething(theCachedFile.path)
+ *       }
  * }
  *
  * example with Execution and multiple files:
  *
  * object YourExecJob extends ExecutionApp {
  *   override def job =
- *     Execution.withCachedFile("/path/to/your/one.txt") { one =>
- *       Execution.withCachedFile("/path/to/your/second.txt") { second =>
+ *     DistributedCacheFile.execution("/path/to/your/one.txt") { one =>
+ *       DistributedCacheFile.execution("/path/to/your/second.txt") { second =>
  *         doSomething(one.path, second.path)
  *       }
  *     }
@@ -130,6 +132,60 @@ object DistributedCacheFile {
 
   def symlinkedUriFor(sourceUri: URI): URI =
     new URI(sourceUri.getScheme, sourceUri.getSchemeSpecificPart, symlinkNameFor(sourceUri))
+
+  /**
+   * Make a file available to an Execution
+   */
+  def execution[A](path: String)(use: CachedFile => Execution[A]): Execution[A] =
+    Execution.getMode.flatMap { mode =>
+      val cached = cachedFile(path, mode)
+      Execution.withConfig(use(cached))(addDistributedCacheFiles(_, cached))
+    }
+
+  /**
+   * Add files to be localized to the config. Intended to be used by user code.
+   * @param cachedFiles
+   *   CachedFiles to be added
+   * @return
+   *   new Config with cached files
+   */
+  def addDistributedCacheFiles(config: Config, cachedFiles: CachedFile*): Config =
+    cachedFiles.foldLeft(config) { case (config, file) =>
+      file match {
+        case hadoopFile: HadoopCachedFile =>
+          /*
+            * @see
+            *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
+            */
+          val newFile = DistributedCacheFile
+            .symlinkedUriFor(hadoopFile.sourceUri)
+            .toString
+
+          val newFiles = config
+            .get(MRJobConfig.CACHE_FILES)
+            .map(files => files + "," + newFile)
+            .getOrElse(newFile)
+
+          config + (MRJobConfig.CACHE_FILES -> newFiles)
+        case _ => config
+      }
+    }
+
+  /**
+   * Get cached files from config
+   */
+  def getDistributedCachedFiles(config: Config): Seq[CachedFile] =
+    config
+      .get(MRJobConfig.CACHE_FILES)
+      .toSeq
+      .flatMap(_.split(","))
+      .filter(_.nonEmpty)
+      .map { file =>
+        val symlinkedUri = new URI(file)
+        val qualifiedUri = new URI(symlinkedUri.getScheme, symlinkedUri.getSchemeSpecificPart, null)
+        HadoopCachedFile(qualifiedUri)
+      }
+
 }
 
 final case class UncachedFile private[scalding] (source: Either[String, URI]) {

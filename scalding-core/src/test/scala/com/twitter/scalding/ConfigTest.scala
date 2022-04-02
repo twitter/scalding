@@ -18,6 +18,7 @@ package com.twitter.scalding
 import com.twitter.scalding.filecache.{HadoopCachedFile, URIHasher}
 import java.net.URI
 import org.apache.hadoop.mapreduce.MRJobConfig
+import org.apache.hadoop.conf.Configuration
 
 import org.scalatest.{Matchers, WordSpec}
 import org.scalacheck.Arbitrary
@@ -26,18 +27,25 @@ import org.scalacheck.Prop.forAll
 
 import scala.util.Success
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.{
+  ConfigCascadingExtensions
+}
+
 class ConfigTest extends WordSpec with Matchers {
+
+  val defaultHdfs = Config.defaultFrom(Hdfs(true, new Configuration()))
+
   "A Config" should {
     "cascadingAppJar works" in {
       val cls = getClass
       Config.default.setCascadingAppJar(cls).getCascadingAppJar should contain(Success(cls))
     }
     "default has serialization set" in {
-      val sers = Config.default.get("io.serializations").get.split(",").toList
+      val sers = defaultHdfs.get("io.serializations").get.split(",").toList
       sers.last shouldBe (classOf[com.twitter.chill.hadoop.KryoSerialization].getName)
     }
     "default has chill configured" in {
-      Config.default.get(com.twitter.chill.config.ConfiguredInstantiator.KEY) should not be empty
+      defaultHdfs.get(com.twitter.chill.config.ConfiguredInstantiator.KEY) should not be empty
     }
     "setting timestamp twice does not change it" in {
       val date = RichDate.now
@@ -64,16 +72,16 @@ class ConfigTest extends WordSpec with Matchers {
       intercept[RuntimeException](config.getArgs)
     }
     "Default serialization should have tokens" in {
-      Config.default.getCascadingSerializationTokens should not be empty
-      Config.default.getCascadingSerializationTokens.values
+      defaultHdfs.getCascadingSerializationTokens should not be empty
+      defaultHdfs.getCascadingSerializationTokens.values
         .map(Class.forName)
         .filter(c => c.isPrimitive || c.isArray) shouldBe empty
 
       Config.empty.getCascadingSerializationTokens shouldBe empty
 
       // tokenClasses are a subset that don't include primitives or arrays.
-      val tokenClasses = Config.default.getCascadingSerializationTokens.values.toSet
-      val kryoClasses = Config.default.getKryoRegisteredClasses.map(_.getName)
+      val tokenClasses = defaultHdfs.getCascadingSerializationTokens.values.toSet
+      val kryoClasses = defaultHdfs.getKryoRegisteredClasses.map(_.getName)
       // Tokens are a subset of Kryo registered classes
       (kryoClasses & tokenClasses) shouldBe tokenClasses
       // the only Kryo classes we don't assign tokens for are the primitives + array
@@ -114,6 +122,26 @@ class ConfigTest extends WordSpec with Matchers {
         .addDistributedCacheFiles(cachedFileFirst)
         .addDistributedCacheFiles(cachedFileSecond)
         .get(MRJobConfig.CACHE_FILES) shouldBe Some(s"$pathFirst,$pathSecond")
+    }
+
+    "constants match cascading values" in {
+      // We do this to avoid depending on cascading to get these strings, but
+      // want to ensure they match
+
+      Config.CascadingSpillablePropListThreshold shouldBe
+        cascading.tuple.collect.SpillableProps.LIST_THRESHOLD
+
+      Config.CascadingSpillablePropMapThreshold shouldBe
+        cascading.tuple.collect.SpillableProps.MAP_THRESHOLD
+      
+      Config.CascadingAggregateByThreshold shouldBe
+        cascading.pipe.assembly.AggregateBy.AGGREGATE_BY_THRESHOLD
+
+      Config.CascadingAppAppJarClass shouldBe
+        cascading.property.AppProps.APP_JAR_CLASS
+
+      Config.CascadingAppFrameworks shouldBe
+        cascading.property.AppProps.APP_FRAMEWORKS
     }
   }
 }

@@ -22,7 +22,7 @@ import cascading.flow.FlowDef
 import cascading.pipe.Pipe
 import cascading.tuple.Fields
 
-trait TypedSource[+T] extends java.io.Serializable {
+trait TypedSource[+T] extends Input[T] {
 
   /**
    * Because TupleConverter cannot be covariant, we need to jump through this hoop. A typical implementation

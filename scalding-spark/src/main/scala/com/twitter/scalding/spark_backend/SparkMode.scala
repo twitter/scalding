@@ -1,7 +1,7 @@
 package com.twitter.scalding.spark_backend
 
 import com.twitter.scalding.{Config, Mode, TextLine, WritableSequenceFile}
-import com.twitter.scalding.typed.{Resolver, TypedSink, TypedSource}
+import com.twitter.scalding.typed.{Resolver, Input, Output}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.sql.SparkSession
@@ -11,8 +11,8 @@ import org.apache.hadoop.io.Writable
 
 case class SparkMode(
     session: SparkSession,
-    sources: Resolver[TypedSource, SparkSource],
-    sink: Resolver[TypedSink, SparkSink]
+    sources: Resolver[Input, SparkSource],
+    sink: Resolver[Output, SparkSink]
 ) extends Mode {
   def newWriter(): SparkWriter =
     new SparkWriter(this)
@@ -95,9 +95,9 @@ object SparkSource extends Serializable {
    *
    * users can add their own implementations and compose Resolvers using orElse
    */
-  val Default: Resolver[TypedSource, SparkSource] =
-    new Resolver[TypedSource, SparkSource] {
-      def apply[A](i: TypedSource[A]): Option[SparkSource[A]] =
+  val Default: Resolver[Input, SparkSource] =
+    new Resolver[Input, SparkSource] {
+      def apply[A](i: Input[A]): Option[SparkSource[A]] =
         i match {
           case ws @ WritableSequenceFile(path, _, _) =>
             Some(writableSequenceFile(path, ws.keyType, ws.valueType))
@@ -146,9 +146,9 @@ object SparkSink extends Serializable {
    *
    * users can add their own implementations and compose Resolvers using orElse
    */
-  val Default: Resolver[TypedSink, SparkSink] =
-    new Resolver[TypedSink, SparkSink] {
-      def apply[A](i: TypedSink[A]): Option[SparkSink[A]] =
+  val Default: Resolver[Output, SparkSink] =
+    new Resolver[Output, SparkSink] {
+      def apply[A](i: Output[A]): Option[SparkSink[A]] =
         i match {
           case ws @ WritableSequenceFile(path, fields, sinkMode) =>
             Some(writableSequenceFile(path, ws.keyType, ws.valueType).asInstanceOf[SparkSink[A]])

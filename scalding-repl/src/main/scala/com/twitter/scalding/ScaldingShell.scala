@@ -29,6 +29,8 @@ import scala.tools.nsc.io.VirtualDirectory
 
 import com.google.common.io.Files
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 case class ShellArgs(cfg: Config, mode: Mode, cmdArgs: List[String])
 
 /**

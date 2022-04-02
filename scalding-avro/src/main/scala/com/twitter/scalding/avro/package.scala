@@ -20,6 +20,8 @@ import org.apache.avro.Schema
 import collection.JavaConverters._
 import cascading.tuple.Fields
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 package object avro {
   def writePackedAvro[T](pipe: TypedPipe[T], path: String)(implicit
       mf: Manifest[T],

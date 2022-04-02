@@ -39,7 +39,7 @@ object TypedSink extends java.io.Serializable {
 /**
  * Opposite of TypedSource, used for writing into
  */
-trait TypedSink[-T] extends java.io.Serializable {
+trait TypedSink[-T] extends Output[T] {
   def setter[U <: T]: TupleSetter[U]
   // These are the fields the write function is expecting
   def sinkFields: Fields = Dsl.intFields(0 until setter.arity)

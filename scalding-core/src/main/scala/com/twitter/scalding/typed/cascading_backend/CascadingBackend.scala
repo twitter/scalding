@@ -16,13 +16,13 @@ import com.twitter.scalding.{
   FlowState,
   FlowStateMap,
   GroupBuilder,
-  HadoopMode,
   IncrementCounters,
   IterableSource,
   MapsideReduce,
   Mode,
   RichFlowDef,
   RichPipe,
+  Source,
   TupleConverter,
   TupleGetter,
   TupleSetter,
@@ -46,18 +46,15 @@ import org.slf4j.LoggerFactory
 object CascadingBackend {
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
-  def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
-    (t, s) match {
-      case (TupleConverter.Single(TupleGetter.Casting()), TupleSetter.Single())                => true
-      case (TupleConverter.TupleConverter1(TupleGetter.Casting()), TupleSetter.TupleSetter1()) => true
-      case (
-            TupleConverter.TupleConverter2(TupleGetter.Casting(), TupleGetter.Casting()),
-            TupleSetter.TupleSetter2()
-          ) =>
-        true
-      // TODO we could add more, but we only use single and 2 actually
-      case _ => false
+  def converterFrom[A](ts: TupleSetter[A]): Option[TupleConverter[A]] =
+    ts match {
+      case TupleSetter.Single() =>
+        Some(TupleConverter.Single(TupleGetter.Casting()).asInstanceOf[TupleConverter[A]])
+      case _ => TupleSetter.converterFromSetter(ts, TupleConverter)
     }
+
+  def areDefiniteInverse[A, B](t: TupleConverter[A], s: TupleSetter[B]): Boolean =
+    converterFrom(s).exists(_ == t)
 
   import TypedPipe._
 
@@ -371,10 +368,17 @@ object CascadingBackend {
               val merged = new cascading.pipe.Merge(pipes.map(RichPipe.assignName): _*)
               CascadingPipe.single[T](merged, flowDef)
           }
-        case SourcePipe(typedSrc) =>
-          val fd = new FlowDef
-          val pipe = typedSrc.read(fd, mode)
-          CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
+        case SourcePipe(input) =>
+          input match {
+            case ts: TypedSource[_] =>
+              val typedSrc = ts.asInstanceOf[TypedSource[T]]
+              val fd = new FlowDef
+              val pipe = typedSrc.read(fd, mode)
+              CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
+            case notCascading =>
+              throw new IllegalArgumentException(
+                s"cascading mode requires TypedSource, found: $notCascading of class ${notCascading.getClass}")
+          }
         case sblk @ SumByLocalKeys(_, _) =>
           def go[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] = {
             val cp = rec(sblk.input)
@@ -390,7 +394,7 @@ object CascadingBackend {
 
           go(sblk)
         case trapped: TrappedPipe[u] =>
-          val cp = rec(trapped.input)
+          val cp: CascadingPipe[_ <: u] = rec(trapped.input)
           import trapped._
           // TODO: with diamonds in the graph, this might not be correct
           // it seems cascading requires puts the immediate tuple that
@@ -400,11 +404,40 @@ object CascadingBackend {
           // schemas into the trap, making it unreadable.
           // this basically means there can only be one operation in between
           // a trap and a forceToDisk or a groupBy/cogroupBy (any barrier).
-          val fd = new FlowDef
-          val pp: Pipe = cp.toPipe[u](sink.sinkFields, fd, TupleSetter.asSubSetter(sink.setter))
-          val pipe = RichPipe.assignName(pp)
-          fd.addTrap(pipe, sink.createTap(Write)(mode))
-          CascadingPipe[u](pipe, sink.sinkFields, fd, conv)
+          (sink, sink) match {
+            case (src: Source, tsink: TypedSink[u @ unchecked]) =>
+              val optTC: Option[TupleConverter[u]] =
+                (sink match {
+                  case tsrc: TypedSource[u @ unchecked] if tsrc.converter.arity == tsink.setter.arity =>
+                    Some(tsrc.converter)
+                  case _ =>
+                      converterFrom(tsink.setter)
+                }).map(TupleConverter.asSuperConverter(_))
+
+
+              optTC match {
+                case Some(tc) =>
+                  val fd = new FlowDef
+                  val pp: Pipe = cp.toPipe[u](tsink.sinkFields, fd, TupleSetter.asSubSetter(tsink.setter))
+                  val pipe = RichPipe.assignName(pp)
+                  fd.addTrap(pipe, src.createTap(Write)(mode))
+                  CascadingPipe[u](pipe, tsink.sinkFields, fd, tc)
+                case None =>
+                  logger.warn(
+                    s"No TupleConverter found for ${trapped}. Use a TypedSink that is also a TypedSource. Found sink: ${sink}")
+                  // we just ignore the trap in this case.
+                  // if the job doesn't fail, the trap would be empty anyway,
+                  // if the job does fail, we will see the failure
+                  cp
+              }
+            case _ =>
+              // it should be safe to only warn here because
+              // if the trap is removed and there is a failure the job should fail
+              logger.warn(
+                s"Trap on ${trapped.input} does not have a valid output: ${trapped.sink}" +
+                  ", a subclass of Source and TypedSink is required\nTrap ignored")
+              cp
+          }
         case WithDescriptionTypedPipe(input, descs) =>
           @annotation.tailrec
           def loop[A](
@@ -477,10 +510,7 @@ object CascadingBackend {
       setter: TupleSetter[U]
   ): Pipe = {
 
-    val phases = defaultOptimizationRules(mode match {
-      case h: HadoopMode => Config.fromHadoop(h.jobConf)
-      case _             => Config.empty
-    })
+    val phases = defaultOptimizationRules(Config.defaultFrom(mode))
     val (d, id) = Dag(p, OptimizationRules.toLiteral)
     val d1 = d.applySeq(phases)
     val p1 = d1.evaluate(id)
@@ -507,10 +537,7 @@ object CascadingBackend {
         require(tw.mode == mode, s"${tw.mode} should be equal to $mode")
         (nextDag, (id, tw.sink) :: items)
       }
-      val phases = defaultOptimizationRules(mode match {
-        case h: HadoopMode => Config.fromHadoop(h.jobConf)
-        case _             => Config.empty
-      })
+      val phases = defaultOptimizationRules(Config.defaultFrom(mode))
       val optDag = rootedDag.applySeq(phases)
       def doWrite[A](pair: (Id[A], TypedSink[A])): Unit = {
         val optPipe = optDag.evaluate(pair._1)

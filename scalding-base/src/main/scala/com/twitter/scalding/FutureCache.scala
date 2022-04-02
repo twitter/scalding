@@ -1,7 +1,7 @@
 package com.twitter.scalding
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
 trait PromiseLike[P[_], F[_]] {
   def apply[T](): P[T]

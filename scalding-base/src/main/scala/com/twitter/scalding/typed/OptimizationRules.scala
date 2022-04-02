@@ -94,7 +94,7 @@ object OptimizationRules {
         case (p: SumByLocalKeys[a, b], f) =>
           widen(Unary(f(p.input), SumByLocalKeys(_: TypedPipe[(a, b)], p.semigroup)))
         case (p: TrappedPipe[a], f) =>
-          Unary(f(p.input), TrappedPipe[a](_: TypedPipe[a], p.sink, p.conv))
+          Unary(f(p.input), TrappedPipe[a](_: TypedPipe[a], p.sink))
         case (p: WithDescriptionTypedPipe[a], f) =>
           Unary(f(p.input), WithDescriptionTypedPipe(_: TypedPipe[a], p.descriptions))
         case (p: WithOnComplete[a], f) =>
@@ -442,10 +442,10 @@ object OptimizationRules {
       case MergedTypedPipe(a, b) if needsFork(on, b) => maybeFork(on, b).map(MergedTypedPipe(a, _))
       case ReduceStepPipe(rs)                        => forkReduceStep(on, rs).map(ReduceStepPipe(_))
       case SumByLocalKeys(p, sg)                     => maybeFork(on, p).map(SumByLocalKeys(_, sg))
-      case t @ TrappedPipe(_, _, _) =>
+      case t @ TrappedPipe(_, _) =>
         def go[A](t: TrappedPipe[A]): Option[TypedPipe[A]] = {
-          val TrappedPipe(p, sink, conv) = t
-          maybeFork(on, p).map(TrappedPipe(_, sink, conv))
+          val TrappedPipe(p, sink) = t
+          maybeFork(on, p).map(TrappedPipe(_, sink))
         }
         go(t)
       case CoGroupedPipe(cgp)              => forkCoGroup(on, cgp).map(CoGroupedPipe(_))
@@ -771,7 +771,7 @@ object OptimizationRules {
         // First, these are non-mapped pipes.
         case EmptyTypedPipe | IterablePipe(_) | SourcePipe(_) | ReduceStepPipe(_) | CoGroupedPipe(_) |
             CrossPipe(_, _) | CounterPipe(_) | CrossValue(_, _) | DebugPipe(_) | ForceToDisk(_) | Fork(_) |
-            HashCoGroup(_, _, _) | SumByLocalKeys(_, _) | TrappedPipe(_, _, _) | WithOnComplete(_, _) =>
+            HashCoGroup(_, _, _) | SumByLocalKeys(_, _) | TrappedPipe(_, _) | WithOnComplete(_, _) =>
           Mapper.unmapped(tp) :: Nil
         case FilterKeys(p, fn) =>
           toMappers(p).map(_.combine(FlatMappedFn.fromFilter(FilterKeysToFilter(fn))))
@@ -875,7 +875,7 @@ object OptimizationRules {
   /**
    * This allows you to replace the sources according to a given Resolver
    */
-  case class ReplaceSources(resolver: Resolver[TypedSource, TypedSource]) extends Rule[TypedPipe] {
+  case class ReplaceSources(resolver: Resolver[Input, Input]) extends Rule[TypedPipe] {
     def apply[T](on: Dag[TypedPipe]) = {
       case SourcePipe(src) =>
         resolver(src).map(SourcePipe(_))
@@ -1034,7 +1034,7 @@ object OptimizationRules {
       case MergedTypedPipe(a, EmptyTypedPipe)                                     => a
       case ReduceStepPipe(rs: ReduceStep[_, _, _]) if rs.mapped == EmptyTypedPipe => EmptyTypedPipe
       case SumByLocalKeys(EmptyTypedPipe, _)                                      => EmptyTypedPipe
-      case TrappedPipe(EmptyTypedPipe, _, _)                                      => EmptyTypedPipe
+      case TrappedPipe(EmptyTypedPipe, _)                                      => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp)                                => EmptyTypedPipe
       case WithOnComplete(EmptyTypedPipe, _) =>
         EmptyTypedPipe // there is nothing to do, so we never have workers complete

@@ -7,7 +7,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 import com.twitter.scalding.{Config, FutureCache}
-import com.twitter.scalding.typed.TypedSource
+import com.twitter.scalding.typed.Input
 import SparkPlanner.PartitionComputer
 
 sealed abstract class Op[+A] {
@@ -147,7 +147,7 @@ object Op extends Serializable {
       Future(session.sparkContext.makeRDD(iterable.toSeq, 1))
   }
 
-  final case class Source[A](conf: Config, original: TypedSource[A], input: Option[SparkSource[A]])
+  final case class Source[A](conf: Config, original: Input[A], input: Option[SparkSource[A]])
       extends Op[A] {
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       input match {

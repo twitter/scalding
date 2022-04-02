@@ -19,12 +19,20 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable.{Buffer, Map => MMap, Set => MSet}
 import scala.util.{Failure, Success}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 /**
  * Any Mode running on cascading extends CascadingMode
  */
 trait CascadingMode extends Mode {
   def newWriter(): Execution.Writer =
     new AsyncFlowDefRunner(this)
+
+  override def defaultConfig: Map[String, String] =
+    (this match {
+      case m: HadoopMode => Config.hadoopWithDefaults(m.jobConf)
+      case _             => Config.unitTestDefault
+    }).toMap
 
   /*
    * Using a new FlowProcess, which is only suitable for reading outside

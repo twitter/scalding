@@ -1,7 +1,7 @@
 package com.twitter.scalding.typed
 
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, Local, TupleConverter, TupleGetter}
+import com.twitter.scalding.{Config, Execution, Local}
 import com.twitter.scalding.source.{NullSink, TypedText}
 import com.twitter.scalding.typed.cascading_backend.CascadingBackend
 import com.twitter.scalding.dagon.Dag
@@ -13,7 +13,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
     TypedText.tsv[String](s"source_$id").asInstanceOf[TypedSource[T]]
 
   case class WriteState(
-      writes: List[WritePartitioner.PairK[TypedPipe, TypedSink, _]],
+      writes: List[WritePartitioner.PairK[TypedPipe, Output, _]],
       materializations: List[WritePartitioner.PairK[TypedPipe, TypedSource, _]]
   ) {
 
@@ -42,8 +42,8 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
             (t.value, fakeReader) :: t.writes.materializations
           State(t.writes.copy(materializations = newMats), TypedPipe.from(fakeReader))
         }
-        def write[A](tp: State[TypedPipe[A]], sink: TypedSink[A]): State[Unit] = {
-          val newWrites: List[WritePartitioner.PairK[TypedPipe, TypedSink, _]] =
+        def write[A](tp: State[TypedPipe[A]], sink: Output[A]): State[Unit] = {
+          val newWrites: List[WritePartitioner.PairK[TypedPipe, Output, _]] =
             (tp.value, sink) :: tp.writes.writes
           State(tp.writes.copy(writes = newWrites), ())
         }
@@ -120,8 +120,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                             WithDescriptionTypedPipe(
                               TrappedPipe(
                                 SourcePipe(TypedText.tsv[Int]("oyg")),
-                                TypedText.tsv[Int]("a3QasphTfqhd1namjb"),
-                                TupleConverter.Single(implicitly[TupleGetter[Int]])
+                                TypedText.tsv[Int]("a3QasphTfqhd1namjb")
                               ),
                               List(("org.scalacheck.Gen$R $class.map(Gen.scala:237)", true))
                             )
@@ -237,7 +236,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
               WithDescriptionTypedPipe(
                 CrossValue(
                   WithDescriptionTypedPipe(
-                    TrappedPipe(
+                    TrappedPipe[Int](
                       WithDescriptionTypedPipe(
                         ForceToDisk(
                           WithDescriptionTypedPipe(
@@ -280,8 +279,7 @@ class WritePartitionerTest extends FunSuite with PropertyChecks {
                         ),
                         List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
                       ),
-                      TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac"),
-                      TupleConverter.Single(implicitly[TupleGetter[Int]])
+                      TypedText.tsv[Int]("mndlSTwuEmwqhJk7ac")
                     ),
                     List(("org.scalacheck.Gen$R$class.map(Gen.scala:237)", true))
                   ),

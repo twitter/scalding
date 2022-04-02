@@ -25,6 +25,8 @@ import org.apache.hadoop.util.{GenericOptionsParser, Tool => HTool, ToolRunner}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 class Tool extends Configured with HTool {
   // This mutable state is not my favorite, but we are constrained by the Hadoop API:
   var rootJob: Option[(Args) => Job] = None

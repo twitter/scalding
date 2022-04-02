@@ -15,51 +15,10 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import scala.collection.JavaConverters._
-import cascading.stats.{CascadeStats, CascadingStats, FlowStats}
-
 import scala.util.{Failure, Try}
 
 object JobStats {
   def empty: JobStats = new JobStats(Map("counters" -> Map.empty))
-  def apply(stats: CascadingStats): JobStats = {
-    val m: Map[String, Any] = statsMap(stats)
-    new JobStats(stats match {
-      case cs: CascadeStats => m
-      case fs: FlowStats    => m + ("flow_step_stats" -> fs.getFlowStepStats.asScala.map(statsMap))
-    })
-  }
-
-  private def counterMap(stats: CascadingStats): Map[String, Map[String, Long]] =
-    stats.getCounterGroups.asScala.map { group =>
-      (
-        group,
-        stats
-          .getCountersFor(group)
-          .asScala
-          .map { counter =>
-            (counter, stats.getCounterValue(group, counter))
-          }
-          .toMap
-      )
-    }.toMap
-
-  private def statsMap(stats: CascadingStats): Map[String, Any] =
-    Map(
-      "counters" -> counterMap(stats),
-      "duration" -> stats.getDuration,
-      "finished_time" -> stats.getFinishedTime,
-      "id" -> stats.getID,
-      "name" -> stats.getName,
-      "run_time" -> stats.getRunTime,
-      "start_time" -> stats.getStartTime,
-      "submit_time" -> stats.getSubmitTime,
-      "failed" -> stats.isFailed,
-      "skipped" -> stats.isSkipped,
-      "stopped" -> stats.isStopped,
-      "successful" -> stats.isSuccessful
-    )
-
   /**
    * Returns the counters with Group String -> Counter String -> Long
    */

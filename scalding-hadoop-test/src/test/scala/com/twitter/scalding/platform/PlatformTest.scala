@@ -204,11 +204,11 @@ class TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob(args: Args) extends Jo
 class TypedPipeHashJoinWithGroupByJob(args: Args) extends Job(args) {
   PlatformTest.setAutoForceRight(mode, true)
 
-  val x = TypedPipe.from[(String, Int)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
+  val x = TypedPipe.fromPipe[(String, Int)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2))
 
   val yGroup = y.groupBy('x2)(p => p)
-  val yTypedPipe = TypedPipe.from[(String, Int)](yGroup, Fields.ALL)
+  val yTypedPipe = TypedPipe.fromPipe[(String, Int)](yGroup, Fields.ALL)
 
   x.hashJoin(yTypedPipe)
     .withDescription("hashJoin")
@@ -226,7 +226,7 @@ class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
     _.coGroup('x1, in1, OuterJoinMode)
   }
 
-  val coGroupTypedPipe = TypedPipe.from[(Int, Int, Int)](coGroupPipe, Fields.ALL)
+  val coGroupTypedPipe = TypedPipe.fromPipe[(Int, Int, Int)](coGroupPipe, Fields.ALL)
   val coGroupTuplePipe = coGroupTypedPipe.map { case (a, b, c) => (a, (b, c)) }
   x.hashJoin(coGroupTuplePipe)
     .withDescription("hashJoin")
@@ -236,12 +236,12 @@ class TypedPipeHashJoinWithCoGroupJob(args: Args) extends Job(args) {
 class TypedPipeHashJoinWithEveryJob(args: Args) extends Job(args) {
   PlatformTest.setAutoForceRight(mode, true)
 
-  val x = TypedPipe.from[(Int, String)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
+  val x = TypedPipe.fromPipe[(Int, String)](Tsv("input1", ('x1, 'y1)), Fields.ALL)
   val y = Tsv("input2", ('x2, 'y2)).groupBy('x2) {
     _.foldLeft('y2 -> 'y2)(0)((b: Int, a: Int) => b + a)
   }
 
-  val yTypedPipe = TypedPipe.from[(Int, Int)](y, Fields.ALL)
+  val yTypedPipe = TypedPipe.fromPipe[(Int, Int)](y, Fields.ALL)
   x.hashJoin(yTypedPipe)
     .withDescription("hashJoin")
     .write(TypedTsv[(Int, (String, Int))]("output"))

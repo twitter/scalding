@@ -30,6 +30,8 @@ import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner.TempFileC
 import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import org.apache.hadoop.conf.Configuration
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 object ExecutionTestJobs {
   def wordCount(in: String, out: String) =
     TypedPipe

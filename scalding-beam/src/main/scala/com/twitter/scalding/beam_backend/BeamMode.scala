@@ -1,7 +1,7 @@
 package com.twitter.scalding.beam_backend
 
 import com.twitter.scalding.Execution.Writer
-import com.twitter.scalding.typed.{Resolver, TypedSink, TypedSource}
+import com.twitter.scalding.typed.{Resolver, Input, Output}
 import com.twitter.scalding.{Config, Mode, TextLine}
 import java.io.{EOFException, InputStream}
 import java.nio.channels.{Channels, WritableByteChannel}
@@ -16,8 +16,8 @@ import org.apache.beam.sdk.values.PCollection
 
 case class BeamMode(
     pipelineOptions: PipelineOptions,
-    sources: Resolver[TypedSource, BeamSource],
-    sink: Resolver[TypedSink, BeamSink]
+    sources: Resolver[Input, BeamSource],
+    sink: Resolver[Output, BeamSink]
 ) extends Mode {
   def newWriter(): Writer = new BeamWriter(this)
 }
@@ -34,9 +34,9 @@ trait BeamSource[+A] extends Serializable {
 }
 
 object BeamSource extends Serializable {
-  val Default: Resolver[TypedSource, BeamSource] = {
-    new Resolver[TypedSource, BeamSource] {
-      def apply[A](source: TypedSource[A]): Option[BeamSource[A]] =
+  val Default: Resolver[Input, BeamSource] = {
+    new Resolver[Input, BeamSource] {
+      def apply[A](source: Input[A]): Option[BeamSource[A]] =
         source match {
           case tl: TextLine =>
             tl.localPaths match {
@@ -61,9 +61,9 @@ trait BeamSink[-A] extends Serializable {
 }
 
 object BeamSink extends Serializable {
-  val Default: Resolver[TypedSink, BeamSink] = {
-    new Resolver[TypedSink, BeamSink] {
-      def apply[A](sink: TypedSink[A]): Option[BeamSink[A]] =
+  val Default: Resolver[Output, BeamSink] = {
+    new Resolver[Output, BeamSink] {
+      def apply[A](sink: Output[A]): Option[BeamSink[A]] =
         sink match {
           case tl: TextLine =>
             tl.localPaths match {

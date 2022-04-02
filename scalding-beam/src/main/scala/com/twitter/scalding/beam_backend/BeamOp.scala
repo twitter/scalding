@@ -8,7 +8,7 @@ import com.twitter.scalding.beam_backend.BeamJoiner.MultiJoinFunction
 import com.twitter.scalding.serialization.Externalizer
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import com.twitter.scalding.typed.functions.{EmptyGuard, MapValueStream, ScaldingPriorityQueueMonoid, SumAll}
-import com.twitter.scalding.typed.{CoGrouped, TypedSource}
+import com.twitter.scalding.typed.{CoGrouped, Input}
 import java.util.{Comparator, PriorityQueue}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.{Coder, IterableCoder, KvCoder}
@@ -126,7 +126,7 @@ object BeamOp extends Serializable {
           .setCoder(KvCoder.of(OrderedSerializationCoder(ordK, kryoCoder), IterableCoder.of(kryoCoder)))
     }
 
-  final case class Source[A](conf: Config, original: TypedSource[A], input: Option[BeamSource[A]])
+  final case class Source[A](conf: Config, original: Input[A], input: Option[BeamSource[A]])
       extends BeamOp[A] {
     override def runNoCache(pipeline: Pipeline): PCollection[_ <: A] =
       input match {

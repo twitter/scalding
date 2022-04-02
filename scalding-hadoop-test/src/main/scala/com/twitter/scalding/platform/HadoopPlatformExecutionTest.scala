@@ -5,6 +5,8 @@ import com.twitter.scalding._
 import org.apache.hadoop.mapred.JobConf
 import scala.util.{Failure, Success}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCompanionCascadingExtensions
+
 case class HadoopPlatformExecutionTest(
     cons: (Config) => Execution[_],
     cluster: LocalCluster,

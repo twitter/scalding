@@ -17,6 +17,8 @@ package com.twitter.scalding
 
 import cascading.tuple.hadoop.SerializationToken
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
+
 object CascadingTokenUpdater {
   private final val lowestAllowed = 128 // cascading rules
 

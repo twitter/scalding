@@ -1,6 +1,7 @@
 package com.twitter.scalding
 package typed
 
+import memory_backend.MemoryMode
 import com.twitter.algebird.Monoid.{plus, sum, zero}
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
@@ -8,7 +9,7 @@ import org.scalatest.prop.PropertyChecks
 class TypedPipeMonoidTest extends FunSuite with PropertyChecks {
 
   def run[A](t: TypedPipe[A]): List[A] =
-    t.toIterableExecution.map(_.toList).waitFor(Config.empty, Local(true)).get
+    t.toIterableExecution.map(_.toList).waitFor(Config.empty, MemoryMode.empty).get
 
   def sortedEq[A: Ordering](a: List[A], b: List[A]): Boolean =
     a.sorted == b.sorted

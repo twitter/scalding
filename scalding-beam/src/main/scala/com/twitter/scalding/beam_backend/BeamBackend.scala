@@ -14,10 +14,12 @@ import com.twitter.scalding.typed.functions.{
   ScaldingPriorityQueueMonoid
 }
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
+
 object BeamPlanner {
   def plan(
       config: Config,
-      srcs: Resolver[TypedSource, BeamSource]
+      srcs: Resolver[Input, BeamSource]
   ): FunctionK[TypedPipe, BeamOp] = {
     implicit val kryoCoder: KryoCoder = new KryoCoder(defaultKryoCoderConfiguration(config))
     Memoize.functionK(f = new Memoize.RecursiveK[TypedPipe, BeamOp] {

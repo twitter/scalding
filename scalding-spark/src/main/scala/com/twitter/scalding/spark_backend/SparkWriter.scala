@@ -1,11 +1,9 @@
 package com.twitter.scalding.spark_backend
 
-import cascading.flow.FlowDef
 import com.twitter.scalding.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.Mode
 import com.twitter.scalding.typed.memory_backend.AtomicBox
-import com.twitter.scalding.{CFuture, CancellationHandler, Config, Execution, ExecutionCounters}
+import com.twitter.scalding.{CFuture, Config, Execution, ExecutionCounters}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -22,22 +20,18 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
-  case class TempSource[A](id: Long) extends TypedSource[A] {
-    def error = sys.error("spark sources don't work in cascading")
-    def converter[U >: A] = error
-    def read(implicit flowDef: FlowDef, mode: Mode) = error
-  }
+  case class TempSource[A](id: Long) extends Input[A]
 
   object TempSource {
     def next[A](): TempSource[A] = TempSource(sourceCounter.incrementAndGet)
   }
 
   type StateKey[+A] = (Config, TypedPipe[A])
-  type WorkVal[+A] = (TypedSource[A], Future[RDD[_ <: A]])
+  type WorkVal[+A] = (Input[A], Future[RDD[_ <: A]])
 
   private[this] case class State(
       id: Long,
-      sources: Resolver[TypedSource, SparkSource],
+      sources: Resolver[Input, SparkSource],
       initToOpt: HMap[StateKey, TypedPipe],
       forcedPipes: HMap[StateKey, WorkVal]
   ) {
@@ -62,7 +56,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
               case Some(level) => rdd.map(_.persist(level))
             }
           val ssrc: SparkSource[T] = materializedSource[T](forcedRdd)
-          val src: TypedSource[T] = TempSource.next()
+          val src: Input[T] = TempSource.next()
 
           val newSources = sources.orElse(Resolver.pair(src, ssrc))
           val workVal: WorkVal[T] = (src, forcedRdd)
@@ -97,7 +91,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       }
 
     // This should be called after a pipe has been forced
-    def write[T](c: Config, init: TypedPipe[T], sink: TypedSink[T])(implicit
+    def write[T](c: Config, init: TypedPipe[T], sink: Output[T])(implicit
         ec: ExecutionContext
     ): Future[Unit] =
       sparkMode.sink(sink) match {
@@ -109,9 +103,9 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private[this] val state = new AtomicBox[State](State(0L, Resolver.empty, HMap.empty, HMap.empty))
 
-  private val forcedResolver: Resolver[TypedSource, SparkSource] =
-    new Resolver[TypedSource, SparkSource] {
-      def apply[A](ts: TypedSource[A]) =
+  private val forcedResolver: Resolver[Input, SparkSource] =
+    new Resolver[Input, SparkSource] {
+      def apply[A](ts: Input[A]) =
         state.get().sources(ts)
     }
 
@@ -186,7 +180,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
     def write[T](
         opt: TypedPipe[T],
         keyPipe: TypedPipe[T],
-        sink: TypedSink[T],
+        sink: Output[T],
         oldState: State
     ): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()

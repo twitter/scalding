@@ -64,7 +64,7 @@ val sharedSettings = Seq(
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   doc / javacOptions := Seq("-source", "1.8"),
   Compile / compile / wartremoverErrors ++= Seq(
-    Wart.OptionPartial,
+    //Wart.OptionPartial, // this kills the ability to use serialization macros
     Wart.ExplicitImplicitTypes,
     Wart.LeakingSealed,
     Wart.Return,
@@ -311,6 +311,21 @@ lazy val scaldingDagon = module("dagon").settings(
   Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
 )
 
+lazy val scaldingBase = module("base")
+  .settings(
+    libraryDependencies ++= Seq(
+    "com.twitter" %% "algebird-core" % algebirdVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion
+    ),
+    // buildInfo here refers to https://github.com/sbt/sbt-buildinfo
+    // for logging purposes, src/main/scala/com/twitter/package.scala would like to know the scalding-version
+    buildInfoKeys := Seq[BuildInfoKey](version),
+    buildInfoPackage := "com.twitter.scalding", // the codegen would be under com.twitter.scalding.BuildInfo
+  )
+  .enablePlugins(BuildInfoPlugin)
+  .dependsOn(scaldingArgs, scaldingDagon, scaldingSerialization)
+
+
 lazy val scaldingCore = module("core")
   .settings(
     libraryDependencies ++= Seq(
@@ -332,14 +347,9 @@ lazy val scaldingCore = module("core")
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "slf4j-log4j12" % slf4jVersion % "provided"
     ),
-    // builInfo here refers to https://github.com/sbt/sbt-buildinfo
-    // for logging purposes, src/main/scala/com/twitter/package.scala would like to know the scalding-version
-    buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "com.twitter.scalding", // the codegen would be under com.twitter.scalding.BuildInfo
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
-  .enablePlugins(BuildInfoPlugin)
-  .dependsOn(scaldingArgs, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
+  .dependsOn(scaldingArgs, scaldingBase, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
 
 lazy val scaldingCats = module("cats")
   .settings(
@@ -365,6 +375,8 @@ lazy val scaldingSpark = module("spark")
 lazy val scaldingBeam = module("beam")
   .settings(
     libraryDependencies ++= Seq(
+      "com.twitter" % "chill-java" % chillVersion,
+      "com.twitter" %% "chill" % chillVersion,
       "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
       "org.apache.beam" % "beam-sdks-java-extensions-google-cloud-platform-core" % beamVersion,
       "org.apache.beam" % "beam-sdks-java-extensions-sorter" % beamVersion,

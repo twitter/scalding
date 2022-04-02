@@ -7,12 +7,14 @@ import com.twitter.algebird.Monoid
 import com.twitter.scalding.source.{NullSink, TypedText}
 import org.apache.hadoop.conf.Configuration
 import com.twitter.scalding.{Config, ExecutionContext, FlowState, FlowStateMap, Hdfs, IterableSource, Local}
-import com.twitter.scalding.typed.cascading_backend.CascadingBackend
+import com.twitter.scalding.typed.cascading_backend.{CascadingBackend, CascadingExtensions}
 import com.twitter.scalding.typed.memory_backend.MemoryMode
 import org.scalatest.FunSuite
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.{Arbitrary, Gen}
 import scala.util.{Failure, Success, Try}
+
+import CascadingExtensions._
 
 object TypedPipeGen {
   val srcGen: Gen[TypedPipe[Int]] = {
@@ -62,12 +64,6 @@ object TypedPipeGen {
           5,
           tpGen(srcGen).map { p: TypedPipe[Int] => x: TypedPipe[Int] =>
             x ++ p
-          }
-        ),
-        (
-          1,
-          Gen.identifier.map { id => t: TypedPipe[Int] =>
-            t.addTrap(TypedText.tsv[Int](id))
           }
         ),
         (
@@ -348,11 +344,8 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("some past failures of the optimizationLaw") {
-    import TypedPipe._
-
     val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar"))
-      .addTrap(TypedText.tsv[Int]("foo"))
-    optimizationLaw(arg01, Rule.empty)
+    optimizationLaw[Int](arg01, Rule.empty)
   }
 
   test("all optimization rules do not increase steps") {

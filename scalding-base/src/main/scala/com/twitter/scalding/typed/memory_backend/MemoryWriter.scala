@@ -3,8 +3,7 @@ package com.twitter.scalding.typed.memory_backend
 import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future, Promise}
 import com.twitter.scalding.dagon.{HMap, Rule}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.{CFuture, CancellationHandler}
-import com.twitter.scalding.{Config, Execution, ExecutionCounters}
+import com.twitter.scalding.{CFuture, Config, Execution, ExecutionCounters}
 import Execution.{ToWrite, Writer}
 
 /**
@@ -125,7 +124,7 @@ class MemoryWriter(mem: MemoryMode) extends Writer {
       case Some(f) => f.map(TypedPipe.from(_))
     }
 
-  private def getSource[A](src: TypedSource[A])(implicit
+  private def getSource[A](src: Input[A])(implicit
       cec: ConcurrentExecutionContext
   ): Future[Iterable[A]] =
     MemorySource.readOption(mem.srcs(src), src.toString).map(_.toList)

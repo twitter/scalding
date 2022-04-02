@@ -15,15 +15,11 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import cascading.flow.{Flow, FlowDef}
+import com.twitter.scalding.typed.{TypedPipe, Output}
 import com.twitter.scalding.dagon.{Dag, Id, Rule}
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{Monad, Monoid, Semigroup}
-import com.twitter.scalding.cascading_interop.FlowListenerPromise
-import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
 import com.twitter.scalding.typed.functions.{ConsList, ReverseList}
-import com.twitter.scalding.typed.cascading_backend.AsyncFlowDefRunner
-import com.twitter.scalding.cascading_interop.FlowListenerPromise.FlowStopException
 import com.twitter.scalding.dagon.{Memoize, RefPair}
 import java.io.Serializable
 import java.util.UUID
@@ -38,6 +34,7 @@ import scala.concurrent.{
   Promise
 }
 import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 import scala.util.hashing.MurmurHash3
 
 /**
@@ -226,10 +223,10 @@ sealed trait Execution[+T] extends Serializable { self: Product =>
           import Execution._
           val fn = Memoize.function[RefPair[Execution[Any], Execution[Any]], Boolean] {
             case (RefPair(a, b), _) if a eq b => true
+            case (RefPair(BackendExecution(fn0), BackendExecution(fn1)), rec) =>
+              fn0 == fn1
             case (RefPair(FlatMapped(ex0, fn0), FlatMapped(ex1, fn1)), rec) =>
               (fn0 == fn1) && rec(RefPair(ex0, ex1))
-            case (RefPair(FlowDefExecution(fn0), FlowDefExecution(fn1)), rec) =>
-              fn0 == fn1
             case (RefPair(FutureConst(fn0), FutureConst(fn1)), rec) =>
               fn0 == fn1
             case (RefPair(GetCounters(ex0), GetCounters(ex1)), rec) =>
@@ -322,20 +319,6 @@ object Execution {
   def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
 
-  /**
-   * Distributes the file onto each map/reduce node, so you can use it for Scalding source creation and
-   * TypedPipe, KeyedList, etc. transformations. Using the [[com.twitter.scalding.filecache.CachedFile]]
-   * outside of Execution will probably not work.
-   *
-   * For multiple files you must nested your execution, see docs of
-   * [[com.twitter.scalding.filecache.DistributedCacheFile]]
-   */
-  def withCachedFile[T](path: String)(fn: CachedFile => Execution[T]): Execution[T] =
-    Execution.getMode.flatMap { mode =>
-      val cachedFile = DistributedCacheFile.cachedFile(path, mode)
-
-      withConfig(fn(cachedFile))(_.addDistributedCacheFiles(cachedFile))
-    }
 
   /**
    * This function allows running the passed execution with its own cache. This will mean anything inside
@@ -548,7 +531,7 @@ object Execution {
             .map(v => (v, CancellationHandler.empty)) // map this to the right shape
             .recoverWith {
               val flowStop: PartialFunction[Throwable, Future[Nothing]] = {
-                case t: FlowStopException => // do not recover when the flow was stopped
+                case t: FatalExecutionError => // do not recover when the flow was stopped
                   Future.failed(t)
               }
 
@@ -663,11 +646,13 @@ object Execution {
         )
       )
   }
+
   /*
-   * This allows you to run any cascading flowDef as an Execution.
+   * This allows you to run platform specific executions
    */
-  private[scalding] final case class FlowDefExecution(result: (Config, Mode) => FlowDef)
-      extends Execution[Unit] {
+  private[scalding] final case class BackendExecution[A](
+    result: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)])
+    extends Execution[A] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit
         cec: ConcurrentExecutionContext
     ) =
@@ -675,15 +660,9 @@ object Execution {
         cache.getOrElseInsert(
           conf,
           this,
-          cache.writer match {
-            case ar: AsyncFlowDefRunner =>
-              ar.validateAndRun(conf)(result(_, mode)).map(m => ((), Map(m)))
-            case other =>
-              CFuture.failed(
-                new IllegalArgumentException(
-                  s"requires cascading Mode producing AsyncFlowDefRunner, found mode: $mode and writer ${other.getClass}: $other"
-                )
-              )
+          try result(conf, mode, cache.writer, cec).map { case (id, c, a) => (a, Map(id -> c))}
+          catch {
+            case NonFatal(e) => CFuture.failed(e)
           }
         )
       )
@@ -709,7 +688,7 @@ object Execution {
   object ToWrite extends Serializable {
     final case class Force[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
     final case class ToIterable[T](@transient pipe: TypedPipe[T]) extends ToWrite[T]
-    final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: TypedSink[T])
+    final case class SimpleWrite[T](@transient pipe: TypedPipe[T], @transient sink: Output[T])
         extends ToWrite[T]
 
     final case class OptimizedWrite[F[_], T](@transient original: F[T], toWrite: ToWrite[T])
@@ -952,10 +931,18 @@ object Execution {
   val unit: Execution[Unit] = from(())
 
   /**
-   * This converts a function into an Execution monad. The flowDef returned is never mutated.
+   * This should be avoided if at all possible. It is here to allow backend authors to implement
+   * custom executions which should very rarely be needed.
+   * 
+   * The CFuture returned should have three elements:
+   * 1. unique ID (Long) for the scope of the Writer
+   * 2. Counter values created by this Execution
+   * 3. the final result of the Execution (maybe Unit)
    */
-  def fromFn(fn: (Config, Mode) => FlowDef): Execution[Unit] =
-    FlowDefExecution(fn)
+  def backendSpecific[A](
+    fn: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)]
+  ): Execution[A] =
+      BackendExecution(fn)
 
   def forceToDisk[T](t: TypedPipe[T]): Execution[TypedPipe[T]] =
     WriteExecution(ToWrite.Force(t), Nil, { case (conf, _, w, cec) => w.getForced(conf, t)(cec) })
@@ -966,10 +953,10 @@ object Execution {
   /**
    * The simplest form, just sink the typed pipe into the sink and get a unit execution back
    */
-  private[scalding] def write[T](pipe: TypedPipe[T], sink: TypedSink[T]): Execution[Unit] =
+  private[scalding] def write[T](pipe: TypedPipe[T], sink: Output[T]): Execution[Unit] =
     write(pipe, sink, ())
 
-  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: TypedSink[T], presentType: => U): Execution[U] =
+  private[scalding] def write[T, U](pipe: TypedPipe[T], sink: Output[T], presentType: => U): Execution[U] =
     WriteExecution(ToWrite.SimpleWrite(pipe, sink), Nil, tup => Future(presentType)(tup._4))
 
   /**
@@ -1001,27 +988,6 @@ object Execution {
    * .writeExecution(mySink) }
    */
   def withId[T](fn: UniqueID => Execution[T]): Execution[T] = UniqueIdExecution(fn)
-
-  /*
-   * This runs a Flow using Cascading's built in threads. The resulting JobStats
-   * are put into a promise when they are ready
-   */
-  def run[C](flow: Flow[C]): Future[JobStats] =
-    // This is in Java because of the cascading API's raw types on FlowListener
-    FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
-  private def run[L, C](label: L, flow: Flow[C]): Future[(L, JobStats)] =
-    // This is in Java because of the cascading API's raw types on FlowListener
-    FlowListenerPromise.start(flow, { f: Flow[C] => (label, JobStats(f.getFlowStats)) })
-
-  /*
-   * This blocks the current thread until the job completes with either success or
-   * failure.
-   */
-  def waitFor[C](flow: Flow[C]): Try[JobStats] =
-    Try {
-      flow.complete()
-      JobStats(flow.getStats)
-    }
 
   /**
    * combine several executions and run them in parallel when .run is called
@@ -1110,6 +1076,11 @@ object Execution {
 }
 
 /**
+ * Any exception extending this is never recovered
+ */
+abstract class FatalExecutionError(msg: String) extends Exception(msg)
+
+/**
  * This represents the counters portion of the JobStats that are returned. Counters are just a vector of longs
  * with counter name, group keys.
  */
@@ -1145,24 +1116,6 @@ object ExecutionCounters {
     def keys = Set.empty
     def get(key: StatKey) = None
     override def toMap = Map.empty
-  }
-
-  /**
-   * Just gets the counters from the CascadingStats and ignores all the other fields present
-   */
-  def fromCascading(cs: cascading.stats.CascadingStats): ExecutionCounters = new ExecutionCounters {
-    import scala.collection.JavaConverters._
-
-    val keys = (for {
-      group <- cs.getCounterGroups.asScala
-      counter <- cs.getCountersFor(group).asScala
-    } yield StatKey(counter, group)).toSet
-
-    def get(k: StatKey) =
-      if (keys(k)) {
-        // Yes, cascading is reversed frow what we did in Stats. :/
-        Some(cs.getCounterValue(k.group, k.counter))
-      } else None
   }
 
   /**

@@ -23,11 +23,11 @@ jobs:
         include:
           - scala-version: "2.11.12"
             BUILD: "base"
-            TEST_TARGET: "scalding-args scalding-date maple scalding-quotation scalding-dagon"
+            TEST_TARGET: "scalding-args scalding-base scalding-date maple scalding-quotation scalding-dagon"
             script: './scripts/run_test.sh'
           - scala-version: "2.12.14"
             BUILD: "base"
-            TEST_TARGET: "scalding-args scalding-date maple scalding-quotation scalding-dagon"
+            TEST_TARGET: "scalding-args scalding-base scalding-date maple scalding-quotation scalding-dagon"
             script: './scripts/run_test.sh'
 
           - scala-version: "2.11.12"

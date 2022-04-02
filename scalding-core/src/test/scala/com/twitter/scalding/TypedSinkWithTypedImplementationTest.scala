@@ -21,13 +21,15 @@ import cascading.tuple.Fields
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.{Matchers, WordSpec}
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 class TypedSinkWithTypedImplementation(path: String) extends TypedSink[String] {
   private val fields = new Fields(0)
 
   override def setter[U <: String]: TupleSetter[U] = TupleSetter.singleSetter[U]
 
   override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    TypedPipe.from[String](pipe, fields).write(TypedTsv[String](path))
+    TypedPipe.fromPipe[String](pipe, fields).write(TypedTsv[String](path))
     pipe
   }
 }
@@ -38,7 +40,7 @@ class TypedSinkWithTypedImplementationRecursive(path: String) extends TypedSink[
   override def setter[U <: String]: TupleSetter[U] = TupleSetter.singleSetter[U]
 
   override def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
-    TypedPipe.from[String](pipe, fields).write(new TypedSinkWithTypedImplementationRecursive(path))
+    TypedPipe.fromPipe[String](pipe, fields).write(new TypedSinkWithTypedImplementationRecursive(path))
     pipe
   }
 }

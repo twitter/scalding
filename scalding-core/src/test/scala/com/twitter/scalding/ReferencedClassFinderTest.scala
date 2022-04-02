@@ -12,6 +12,8 @@ trait TraitType {
   val tp2 = TypedPipe.from(List(C4(0), C4(1)))
 }
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 class ReferencedClassFinderExample(args: Args) extends Job(args) with TraitType {
   case class C5(e: Int)
 
@@ -39,6 +41,7 @@ class ReferencedClassFinderTest extends WordSpec with Matchers {
         .arg("output", "outputFile")
         .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")) { _: Any => Unit }
         .initJob(false)
+      
       val config = Config.tryFrom(job.config).get
       val tokenizedClasses = config.getCascadingSerializationTokens.values.toSet
       val kryoRegisteredClasses = config.getKryoRegisteredClasses

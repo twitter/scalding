@@ -38,18 +38,6 @@ trait Stat extends java.io.Serializable {
   def key: StatKey
 }
 
-case class StatKey(counter: String, group: String) extends java.io.Serializable
-
-object StatKey {
-  // This is implicit to allow Stat("c", "g") to work.
-  implicit def fromCounterGroup(counterGroup: (String, String)): StatKey = counterGroup match {
-    case (c, g) => StatKey(c, g)
-  }
-  // Create a Stat in the ScaldingGroup
-  implicit def fromCounterDefaultGroup(counter: String): StatKey =
-    StatKey(counter, Stats.ScaldingGroup)
-  implicit def fromStat(stat: Stat): StatKey = stat.key
-}
 
 private[scalding] object CounterImpl {
   def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
@@ -100,11 +88,13 @@ object Stat {
     def incBy(amount: Long): Unit = cntr.increment(amount)
     def key: StatKey = k
   }
+
+  implicit def toStatKey(stat: Stat): StatKey = stat.key
 }
 
 object Stats {
   // This is the group that we assign all custom counters to
-  val ScaldingGroup = "Scalding Custom"
+  val ScaldingGroup = StatKey.ScaldingGroup
 
   // When getting a counter value, cascadeStats takes precedence (if set) and
   // flowStats is used after that. Returns None if neither is defined.
@@ -121,35 +111,6 @@ object Stats {
         (counter, value)
       }
       .toMap
-}
-
-/**
- * Used to inject a typed unique identifier to uniquely name each scalding flow. This is here mostly to deal
- * with the case of testing where there are many concurrent threads running Flows. Users should never have to
- * worry about these
- */
-case class UniqueID(get: String) {
-  assert(get.indexOf(',') == -1, "UniqueID cannot contain ,: " + get)
-}
-
-object UniqueID {
-  val UNIQUE_JOB_ID = "scalding.job.uniqueId"
-  private val id = new java.util.concurrent.atomic.AtomicInteger(0)
-
-  def getRandom: UniqueID = {
-    // This number is unique as long as we don't create more than 10^6 per milli
-    // across separate jobs. which seems very unlikely.
-    val unique = (System.currentTimeMillis << 20) ^ (id.getAndIncrement.toLong)
-    UniqueID(unique.toString)
-  }
-
-  implicit def getIDFor(implicit fd: FlowDef): UniqueID =
-    /*
-     * In real deploys, this can even be a constant, but for testing
-     * we need to allocate unique IDs to prevent different jobs running
-     * at the same time from touching each other's counters.
-     */
-    UniqueID(System.identityHashCode(fd).toString)
 }
 
 /**
@@ -199,7 +160,7 @@ object RuntimeStats extends java.io.Serializable {
    */
   def getKeepAliveFunction(implicit flowDef: FlowDef): () => Unit = {
     // Don't capture the flowDef, just the id
-    val id = UniqueID.getIDFor(flowDef)
+    val id = UniqueID.fromSystemHashCode(flowDef)
     () => {
       val flowProcess = RuntimeStats.getFlowProcessForUniqueId(id)
       flowProcess.keepAlive()

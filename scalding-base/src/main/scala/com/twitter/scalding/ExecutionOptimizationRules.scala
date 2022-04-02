@@ -35,7 +35,7 @@ object ExecutionOptimizationRules {
             Literal.Const(e)
           case (e: Execution.UniqueIdExecution[a], _) =>
             Literal.Const(e)
-          case (e: Execution.FlowDefExecution, _) =>
+          case (e: Execution.BackendExecution[a], _) =>
             Literal.Const(e)
           case (e: Execution.WriteExecution[a], _) =>
             Literal.Const(e)
@@ -67,13 +67,13 @@ object ExecutionOptimizationRules {
     )
 
   /**
-   * If `Execution` is `FlowDefExecution` or `WriteExecution`, we are considering those executions as slow,
+   * If `Execution` is `WriteExecution`, we are considering those executions as slow,
    * since they will schedule some expensive work, like Hadoop or Spark Job.
    *
    * If `Execution` is `FlatMapped` or `UniqueIdExecution`, we are considering those executions as slow, since
    * we don't know which execution they can produce.
    *
-   * Everything else we are considering as fast execution compare to `FlowDefExecution` and `WriteExecution`.
+   * Everything else we are considering as fast execution compare to `WriteExecution`.
    */
   def isFastExecution[A](e: Execution[A]): Boolean =
     areFastExecution(e :: Nil)
@@ -94,9 +94,9 @@ object ExecutionOptimizationRules {
       case h :: tail =>
         h match {
           case Execution.UniqueIdExecution(_)    => false
-          case Execution.FlowDefExecution(_)     => false
           case Execution.WriteExecution(_, _, _) => false
           case Execution.FlatMapped(_, _)        => false
+          case Execution.BackendExecution(_)     => false
 
           case Execution.ReaderExecution         => areFastExecution(tail)
           case Execution.FutureConst(_)          => areFastExecution(tail)

@@ -9,7 +9,10 @@ class ExecutionUtilTest extends WordSpec with Matchers {
   implicit val dp: DateParser = DateParser.default
   implicit val dateRange: DateRange = DateRange.parse("2015-01-01", "2015-01-10")
 
-  def run[T](e: Execution[T]) = e.waitFor(Config.default, Local(true))
+  def run[T](e: Execution[T]) = {
+    val mode = Local(true)
+    e.waitFor(Config.defaultFrom(mode), mode)
+  }
 
   def testJob(dr: DateRange) = {
     assert(dr != null)

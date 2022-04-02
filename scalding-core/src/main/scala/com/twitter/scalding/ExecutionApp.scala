@@ -21,6 +21,8 @@ package com.twitter.scalding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.util.GenericOptionsParser
 
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions._
+
 case class HadoopArgs(toArray: Array[String])
 
 case class NonHadoopArgs(toArray: Array[String])
