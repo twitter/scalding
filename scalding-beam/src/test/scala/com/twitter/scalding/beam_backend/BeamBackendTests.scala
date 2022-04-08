@@ -1,13 +1,23 @@
 package com.twitter.scalding.beam_backend
 
+import com.twitter.scalding.dagon.Rule
 import com.twitter.algebird.{AveragedValue, Semigroup}
+import com.twitter.scalding.Execution.ToWrite
+import com.twitter.scalding.Execution.ToWrite.SimpleWrite
+import com.twitter.scalding.TypedTsv
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, FromIterable, HashJoinOp, MergedBeamOp}
 import com.twitter.scalding.{Config, Execution, TextLine, TypedPipe}
 import java.io.File
 import java.nio.file.Paths
 import org.apache.beam.sdk.Pipeline
+import org.apache.beam.sdk.Pipeline.PipelineVisitor
+import org.apache.beam.sdk.Pipeline.PipelineVisitor.CompositeBehavior
 import org.apache.beam.sdk.options.{PipelineOptions, PipelineOptionsFactory}
+import org.apache.beam.sdk.runners.TransformHierarchy
+import org.apache.beam.sdk.values.PValue
 import org.scalatest.{BeforeAndAfter, FunSuite}
+import scala.collection.immutable
+import scala.collection.mutable
 import scala.io.Source
 
 class BeamBackendTests extends FunSuite with BeforeAndAfter {
@@ -471,6 +481,42 @@ class BeamBackendTests extends FunSuite with BeforeAndAfter {
       .get
 
     assert(output.toSet == Seq((5, 3), (10, 3)).toSet)
+  }
+
+  test("BeamOp naming: named PTransforms") {
+    class TransformNameVisitor extends PipelineVisitor.Defaults {
+      private var transformNames: mutable.Set[String] = mutable.Set[String]()
+
+      override def visitPrimitiveTransform(node: TransformHierarchy#Node): Unit =
+        transformNames.add(node.getFullName)
+
+      def getTransformNames(): mutable.Set[String] = transformNames
+    }
+
+    case class WordCount(a: String, b: Long)
+
+    val t1 = TypedPipe.from(Seq(("a", 1L), ("b", 2L)))
+    val pipe = TypedPipe
+      .from(Seq("the quick brown fox jumps"))
+      .withDescription("Read data")
+      .flatMap(s => s.split(" "))
+      .withDescription("Convert to words")
+      .map(tag => (tag, 1L))
+      .sumByKey
+      .withDescription("Count words")
+      .join(t1)
+      .withDescription("Join with t1")
+      .map(keyval => WordCount(keyval._1, keyval._2._1)) ++ t1
+    val (pipeline, op) = beamUnoptimizedPlan(pipe)
+    op.run(pipeline)
+    val visitor = new TransformNameVisitor()
+    pipeline.traverseTopologically(visitor)
+    val names = visitor.getTransformNames()
+    assert(
+      names.exists(_.contains("Read data")) && names.exists(_.contains("Convert to words")) && names.exists(
+        _.contains("Join with t1")
+      )
+    )
   }
 
   private def getContents(path: String, prefix: String): List[String] =

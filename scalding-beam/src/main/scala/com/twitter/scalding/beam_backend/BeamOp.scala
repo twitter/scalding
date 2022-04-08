@@ -6,9 +6,10 @@ import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamFunctions._
 import com.twitter.scalding.beam_backend.BeamJoiner.MultiJoinFunction
 import com.twitter.scalding.serialization.Externalizer
+import com.twitter.scalding.typed.Input
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import com.twitter.scalding.typed.functions.{EmptyGuard, MapValueStream, ScaldingPriorityQueueMonoid, SumAll}
-import com.twitter.scalding.typed.{CoGrouped, Input}
+import com.twitter.scalding.typed.{CoGrouped, TypedSource}
 import java.util.{Comparator, PriorityQueue}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.{Coder, IterableCoder, KvCoder}
@@ -55,6 +56,8 @@ sealed abstract class BeamOp[+A] {
 
   def flatMap[B](f: A => TraversableOnce[B])(implicit kryoCoder: KryoCoder): BeamOp[B] =
     parDo(FlatMapFn(f), "flatMap")
+
+  def withName(name: String): BeamOp[A]
 }
 
 private final case class SerializableComparator[T](comp: Comparator[T]) extends Comparator[T] {
@@ -136,11 +139,16 @@ object BeamOp extends Serializable {
           )
         case Some(src) => src.read(pipeline, conf)
       }
+
+    override def withName(name: String): BeamOp[A] = this
   }
 
-  final case class FromIterable[A](iterable: Iterable[A], kryoCoder: KryoCoder) extends BeamOp[A] {
+  final case class FromIterable[A](iterable: Iterable[A], kryoCoder: KryoCoder, name: Option[String] = None)
+      extends BeamOp[A] {
     override def runNoCache(pipeline: Pipeline): PCollection[_ <: A] =
-      pipeline.apply(Create.of(iterable.asJava).withCoder(kryoCoder))
+      pipeline.apply(name.getOrElse("Iterable source"), Create.of(iterable.asJava).withCoder(kryoCoder))
+
+    override def withName(name: String): BeamOp[A] = FromIterable(iterable, kryoCoder, Some(name))
   }
 
   final case class TransformBeamOp[A, B](
@@ -153,6 +161,8 @@ object BeamOp extends Serializable {
       val pCollection: PCollection[A] = widenPCollection(source.run(pipeline))
       pCollection.apply(name, f).setCoder(kryoCoder)
     }
+
+    override def withName(desc: String): BeamOp[B] = TransformBeamOp(source, f, kryoCoder, desc)
   }
 
   final case class HashJoinTransform[K, V, U, W](
@@ -184,7 +194,8 @@ object BeamOp extends Serializable {
   final case class HashJoinOp[K, V, U, W](
       left: BeamOp[(K, V)],
       right: BeamOp[(K, U)],
-      joiner: (K, V, Iterable[U]) => Iterator[W]
+      joiner: (K, V, Iterable[U]) => Iterator[W],
+      name: Option[String] = None
   )(implicit kryoCoder: KryoCoder, ordK: Ordering[K])
       extends BeamOp[(K, W)] {
     override def runNoCache(pipeline: Pipeline): PCollection[_ <: (K, W)] = {
@@ -199,20 +210,28 @@ object BeamOp extends Serializable {
         widenPCollection(rightPCollection): PCollection[(K, _)]
       )
 
-      tuple.apply(HashJoinTransform(keyCoder, joiner))
+      tuple.apply(name.getOrElse("HashJoin"), HashJoinTransform(keyCoder, joiner))
     }
+
+    override def withName(name: String): BeamOp[(K, W)] = HashJoinOp(left, right, joiner, Some(name))
   }
 
-  final case class MergedBeamOp[A](first: BeamOp[A], second: BeamOp[A], tail: Seq[BeamOp[A]])
-      extends BeamOp[A] {
+  final case class MergedBeamOp[A](
+      first: BeamOp[A],
+      second: BeamOp[A],
+      tail: Seq[BeamOp[A]],
+      name: Option[String] = None
+  ) extends BeamOp[A] {
     override def runNoCache(pipeline: Pipeline): PCollection[_ <: A] = {
       val collections = PCollectionList
         .of(widenPCollection(first.run(pipeline)): PCollection[A])
         .and(widenPCollection(second.run(pipeline)): PCollection[A])
         .and(tail.map(op => widenPCollection(op.run(pipeline)): PCollection[A]).asJava)
 
-      collections.apply(Flatten.pCollections[A]())
+      collections.apply(name.getOrElse("Merge"), Flatten.pCollections[A]())
     }
+
+    override def withName(name: String): BeamOp[A] = MergedBeamOp(first, second, tail, Some(name))
   }
 
   final case class CoGroupedTransform[K, V](
@@ -241,7 +260,8 @@ object BeamOp extends Serializable {
 
   final case class CoGroupedOp[K, V](
       cg: CoGrouped[K, V],
-      inputOps: Seq[BeamOp[(K, Any)]]
+      inputOps: Seq[BeamOp[(K, Any)]],
+      name: Option[String] = None
   )(implicit kryoCoder: KryoCoder)
       extends BeamOp[(K, V)] {
     override def runNoCache(pipeline: Pipeline): PCollection[_ <: (K, V)] = {
@@ -256,8 +276,10 @@ object BeamOp extends Serializable {
 
       PCollectionList
         .of(pcols.asJava)
-        .apply(CoGroupedTransform(joinFunction, tupleTags, keyCoder))
+        .apply(name.getOrElse("CoGrouped"), CoGroupedTransform(joinFunction, tupleTags, keyCoder))
     }
+
+    override def withName(name: String): BeamOp[(K, V)] = CoGroupedOp(cg, inputOps, Some(name))
   }
 
   final case class CoGroupDoFn[K, V](

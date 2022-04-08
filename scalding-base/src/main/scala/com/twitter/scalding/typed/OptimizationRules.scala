@@ -1034,7 +1034,7 @@ object OptimizationRules {
       case MergedTypedPipe(a, EmptyTypedPipe)                                     => a
       case ReduceStepPipe(rs: ReduceStep[_, _, _]) if rs.mapped == EmptyTypedPipe => EmptyTypedPipe
       case SumByLocalKeys(EmptyTypedPipe, _)                                      => EmptyTypedPipe
-      case TrappedPipe(EmptyTypedPipe, _)                                      => EmptyTypedPipe
+      case TrappedPipe(EmptyTypedPipe, _)                                         => EmptyTypedPipe
       case CoGroupedPipe(cgp) if emptyCogroup(cgp)                                => EmptyTypedPipe
       case WithOnComplete(EmptyTypedPipe, _) =>
         EmptyTypedPipe // there is nothing to do, so we never have workers complete
