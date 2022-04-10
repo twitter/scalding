@@ -29,7 +29,6 @@ val scalameterVersion = "0.8.2"
 val scalaCheckVersion = "1.13.4"
 val scalaTestVersion = "3.0.1"
 val scroogeVersion = "19.8.0"
-val sparkVersion = "2.4.0"
 val beamVersion = "2.29.0"
 val slf4jVersion = "1.7.30"
 val thriftVersion = "0.9.3"
@@ -341,10 +340,19 @@ lazy val scaldingCats = module("cats")
 
 lazy val scaldingSpark = module("spark")
   .settings(
-    libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % sparkVersion,
-      "org.apache.spark" %% "spark-sql" % sparkVersion
-    )
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(Keys.scalaVersion.value) match {
+        case Some((2, 11)) => Seq(
+          "org.apache.spark" %% "spark-core" % "2.4.8",
+          "org.apache.spark" %% "spark-sql" % "2.4.8"
+        )
+        case Some((2, 12)) => Seq(
+          "org.apache.spark" %% "spark-core" % "3.1.2",
+          "org.apache.spark" %% "spark-sql" % "3.1.2"
+        )
+        case _ => ??? // not supported
+      }
+    }
   )
   .dependsOn(scaldingCore)
 
