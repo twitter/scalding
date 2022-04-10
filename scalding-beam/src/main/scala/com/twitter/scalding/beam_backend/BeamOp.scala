@@ -1,15 +1,14 @@
 package com.twitter.scalding.beam_backend
 
-import com.twitter.scalding.dagon.Memoize
 import com.twitter.algebird.Semigroup
 import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamFunctions._
 import com.twitter.scalding.beam_backend.BeamJoiner.MultiJoinFunction
+import com.twitter.scalding.dagon.Memoize
 import com.twitter.scalding.serialization.Externalizer
-import com.twitter.scalding.typed.Input
+import com.twitter.scalding.typed.{CoGrouped, Input}
 import com.twitter.scalding.typed.functions.ComposedFunctions.ComposedMapGroup
 import com.twitter.scalding.typed.functions.{EmptyGuard, MapValueStream, ScaldingPriorityQueueMonoid, SumAll}
-import com.twitter.scalding.typed.{CoGrouped, TypedSource}
 import java.util.{Comparator, PriorityQueue}
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.{Coder, IterableCoder, KvCoder}
@@ -17,9 +16,7 @@ import org.apache.beam.sdk.transforms.DoFn.ProcessElement
 import org.apache.beam.sdk.transforms.Top.TopCombineFn
 import org.apache.beam.sdk.transforms._
 import org.apache.beam.sdk.transforms.join.{CoGbkResult, CoGroupByKey, KeyedPCollectionTuple}
-import org.apache.beam.sdk.values.PCollectionList
-import org.apache.beam.sdk.values.PCollectionTuple
-import org.apache.beam.sdk.values.{KV, PCollection, TupleTag}
+import org.apache.beam.sdk.values.{KV, PCollection, PCollectionList, PCollectionTuple, TupleTag}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 

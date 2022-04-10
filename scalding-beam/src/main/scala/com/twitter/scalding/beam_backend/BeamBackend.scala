@@ -76,7 +76,12 @@ object BeamPlanner {
           BeamOp.FromIterable(iterable, kryoCoder)
         case (wd: WithDescriptionTypedPipe[_], rec) => {
           val op = rec(wd.input)
-          op.withName(wd.descriptions.map(_._1).head)
+          wd.descriptions match {
+            case head :: _ =>
+              op.withName(head._1)
+            case Nil =>
+              op
+          }
         }
         case (SumByLocalKeys(pipe, sg), rec) =>
           val op = rec(pipe)
