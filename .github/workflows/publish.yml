@@ -3,9 +3,9 @@ name: Publish
 on:
   push:
     branches:
-      - 'develop'
+      - "develop"
     release:
-      types: [ created ]
+      types: [created]
 
 jobs:
   publish:
@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-java@v2
         with:
-          distribution: 'adopt-openj9'
+          distribution: "adopt-openj9"
           java-version: 8
 
       - name: Set up Ruby
@@ -32,26 +32,11 @@ jobs:
           gem install sass -v 3.7.4
           gem install jekyll -v 3.2.1
 
-      # whenever a push is made to develop, this will run to publish a SNAPSHOT
-      - name: "Publish Snapshot"
-        if: ${{ github.event_name == 'push' }}
+      - name: "Publish"
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         run: |
-          # snapshots will be versioned in the form of <latest version tag>-<commit SHA>-SNAPSHOT
-          # example: 0.16.1-RC2-377-0c41d610-SNAPSHOT
-          ./sbt "release"
-
-      # whenever a release is triggered through Github UI, this will run to publish a final release
-      - name: "Publish Final Release"
-        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-        env:
-          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-          PGP_SECRET: ${{ secrets.PGP_SECRET }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-        run: |
-          ./sbt "release"
+          ./sbt "ci-release"
