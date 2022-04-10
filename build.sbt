@@ -1,4 +1,3 @@
-import ReleaseTransformations._
 import com.typesafe.tools.mima.plugin.MimaPlugin.mimaDefaultSettings
 import scala.collection.JavaConverters._
 import microsites.ExtraMdFileConfig
@@ -63,6 +62,7 @@ val sharedSettings = Seq(
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   doc / javacOptions := Seq("-source", "1.8"),
+  versionScheme := Some("early-semver"),
   Compile / compile / wartremoverErrors ++= Seq(
     //Wart.OptionPartial, // this kills the ability to use serialization macros
     Wart.ExplicitImplicitTypes,
@@ -125,32 +125,8 @@ val sharedSettings = Seq(
   assembly / logLevel := Level.Warn,
 
   // Publishing options:
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  ThisBuild / dynverSonatypeSnapshots := true, // prepend "-SNAPSHOT" to version tag when releasing a snapshot style build
-  ThisBuild / dynverSeparator := "-", // use a URI friendly separator for snapshots instead of '+' char
-  publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := { x => false },
-  releaseProcess := (
-    if (version.value.trim.endsWith("SNAPSHOT"))
-      Seq[ReleaseStep](
-        runClean,
-        publishArtifacts,
-        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-      )
-      else Seq[ReleaseStep](
-        checkSnapshotDependencies,
-        runClean,
-        publishArtifacts,
-        ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
-      )
-    ),
-    publishTo := Some(
-    if (version.value.trim.endsWith("SNAPSHOT"))
-      Opts.resolver.sonatypeSnapshots
-    else Opts.resolver.sonatypeStaging
-  ),
 
   // Janino includes a broken signature, and is not needed:
   assembly / assemblyExcludedJars := {
