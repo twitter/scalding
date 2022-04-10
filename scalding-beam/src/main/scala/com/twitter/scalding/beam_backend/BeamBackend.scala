@@ -3,31 +3,18 @@ package com.twitter.scalding.beam_backend
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
-import com.twitter.scalding.beam_backend.BeamOp.CoGroupedOp
-import com.twitter.scalding.beam_backend.BeamOp.MergedBeamOp
-import com.twitter.scalding.dagon.FunctionK
-import com.twitter.scalding.dagon.Memoize
-import com.twitter.scalding.dagon.Rule
+import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, MergedBeamOp}
+import com.twitter.scalding.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.scalding.serialization.KryoHadoop
-import com.twitter.scalding.typed.CoGrouped.WithDescription
-import com.twitter.scalding.typed.OptimizationRules.AddExplicitForks
-import com.twitter.scalding.typed.OptimizationRules.ComposeDescriptions
-import com.twitter.scalding.typed.OptimizationRules.DeferMerge
-import com.twitter.scalding.typed.OptimizationRules.DiamondToFlatMap
-import com.twitter.scalding.typed.OptimizationRules.FilterKeysEarly
-import com.twitter.scalding.typed.OptimizationRules.IgnoreNoOpGroup
-import com.twitter.scalding.typed.OptimizationRules.MapValuesInReducers
-import com.twitter.scalding.typed.OptimizationRules.RemoveDuplicateForceFork
-import com.twitter.scalding.typed.OptimizationRules.RemoveUselessFork
-import com.twitter.scalding.typed.OptimizationRules.composeIntoFlatMap
-import com.twitter.scalding.typed.OptimizationRules.composeSame
-import com.twitter.scalding.typed.OptimizationRules.simplifyEmpty
+import com.twitter.scalding.typed.OptimizationRules._
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
-import com.twitter.scalding.typed.functions.FilterKeysToFilter
-import com.twitter.scalding.typed.functions.FlatMapValuesToFlatMap
-import com.twitter.scalding.typed.functions.MapValuesToMap
-import com.twitter.scalding.typed.functions.ScaldingPriorityQueueMonoid
+import com.twitter.scalding.typed.functions.{
+  FilterKeysToFilter,
+  FlatMapValuesToFlatMap,
+  MapValuesToMap,
+  ScaldingPriorityQueueMonoid
+}
 
 object BeamPlanner {
   def plan(
