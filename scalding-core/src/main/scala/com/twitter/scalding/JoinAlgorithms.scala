@@ -335,11 +335,9 @@ trait JoinAlgorithms {
    *
    * Examples:
    *
-   * getReplicationFields(3, 5)
-   * \=> List( (1, 0), (1, 1), (1, 2) )
+   * getReplicationFields(3, 5) \=> List( (1, 0), (1, 1), (1, 2) )
    *
-   * getReplicationFields(5, 3)
-   * \=> List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
+   * getReplicationFields(5, 3) \=> List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
    */
   private def getReplicationFields(
       r: Random,

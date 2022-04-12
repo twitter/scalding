@@ -18,16 +18,11 @@ import com.twitter.scalding.mathematics.Matrix._
  *
  * The expected structure of the rootDir is:
  *
- * rootDir
- * \|- iterations
- * \| |- 0 <-- a TSV of (row, value) of size n, value can be 1/n (generate this)
- * \| |- n <-- holds future iterations/solutions
- * \|- edges <-- a TSV of (row, column, value) for edges in the graph
- * \|- onesVector <-- a TSV of (row, 1) of size n (generate this)
- * \|- diff <-- a single line representing the difference between the last iterations
- * \|- constants <-- built at iteration 0, these are constant for any given matrix/graph
- * \|- M_hat
- * \|- priorVector
+ * rootDir \|- iterations \| |- 0 <-- a TSV of (row, value) of size n, value can be 1/n (generate this) \| |-
+ * n <-- holds future iterations/solutions \|- edges <-- a TSV of (row, column, value) for edges in the graph
+ * \|- onesVector <-- a TSV of (row, 1) of size n (generate this) \|- diff <-- a single line representing the
+ * difference between the last iterations \|- constants <-- built at iteration 0, these are constant for any
+ * given matrix/graph \|- M_hat \|- priorVector
  *
  * Don't forget to set the number of reducers for this job:
  * -D mapred.reduce.tasks=n
