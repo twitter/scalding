@@ -377,7 +377,8 @@ object CascadingBackend {
               CascadingPipe[T](pipe, typedSrc.sourceFields, fd, typedSrc.converter[T])
             case notCascading =>
               throw new IllegalArgumentException(
-                s"cascading mode requires TypedSource, found: $notCascading of class ${notCascading.getClass}")
+                s"cascading mode requires TypedSource, found: $notCascading of class ${notCascading.getClass}"
+              )
           }
         case sblk @ SumByLocalKeys(_, _) =>
           def go[K, V](sblk: SumByLocalKeys[K, V]): CascadingPipe[(K, V)] = {
@@ -405,15 +406,14 @@ object CascadingBackend {
           // this basically means there can only be one operation in between
           // a trap and a forceToDisk or a groupBy/cogroupBy (any barrier).
           (sink, sink) match {
-            case (src: Source, tsink: TypedSink[u @ unchecked]) =>
+            case (src: Source, tsink: TypedSink[u @unchecked]) =>
               val optTC: Option[TupleConverter[u]] =
                 (sink match {
-                  case tsrc: TypedSource[u @ unchecked] if tsrc.converter.arity == tsink.setter.arity =>
+                  case tsrc: TypedSource[u @unchecked] if tsrc.converter.arity == tsink.setter.arity =>
                     Some(tsrc.converter)
                   case _ =>
-                      converterFrom(tsink.setter)
+                    converterFrom(tsink.setter)
                 }).map(TupleConverter.asSuperConverter(_))
-
 
               optTC match {
                 case Some(tc) =>
@@ -424,7 +424,8 @@ object CascadingBackend {
                   CascadingPipe[u](pipe, tsink.sinkFields, fd, tc)
                 case None =>
                   logger.warn(
-                    s"No TupleConverter found for ${trapped}. Use a TypedSink that is also a TypedSource. Found sink: ${sink}")
+                    s"No TupleConverter found for ${trapped}. Use a TypedSink that is also a TypedSource. Found sink: ${sink}"
+                  )
                   // we just ignore the trap in this case.
                   // if the job doesn't fail, the trap would be empty anyway,
                   // if the job does fail, we will see the failure
@@ -435,7 +436,8 @@ object CascadingBackend {
               // if the trap is removed and there is a failure the job should fail
               logger.warn(
                 s"Trap on ${trapped.input} does not have a valid output: ${trapped.sink}" +
-                  ", a subclass of Source and TypedSink is required\nTrap ignored")
+                  ", a subclass of Source and TypedSink is required\nTrap ignored"
+              )
               cp
           }
         case WithDescriptionTypedPipe(input, descs) =>

@@ -24,6 +24,7 @@ import scala.util.{Failure, Success}
 import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future}
 
 import com.twitter.scalding.typed.cascading_backend.CascadingExtensions
+
 /**
  * Object containing various implicit conversions required to create Scalding flows in the REPL. Most of these
  * conversions come from the [[com.twitter.scalding.Job]] class.

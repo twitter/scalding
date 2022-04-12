@@ -72,8 +72,8 @@ class ReflectionTupleConverter[T](fields: Fields)(implicit m: Manifest[T]) exten
    */
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def validate(): Unit = {
-    //We can't touch setters because that shouldn't be accessed until map/reduce side, not
-    //on submitter.
+    // We can't touch setters because that shouldn't be accessed until map/reduce side, not
+    // on submitter.
     val missing = Dsl.asList(fields).find(f => !getSetters.contains(f.toString))
 
     assert(missing.isEmpty, "Field: " + missing.get.toString + " not in setters")
@@ -118,7 +118,7 @@ class OrderedConstructorConverter[T](fields: Fields)(implicit mf: Manifest[T]) e
     .head
     .asInstanceOf[Constructor[T]]
 
-  //Make sure we can actually get a constructor:
+  // Make sure we can actually get a constructor:
   getConstructor
 
   lazy val cons = getConstructor

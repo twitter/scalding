@@ -11,7 +11,7 @@ class MergeTest(args: Args) extends Job(args) {
   TextLine(args("input"))
     .flatMapTo('word)(_.split("""\s+"""))
     .groupBy('word)(_.size)
-    //Now, let's get the top 10 words:
+    // Now, let's get the top 10 words:
     .groupAll {
       _.mapReduceMap(('word, 'size) -> 'list) /* map1 */ { tup: (String, Long) => List(tup) } /* reduce */ {
         (l1: List[(String, Long)], l2: List[(String, Long)]) =>
@@ -20,12 +20,12 @@ class MergeTest(args: Args) extends Job(args) {
         lout
       }
     }
-    //Now expand out the list.
+    // Now expand out the list.
     .flatMap('list -> ('word, 'cnt)) { list: List[(String, Long)] => list }
     .project('word, 'cnt)
     .write(Tsv(args("output")))
 
-  //Reverse sort to get the top items
+  // Reverse sort to get the top items
   def cmpTup(t1: (String, Long), t2: (String, Long)) = t2._2.compareTo(t1._2)
 
   def mergeSort2[T](v1: List[T], v2: List[T], k: Int, cmp: Function2[T, T, Int]) = {

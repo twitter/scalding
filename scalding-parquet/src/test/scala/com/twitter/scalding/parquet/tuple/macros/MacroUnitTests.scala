@@ -425,7 +425,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |end field c at 2
                                      |end message""".stripMargin
 
-      //test write tuple with optional field = None
+      // test write tuple with optional field = None
       val f2 = SampleClassF(0, None, 4d)
       val rc2 = new StringBuilderRecordConsumer
       writeSupport.writeRecord(f2, rc2, schema)
@@ -440,7 +440,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate write support for case class with LIST fields" in {
-      //test write tuple with list of primitive fields
+      // test write tuple with list of primitive fields
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassI]
       val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassI]
       val i = SampleClassI(0, List(None, Some(2)))
@@ -466,7 +466,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |end group
                                      |end field b at 1
                                      |end message""".stripMargin
-      //test write list of nested class field
+      // test write list of nested class field
       val schemaString2: String = Macros.caseClassParquetSchema[SampleClassH]
       val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassH]
       val h = SampleClassH(0, List(SampleClassA(2, "foo"), SampleClassA(2, "bar")))
@@ -513,7 +513,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
     }
 
     "Generate write support for case class with MAP fields" in {
-      //test write tuple with map of primitive fields
+      // test write tuple with map of primitive fields
       val schemaString: String = Macros.caseClassParquetSchema[SampleClassJ]
       val writeSupport = Macros.caseClassParquetWriteSupport[SampleClassJ]
 
@@ -546,7 +546,7 @@ class MacroUnitTests extends WordSpec with Matchers with MockitoSugar {
                                      |end field a at 0
                                      |end message""".stripMargin
 
-      //test write Map of case class field
+      // test write Map of case class field
       val schemaString2: String = Macros.caseClassParquetSchema[SampleClassK]
       val writeSupport2 = Macros.caseClassParquetWriteSupport[SampleClassK]
       val k = SampleClassK("foo", Map(SampleClassA(2, "foo") -> SampleClassB(SampleClassA(2, "foo"), "bar")))

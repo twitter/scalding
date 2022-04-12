@@ -35,7 +35,7 @@ class NumberJoinerJob(args: Args) extends Job(args) {
 
 class NumberJoinTest extends WordSpec with Matchers {
   "A NumberJoinerJob" should {
-    //Set up the job:
+    // Set up the job:
     "not throw when joining longs with ints" in {
       JobTest(new NumberJoinerJob(_))
         .source(TypedTsv[(Int, Int)]("input0"), List((0, 1), (1, 2), (2, 4)))
@@ -72,7 +72,7 @@ class SpillingTest extends WordSpec with Matchers {
       .map { case (a, (b, c)) => (a, b, c) }
       .toSet
 
-    //Set up the job:
+    // Set up the job:
     "work when number of keys exceeds spill threshold" in {
       JobTest(new SpillingJob(_))
         .source(TypedTsv[(Int, Int)]("input"), src)
@@ -142,7 +142,7 @@ class ShuffleJobTest extends WordSpec with Matchers {
 class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
   TextLine(args("input")).read
     .
-    //1 is the line
+      // 1 is the line
     mapTo(1 -> ('kx, 'x)) { line: String =>
       val x = line.toDouble
       ((x > 0.5), x)
@@ -154,9 +154,9 @@ class MapToGroupBySizeSumMaxJob(args: Args) extends Job(args) {
 class MapToGroupBySizeSumMaxTest extends WordSpec with Matchers {
   "A MapToGroupBySizeSumMaxJob" should {
     val r = new java.util.Random
-    //Here is our input data:
+    // Here is our input data:
     val input = (0 to 100).map { i: Int => (i.toString, r.nextDouble.toString) }
-    //Here is our expected output:
+    // Here is our expected output:
     val goldenOutput = input
       .map { case (line: String, x: String) =>
         val xv = x.toDouble;
@@ -170,7 +170,7 @@ class MapToGroupBySizeSumMaxTest extends WordSpec with Matchers {
         val max = vlist.max
         (size, sum, max)
       }
-    //Now we have the expected input and output:
+    // Now we have the expected input and output:
     JobTest(new MapToGroupBySizeSumMaxJob(_))
       .arg("input", "fakeInput")
       .arg("output", "fakeOutput")
@@ -403,7 +403,7 @@ class JoinTest extends WordSpec with Matchers with PropertyChecks {
       implicit val sg: Semigroup[Int] = new Semigroup[Int] {
         override def plus(x: Int, y: Int): Int = x + y
 
-        //doing crazy
+        // doing crazy
         override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
           if (iter.isEmpty) Some(0)
           else super.sumOption(iter)
@@ -554,7 +554,7 @@ class JoinTest extends WordSpec with Matchers with PropertyChecks {
       implicit val sg: Semigroup[Int] = new Semigroup[Int] {
         override def plus(x: Int, y: Int): Int = x + y
 
-        //doing crazy stuff
+        // doing crazy stuff
         override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
           if (iter.isEmpty) Some(0)
           else super.sumOption(iter)
@@ -705,7 +705,7 @@ class JoinTest extends WordSpec with Matchers with PropertyChecks {
       implicit val sg: Semigroup[Int] = new Semigroup[Int] {
         override def plus(x: Int, y: Int): Int = x + y
 
-        //doing crazy stuff
+        // doing crazy stuff
         override def sumOption(iter: TraversableOnce[Int]): Option[Int] =
           if (iter.isEmpty) Some(scala.util.Random.nextInt())
           else super.sumOption(iter)
@@ -1039,9 +1039,9 @@ class MergeTestJob(args: Args) extends Job(args) {
 class MergeTest extends WordSpec with Matchers {
   "A MergeTest" should {
     val r = new java.util.Random
-    //Here is our input data:
+    // Here is our input data:
     val input = (0 to 100).map(i => (i.toString, r.nextDouble.toString + " " + r.nextDouble.toString))
-    //Here is our expected output:
+    // Here is our expected output:
     val parsed = input.map { case (line: String, x: String) =>
       val t = x.split(" ").map(_.toDouble)
       (t(0), t(1))
@@ -1049,7 +1049,7 @@ class MergeTest extends WordSpec with Matchers {
     val big = parsed.filter(_._1 > 0.5)
     val small = parsed.filter(_._1 <= 0.5)
     val golden = (big ++ small).groupBy(_._1).mapValues(itup => (itup.map(_._2).max))
-    //Now we have the expected input and output:
+    // Now we have the expected input and output:
     JobTest(new MergeTestJob(_))
       .arg("in", "fakeInput")
       .arg("out", "fakeOutput")
@@ -1078,7 +1078,7 @@ class SizeAveStdJob(args: Args) extends Job(args) {
     .map('x -> 'x)((x: Double) => (4 * x).toInt)
     .groupBy('x) {
       _.sizeAveStdev('y -> ('size, 'yave, 'ystdev))
-      //Make sure this doesn't ruin the calculation
+        // Make sure this doesn't ruin the calculation
         .sizeAveStdev('y -> ('size2, 'yave2, 'ystdev2))
         .average('y)
     }
@@ -1092,7 +1092,7 @@ class SizeAveStdSpec extends WordSpec with Matchers {
     def powerLawRand =
       // Generates a 1/x powerlaw with a max value or 1e40
       scala.math.pow(1e40, r.nextDouble)
-    //Here is our input data:
+    // Here is our input data:
     val input = (0 to 10000).map(i => (i.toString, r.nextDouble.toString + " " + powerLawRand.toString))
     val output = input
       .map { numline =>
@@ -1104,7 +1104,7 @@ class SizeAveStdSpec extends WordSpec with Matchers {
         val all = tups.map(_._2).toList
         val size = all.size.toLong
         val ave = all.sum / size
-        //Compute the standard deviation:
+        // Compute the standard deviation:
         val vari = all.map(x => (x - ave) * (x - ave)).sum / size
         val stdev = scala.math.sqrt(vari)
         (size, ave, stdev)
@@ -1117,13 +1117,13 @@ class SizeAveStdSpec extends WordSpec with Matchers {
         "correctly compute size, ave, stdev" in {
           outBuf.foreach { computed =>
             val correctTup = output(computed._1)
-            //Size
+            // Size
             computed._2 shouldBe (correctTup._1)
-            //Ave
+            // Ave
             computed._3 / correctTup._2 shouldBe 1.0 +- 1e-6
-            //Stdev
+            // Stdev
             computed._4 / correctTup._3 shouldBe 1.0 +- 1e-6
-            //Explicitly calculated Average:
+            // Explicitly calculated Average:
             computed._5 / computed._3 shouldBe 1.0 +- 1e-6
           }
         }
@@ -1164,7 +1164,7 @@ class DoubleGroupSpec extends WordSpec with Matchers {
       .sink[(Long, Long)](Tsv("fakeOut")) { outBuf =>
         "correctly build histogram" in {
           val outM = outBuf.toMap
-          outM(1) shouldBe 2 //both one and just keys occur only once
+          outM(1) shouldBe 2 // both one and just keys occur only once
           outM(2) shouldBe 1
           outM(3) shouldBe 1
         }
@@ -1284,7 +1284,7 @@ class ForceReducersTest extends WordSpec with Matchers {
       .source(TextLine("in"), List("0" -> "single test", "1" -> "single result"))
       .sink[(Int, String)](Tsv("out")) { outBuf =>
         (idx + ": must get the result right") in {
-          //need to convert to sets because order
+          // need to convert to sets because order
           outBuf(0)._2.split(" ").toSet shouldBe Set("single", "test")
           outBuf(1)._2.split(" ").toSet shouldBe Set("single", "result")
         }
@@ -1323,7 +1323,7 @@ class ToListTest extends WordSpec with Matchers {
           outBuf should have size 2
         }
         "must get the result right" in {
-          //need to convert to sets because order
+          // need to convert to sets because order
           outBuf(0)._2.split(" ").toSet shouldBe Set("single", "test")
           outBuf(1)._2.split(" ").toSet shouldBe Set("single", "result")
         }
@@ -1450,7 +1450,7 @@ class SmallCrossTest extends WordSpec with Matchers {
 class TopKJob(args: Args) extends Job(args) {
   Tsv(args("in")).read
     .mapTo(0 -> 'x)((tup: Int) => tup)
-    //Take the smallest 3 values:
+    // Take the smallest 3 values:
     .groupAll(_.sortedTake[Int]('x -> 'x, 3))
     .write(Tsv(args("out")))
 }
@@ -1479,7 +1479,7 @@ class ScanJob(args: Args) extends Job(args) {
         .scanLeft('y -> 'ys)(0)((oldV: Int, newV: Int) => oldV + newV)
     }
     .project('x, 'ys, 'z)
-    .map('z -> 'z) { z: Int => z } //Make sure the null z is converted to an int
+    .map('z -> 'z) { z: Int => z } // Make sure the null z is converted to an int
     .write(Tsv("out"))
 }
 
@@ -1620,7 +1620,7 @@ class IterableSourceJob(args: Args) extends Job(args) {
   Tsv("in", ('x, 'w))
     .joinWithTiny('x -> 'x, iter)
     .write(Tsv("tiny"))
-  //Now without fields and using the implicit:
+  // Now without fields and using the implicit:
   Tsv("in", ('x, 'w))
     .joinWithTiny('x -> 0, list)
     .write(Tsv("imp"))
@@ -1869,38 +1869,37 @@ class ForceToDiskTest extends WordSpec with Matchers {
 }
 
 class ThrowsErrorsJob(args: Args) extends Job(args) {
-   Tsv("input", ('letter, 'x)).read
-     .addTrap(Tsv("trapped"))
-     .map(('letter, 'x) -> 'yPrime) { fields: Product =>
-       val x = fields.productElement(1).asInstanceOf[Int]
-       if (x == 1) throw new Exception("Erroneous Ones") else x
-     }
-     .write(Tsv("output"))
- }
+  Tsv("input", ('letter, 'x)).read
+    .addTrap(Tsv("trapped"))
+    .map(('letter, 'x) -> 'yPrime) { fields: Product =>
+      val x = fields.productElement(1).asInstanceOf[Int]
+      if (x == 1) throw new Exception("Erroneous Ones") else x
+    }
+    .write(Tsv("output"))
+}
 
- class ItsATrapTest extends WordSpec with Matchers {
-   import Dsl._
+class ItsATrapTest extends WordSpec with Matchers {
+  import Dsl._
 
-   "An AddTrap" should {
-     val input = List(("a", 1), ("b", 2), ("c", 3), ("d", 1), ("e", 2))
+  "An AddTrap" should {
+    val input = List(("a", 1), ("b", 2), ("c", 3), ("d", 1), ("e", 2))
 
-     JobTest(new ThrowsErrorsJob(_))
-       .source(Tsv("input", ('letter, 'x)), input)
-       .sink[(String, Int)](Tsv("output")) { outBuf =>
-         "must contain all numbers in input except for 1" in {
-           outBuf.toList.sorted shouldBe List(("b", 2), ("c", 3), ("e", 2))
-         }
-       }
-       .sink[(String, Int)](Tsv("trapped")) { outBuf =>
-         "must contain all 1s and fields in input" in {
-           outBuf.toList.sorted shouldBe List(("a", 1), ("d", 1))
-         }
-       }
-       .run
-       .finish()
-   }
- }
-
+    JobTest(new ThrowsErrorsJob(_))
+      .source(Tsv("input", ('letter, 'x)), input)
+      .sink[(String, Int)](Tsv("output")) { outBuf =>
+        "must contain all numbers in input except for 1" in {
+          outBuf.toList.sorted shouldBe List(("b", 2), ("c", 3), ("e", 2))
+        }
+      }
+      .sink[(String, Int)](Tsv("trapped")) { outBuf =>
+        "must contain all 1s and fields in input" in {
+          outBuf.toList.sorted shouldBe List(("a", 1), ("d", 1))
+        }
+      }
+      .run
+      .finish()
+  }
+}
 
 object TypedThrowsErrorsJob {
   val input = TypedTsv[(String, Int)]("input")
@@ -1916,17 +1915,17 @@ object TypedThrowsErrorsJob {
 }
 
 class TypedThrowsErrorsJob(args: Args) extends Job(args) {
-   import TypedThrowsErrorsJob._
+  import TypedThrowsErrorsJob._
 
-   TypedPipe
-     .from(input)
-     .map(trans1(_))
-     .addTrap(trap1)
-     .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
-     .addTrap(trap2)
-     .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
-     .write(output)
- }
+  TypedPipe
+    .from(input)
+    .map(trans1(_))
+    .addTrap(trap1)
+    .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
+    .addTrap(trap2)
+    .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
+    .write(output)
+}
 
 object TypedThrowsErrorsJob2 {
   val input = TypedTsv[(String, Int)]("input")
@@ -1939,66 +1938,66 @@ object TypedThrowsErrorsJob2 {
 }
 
 class TypedThrowsErrorsJob2(args: Args) extends Job(args) {
-   import TypedThrowsErrorsJob2._
+  import TypedThrowsErrorsJob2._
 
-   TypedPipe
-     .from(input)
-     .map(trans1(_))
-     .addTrap(trap)
-     .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
-     .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
-     .write(output)
- }
+  TypedPipe
+    .from(input)
+    .map(trans1(_))
+    .addTrap(trap)
+    .map(tup => if (tup._2 == 1) throw new Exception("Oh no!") else trans2(tup))
+    .map(tup => if (tup._2 % 2 == 0) throw new Exception("Oh no!") else trans3(tup))
+    .write(output)
+}
 
- class TypedItsATrapTest extends WordSpec with Matchers {
+class TypedItsATrapTest extends WordSpec with Matchers {
 
-   "A Typed AddTrap with many traps" should {
-     import TypedThrowsErrorsJob._
+  "A Typed AddTrap with many traps" should {
+    import TypedThrowsErrorsJob._
 
-     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
+    val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
 
-     JobTest(new TypedThrowsErrorsJob(_))
-       .source(input, data)
-       .typedSink(output) { outBuf =>
-         "output must contain all odd except first" in {
-           outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
-         }
-       }
-       .typedSink(trap1) { outBuf =>
-         "trap1 must contain only the first" in {
-           outBuf.toList.sorted shouldBe List(("a", 1, 1))
-         }
-       }
-       .typedSink(trap2) { outBuf =>
-         "trap2 must contain the even numbered" in {
-           outBuf.toList.sorted shouldBe List(("b", 2, 4, "b"), ("d", 4, 16, "d"))
-         }
-       }
-       .run
-       .finish()
-   }
+    JobTest(new TypedThrowsErrorsJob(_))
+      .source(input, data)
+      .typedSink(output) { outBuf =>
+        "output must contain all odd except first" in {
+          outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
+        }
+      }
+      .typedSink(trap1) { outBuf =>
+        "trap1 must contain only the first" in {
+          outBuf.toList.sorted shouldBe List(("a", 1, 1))
+        }
+      }
+      .typedSink(trap2) { outBuf =>
+        "trap2 must contain the even numbered" in {
+          outBuf.toList.sorted shouldBe List(("b", 2, 4, "b"), ("d", 4, 16, "d"))
+        }
+      }
+      .run
+      .finish()
+  }
 
-   "A Typed AddTrap with many erroneous maps" should {
-     import TypedThrowsErrorsJob2._
+  "A Typed AddTrap with many erroneous maps" should {
+    import TypedThrowsErrorsJob2._
 
-     val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
+    val data = List(("a", 1), ("b", 2), ("c", 3), ("d", 4), ("e", 5))
 
-     JobTest(new TypedThrowsErrorsJob2(_))
-       .source(input, data)
-       .typedSink(output) { outBuf =>
-         "output must contain all odd except first" in {
-           outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
-         }
-       }
-       .typedSink(TypedThrowsErrorsJob2.trap) { outBuf =>
-         "trap must contain the first and the evens" in {
-           outBuf.toList.sorted shouldBe List(("a", 1, 1), ("b", 2, 2), ("d", 4, 4))
-         }
-       }
-       .run
-       .finish()
-   }
- }
+    JobTest(new TypedThrowsErrorsJob2(_))
+      .source(input, data)
+      .typedSink(output) { outBuf =>
+        "output must contain all odd except first" in {
+          outBuf.toList.sorted shouldBe List(("c", 3), ("e", 5))
+        }
+      }
+      .typedSink(TypedThrowsErrorsJob2.trap) { outBuf =>
+        "trap must contain the first and the evens" in {
+          outBuf.toList.sorted shouldBe List(("a", 1, 1), ("b", 2, 2), ("d", 4, 4))
+        }
+      }
+      .run
+      .finish()
+  }
+}
 
 class GroupAllToListTestJob(args: Args) extends Job(args) {
   TypedTsv[(Long, String, Double)]("input")

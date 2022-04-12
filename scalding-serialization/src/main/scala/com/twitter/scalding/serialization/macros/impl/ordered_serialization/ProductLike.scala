@@ -57,7 +57,7 @@ object ProductLike {
       q"""
           val $target = $element.$accessorSymbol
             $currentHash = _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${tBuf
-        .hash(target)})
+          .hash(target)})
           """
     }
 

@@ -98,12 +98,12 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       setAndCheck("hey")
       setAndCheck("world")
       setAndCheckS(List("one", "two", "three"))
-      //Synonym for list
+      // Synonym for list
       setAndCheckS(Seq("one", "two", "three"))
     }
     "convert from symbols" in {
       setAndCheckSym('hey)
-      //Shortest length to make sure the tail stuff is working:
+      // Shortest length to make sure the tail stuff is working:
       setAndCheckSym('h)
       setAndCheckSymS(List('hey, 'world, 'symbols))
     }
@@ -258,15 +258,15 @@ class FieldImpsTest extends WordSpec with Matchers with FieldConversions {
       asSet((0, 1, 'hey)) shouldBe Set(i(0), i(1), "hey")
     }
     "correctly determine default modes" in {
-      //Default case:
+      // Default case:
       defaultMode(0, 'hey) shouldBe Fields.ALL
       defaultMode((0, 't), 'x) shouldBe Fields.ALL
       defaultMode(('hey, 'x), 'y) shouldBe Fields.ALL
-      //Equal:
+      // Equal:
       defaultMode('hey, 'hey) shouldBe Fields.REPLACE
       defaultMode(('hey, 'x), ('hey, 'x)) shouldBe Fields.REPLACE
       defaultMode(0, 0) shouldBe Fields.REPLACE
-      //Subset/superset:
+      // Subset/superset:
       defaultMode(('hey, 'x), 'x) shouldBe Fields.SWAP
       defaultMode('x, ('hey, 'x)) shouldBe Fields.SWAP
       defaultMode(0, ('hey, 0)) shouldBe Fields.SWAP

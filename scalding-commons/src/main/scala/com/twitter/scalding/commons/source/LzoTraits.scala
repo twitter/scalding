@@ -103,13 +103,12 @@ trait LzoTypedTsv[T] extends DelimitedScheme with Mappable[T] with TypedSink[T] 
 
   def mf: Manifest[T]
 
-  override val types: Array[Class[_]] = {
+  override val types: Array[Class[_]] =
     if (classOf[scala.Product].isAssignableFrom(mf.runtimeClass)) {
-      //Assume this is a Tuple:
+      // Assume this is a Tuple:
       mf.typeArguments.map(_.runtimeClass).toArray
     } else {
-      //Assume there is only a single item
+      // Assume there is only a single item
       Array(mf.runtimeClass)
     }
-  }
 }

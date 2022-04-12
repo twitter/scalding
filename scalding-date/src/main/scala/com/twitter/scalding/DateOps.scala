@@ -77,7 +77,7 @@ object DateOps extends java.io.Serializable {
 
   private val prepare: String => String = { (str: String) =>
     str
-      .replace("T", " ") //We allow T to separate dates and times, just remove it and then validate
+      .replace("T", " ") // We allow T to separate dates and times, just remove it and then validate
       .replaceAll("[/_]", "-") // Allow for slashes and underscores
   }
 

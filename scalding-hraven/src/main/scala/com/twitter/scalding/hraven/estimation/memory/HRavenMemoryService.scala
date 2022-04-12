@@ -26,7 +26,7 @@ trait HRavenMemoryHistoryService extends HRavenHistoryService {
     }
 
   override protected def counters(taskCounters: CounterMap): Option[Map[String, Long]] =
-    //sometimes get groups with only partial data
+    // sometimes get groups with only partial data
     if (taskCounters.getGroups.isEmpty || taskCounters.getGroup(TaskCounterGroup).size() < 4) {
       None
     } else {

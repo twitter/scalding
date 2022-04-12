@@ -77,7 +77,7 @@ class KryoTest extends WordSpec with Matchers {
   def singleRT[T <: AnyRef](in: T): T =
     deserObj[T](in.getClass, serObj(in))
 
-  //These are analogous to how Hadoop will serialize
+  // These are analogous to how Hadoop will serialize
   def serialize(ins: List[AnyRef]) =
     ins.map(v => (v.getClass, serObj(v)))
   def deserialize(input: List[(Class[_], Array[Byte])]) =
@@ -151,9 +151,9 @@ class KryoTest extends WordSpec with Matchers {
     }
     "handle scala singletons" in {
       val test = List(Nil, None)
-      //Serialize each:
+      // Serialize each:
       serializationRT(test) shouldBe test
-      //Together in a list:
+      // Together in a list:
       singleRT(test) shouldBe test
     }
     "handle Date, RichDate and DateRange" in {
@@ -169,7 +169,7 @@ class KryoTest extends WordSpec with Matchers {
     "Serialize a giant list" in {
       val bigList = (1 to 100000).toList
       val list2 = deserObj[List[Int]](bigList.getClass, serObj(bigList))
-      //Specs, it turns out, also doesn't deal with giant lists well:
+      // Specs, it turns out, also doesn't deal with giant lists well:
       list2.zip(bigList).foreach { case (l, r) => l shouldBe r }
     }
   }

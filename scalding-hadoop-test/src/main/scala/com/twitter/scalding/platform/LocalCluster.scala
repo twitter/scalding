@@ -118,7 +118,7 @@ class LocalCluster(mutex: Boolean = true) {
 
     hadoop = Some(dfs, cluster, mrJobConf)
 
-    //TODO I desperately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
+    // TODO I desperately want there to be a better way to do this. I'd love to be able to run ./sbt assembly and depend
     // on that, but I couldn't figure out how to make that work.
     val baseClassPath = List(
       getClass,
@@ -181,7 +181,7 @@ class LocalCluster(mutex: Boolean = true) {
     exists
   }
 
-  //TODO is there a way to know if we need to wait on anything to shut down, etc?
+  // TODO is there a way to know if we need to wait on anything to shut down, etc?
   def shutdown(): Unit = {
     hadoop.foreach { case (dfs, mr, _) =>
       dfs.shutdown()

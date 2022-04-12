@@ -20,21 +20,19 @@ package com.twitter.scalding.dagon
 import java.io.Serializable
 import scala.util.control.TailCalls
 import scala.util.hashing.MurmurHash3
+
 /**
- * Expr[N, T] is an expression of a graph of container nodes N[_] with
- * result type N[T]. These expressions are like the Literal[T, N] graphs
- * except that functions always operate with an indirection of a Id[T]
- * where N[T] is the type of the input node.
+ * Expr[N, T] is an expression of a graph of container nodes N[_] with result type N[T]. These expressions are
+ * like the Literal[T, N] graphs except that functions always operate with an indirection of a Id[T] where
+ * N[T] is the type of the input node.
  *
- * Nodes can be deleted from the graph by replacing an Expr at Id = idA
- * with Var(idB) pointing to some upstream node.
+ * Nodes can be deleted from the graph by replacing an Expr at Id = idA with Var(idB) pointing to some
+ * upstream node.
  *
- * To add nodes to the graph, add depth to the final node returned in
- * a Unary or Binary expression.
+ * To add nodes to the graph, add depth to the final node returned in a Unary or Binary expression.
  *
- * TODO: see the approach here: https://gist.github.com/pchiusano/1369239
- * Which seems to show a way to do currying, so we can handle general
- * arity
+ * TODO: see the approach here: https://gist.github.com/pchiusano/1369239 Which seems to show a way to do
+ * currying, so we can handle general arity
  */
 sealed trait Expr[N[_], T] extends Serializable { self: Product =>
 
@@ -42,10 +40,8 @@ sealed trait Expr[N[_], T] extends Serializable { self: Product =>
     Expr.evaluate(idToExp, this)
 
   /**
-   * Memoize the hashCode, but notice that Expr is not recursive on
-   * itself (only via the Id graph) so it does not have the
-   * DAG-exponential-equality-and-hashcode issue that Literal and
-   * other DAGs have.
+   * Memoize the hashCode, but notice that Expr is not recursive on itself (only via the Id graph) so it does
+   * not have the DAG-exponential-equality-and-hashcode issue that Literal and other DAGs have.
    *
    * We use a lazy val instead of a val for binary compatibility.
    */
@@ -55,7 +51,7 @@ sealed trait Expr[N[_], T] extends Serializable { self: Product =>
   final def isVar: Boolean =
     this match {
       case Expr.Var(_) => true
-      case _ => false
+      case _           => false
     }
 }
 
@@ -80,11 +76,11 @@ object Expr {
    */
   def dependsOnIds[N[_], A](expr: Expr[N, A]): List[Id[_]] =
     expr match {
-      case Const(_) => Nil
-      case Var(id) => id :: Nil
-      case Unary(id, _) => id :: Nil
+      case Const(_)            => Nil
+      case Var(id)             => id :: Nil
+      case Unary(id, _)        => id :: Nil
       case Binary(id0, id1, _) => id0 :: id1 :: Nil
-      case Variadic(ids, _) => ids
+      case Variadic(ids, _)    => ids
     }
 
   /**
@@ -94,21 +90,20 @@ object Expr {
     evaluateMemo(idToExp)(expr)
 
   /**
-   * Build a memoized FunctionK for this particular idToExp. Clearly, this
-   * FunctionK is only valid for the given idToExp which is captured in this
-   * closure.
+   * Build a memoized FunctionK for this particular idToExp. Clearly, this FunctionK is only valid for the
+   * given idToExp which is captured in this closure.
    */
   def evaluateMemo[N[_]](idToExp: HMap[Id, Expr[N, *]]): FunctionK[Expr[N, *], N] = {
     val fast = Memoize.functionK[Expr[N, *], N](new Memoize.RecursiveK[Expr[N, *], N] {
       def toFunction[T] = {
-        case (Const(n), _) => n
+        case (Const(n), _)  => n
         case (Var(id), rec) => rec(idToExp(id))
         case (Unary(id, fn), rec) =>
           fn(rec(idToExp(id)))
         case (Binary(id1, id2, fn), rec) =>
           fn(rec(idToExp(id1)), rec(idToExp(id2)))
         case (Variadic(args, fn), rec) =>
-          fn(args.map { id => rec(idToExp(id)) })
+          fn(args.map(id => rec(idToExp(id))))
       }
     })
 
@@ -116,8 +111,8 @@ object Expr {
 
     val slowAndSafe = Memoize.functionKTailRec[Expr[N, *], N](new Memoize.RecursiveKTailRec[Expr[N, *], N] {
       def toFunction[T] = {
-        case (Const(n), _) => done(n)
-        case (Var(id), rec) => rec(idToExp(id))
+        case (Const(n), _)        => done(n)
+        case (Var(id), rec)       => rec(idToExp(id))
         case (Unary(id, fn), rec) => rec(idToExp(id)).map(fn)
         case (Binary(id1, id2, fn), rec) =>
           for {
@@ -127,7 +122,7 @@ object Expr {
         case (Variadic(args, fn), rec) =>
           def loop[A](as: List[Id[A]]): TailRec[List[N[A]]] =
             as match {
-              case Nil => done(Nil)
+              case Nil    => done(Nil)
               case h :: t => loop(t).flatMap(tt => rec(idToExp(h)).map(_ :: tt))
             }
           loop(args).map(fn)
@@ -137,7 +132,7 @@ object Expr {
     def onStackGoSlow[A](lit: Expr[N, A]): N[A] =
       try fast(lit)
       catch {
-        case _: Throwable => //StackOverflowError should work, but not on scala.js
+        case _: Throwable => // StackOverflowError should work, but not on scala.js
           slowAndSafe(lit).result
       }
 

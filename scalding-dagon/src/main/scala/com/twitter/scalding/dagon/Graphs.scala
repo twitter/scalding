@@ -5,15 +5,14 @@ import scala.collection.mutable
 object Graphs {
 
   /**
-   * Return the depth first enumeration of reachable nodes,
-   * NOT INCLUDING INPUT, unless it can be reached via neighbors
+   * Return the depth first enumeration of reachable nodes, NOT INCLUDING INPUT, unless it can be reached via
+   * neighbors
    */
   def depthFirstOf[T](t: T)(nf: NeighborFn[T]): List[T] =
     reflexiveTransitiveClosure(nf(t).toList)(nf)
 
   /**
-   * All the nodes we can reach from this start, including
-   * the initial nodes
+   * All the nodes we can reach from this start, including the initial nodes
    */
   def reflexiveTransitiveClosure[T](start: List[T])(nf: NeighborFn[T]): List[T] = {
     @annotation.tailrec
@@ -32,10 +31,8 @@ object Graphs {
   }
 
   /**
-   * Return a NeighborFn for the graph of reversed edges defined by
-   * this set of nodes and nf
-   * We avoid Sets which use hash-codes which may depend on addresses
-   * which are not stable from one run to the next.
+   * Return a NeighborFn for the graph of reversed edges defined by this set of nodes and nf We avoid Sets
+   * which use hash-codes which may depend on addresses which are not stable from one run to the next.
    */
   def reversed[T](nodes: Iterable[T])(nf: NeighborFn[T]): NeighborFn[T] = {
     val graph: Map[T, List[T]] = nodes
@@ -52,9 +49,8 @@ object Graphs {
   }
 
   /**
-   * Return the depth of each node in the dag.
-   * a node that has no dependencies has depth == 0
-   * else it is max of parent + 1
+   * Return the depth of each node in the dag. a node that has no dependencies has depth == 0 else it is max
+   * of parent + 1
    *
    * Behavior is not defined if the graph is not a DAG (for now, it runs forever, may throw later)
    */
@@ -66,14 +62,16 @@ object Graphs {
       if (!todo.isEmpty) {
         def withParents(n: T) = (n :: (nf(n).toList)).filterNot(acc.contains(_)).distinct
 
-        val (doneThisStep, rest) = todo.map {
-          withParents(_)
-        }.partition {
-          _.size == 1
-        }
+        val (doneThisStep, rest) = todo
+          .map {
+            withParents(_)
+          }
+          .partition {
+            _.size == 1
+          }
 
-        acc ++= (doneThisStep.flatten.map { n =>
-          val depth = nf(n) //n is done now, so all it's neighbors must be too.
+        acc ++= doneThisStep.flatten.map { n =>
+          val depth = nf(n) // n is done now, so all it's neighbors must be too.
             .map {
               acc(_) + 1
             }
@@ -82,7 +80,7 @@ object Graphs {
             }
             .getOrElse(0)
           n -> depth
-        })
+        }
         computeDepth(rest.flatten)
       }
 

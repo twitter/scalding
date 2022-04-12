@@ -27,7 +27,7 @@ import GraphOperations._
 
 class TypedCosineSimJob(args: Args) extends Job(args) {
 
-  //val simOf = new ExactInCosine[Int]()
+  // val simOf = new ExactInCosine[Int]()
   val simOf = new DiscoInCosine[Int](0.001, 0.1, 0.01)
   val graph = withInDegree {
     TypedTsv[(Int, Int)]("ingraph")

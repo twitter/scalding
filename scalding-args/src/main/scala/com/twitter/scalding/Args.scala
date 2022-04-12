@@ -38,7 +38,7 @@ object Args {
   def apply(args: Iterable[String]): Args = {
     def startingDashes(word: String) = word.takeWhile(_ == '-').length
     new Args(
-      //Fold into a list of (arg -> List[values])
+      // Fold into a list of (arg -> List[values])
       args
         .filter(a => !a.matches("\\s*"))
         .foldLeft(List("" -> List[String]())) { (acc, arg) =>
@@ -48,7 +48,7 @@ object Args {
           else
             (noDashes -> List()) :: acc
         }
-        //Now reverse the values to keep the same order
+        // Now reverse the values to keep the same order
         .map { case (key, value) => key -> value.reverse }
         .toMap
     )
@@ -70,7 +70,7 @@ object Args {
 
 class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
 
-  //Replace or add a given key+args pair:
+  // Replace or add a given key+args pair:
   def +(keyvals: (String, Iterable[String])): Args = new Args(m + (keyvals._1 -> keyvals._2.toList))
 
   /**
@@ -136,7 +136,7 @@ class Args(val m: Map[String, List[String]]) extends java.io.Serializable {
       val k = kvlist._1
       val values = kvlist._2
       if (k != "") {
-        //Make sure positional args are first
+        // Make sure positional args are first
         args ++ (("--" + k) :: values)
       } else {
         // These are positional args (no key), put them first:

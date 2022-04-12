@@ -1,15 +1,15 @@
 package com.twitter.scalding.typed.cascading_backend
 
-import cascading.flow.{Flow, FlowDef, FlowConnector}
+import cascading.flow.{Flow, FlowConnector, FlowDef}
 import cascading.pipe.Pipe
 import cascading.tap.Tap
 import cascading.tuple.{Fields, TupleEntryIterator}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
-import com.twitter.scalding.mathematics.{MatrixLiteral, Matrix2}
+import com.twitter.scalding.mathematics.{Matrix2, MatrixLiteral}
 import com.twitter.scalding.typed.KeyedListLike
 import org.apache.hadoop.conf.Configuration
-import scala.concurrent.{Future, ExecutionContext => ConcurrentExecutionContext}
+import scala.concurrent.{ExecutionContext => ConcurrentExecutionContext, Future}
 import scala.util.Try
 
 import com.twitter.scalding._
@@ -19,6 +19,7 @@ import scala.collection.JavaConverters._
 
 trait CascadingExtensions {
   implicit class TypedPipeCompanionCascadingExtensions(tp: TypedPipe.type) {
+
     /**
      * Create a TypedPipe from a cascading Pipe, some Fields and the type T Avoid this if you can. Prefer
      * from(TypedSource).
@@ -29,49 +30,50 @@ trait CascadingExtensions {
         conv: TupleConverter[T]
     ): TypedPipe[T] = {
 
-        /*
-        * This could be in TypedSource, but we don't want to encourage users
-        * to work directly with Pipe
-        */
-        case class WrappingSource[T](
-            pipe: Pipe,
-            fields: Fields,
-            @transient localFlow: FlowDef, // FlowDef is not serializable. We shouldn't need to, but being paranoid
-            mode: Mode,
-            conv: TupleConverter[T]
-        ) extends TypedSource[T] {
+      /*
+       * This could be in TypedSource, but we don't want to encourage users
+       * to work directly with Pipe
+       */
+      case class WrappingSource[T](
+          pipe: Pipe,
+          fields: Fields,
+          @transient localFlow: FlowDef, // FlowDef is not serializable. We shouldn't need to, but being paranoid
+          mode: Mode,
+          conv: TupleConverter[T]
+      ) extends TypedSource[T] {
 
         def converter[U >: T]: TupleConverter[U] =
-            TupleConverter.asSuperConverter[T, U](conv)
+          TupleConverter.asSuperConverter[T, U](conv)
 
         def read(implicit fd: FlowDef, m: Mode): Pipe = {
-            // This check is not likely to fail unless someone does something really strange.
-            // for historical reasons, it is not checked by the typed system
-            require(
+          // This check is not likely to fail unless someone does something really strange.
+          // for historical reasons, it is not checked by the typed system
+          require(
             m == mode,
             s"Cannot switch Mode between TypedPipe.from and toPipe calls. Pipe: $pipe, pipe mode: $m, outer mode: $mode"
-            )
-            Dsl.flowDefToRichFlowDef(fd).mergeFrom(localFlow)
-            pipe
+          )
+          Dsl.flowDefToRichFlowDef(fd).mergeFrom(localFlow)
+          pipe
         }
 
         override def sourceFields: Fields = fields
-        }
+      }
 
-        val localFlow = Dsl.flowDefToRichFlowDef(flowDef).onlyUpstreamFrom(pipe)
-        TypedPipe.from(WrappingSource(pipe, fields, localFlow, mode, conv))
+      val localFlow = Dsl.flowDefToRichFlowDef(flowDef).onlyUpstreamFrom(pipe)
+      TypedPipe.from(WrappingSource(pipe, fields, localFlow, mode, conv))
     }
 
     /**
      * Input must be a Pipe with exactly one Field Avoid this method and prefer from(TypedSource) if possible
      */
     def fromSingleField[T](pipe: Pipe)(implicit fd: FlowDef, mode: Mode): TypedPipe[T] =
-        fromPipe(pipe, new Fields(0))(fd, mode, singleConverter[T])
+      fromPipe(pipe, new Fields(0))(fd, mode, singleConverter[T])
 
   }
 
   abstract class TypedPipeLikeExtensions[A, T <: A] {
     def toTypedPipe: TypedPipe[T]
+
     /**
      * Export back to a raw cascading Pipe. useful for interop with the scalding Fields API or with Cascading
      * code. Avoid this if possible. Prefer to write to TypedSink.
@@ -79,31 +81,31 @@ trait CascadingExtensions {
     final def toPipe[U >: T](
         fieldNames: Fields
     )(implicit flowDef: FlowDef, mode: Mode, setter: TupleSetter[U]): Pipe =
-        // we have to be cafeful to pass the setter we want since a low priority implicit can always be
-        // found :(
-        CascadingBackend.toPipe[U](toTypedPipe.withLine, fieldNames)(flowDef, mode, setter)
+      // we have to be cafeful to pass the setter we want since a low priority implicit can always be
+      // found :(
+      CascadingBackend.toPipe[U](toTypedPipe.withLine, fieldNames)(flowDef, mode, setter)
 
     /** use a TupleUnpacker to flatten U out into a cascading Tuple */
     def unpackToPipe[U >: T](
         fieldNames: Fields
     )(implicit fd: FlowDef, mode: Mode, up: TupleUnpacker[U]): Pipe = {
-        val setter = up.newSetter(fieldNames)
-        toPipe[U](fieldNames)(fd, mode, setter)
+      val setter = up.newSetter(fieldNames)
+      toPipe[U](fieldNames)(fd, mode, setter)
     }
 
     /**
-     * If you want to writeThrough to a specific file if it doesn't already exist, and otherwise just read from
-     * it going forward, use this.
+     * If you want to writeThrough to a specific file if it doesn't already exist, and otherwise just read
+     * from it going forward, use this.
      */
     def make[U >: T](dest: Source with TypedSink[T] with TypedSource[U]): Execution[TypedPipe[U]] =
-        Execution.getMode.flatMap { mode =>
+      Execution.getMode.flatMap { mode =>
         try {
-            dest.validateTaps(mode)
-            Execution.from(TypedPipe.from(dest))
+          dest.validateTaps(mode)
+          Execution.from(TypedPipe.from(dest))
         } catch {
-            case ivs: InvalidSourceException => toTypedPipe.writeThrough(dest)
+          case ivs: InvalidSourceException => toTypedPipe.writeThrough(dest)
         }
-    }
+      }
 
     /**
      * Safely write to a TypedSink[T]. If you want to write to a Source (not a Sink) you need to do something
@@ -112,25 +114,29 @@ trait CascadingExtensions {
      *   a pipe equivalent to the current pipe.
      */
     def write(dest: TypedSink[T])(implicit flowDef: FlowDef, mode: Mode): TypedPipe[T] = {
-        // We do want to record the line number that this occurred at
-        val next = toTypedPipe.withLine
-        FlowStateMap.merge(flowDef, FlowState.withTypedWrite(next, dest, mode))
-        next
+      // We do want to record the line number that this occurred at
+      val next = toTypedPipe.withLine
+      FlowStateMap.merge(flowDef, FlowState.withTypedWrite(next, dest, mode))
+      next
     }
   }
 
-  implicit class TypedPipeCascadingExtensions[T](val toTypedPipe: TypedPipe[T]) extends TypedPipeLikeExtensions[Any, T]
+  implicit class TypedPipeCascadingExtensions[T](val toTypedPipe: TypedPipe[T])
+      extends TypedPipeLikeExtensions[Any, T]
 
   implicit class KeyedListCascadingExtensions[K, V, S[K, +V] <: KeyedListLike[K, V, S]](
-    keyed: KeyedListLike[K, V, S]) extends TypedPipeLikeExtensions[(K, V), (K, V)] {
+      keyed: KeyedListLike[K, V, S]
+  ) extends TypedPipeLikeExtensions[(K, V), (K, V)] {
     def toTypedPipe = keyed.toTypedPipe
   }
 
-  implicit class ValuePipeCascadingExtensions[T](value: ValuePipe[T]) extends TypedPipeLikeExtensions[Any, T] {
+  implicit class ValuePipeCascadingExtensions[T](value: ValuePipe[T])
+      extends TypedPipeLikeExtensions[Any, T] {
     def toTypedPipe = value.toTypedPipe
   }
 
-  implicit class MappableCascadingExtensions[T](mappable: Mappable[T]) extends TypedPipeLikeExtensions[Any, T] {
+  implicit class MappableCascadingExtensions[T](mappable: Mappable[T])
+      extends TypedPipeLikeExtensions[Any, T] {
     def toTypedPipe = TypedPipe.from(mappable)
   }
 
@@ -146,29 +152,29 @@ trait CascadingExtensions {
      * For multiple files you must nested your execution, see docs of
      * [[com.twitter.scalding.filecache.DistributedCacheFile]]
      */
-     def withCachedFile[T](path: String)(fn: CachedFile => Execution[T]): Execution[T] =
-       DistributedCacheFile.execution(path)(fn)
+    def withCachedFile[T](path: String)(fn: CachedFile => Execution[T]): Execution[T] =
+      DistributedCacheFile.execution(path)(fn)
 
     /*
-    * This runs a Flow using Cascading's built in threads. The resulting JobStats
-    * are put into a promise when they are ready
-    */
+     * This runs a Flow using Cascading's built in threads. The resulting JobStats
+     * are put into a promise when they are ready
+     */
     def run[C](flow: Flow[C]): Future[JobStats] =
-        // This is in Java because of the cascading API's raw types on FlowListener
-        FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
+      // This is in Java because of the cascading API's raw types on FlowListener
+      FlowListenerPromise.start(flow, { f: Flow[C] => JobStats(f.getFlowStats) })
     private def run[L, C](label: L, flow: Flow[C]): Future[(L, JobStats)] =
-        // This is in Java because of the cascading API's raw types on FlowListener
-        FlowListenerPromise.start(flow, { f: Flow[C] => (label, JobStats(f.getFlowStats)) })
+      // This is in Java because of the cascading API's raw types on FlowListener
+      FlowListenerPromise.start(flow, { f: Flow[C] => (label, JobStats(f.getFlowStats)) })
 
     /*
-    * This blocks the current thread until the job completes with either success or
-    * failure.
-    */
+     * This blocks the current thread until the job completes with either success or
+     * failure.
+     */
     def waitFor[C](flow: Flow[C]): Try[JobStats] =
-        Try {
+      Try {
         flow.complete()
         JobStats(flow.getStats)
-        }
+      }
 
   }
 
@@ -203,40 +209,40 @@ trait CascadingExtensions {
 
     def DefaultHadoop2Mr1FlowConnector = "cascading.flow.hadoop2.Hadoop2MR1FlowConnector"
     def DefaultHadoop2Mr1FlowProcess =
-        "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
+      "cascading.flow.hadoop.HadoopFlowProcess" // no Hadoop2MR1FlowProcess as of Cascading 3.0.0-wip-75?
 
     def DefaultHadoop2TezFlowConnector = "cascading.flow.tez.Hadoop2TezFlowConnector"
     def DefaultHadoop2TezFlowProcess = "cascading.flow.tez.Hadoop2TezFlowProcess"
 
     // This should be passed ALL the args supplied after the job name
     def apply(args: Args, config: Configuration): Mode = {
-        val strictSources = args.boolean("tool.partialok") == false
-        if (!strictSources) {
+      val strictSources = args.boolean("tool.partialok") == false
+      if (!strictSources) {
         // TODO we should do smarter logging here
         println("[Scalding:INFO] using --tool.partialok. Missing log data won't cause errors.")
-        }
+      }
 
-        if (args.boolean("local"))
+      if (args.boolean("local"))
         Local(strictSources)
-        else if (
+      else if (
         args.boolean("hdfs")
-        ) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
+      ) /* FIXME: should we start printing deprecation warnings ? It's okay to set manually c.f.*.class though */
         Hdfs(strictSources, config)
-        else if (args.boolean("hadoop1")) {
+      else if (args.boolean("hadoop1")) {
         config.set(CascadingFlowConnectorClassKey, DefaultHadoopFlowConnector)
         config.set(CascadingFlowProcessClassKey, DefaultHadoopFlowProcess)
         Hdfs(strictSources, config)
-        } else if (args.boolean("hadoop2-mr1")) {
+      } else if (args.boolean("hadoop2-mr1")) {
         config.set(CascadingFlowConnectorClassKey, DefaultHadoop2Mr1FlowConnector)
         config.set(CascadingFlowProcessClassKey, DefaultHadoop2Mr1FlowProcess)
         Hdfs(strictSources, config)
-        } else if (args.boolean("hadoop2-tez")) {
+      } else if (args.boolean("hadoop2-tez")) {
         config.set(CascadingFlowConnectorClassKey, DefaultHadoop2TezFlowConnector)
         config.set(CascadingFlowProcessClassKey, DefaultHadoop2TezFlowProcess)
         Hdfs(strictSources, config)
-        } else
+      } else
         throw ArgsException(
-            "[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none"
+          "[ERROR] Mode must be one of --local, --hadoop1, --hadoop2-mr1, --hadoop2-tez or --hdfs, you provided none"
         )
     }
 
@@ -247,29 +253,29 @@ trait CascadingExtensions {
     import cascading.stats.{CascadeStats, CascadingStats, FlowStats}
 
     def apply(stats: CascadingStats): JobStats = {
-        val m: Map[String, Any] = statsMap(stats)
-        new JobStats(stats match {
+      val m: Map[String, Any] = statsMap(stats)
+      new JobStats(stats match {
         case cs: CascadeStats => m
         case fs: FlowStats    => m + ("flow_step_stats" -> fs.getFlowStepStats.asScala.map(statsMap))
-        })
+      })
     }
 
     private def counterMap(stats: CascadingStats): Map[String, Map[String, Long]] =
-        stats.getCounterGroups.asScala.map { group =>
+      stats.getCounterGroups.asScala.map { group =>
         (
-            group,
-            stats
+          group,
+          stats
             .getCountersFor(group)
             .asScala
             .map { counter =>
-                (counter, stats.getCounterValue(group, counter))
+              (counter, stats.getCounterValue(group, counter))
             }
             .toMap
         )
-        }.toMap
+      }.toMap
 
     private def statsMap(stats: CascadingStats): Map[String, Any] =
-        Map(
+      Map(
         "counters" -> counterMap(stats),
         "duration" -> stats.getDuration,
         "finished_time" -> stats.getFinishedTime,
@@ -282,7 +288,7 @@ trait CascadingExtensions {
         "skipped" -> stats.isSkipped,
         "stopped" -> stats.isStopped,
         "successful" -> stats.isSuccessful
-        )
+      )
 
   }
 
@@ -294,6 +300,7 @@ trait CascadingExtensions {
     import com.twitter.scalding.filecache.{CachedFile, DistributedCacheFile}
     import org.apache.hadoop.mapred.JobConf
     import org.apache.hadoop.io.serializer.{Serialization => HSerialization}
+
     /**
      * Add files to be localized to the config. Intended to be used by user code.
      * @param cachedFiles
@@ -311,13 +318,14 @@ trait CascadingExtensions {
       DistributedCacheFile.getDistributedCachedFiles(config)
 
     def getCascadingSerializationTokens: Map[Int, String] =
-      config.get(Config.CascadingSerializationTokens)
+      config
+        .get(Config.CascadingSerializationTokens)
         .map(CascadingTokenUpdater.parseTokens)
         .getOrElse(Map.empty[Int, String])
 
     /*
-    * If a ConfiguredInstantiator has been set up, this returns it
-    */
+     * If a ConfiguredInstantiator has been set up, this returns it
+     */
     def getKryo: Option[KryoInstantiator] =
       if (config.toMap.contains(ConfiguredInstantiator.KEY))
         Some((new ConfiguredInstantiator(ScalaMapConfig(config.toMap))).getDelegate)
@@ -345,16 +353,16 @@ trait CascadingExtensions {
         .getOrElse(Set())
 
     /*
-    * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
-    * needs to be last and this method handles this for you:
-    * hadoop, cascading, [userHadoop,] kyro
-    * is the order.
-    *
-    * Kryo uses the ConfiguredInstantiator, which is configured either by reflection:
-    * Right(classOf[MyInstantiator]) or by serializing given Instantiator instance
-    * with a class to serialize to bootstrap the process:
-    * Left((classOf[serialization.KryoHadoop], myInstance))
-    */
+     * Hadoop and Cascading serialization needs to be first, and the Kryo serialization
+     * needs to be last and this method handles this for you:
+     * hadoop, cascading, [userHadoop,] kyro
+     * is the order.
+     *
+     * Kryo uses the ConfiguredInstantiator, which is configured either by reflection:
+     * Right(classOf[MyInstantiator]) or by serializing given Instantiator instance
+     * with a class to serialize to bootstrap the process:
+     * Left((classOf[serialization.KryoHadoop], myInstance))
+     */
     def setSerialization(
         kryo: Either[(Class[_ <: KryoInstantiator], KryoInstantiator), Class[_ <: KryoInstantiator]],
         userHadoop: Seq[Class[_ <: HSerialization[_]]] = Nil
@@ -394,9 +402,10 @@ trait CascadingExtensions {
       config + (FlowProps.DEFAULT_ELEMENT_COMPARATOR -> clazz.getName)
 
     /**
-     * The serialization of your data will be smaller if any classes passed between tasks in your job are listed
-     * here. Without this, strings are used to write the types IN EACH RECORD, which compression probably takes
-     * care of, but compression acts AFTER the data is serialized into buffers and spilling has been triggered.
+     * The serialization of your data will be smaller if any classes passed between tasks in your job are
+     * listed here. Without this, strings are used to write the types IN EACH RECORD, which compression
+     * probably takes care of, but compression acts AFTER the data is serialized into buffers and spilling has
+     * been triggered.
      */
     def addCascadingClassSerializationTokens(clazzes: Set[Class[_]]): Config =
       CascadingTokenUpdater.update(config, clazzes)
@@ -404,57 +413,70 @@ trait CascadingExtensions {
     def getSubmittedTimestamp: Option[RichDate] =
       config.get(Config.ScaldingFlowSubmittedTimestamp).map(ts => RichDate(ts.toLong))
     /*
-    * Sets the timestamp only if it was not already set. This is here
-    * to prevent overwriting the submission time if it was set by an
-    * previously (or externally)
-    */
+     * Sets the timestamp only if it was not already set. This is here
+     * to prevent overwriting the submission time if it was set by an
+     * previously (or externally)
+     */
     def maybeSetSubmittedTimestamp(date: RichDate = RichDate.now): (Option[RichDate], Config) =
       config.update(Config.ScaldingFlowSubmittedTimestamp) {
         case s @ Some(ts) => (s, Some(RichDate(ts.toLong)))
         case None         => (Some(date.timestamp.toString), None)
       }
+
     /**
      * configure flow listeneres for observability
      */
     def addFlowListener(flowListenerProvider: (Mode, Config) => FlowListener): Config = {
       val serializedListener = flowListenerSerializer(flowListenerProvider)
-      config.update(Config.FlowListeners) {
-        case None      => (Some(serializedListener), ())
-        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-      }._2
+      config
+        .update(Config.FlowListeners) {
+          case None      => (Some(serializedListener), ())
+          case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+        }
+        ._2
     }
 
     def getFlowListeners: List[Try[(Mode, Config) => FlowListener]] =
-      config.get(Config.FlowListeners).toList
+      config
+        .get(Config.FlowListeners)
+        .toList
         .flatMap(s => StringUtility.fastSplit(s, ","))
         .map(flowListenerSerializer.invert(_))
 
     def addFlowStepListener(flowListenerProvider: (Mode, Config) => FlowStepListener): Config = {
       val serializedListener = flowStepListenerSerializer(flowListenerProvider)
-      config.update(Config.FlowStepListeners) {
-        case None      => (Some(serializedListener), ())
-        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-      }._2
+      config
+        .update(Config.FlowStepListeners) {
+          case None      => (Some(serializedListener), ())
+          case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+        }
+        ._2
     }
 
     def getFlowStepListeners: List[Try[(Mode, Config) => FlowStepListener]] =
-      config.get(Config.FlowStepListeners).toList
+      config
+        .get(Config.FlowStepListeners)
+        .toList
         .flatMap(s => StringUtility.fastSplit(s, ","))
         .map(flowStepListenerSerializer.invert(_))
 
     def addFlowStepStrategy(flowStrategyProvider: (Mode, Config) => FlowStepStrategy[JobConf]): Config = {
       val serializedListener = flowStepStrategiesSerializer(flowStrategyProvider)
-      config.update(Config.FlowStepStrategies) {
-        case None      => (Some(serializedListener), ())
-        case Some(lst) => (Some(s"$serializedListener,$lst"), ())
-      }._2
+      config
+        .update(Config.FlowStepStrategies) {
+          case None      => (Some(serializedListener), ())
+          case Some(lst) => (Some(s"$serializedListener,$lst"), ())
+        }
+        ._2
     }
 
     def clearFlowStepStrategies: Config =
       config.-(Config.FlowStepStrategies)
 
     def getFlowStepStrategies: List[Try[(Mode, Config) => FlowStepStrategy[JobConf]]] =
-      config.get(Config.FlowStepStrategies).toList
+      config
+        .get(Config.FlowStepStrategies)
+        .toList
         .flatMap(s => StringUtility.fastSplit(s, ","))
         .map(flowStepStrategiesSerializer.invert(_))
 
@@ -472,34 +494,34 @@ trait CascadingExtensions {
   implicit class ConfigCompanionCascadingExtensions(config: Config.type) {
     import org.apache.hadoop.conf.Configuration
     /*
-    * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
-    * made on calling here. If you need to update Config, you do it by modifying it.
-    * This copy also forces all expressions in values to be evaluated, freezing them
-    * as well.
-    */
+     * Note that Hadoop Configuration is mutable, but Config is not. So a COPY is
+     * made on calling here. If you need to update Config, you do it by modifying it.
+     * This copy also forces all expressions in values to be evaluated, freezing them
+     * as well.
+     */
     def fromHadoop(conf: Configuration): Config =
       // use `conf.get` to force JobConf to evaluate expressions
       Config(conf.asScala.map(e => e.getKey -> conf.get(e.getKey)).toMap)
 
     /*
-    * For everything BUT SERIALIZATION, this prefers values in conf,
-    * but serialization is generally required to be set up with Kryo
-    * (or some other system that handles general instances at runtime).
-    */
+     * For everything BUT SERIALIZATION, this prefers values in conf,
+     * but serialization is generally required to be set up with Kryo
+     * (or some other system that handles general instances at runtime).
+     */
     def hadoopWithDefaults(conf: Configuration): Config =
-      ((Config.default ++ fromHadoop(conf))
+      (Config.default ++ fromHadoop(conf))
         .setSerialization(Right(classOf[serialization.KryoHadoop]))
         .setScaldingVersion
-        .setHRavenHistoryUserName)
+        .setHRavenHistoryUserName
   }
 
   implicit class UniqueIDCompanionCascadingExtensions(uid: UniqueID.type) {
     def getIDFor(implicit fd: FlowDef): UniqueID =
       /*
-      * In real deploys, this can even be a constant, but for testing
-      * we need to allocate unique IDs to prevent different jobs running
-      * at the same time from touching each other's counters.
-      */
+       * In real deploys, this can even be a constant, but for testing
+       * we need to allocate unique IDs to prevent different jobs running
+       * at the same time from touching each other's counters.
+       */
       UniqueID.fromSystemHashCode(fd)
   }
 
@@ -513,8 +535,10 @@ trait CascadingExtensions {
 
 object CascadingExtensions extends CascadingExtensions {
   // This case class preserves equality on Executions
-  private case class FromFnToBackend(fn: (Config, Mode) => FlowDef) extends
-    Function4[Config, Mode, Execution.Writer, ConcurrentExecutionContext, CFuture[(Long, ExecutionCounters, Unit)]] {
+  private case class FromFnToBackend(fn: (Config, Mode) => FlowDef)
+      extends Function4[Config, Mode, Execution.Writer, ConcurrentExecutionContext, CFuture[
+        (Long, ExecutionCounters, Unit)
+      ]] {
     def apply(conf: Config, mode: Mode, writer: Execution.Writer, ec: ConcurrentExecutionContext) =
       writer match {
         case afdr: AsyncFlowDefRunner =>

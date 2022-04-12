@@ -55,7 +55,7 @@ object AbsoluteDuration extends java.io.Serializable {
       acc: List[AbsoluteDuration]
   ): AbsoluteDuration =
     if (diffInMs == 0L) {
-      //We are done:
+      // We are done:
       acc match {
         case Nil        => units.head._1(0)
         case (h :: Nil) => h
@@ -64,7 +64,7 @@ object AbsoluteDuration extends java.io.Serializable {
     } else {
       units match {
         case (tc0 :: tc1 :: tail) => {
-          //Only get as many as the next guy can't get:
+          // Only get as many as the next guy can't get:
           val nextSize = tc1._2
           val thisDiff = diffInMs % nextSize // Keep only this amount of millis for this unit
           val theseUnits = thisDiff / tc0._2
@@ -122,7 +122,7 @@ sealed trait AbsoluteDuration extends Duration with Ordered[AbsoluteDuration] {
 
   /**
    * Returns the number of times that divides this and the remainder The law is: that * result_.1 + result._2
-   * == this
+   * \== this
    */
   def /(that: AbsoluteDuration): (Long, AbsoluteDuration) = {
     val divs = this.toMillisecs / that.toMillisecs

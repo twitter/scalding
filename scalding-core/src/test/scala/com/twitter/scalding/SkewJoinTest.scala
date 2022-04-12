@@ -73,7 +73,7 @@ object JoinTestHelper {
       .sink[(Int, Int, Int, Int, Int, Int)](Tsv("output"))(outBuf => skewResult ++= outBuf)
       .sink[(Int, Int, Int, Int, Int, Int)](Tsv("jws-output"))(outBuf => innerResult ++= outBuf)
       .run
-      //.runHadoop //this takes MUCH longer to run. Commented out by default, but tests pass on my machine
+      // .runHadoop //this takes MUCH longer to run. Commented out by default, but tests pass on my machine
       .finish()
     (skewResult.toList.sorted, innerResult.toList.sorted)
   }

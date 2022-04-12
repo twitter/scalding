@@ -18,20 +18,21 @@
 package com.twitter.scalding.dagon
 
 import Graphs._
+
 /**
- * Given Dag and a List of immutable nodes, and a function to get
- * dependencies, compute the dependants (reverse the graph)
+ * Given Dag and a List of immutable nodes, and a function to get dependencies, compute the dependants
+ * (reverse the graph)
  */
 abstract class SimpleDag[T] {
   def nodes: List[T]
   def dependenciesOf(t: T): Iterable[T]
 
-  lazy val allTails: List[T] = nodes.filter { fanOut(_).get == 0 }
+  lazy val allTails: List[T] = nodes.filter(fanOut(_).get == 0)
   private lazy val nodeSet: Set[T] = nodes.toSet
 
   /**
-   * This is the dependants graph. Each node knows who it depends on
-   * but not who depends on it without doing this computation
+   * This is the dependants graph. Each node knows who it depends on but not who depends on it without doing
+   * this computation
    */
   private lazy val graph: NeighborFn[T] = reversed(nodes)(dependenciesOf(_))
 
@@ -46,13 +47,12 @@ abstract class SimpleDag[T] {
   def dependantsOf(p: T): Option[List[T]] =
     if (isNode(p)) Some(graph(p).toList) else None
 
-  def fanOut(p: T): Option[Int] = dependantsOf(p).map { _.size }
+  def fanOut(p: T): Option[Int] = dependantsOf(p).map(_.size)
 
   def isTail(t: T): Boolean = allTails.contains(t)
 
   /**
-   * Return all dependendants of a given node.
-   * Does not include itself
+   * Return all dependendants of a given node. Does not include itself
    */
   def transitiveDependantsOf(p: T): List[T] = depthFirstOf(p)(graph)
 }

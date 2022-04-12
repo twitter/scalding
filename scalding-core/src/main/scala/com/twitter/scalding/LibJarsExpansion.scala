@@ -39,7 +39,7 @@ object ExpandLibJarsGlobs {
     } else inputArgs
   }
 
-  //tree from Duncan McGregor @ http://stackoverflow.com/questions/2637643/how-do-i-list-all-files-in-a-subdirectory-in-scala
+  // tree from Duncan McGregor @ http://stackoverflow.com/questions/2637643/how-do-i-list-all-files-in-a-subdirectory-in-scala
   private[this] def tree(root: File, skipHidden: Boolean = false): Stream[File] =
     if (!root.exists || (skipHidden && root.isHidden)) Stream.empty
     else

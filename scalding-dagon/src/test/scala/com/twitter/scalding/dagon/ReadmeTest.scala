@@ -27,28 +27,27 @@ object Example {
   // 2. set up a transfromation from AST to Literal
 
   val toLiteral: FunctionK[Eqn, Literal[Eqn, *]] =
-    Memoize.functionK[Eqn, Literal[Eqn, *]](
-      new Memoize.RecursiveK[Eqn, Literal[Eqn, *]] {
-        def toFunction[T] = {
-          case (c @ Const(_), f) => Literal.Const(c)
-          case (v @ Var(_), f) => Literal.Const(v)
-          case (Negate(x), f) => Literal.Unary(f(x), Eqn.negate)
-          case (Add(x, y), f) => Literal.Binary(f(x), f(y), Eqn.add)
-        }
-      })
+    Memoize.functionK[Eqn, Literal[Eqn, *]](new Memoize.RecursiveK[Eqn, Literal[Eqn, *]] {
+      def toFunction[T] = {
+        case (c @ Const(_), f) => Literal.Const(c)
+        case (v @ Var(_), f)   => Literal.Const(v)
+        case (Negate(x), f)    => Literal.Unary(f(x), Eqn.negate)
+        case (Add(x, y), f)    => Literal.Binary(f(x), f(y), Eqn.add)
+      }
+    })
 
   // 3. set up rewrite rules
 
   object SimplifyNegation extends PartialRule[Eqn] {
     def applyWhere[T](on: Dag[Eqn]) = {
       case Negate(Negate(e)) => e
-      case Negate(Const(x)) => Const(-x)
+      case Negate(Const(x))  => Const(-x)
     }
   }
 
   object SimplifyAddition extends PartialRule[Eqn] {
     def applyWhere[T](on: Dag[Eqn]) = {
-      case Add(Const(x), Const(y)) => Const(x + y)
+      case Add(Const(x), Const(y))         => Const(x + y)
       case Add(Add(e, Const(x)), Const(y)) => Add(e, Const(x + y))
       case Add(Add(Const(x), e), Const(y)) => Add(e, Const(x + y))
       case Add(Const(x), Add(Const(y), e)) => Add(Const(x + y), e)
@@ -60,10 +59,10 @@ object Example {
 
   // 4. apply rewrite rules to a particular AST value
 
-  val a:  Eqn[Unit] = Var("x") + Const(1)
+  val a: Eqn[Unit] = Var("x") + Const(1)
   val b1: Eqn[Unit] = a + Const(2)
   val b2: Eqn[Unit] = a + Const(5) + Var("y")
-  val c:  Eqn[Unit] = b1 - b2
+  val c: Eqn[Unit] = b1 - b2
 
   val simplified: Eqn[Unit] =
     Dag.applyRule(c, toLiteral, rules)

@@ -133,7 +133,7 @@ class LookupJoinedTest extends WordSpec with Matchers {
             in0.size should equal(outBuf.size)
         }
         .run
-        //.runHadoop
+        // .runHadoop
         .finish()
     }
   }
@@ -183,7 +183,7 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
   }
 
   "A WindowLookupJoinerJob" should {
-    //Set up the job:
+    // Set up the job:
     "correctly lookup" in {
       val MAX_KEY = 10
       val MAX_TIME = 10000
@@ -209,7 +209,7 @@ class WindowLookupJoinedTest extends WordSpec with Matchers {
             in0.size should equal(outBuf.size)
         }
         .run
-        //.runHadoop
+        // .runHadoop
         .finish()
     }
   }

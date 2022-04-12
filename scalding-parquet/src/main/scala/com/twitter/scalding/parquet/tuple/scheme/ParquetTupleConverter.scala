@@ -268,7 +268,7 @@ abstract class SetConverter[T]
 
   def appendValue(v: T): Unit = value = value + v
 
-  //in the back end set is stored as list
+  // in the back end set is stored as list
   lazy val listElement: GroupConverter = ListElement.wrapper(child)
 
   override def getConverter(i: Int): Converter = {

@@ -84,7 +84,7 @@ class TestTapFactory(src: Source, sinkMode: SinkMode) extends Serializable {
         val buffer =
           if (readOrWrite == Write) {
             val buf = buffers(src).get
-            //Make sure we wipe it out:
+            // Make sure we wipe it out:
             buf.clear()
             buf
           } else {

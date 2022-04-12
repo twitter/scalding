@@ -17,15 +17,13 @@
 
 package com.twitter.scalding.dagon
 
-import com.twitter.scalding.dagon.ScalaVersionCompat.{LazyList, lazyListFromIterator}
+import com.twitter.scalding.dagon.ScalaVersionCompat.{lazyListFromIterator, LazyList}
 
 import java.io.Serializable
 
 /**
- * This is a weak heterogenous map. It uses equals on the keys,
- * so it is your responsibilty that if k: K[_] == k2: K[_] then
- * the types are actually equal (either be careful or store a
- * type identifier).
+ * This is a weak heterogenous map. It uses equals on the keys, so it is your responsibilty that if k: K[_] ==
+ * k2: K[_] then the types are actually equal (either be careful or store a type identifier).
  */
 final class HMap[K[_], V[_]](protected val map: Map[K[_], V[_]]) extends Serializable {
 
@@ -36,9 +34,9 @@ final class HMap[K[_], V[_]](protected val map: Map[K[_], V[_]]) extends Seriali
 
   override def equals(that: Any): Boolean =
     that match {
-      case null => false
+      case null          => false
       case h: HMap[_, _] => map.equals(h.map)
-      case _ => false
+      case _             => false
     }
 
   override def hashCode: Int =
@@ -89,7 +87,7 @@ final class HMap[K[_], V[_]](protected val map: Map[K[_], V[_]]) extends Seriali
   }
 
   def mapValues[V1[_]](f: FunctionK[V, V1]): HMap[K, V1] =
-    HMap.from[K, V1](map.map { case (k,v) => k -> f(v) }.toMap)
+    HMap.from[K, V1](map.map { case (k, v) => k -> f(v) }.toMap)
 }
 
 object HMap {

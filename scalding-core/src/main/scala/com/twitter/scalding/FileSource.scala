@@ -316,7 +316,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
               hdfsPaths.toString
           )
         } else if (!hdfsPaths.exists(pathIsGood(_, conf))) {
-          //Check that there is at least one good path:
+          // Check that there is at least one good path:
           throw new InvalidSourceException("[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
         }
       }
@@ -325,7 +325,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
         val files = localPaths.map(p => new java.io.File(p))
         if (strict && !files.forall(_.exists)) {
           throw new InvalidSourceException("[" + this.toString + s"] Data is missing from: ${localPaths
-            .filterNot(p => new java.io.File(p).exists)}")
+              .filterNot(p => new java.io.File(p).exists)}")
         } else if (!files.exists(_.exists)) {
           throw new InvalidSourceException("[" + this.toString + "] No good paths in: " + hdfsPaths.toString)
         }
@@ -338,7 +338,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
    */
   protected def goodHdfsPaths(hdfsMode: Hdfs): Iterable[String] =
     hdfsMode match {
-      //we check later that all the paths are good
+      // we check later that all the paths are good
       case Hdfs(true, _) => hdfsPaths
       // If there are no matching paths, this is still an error, we need at least something:
       case Hdfs(false, conf) => hdfsPaths.filter(pathIsGood(_, conf))
@@ -352,7 +352,7 @@ abstract class FileSource extends SchemedSource with LocalSourceOverride with Hf
         // This case is going to result in an error, but we don't want to throw until
         // validateTaps. Return an InvalidSource here so the Job constructor does not fail.
         // In the worst case if the flow plan is misconfigured,
-        //openForRead on mappers should fail when using this tap.
+        // openForRead on mappers should fail when using this tap.
         new InvalidSourceTap(hdfsPaths)
       }
       case 1 => taps.head
@@ -387,7 +387,7 @@ trait TextSourceScheme extends SchemedSource {
 }
 
 trait TextLineScheme extends TextSourceScheme with SingleMappable[String] {
-  //In textline, 0 is the byte position, the actual text string is in column 1
+  // In textline, 0 is the byte position, the actual text string is in column 1
   override def sourceFields = Dsl.intFields(Seq(1))
 }
 
@@ -395,9 +395,9 @@ trait TextLineScheme extends TextSourceScheme with SingleMappable[String] {
  * Mix this in for delimited schemes such as TSV or one-separated values By default, TSV is given
  */
 trait DelimitedScheme extends SchemedSource {
-  //override these as needed:
+  // override these as needed:
   val fields = Fields.ALL
-  //This is passed directly to cascading where null is interpretted as string
+  // This is passed directly to cascading where null is interpretted as string
   val types: Array[Class[_]] = null
   val separator = "\t"
   val skipHeader = false
@@ -412,7 +412,7 @@ trait DelimitedScheme extends SchemedSource {
   // If set to false, then fields that cannot be coerced will be set to null.
   val safe = true
 
-  //These should not be changed:
+  // These should not be changed:
   override def localScheme =
     new CLTextDelimited(fields, skipHeader, writeHeader, separator, strict, quote, types, safe)
 
@@ -428,7 +428,7 @@ trait DelimitedScheme extends SchemedSource {
 }
 
 trait SequenceFileScheme extends SchemedSource {
-  //override these as needed:
+  // override these as needed:
   val fields = Fields.ALL
   // TODO Cascading doesn't support local mode yet
   override def hdfsScheme = HadoopSchemeInstance(new CHSequenceFile(fields))

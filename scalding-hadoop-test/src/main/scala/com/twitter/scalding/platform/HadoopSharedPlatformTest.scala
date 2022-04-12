@@ -33,7 +33,7 @@ trait HadoopSharedPlatformTest extends BeforeAndAfterAll { this: Suite =>
     super.beforeAll()
   }
 
-  //TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
+  // TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
   // get lost in the logging
   override def afterAll(): Unit =
     try super.afterAll()

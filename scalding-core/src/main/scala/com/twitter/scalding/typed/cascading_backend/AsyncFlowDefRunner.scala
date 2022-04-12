@@ -17,7 +17,7 @@ import com.twitter.scalding.{
   TypedPipe
 }
 import com.twitter.scalding.{CFuture, CPromise, CancellationHandler}
-import com.twitter.scalding.typed.{TypedSink, Output}
+import com.twitter.scalding.typed.{Output, TypedSink}
 import com.twitter.scalding.cascading_interop.FlowListenerPromise
 import com.twitter.scalding.dagon.{HMap, Rule}
 import java.util.UUID
@@ -294,7 +294,7 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
     def prepareFD(c: Config): FlowDef = {
       val fd = new FlowDef
 
-      def write[A](tpipe: TypedPipe[A], out: Output[A]): Unit = {
+      def write[A](tpipe: TypedPipe[A], out: Output[A]): Unit =
         out match {
           case dest: TypedSink[A] @unchecked =>
             // We have already applied the optimizations to the batch of writes above
@@ -302,9 +302,9 @@ class AsyncFlowDefRunner(mode: CascadingMode) extends Writer {
             dest.writeFrom(pipe)(fd, mode)
           case _ =>
             throw new IllegalArgumentException(
-              s"cascading mode requires all outputs to be TypedSink, found: $out of class: ${out.getClass}")
+              s"cascading mode requires all outputs to be TypedSink, found: $out of class: ${out.getClass}"
+            )
         }
-      }
 
       def force[A](init: TypedPipe[A], opt: TypedPipe[A]): Unit = {
         val pipePromise = Promise[TypedPipe[A]]()

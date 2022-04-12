@@ -28,7 +28,7 @@ class SortWithTakeJob(args: Args) extends Job(args) {
         }
       }
       .map('top_items -> 'top_items) {
-        //used to test that types are correct
+        // used to test that types are correct
         topItems: List[(Long, Double)] => topItems
       }
       .project('key, 'top_items)
@@ -45,7 +45,7 @@ class SortedReverseTakeJob(args: Args) extends Job(args) {
         _.sortedReverseTake[(Long, Double)]((('item_id, 'score), 'top_items), 5)
       }
       .map('top_items -> 'top_items) {
-        //used to test that types are correct
+        // used to test that types are correct
         topItems: List[(Long, Double)] => topItems
       }
       .project('key, 'top_items)
@@ -62,7 +62,7 @@ class SortedTakeJob(args: Args) extends Job(args) {
         _.sortedTake[(Long, Double)]((('item_id, 'score), 'top_items), 5)
       }
       .map('top_items -> 'top_items) {
-        //used to test that types are correct
+        // used to test that types are correct
         topItems: List[(Long, Double)] => topItems
       }
       .project('key, 'top_items)

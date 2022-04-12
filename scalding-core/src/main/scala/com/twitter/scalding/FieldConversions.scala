@@ -81,15 +81,15 @@ trait FieldConversions extends LowPriorityFieldConversions {
       // 2. if you go from all to all, you must mean replace (ALL would fail at the cascading layer)
       Fields.REPLACE
     } else if (fromFields.size == 0) {
-      //This is all the UNKNOWN, ALL, etc...
+      // This is all the UNKNOWN, ALL, etc...
       Fields.ALL
     } else {
       val fromSet = asSet(fromFields)
       val toSet = asSet(toFields)
       (fromSet.subsetOf(toSet), toSet.subsetOf(fromSet)) match {
-        case (true, true)  => Fields.REPLACE //equal
-        case (true, false) => Fields.SWAP //output super set, replaces input
-        case (false, true) => Fields.SWAP //throw away some input
+        case (true, true)  => Fields.REPLACE // equal
+        case (true, false) => Fields.SWAP // output super set, replaces input
+        case (false, true) => Fields.SWAP // throw away some input
         /*
          * the next case is that they are disjoint or have some nontrivial intersection
          * if disjoint, everything is fine.
@@ -100,7 +100,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
       }
     }
 
-  //Single entry fields:
+  // Single entry fields:
   implicit def unitToFields(u: Unit): Fields = Fields.NONE // linter:ignore
   implicit def intToFields(x: Int): Fields = new Fields(new java.lang.Integer(x))
   implicit def integerToFields(x: java.lang.Integer): Fields = new Fields(x)
@@ -121,7 +121,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
   @tailrec
   final def newSymbol(avoid: Set[Symbol], guess: Symbol, trial: Int = 0): Symbol =
     if (!avoid(guess)) {
-      //We are good:
+      // We are good:
       guess
     } else if (trial == 0) {
       newSymbol(avoid, guess, 1)
@@ -181,7 +181,7 @@ trait FieldConversions extends LowPriorityFieldConversions {
     fields
   }
 
-  //Handle a pair generally:
+  // Handle a pair generally:
   implicit def tuple2ToFieldsPair[T, U](
       pair: (T, U)
   )(implicit tf: T => Fields, uf: U => Fields): (Fields, Fields) = {

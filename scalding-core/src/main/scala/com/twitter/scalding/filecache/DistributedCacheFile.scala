@@ -51,35 +51,35 @@ object URIHasher {
  * example:
  *
  * {{{
- * class YourJob(args: Args) extends Job(args) {
- *   val theCachedFile = DistributedCacheFile("/path/to/your/file.txt")
+ *  class YourJob(args: Args) extends Job(args) {
+ *    val theCachedFile = DistributedCacheFile("/path/to/your/file.txt")
  *
- *   def somethingThatUsesTheCachedFile() {
- *     doSomethingWith(theCachedFile.path) // or theCachedFile.file
- *   }
- * }
+ *    def somethingThatUsesTheCachedFile() {
+ *      doSomethingWith(theCachedFile.path) // or theCachedFile.file
+ *    }
+ *  }
  *
- * example with Execution:
+ *  example with Execution:
  *
- * {{{
- * object YourExecJob extends ExecutionApp {
- *   override def job =
-       DistributedCacheFile
- *       .execution("/path/to/your/file.txt") { file =>
- *         doSomething(theCachedFile.path)
- *       }
- * }
+ *  {{{
+ *  object YourExecJob extends ExecutionApp {
+ *    override def job =
+ * DistributedCacheFile
+ *        .execution("/path/to/your/file.txt") { file =>
+ *          doSomething(theCachedFile.path)
+ *        }
+ *  }
  *
- * example with Execution and multiple files:
+ *  example with Execution and multiple files:
  *
- * object YourExecJob extends ExecutionApp {
- *   override def job =
- *     DistributedCacheFile.execution("/path/to/your/one.txt") { one =>
- *       DistributedCacheFile.execution("/path/to/your/second.txt") { second =>
- *         doSomething(one.path, second.path)
- *       }
- *     }
- * }
+ *  object YourExecJob extends ExecutionApp {
+ *    override def job =
+ *      DistributedCacheFile.execution("/path/to/your/one.txt") { one =>
+ *        DistributedCacheFile.execution("/path/to/your/second.txt") { second =>
+ *          doSomething(one.path, second.path)
+ *        }
+ *      }
+ *  }
  *
  * }}}
  */
@@ -154,9 +154,9 @@ object DistributedCacheFile {
       file match {
         case hadoopFile: HadoopCachedFile =>
           /*
-            * @see
-            *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
-            */
+           * @see
+           *   basic logic from [[org.apache.hadoop.mapreduce.filecache.DistributedCache.addCacheFile]]
+           */
           val newFile = DistributedCacheFile
             .symlinkedUriFor(hadoopFile.sourceUri)
             .toString

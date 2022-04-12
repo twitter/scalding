@@ -71,7 +71,7 @@ case class Weeks(cnt: Int)(implicit tz: TimeZone) extends Duration(Calendar.WEEK
         case Calendar.MONDAY => rd
         case _               => recentMonday(step.subtractFrom(rd))
       }
-    //Set it to the earliest point in the day:
+    // Set it to the earliest point in the day:
     step.floorOf(recentMonday(that))
   }
 }
@@ -85,7 +85,7 @@ abstract class AbstractDurationList[T <: Duration](parts: List[T]) extends Durat
     parts.foldLeft(that)((curdate, next) => next.addTo(curdate))
   override def subtractFrom(that: RichDate) =
     parts.foldLeft(that)((curdate, next) => next.subtractFrom(curdate))
-  //This does not make sense for a DurationList interval, pass through
+  // This does not make sense for a DurationList interval, pass through
   override def floorOf(that: RichDate) = that
 }
 

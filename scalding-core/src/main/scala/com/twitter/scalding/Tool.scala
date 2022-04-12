@@ -124,7 +124,7 @@ class Tool extends Configured with HTool {
         j.run()
       }
       j.clear()
-      //When we get here, the job is finished
+      // When we get here, the job is finished
       if (successful) {
         // we need to use match not foreach to get tail recursion
         j.next match { // linter:disable:UseOptionForeachNotPatMatch
@@ -139,7 +139,7 @@ class Tool extends Configured with HTool {
         )
       }
     }
-    //start a counter to see how deep we recurse:
+    // start a counter to see how deep we recurse:
     start(job, 0)
     0
   }
@@ -151,7 +151,7 @@ object Tool {
       ToolRunner.run(new JobConf, new Tool, ExpandLibJarsGlobs(args))
     } catch {
       case t: Throwable => {
-        //re-throw the exception with extra info
+        // re-throw the exception with extra info
         throw new Throwable(RichXHandler(t), t)
       }
     }

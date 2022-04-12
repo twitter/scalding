@@ -63,7 +63,7 @@ class BaseGlobifier(
     } else {
       child match {
         case None =>
-          //There is only one block:
+          // There is only one block:
           assert(sstr == estr, "Malformed hierarchy" + sstr + " != " + estr)
           List(sstr)
         case Some(c) =>
@@ -96,24 +96,24 @@ class BaseGlobifier(
      */
     val mid1 = leastUpperBound(dr.start)
     val mid2 = greatestLowerBound(dr.end)
-    //Imprecise patterns may not need to drill down, let's see if we can stop early:
+    // Imprecise patterns may not need to drill down, let's see if we can stop early:
     val sstr = format(dr.start)
     val estr = format(dr.end)
     if (sstr == estr) {
       List(sstr)
     } else if (dr.end < dr.start) {
-      //This is nonsense:
+      // This is nonsense:
       Nil
     } else if (mid2 < mid1) {
-      //We do not contain a boundary point:
+      // We do not contain a boundary point:
       simpleCase(dr)
     } // otherwise we contain one or more than one boundary points
     else if (mid1 == mid2) {
-      //we contain exactly one boundary point:
+      // we contain exactly one boundary point:
       simpleCase(DateRange(dr.start, mid1 - Millisecs(1))) ++
         simpleCase(DateRange(mid1, dr.end))
     } else {
-      //We contain 2 or more boundary points:
+      // We contain 2 or more boundary points:
       // [start <= mid1 < mid2 <= end]
       // First check to see if we even need to check our children:
       simpleCase(DateRange(dr.start, mid1 - Millisecs(1))) ++

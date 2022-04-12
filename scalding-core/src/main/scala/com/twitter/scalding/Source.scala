@@ -148,7 +148,7 @@ abstract class Source extends java.io.Serializable {
   def read(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull()
 
-    //workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
+    // workaround for a type erasure problem, this is a map of String -> Tap[_,_,_]
     val sources = flowDef.getSources().asInstanceOf[JMap[String, Any]]
     /*
      * Starting in scalding 0.12, we assign a unique name for each head
@@ -173,7 +173,7 @@ abstract class Source extends java.io.Serializable {
   def writeFrom(pipe: Pipe)(implicit flowDef: FlowDef, mode: Mode): Pipe = {
     checkFlowDefNotNull()
 
-    //insane workaround for scala compiler bug
+    // insane workaround for scala compiler bug
     val sinks = flowDef.getSinks.asInstanceOf[JMap[String, Any]]
     val sinkName = sourceId
     if (!sinks.containsKey(sinkName)) {

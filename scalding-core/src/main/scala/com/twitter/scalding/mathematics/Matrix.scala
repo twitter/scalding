@@ -263,7 +263,7 @@ class Matrix[RowT, ColT, ValT](
   import Dsl.ensureUniqueFields
   import Dsl.getField
 
-  //The access function for inPipe. Ensures the right order of: row,col,val
+  // The access function for inPipe. Ensures the right order of: row,col,val
   lazy val pipe = inPipe.project(rowSym, colSym, valSym)
   def fields = rowColValSymbols
 
@@ -281,8 +281,8 @@ class Matrix[RowT, ColT, ValT](
 
   // Value operations
   def mapValues[ValU](fn: (ValT) => ValU)(implicit mon: Monoid[ValU]): Matrix[RowT, ColT, ValU] = {
-    val newPipe = pipe.flatMap(valSym -> valSym) { imp: Tuple1[ValT] => //Ensure an arity of 1
-      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+    val newPipe = pipe.flatMap(valSym -> valSym) { imp: Tuple1[ValT] => // Ensure an arity of 1
+      // This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map(Tuple1(_))
     }
     new Matrix[RowT, ColT, ValU](this.rowSym, this.colSym, this.valSym, newPipe, sizeHint)
@@ -303,8 +303,8 @@ class Matrix[RowT, ColT, ValT](
 
   // Filter values
   def filterValues(fn: (ValT) => Boolean): Matrix[RowT, ColT, ValT] = {
-    val newPipe = pipe.filter(valSym) { imp: Tuple1[ValT] => //Ensure an arity of 1
-      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+    val newPipe = pipe.filter(valSym) { imp: Tuple1[ValT] => // Ensure an arity of 1
+      // This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       fn(imp._1)
     }
     new Matrix[RowT, ColT, ValT](this.rowSym, this.colSym, this.valSym, newPipe, sizeHint)
@@ -333,9 +333,9 @@ class Matrix[RowT, ColT, ValT](
     val newPipe = filterOutZeros(valSym, mon) {
       pipe.groupBy(colSym) {
         _.reduce(valSym)((x: Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(fn(x._1, y._1)))
-        // Matrices are generally huge and cascading has problems with diverse key spaces and
-        // mapside operations
-        // TODO continually evaluate if this is needed to avoid OOM
+          // Matrices are generally huge and cascading has problems with diverse key spaces and
+          // mapside operations
+          // TODO continually evaluate if this is needed to avoid OOM
           .reducers(MatrixProduct.numOfReducers(sizeHint))
           .forceToReducers
       }
@@ -545,7 +545,7 @@ class Matrix[RowT, ColT, ValT](
   def propagate[ColValT](
       vec: ColVector[ColT, ColValT]
   )(implicit ev: =:=[ValT, Boolean], monT: Monoid[ColValT]): ColVector[RowT, ColValT] = {
-    //This cast will always succeed:
+    // This cast will always succeed:
     val boolMat = this.asInstanceOf[Matrix[RowT, ColT, Boolean]]
     boolMat.zip(vec.transpose).mapValues(boolT => if (boolT._1) boolT._2 else monT.zero).sumColVectors
   }
@@ -583,14 +583,14 @@ class Matrix[RowT, ColT, ValT](
       joinedPipe: Pipe
   ): Pipe =
     joinedPipe
-      //Make sure the zeros are set correctly:
+      // Make sure the zeros are set correctly:
       .map(valSym -> valSym) { (x: ValT) =>
         if (null == x) pairMonoid.zero._1 else x
       }
       .map(otherVSym -> otherVSym) { (x: ValU) =>
         if (null == x) pairMonoid.zero._2 else x
       }
-      //Put the pair into a single item, ugly in scalding sadly...
+      // Put the pair into a single item, ugly in scalding sadly...
       .map(valSym.append(otherVSym) -> valSym) { tup: (ValT, ValU) => Tuple1(tup) }
       .project(rowColValSymbols)
 
@@ -851,7 +851,7 @@ class DiagonalMatrix[IdxT, ValT](
   // Value operations
   def mapValues[ValU](fn: (ValT) => ValU)(implicit mon: Monoid[ValU]): DiagonalMatrix[IdxT, ValU] = {
     val newPipe = pipe.flatMap(valSym -> valSym) { imp: Tuple1[ValT] => // Ensure an arity of 1
-      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      // This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map(Tuple1(_))
     }
     new DiagonalMatrix[IdxT, ValU](this.idxSym, this.valSym, newPipe, sizeHint)
@@ -913,7 +913,7 @@ class RowVector[ColT, ValT](
   // Value operations
   def mapValues[ValU](fn: (ValT) => ValU)(implicit mon: Monoid[ValU]): RowVector[ColT, ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) { imp: Tuple1[ValT] => // Ensure an arity of 1
-      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      // This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map(Tuple1(_))
     }
     new RowVector[ColT, ValU](this.colS, this.valS, newPipe, sizeH)
@@ -984,7 +984,7 @@ class RowVector[ColT, ValT](
   }
 
   def toMatrix[RowT](rowId: RowT): Matrix[RowT, ColT, ValT] = {
-    val rowSym = newSymbol(Set(colS, valS), 'row) //Matrix.newSymbol(Set(colS, valS), 'row)
+    val rowSym = newSymbol(Set(colS, valS), 'row) // Matrix.newSymbol(Set(colS, valS), 'row)
     val newPipe = inPipe
       .map(() -> rowSym) { u: Unit => rowId }
       .project(rowSym, colS, valS)
@@ -1046,7 +1046,7 @@ class ColVector[RowT, ValT](
   // Value operations
   def mapValues[ValU](fn: (ValT) => ValU)(implicit mon: Monoid[ValU]): ColVector[RowT, ValU] = {
     val newPipe = pipe.flatMap(valS -> valS) { imp: Tuple1[ValT] => // Ensure an arity of 1
-      //This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
+      // This annoying Tuple1 wrapping ensures we can handle ValT that may itself be a Tuple.
       mon.nonZeroOption(fn(imp._1)).map(Tuple1(_))
     }
     new ColVector[RowT, ValU](this.rowS, this.valS, newPipe, sizeH)
@@ -1104,7 +1104,7 @@ class ColVector[RowT, ValT](
   }
 
   def toMatrix[ColT](colIdx: ColT): Matrix[RowT, ColT, ValT] = {
-    val colSym = newSymbol(Set(rowS, valS), 'col) //Matrix.newSymbol(Set(rowS, valS), 'col)
+    val colSym = newSymbol(Set(rowS, valS), 'col) // Matrix.newSymbol(Set(rowS, valS), 'col)
     val newPipe = inPipe
       .map(() -> colSym) { u: Unit => colIdx }
       .project(rowS, colSym, valS)

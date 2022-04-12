@@ -9,7 +9,8 @@ object scaldingDagonSettings {
   def scalaVersionSpecificFolders(srcName: String, srcBaseDir: File, scalaVersion: String) = {
 
     def extraDirs(suffix: String) = {
-      val scalaCompat = Paths.get(srcBaseDir.toString)
+      val scalaCompat = Paths
+        .get(srcBaseDir.toString)
         .resolve("src")
         .resolve(srcName)
         .resolve("scala" + suffix)

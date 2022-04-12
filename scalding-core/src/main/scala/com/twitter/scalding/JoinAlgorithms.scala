@@ -241,7 +241,7 @@ trait JoinAlgorithms {
   }
 
   def leftJoinWithTiny(fs: (Fields, Fields), that: Pipe) =
-    //Rename these pipes to avoid cascading name conflicts
+    // Rename these pipes to avoid cascading name conflicts
     new HashJoin(assignName(pipe), fs._1, assignName(that), fs._2, WrappedJoiner(new LeftJoin))
 
   /**
@@ -336,10 +336,10 @@ trait JoinAlgorithms {
    * Examples:
    *
    * getReplicationFields(3, 5)
-   * => List( (1, 0), (1, 1), (1, 2) )
+   * \=> List( (1, 0), (1, 1), (1, 2) )
    *
    * getReplicationFields(5, 3)
-   * => List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
+   * \=> List( (2, 0), (2, 1), (2, 2), (2, 3), (2, 4) )
    */
   private def getReplicationFields(
       r: Random,

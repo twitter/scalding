@@ -88,7 +88,7 @@ object EitherOrderedBuf {
       q"""
         val $tmpGetHolder: _root_.scala.Byte = $inputStreamA.readByte
         if($tmpGetHolder == (0: _root_.scala.Byte)) _root_.scala.util.Left[${leftBuf.tpe}, ${rightBuf.tpe}](${leftBuf
-        .get(inputStreamA)})
+          .get(inputStreamA)})
         else _root_.scala.util.Right[${leftBuf.tpe}, ${rightBuf.tpe}](${rightBuf.get(inputStreamA)})
       """
     }

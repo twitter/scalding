@@ -17,7 +17,7 @@
 
 package com.twitter.scalding.dagon
 
-import com.twitter.scalding.dagon.ScalaVersionCompat.{LazyList, lazyListToIterator}
+import com.twitter.scalding.dagon.ScalaVersionCompat.{lazyListToIterator, LazyList}
 
 import java.io.Serializable
 import scala.util.control.TailCalls
@@ -30,16 +30,13 @@ import scala.util.control.TailCalls
 sealed abstract class Dag[N[_]] extends Serializable { self =>
 
   /**
-   * These have package visibility to test
-   * the law that for all Expr, the node they
-   * evaluate to is unique
+   * These have package visibility to test the law that for all Expr, the node they evaluate to is unique
    */
   protected def idToExp: HMap[Id, Expr[N, *]]
 
   /**
-   * The set of roots that were added by addRoot.
-   * These are Ids that will always evaluate
-   * such that roots.forall(evaluateOption(_).isDefined)
+   * The set of roots that were added by addRoot. These are Ids that will always evaluate such that
+   * roots.forall(evaluateOption(_).isDefined)
    */
   protected def roots: Set[Id[_]]
 
@@ -72,8 +69,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     rootsUp.map(_._2).toSet
 
   /**
-   * Apply the given rule to the given dag until
-   * the graph no longer changes.
+   * Apply the given rule to the given dag until the graph no longer changes.
    */
   def apply(rule: Rule[N]): Dag[N] = {
 
@@ -88,16 +84,15 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   }
 
   /**
-   * Apply a sequence of rules, which you may think of as phases, in order
-   * First apply one rule until it does not apply, then the next, etc..
+   * Apply a sequence of rules, which you may think of as phases, in order First apply one rule until it does
+   * not apply, then the next, etc..
    */
   def applySeq(phases: Seq[Rule[N]]): Dag[N] =
-    phases.foldLeft(this) { (dag, rule) => dag(rule) }
+    phases.foldLeft(this)((dag, rule) => dag(rule))
 
   def applySeqOnce(phases: Seq[Rule[N]]): Dag[N] =
-    phases
-      .iterator
-      .map { rule => applyOnce(rule) }
+    phases.iterator
+      .map(rule => applyOnce(rule))
       .filter(_ ne this)
       .take(1)
       .toList
@@ -105,8 +100,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
       .getOrElse(this)
 
   /**
-   * apply the rule at the first place that satisfies
-   * it, and return from there.
+   * apply the rule at the first place that satisfies it, and return from there.
    */
   def applyOnce(rule: Rule[N]): Dag[N] = {
     type DagT[T] = Dag[N]
@@ -214,7 +208,11 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     }
 
     @annotation.tailrec
-    def lookup(state: Map[Id[_], Int], todo: List[(Id[_], Rest)], nextRound: List[(Id[_], Rest)]): Map[Id[_], Int] =
+    def lookup(
+        state: Map[Id[_], Int],
+        todo: List[(Id[_], Rest)],
+        nextRound: List[(Id[_], Rest)]
+    ): Map[Id[_], Int] =
       todo match {
         case Nil =>
           nextRound match {
@@ -225,7 +223,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
               }
               lookup(state, sortRepeat, Nil)
           }
-        case (h@(id, Same(a))) :: rest =>
+        case (h @ (id, Same(a))) :: rest =>
           state.get(a) match {
             case Some(depth) =>
               val state1 = state.updated(id, depth)
@@ -233,7 +231,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
             case None =>
               lookup(state, rest, h :: nextRound)
           }
-        case (h@(id, Inc(a))) :: rest =>
+        case (h @ (id, Inc(a))) :: rest =>
           state.get(a) match {
             case Some(depth) =>
               val state1 = state.updated(id, depth + 1)
@@ -241,7 +239,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
             case None =>
               lookup(state, rest, h :: nextRound)
           }
-        case (h@(id, MaxInc(a, b))) :: rest =>
+        case (h @ (id, MaxInc(a, b))) :: rest =>
           (state.get(a), state.get(b)) match {
             case (Some(da), Some(db)) =>
               val depth = math.max(da, db) + 1
@@ -254,31 +252,35 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
           val depth = 0
           val state1 = state.updated(id, depth)
           lookup(state1, rest, nextRound)
-        case (item@(id, Variadic(h :: t))) :: rest =>
+        case (item @ (id, Variadic(h :: t))) :: rest =>
           // max can't throw here because ids is non-empty
-          def maxId(head: Id[_], tail: List[Id[_]], acc: Int): Option[Int] = {
+          def maxId(head: Id[_], tail: List[Id[_]], acc: Int): Option[Int] =
             state.get(head) match {
               case None => None
               case Some(d) =>
                 val newAcc = Math.max(acc, d)
                 tail match {
-                  case Nil => Some(newAcc)
+                  case Nil    => Some(newAcc)
                   case h :: t => maxId(h, t, newAcc)
                 }
             }
 
-          }
           maxId(h, t, 0) match {
             case Some(depth) =>
               val state1 = state.updated(id, depth + 1)
               lookup(state1, rest, nextRound)
             case None =>
-             lookup(state, rest, item :: nextRound)
+              lookup(state, rest, item :: nextRound)
           }
       }
 
     @annotation.tailrec
-    def loop(stack: List[Id[_]], seen: Set[Id[_]], state: Map[Id[_], Int], todo: List[(Id[_], Rest)]): Map[Id[_], Int] =
+    def loop(
+        stack: List[Id[_]],
+        seen: Set[Id[_]],
+        state: Map[Id[_], Int],
+        todo: List[(Id[_], Rest)]
+    ): Map[Id[_], Int] =
       stack match {
         case Nil =>
           lookup(state, todo, Nil)
@@ -310,12 +312,12 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   lazy val allNodes: Set[N[_]] = {
     type Node = Either[Id[_], Expr[N, _]]
     def deps(n: Node): List[Node] = n match {
-      case Right(Expr.Const(_)) => Nil
-      case Right(Expr.Var(id)) => Left(id) :: Nil
-      case Right(Expr.Unary(id, _)) => Left(id) :: Nil
+      case Right(Expr.Const(_))            => Nil
+      case Right(Expr.Var(id))             => Left(id) :: Nil
+      case Right(Expr.Unary(id, _))        => Left(id) :: Nil
       case Right(Expr.Binary(id0, id1, _)) => Left(id0) :: Left(id1) :: Nil
-      case Right(Expr.Variadic(ids, _)) => ids.map(Left(_))
-      case Left(id) => idToExp.get(id).map(Right(_): Node).toList
+      case Right(Expr.Variadic(ids, _))    => ids.map(Left(_))
+      case Left(id)                        => idToExp.get(id).map(Right(_): Node).toList
     }
     val all = Graphs.reflexiveTransitiveClosure(roots.toList.map(Left(_): Node))(deps _)
 
@@ -353,7 +355,8 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   // these are included for binary compatibility
 
   // $COVERAGE-OFF$
-  private[dagon] def com$stripe$dagon$Dag$$copy$default$2(): com.twitter.scalding.dagon.FunctionK[N, Literal[N, *]] =
+  private[dagon] def com$stripe$dagon$Dag$$copy$default$2()
+      : com.twitter.scalding.dagon.FunctionK[N, Literal[N, *]] =
     self.toLiteral
 
   private[dagon] def com$stripe$dagon$Dag$$copy$default$3(): scala.collection.immutable.Set[Id[_]] =
@@ -375,18 +378,13 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   protected def replaceId[A](newId: Id[A], expr: Expr[N, A], node: N[A]): Dag[N] =
     copy(id2Exp = idToExp.updated(newId, expr))
 
-  protected def repointIds[A](
-    orig: N[A],
-    oldIds: Iterable[Id[A]],
-    newId: Id[A],
-    newNode: N[A]): Dag[N] =
+  protected def repointIds[A](orig: N[A], oldIds: Iterable[Id[A]], newId: Id[A], newNode: N[A]): Dag[N] =
     if (oldIds.nonEmpty) {
       val newIdToExp = oldIds.foldLeft(idToExp) { (mapping, origId) =>
         mapping.updated(origId, Expr.Var[N, A](newId))
       }
       copy(id2Exp = newIdToExp).gc
-    }
-    else this
+    } else this
 
   /**
    * This is only called by ensure
@@ -406,8 +404,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   ////////////////////////////
 
   /**
-   * This finds an Id[T] in the current graph that is equivalent
-   * to the given N[T]
+   * This finds an Id[T] in the current graph that is equivalent to the given N[T]
    */
   def find[T](node: N[T]): Option[Id[T]] =
     findLiteral(toLiteral(node), node)
@@ -456,9 +453,8 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     // maintaining these mappings would be nice, but maybe expensive as we are rewriting
     // nodes
     val f = new FunctionK[HMap[Id, Expr[N, *]]#Pair, Lambda[x => Option[Id[x]]]] {
-      def toFunction[T1] = {
-        case (thisId, expr) =>
-          if (node == evalMemo(expr)) Some(thisId) else None
+      def toFunction[T1] = { case (thisId, expr) =>
+        if (node == evalMemo(expr)) Some(thisId) else None
       }
     }
 
@@ -467,9 +463,8 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   }
 
   /**
-   * This throws if the node is missing, use find if this is not
-   * a logic error in your programming. With dependent types we could
-   * possibly get this to not compile if it could throw.
+   * This throws if the node is missing, use find if this is not a logic error in your programming. With
+   * dependent types we could possibly get this to not compile if it could throw.
    */
   def idOf[T](node: N[T]): Id[T] =
     find(node).getOrElse {
@@ -478,17 +473,15 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     }
 
   /**
-   * ensure the given literal node is present in the Dag
-   * Note: it is important that at each moment, each node has
-   * at most one id in the graph. Put another way, for all
-   * Id[T] in the graph evaluate(id) is distinct.
+   * ensure the given literal node is present in the Dag Note: it is important that at each moment, each node
+   * has at most one id in the graph. Put another way, for all Id[T] in the graph evaluate(id) is distinct.
    */
   protected def ensure[T](node: N[T]): (Dag[N], Id[T]) = {
     val lit = toLiteral(node)
     val litMemo = Literal.evaluateMemo[N]
     try ensureFast(lit, litMemo)
     catch {
-      case _: Throwable => //StackOverflowError should work, but not on scala.js
+      case _: Throwable => // StackOverflowError should work, but not on scala.js
         ensureRec(lit, litMemo).result
     }
   }
@@ -516,8 +509,8 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
               args match {
                 case Nil => (dag, acc.reverse)
                 case h :: tail =>
-                   val (dag1, hid) = dag.ensureFast(h, memo)
-                   go(dag1,tail, hid :: acc)
+                  val (dag1, hid) = dag.ensureFast(h, memo)
+                  go(dag1, tail, hid :: acc)
               }
 
             val (d, ids) = go(this, args, Nil)
@@ -525,7 +518,10 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
         }
     }
 
-  protected def ensureRec[T](lit: Literal[N, T], memo: FunctionK[Literal[N, *], N]): TailCalls.TailRec[(Dag[N], Id[T])] =
+  protected def ensureRec[T](
+      lit: Literal[N, T],
+      memo: FunctionK[Literal[N, *], N]
+  ): TailCalls.TailRec[(Dag[N], Id[T])] =
     findLiteral(lit, memo(lit)) match {
       case Some(id) => TailCalls.done((this, id))
       case None =>
@@ -556,17 +552,15 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
                   } yield (dag2, idh :: its)
               }
 
-            go(this, args).map { case (d, ids)  =>
+            go(this, args).map { case (d, ids) =>
               d.addExp(Expr.Variadic(ids, fn))
             }
         }
     }
 
   /**
-   * After applying rules to your Dag, use this method
-   * to get the original node type.
-   * Only call this on an Id[T] that was generated by
-   * this dag or a parent.
+   * After applying rules to your Dag, use this method to get the original node type. Only call this on an
+   * Id[T] that was generated by this dag or a parent.
    */
   def evaluate[T](id: Id[T]): N[T] =
     evaluateOption(id).getOrElse {
@@ -575,15 +569,11 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     }
 
   def evaluateOption[T](id: Id[T]): Option[N[T]] =
-    idToN.getOrElseUpdate(id, {
-      idToExp.get(id).map(evalMemo(_))
-    })
+    idToN.getOrElseUpdate(id, idToExp.get(id).map(evalMemo(_)))
 
   /**
-   * Return the number of nodes that depend on the
-   * given Id, TODO we might want to cache these.
-   * We need to garbage collect nodes that are
-   * no longer reachable from the root
+   * Return the number of nodes that depend on the given Id, TODO we might want to cache these. We need to
+   * garbage collect nodes that are no longer reachable from the root
    */
   def fanOut(id: Id[_]): Int =
     evaluateOption(id)
@@ -591,8 +581,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
       .getOrElse(0)
 
   /**
-   * Returns 0 if the node is absent, which is true
-   * use .contains(n) to check for containment
+   * Returns 0 if the node is absent, which is true use .contains(n) to check for containment
    */
   def fanOut(node: N[_]): Int = {
     val interiorFanOut = dependentsOf(node).size
@@ -616,17 +605,16 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
       l.asInstanceOf[List[Id[Any]]].sorted
 
     def computeNext(s: List[Id[_]], seen: Set[Id[_]]): (List[Id[_]], Set[Id[_]]) =
-      s.foldLeft((List.empty[Id[_]], seen)) {
-        case ((l, s), id) =>
-          val newIds = Expr.dependsOnIds(idToExp(id)).filterNot(seen)
-          (newIds reverse_::: l, s ++ newIds)
+      s.foldLeft((List.empty[Id[_]], seen)) { case ((l, s), id) =>
+        val newIds = Expr.dependsOnIds(idToExp(id)).filterNot(seen)
+        (newIds reverse_::: l, s ++ newIds)
       }
 
     def initState: Option[State] = {
       val rootList = roots.toList
       val (next, seen) = computeNext(rootList, rootList.toSet)
       sort(rootList) match {
-        case Nil => None
+        case Nil       => None
         case h :: tail => Some((0, h, tail, next, seen))
       }
     }
@@ -671,7 +659,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
   /**
    * What nodes do we depend directly on
    */
-  def dependenciesOf(node: N[_]): List[N[_]] = {
+  def dependenciesOf(node: N[_]): List[N[_]] =
     toLiteral(node) match {
       case Literal.Const(_) =>
         Nil
@@ -684,39 +672,35 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
         val evalLit = Literal.evaluateMemo[N]
         inputs.map(evalLit(_))
     }
-  }
 
   /**
-   * It is as expensive to compute this for the whole graph
-   * as it is to answer a single query
-   * we already cache the N pointed to, so this structure
-   * should be small
+   * It is as expensive to compute this for the whole graph as it is to answer a single query we already cache
+   * the N pointed to, so this structure should be small
    */
   private lazy val dependencyMap: Map[N[_], Set[N[_]]] = {
     def dependsOnSet(expr: Expr[N, _]): Set[N[_]] = expr match {
-      case Expr.Const(_) => Set.empty
-      case Expr.Var(id) => sys.error(s"logic error: Var($id)")
-      case Expr.Unary(id, _) => Set(evaluate(id))
+      case Expr.Const(_)            => Set.empty
+      case Expr.Var(id)             => sys.error(s"logic error: Var($id)")
+      case Expr.Unary(id, _)        => Set(evaluate(id))
       case Expr.Binary(id0, id1, _) => Set(evaluate(id0), evaluate(id1))
-      case Expr.Variadic(ids, _) => ids.iterator.map(evaluate(_)).toSet
+      case Expr.Variadic(ids, _)    => ids.iterator.map(evaluate(_)).toSet
     }
 
     type SetConst[T] = (N[T], Set[N[_]])
     val pointsToNode = new FunctionK[HMap[Id, Expr[N, *]]#Pair, Lambda[x => Option[SetConst[x]]]] {
-      def toFunction[T] = {
-        case (id, expr) =>
-          // here are the nodes we depend on:
+      def toFunction[T] = { case (id, expr) =>
+        // here are the nodes we depend on:
 
-          // We can ignore Vars here, since all vars point to a final expression
-          if (!expr.isVar) {
-            val depSet = dependsOnSet(expr)
-            Some((evalMemo(expr), depSet))
-          }
-          else None
+        // We can ignore Vars here, since all vars point to a final expression
+        if (!expr.isVar) {
+          val depSet = dependsOnSet(expr)
+          Some((evalMemo(expr), depSet))
+        } else None
       }
     }
 
-    idToExp.optionMap[SetConst](pointsToNode)
+    idToExp
+      .optionMap[SetConst](pointsToNode)
       .flatMap { case (n, deps) =>
         deps.map((_, n): (N[_], N[_]))
       }
@@ -746,8 +730,7 @@ sealed abstract class Dag[N[_]] extends Serializable { self =>
     fanOut(n) <= 1
 
   /**
-   * Return all dependents of a given node.
-   * Does not include itself
+   * Return all dependents of a given node. Does not include itself
    */
   def transitiveDependentsOf(p: N[_]): Set[N[_]] = {
     def nfn(n: N[Any]): List[N[Any]] =
@@ -782,9 +765,8 @@ object Dag {
     empty(nodeToLit).addRoot(n)
 
   /**
-   * This is the most useful function. Given a N[T] and a way to convert to Literal[T, N],
-   * apply the given rule until it no longer applies, and return the N[T] which is
-   * equivalent under the given rule
+   * This is the most useful function. Given a N[T] and a way to convert to Literal[T, N], apply the given
+   * rule until it no longer applies, and return the N[T] which is equivalent under the given rule
    */
   def applyRule[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, *]], rule: Rule[N]): N[T] = {
     val (dag, id) = apply(n, nodeToLit)
@@ -792,11 +774,9 @@ object Dag {
   }
 
   /**
-   * This is useful when you have rules you want applied in a certain order.
-   * Given a N[T] and a way to convert to Literal[T, N],
-   * for each rule in the sequence,
-   * apply the given rule until it no longer applies, and return the N[T] which is
-   * equivalent under the given rule
+   * This is useful when you have rules you want applied in a certain order. Given a N[T] and a way to convert
+   * to Literal[T, N], for each rule in the sequence, apply the given rule until it no longer applies, and
+   * return the N[T] which is equivalent under the given rule
    */
   def applyRuleSeq[T, N[_]](n: N[T], nodeToLit: FunctionK[N, Literal[N, *]], rules: Seq[Rule[N]]): N[T] = {
     val (dag, id) = apply(n, nodeToLit)

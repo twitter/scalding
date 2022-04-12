@@ -8,18 +8,16 @@ import java.io.Serializable
 trait Rule[N[_]] extends Serializable { self =>
 
   /**
-   * If the given Id can be replaced with a simpler expression,
-   * return Some(expr) else None.
+   * If the given Id can be replaced with a simpler expression, return Some(expr) else None.
    *
-   * If it is convenient, you might write a partial function
-   * and then call .lift to get the correct Function type
+   * If it is convenient, you might write a partial function and then call .lift to get the correct Function
+   * type
    */
   def apply[T](on: Dag[N]): N[T] => Option[N[T]]
 
   /**
-   * If the current rule cannot apply, then try the argument here.
-   * Note, this applies in series at a given node, not on the whole
-   * Dag after the first rule has run. For that, see Dag.applySeq.
+   * If the current rule cannot apply, then try the argument here. Note, this applies in series at a given
+   * node, not on the whole Dag after the first rule has run. For that, see Dag.applySeq.
    */
   def orElse(that: Rule[N]): Rule[N] =
     new Rule[N] {
@@ -30,7 +28,7 @@ trait Rule[N[_]] extends Serializable { self =>
             that.apply(on)(n)
           case None =>
             that.apply(on)(n)
-          case s@Some(_) => s
+          case s @ Some(_) => s
         }
       }
 
@@ -40,6 +38,7 @@ trait Rule[N[_]] extends Serializable { self =>
 }
 
 object Rule {
+
   /**
    * A Rule that never applies
    */
@@ -49,8 +48,7 @@ object Rule {
     }
 
   /**
-   * Build a new Rule out of several using orElse
-   * to compose
+   * Build a new Rule out of several using orElse to compose
    */
   def orElse[N[_]](it: Iterable[Rule[N]]): Rule[N] =
     it.reduceOption(_ orElse _).getOrElse(empty)

@@ -100,11 +100,11 @@ class MacrosUnitTests extends WordSpec with Matchers {
 
   "MacroGenerated TupleConverter" should {
     "Not compile for Option[Option[Int]]" in {
-      //TODO figure out a way to test this does not compile. See:
-      //https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/test/typechecking.scala
-      //uncommenting fails to compile, but we want to be more sure
-      //Macros.caseClassTupleConverter[Option[Option[Int]]]
-      //Macros.caseClassTupleConverter[Option[String]]
+      // TODO figure out a way to test this does not compile. See:
+      // https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/test/typechecking.scala
+      // uncommenting fails to compile, but we want to be more sure
+      // Macros.caseClassTupleConverter[Option[Option[Int]]]
+      // Macros.caseClassTupleConverter[Option[String]]
     }
   }
 

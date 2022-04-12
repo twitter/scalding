@@ -186,7 +186,7 @@ class GroupBuilder(val groupFields: Fields)
       endSetter: TupleSetter[U]
   ): GroupBuilder = {
     val (maybeSortedFromFields, maybeSortedToFields) = fieldDef
-    //Check for arity safety:
+    // Check for arity safety:
     // To fields CANNOT have a sorting, or cascading gets unhappy:
     // TODO this may be fixed in cascading later
     val toFields = new Fields(asList(maybeSortedToFields): _*)
@@ -238,7 +238,7 @@ class GroupBuilder(val groupFields: Fields)
       fieldDef: (Fields, Fields)
   )(mapfn: (Iterator[T]) => TraversableOnce[X])(implicit conv: TupleConverter[T], setter: TupleSetter[X]) = {
     val (inFields, outFields) = fieldDef
-    //Check arity
+    // Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     val b = new BufferOp[Unit, T, X]((), (u: Unit, it: Iterator[T]) => mapfn(it), outFields, conv, setter)
@@ -268,7 +268,7 @@ class GroupBuilder(val groupFields: Fields)
       fieldDef: (Fields, Fields)
   )(init: X)(fn: (X, T) => X)(implicit setter: TupleSetter[X], conv: TupleConverter[T]): GroupBuilder = {
     val (inFields, outFields) = fieldDef
-    //Check arity
+    // Check arity
     conv.assertArityMatches(inFields)
     setter.assertArityMatches(outFields)
     val b = new BufferOp[X, T, X](
@@ -307,17 +307,17 @@ class GroupBuilder(val groupFields: Fields)
     val maybeProjectedPipe = projectFields.map(pipe.project(_)).getOrElse(pipe)
     groupMode match {
       case GroupByMode =>
-        //In this case we cannot aggregate, so group:
+        // In this case we cannot aggregate, so group:
         val start: Pipe = groupedPipeOf(name, maybeProjectedPipe)
         // Time to schedule the Every operations
         evs.foldRight(start)((op: (Pipe => Every), p) => op(p))
 
       case IdentityMode =>
-        //This is the case where the group function is identity: { g => g }
+        // This is the case where the group function is identity: { g => g }
         groupedPipeOf(name, pipe)
 
       case AggregateByMode =>
-        //There is some non-empty AggregateBy to do:
+        // There is some non-empty AggregateBy to do:
         val redlist = reds.get
         val ag = new AggregateBy(
           name,
@@ -374,7 +374,7 @@ class GroupBuilder(val groupFields: Fields)
         mapfn: (C, Iterator[T]) => TraversableOnce[X]
     )(implicit conv: TupleConverter[T], setter: TupleSetter[X]) = {
       val (inFields, outFields) = fieldDef
-      //Check arity
+      // Check arity
       conv.assertArityMatches(inFields)
       setter.assertArityMatches(outFields)
 

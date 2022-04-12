@@ -139,7 +139,7 @@ class TypedPipeHashJoinWithForceToDiskJob(args: Args) extends Job(args) {
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
-  //trivial transform and forceToDisk on the rhs
+  // trivial transform and forceToDisk on the rhs
   val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk
 
   x.hashJoin(yMap)
@@ -153,7 +153,7 @@ class TypedPipeHashJoinWithForceToDiskFilterJob(args: Args) extends Job(args) {
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
-  //trivial transform and forceToDisk followed by filter on rhs
+  // trivial transform and forceToDisk followed by filter on rhs
   val yFilter = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.filter(p => p._1 == 1)
 
   x.hashJoin(yFilter)
@@ -167,7 +167,7 @@ class TypedPipeHashJoinWithForceToDiskWithComplete(args: Args) extends Job(args)
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
-  //trivial transform and forceToDisk followed by WithComplete on rhs
+  // trivial transform and forceToDisk followed by WithComplete on rhs
   val yComplete = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.onComplete(() => println("step complete"))
 
   x.hashJoin(yComplete)
@@ -180,7 +180,7 @@ class TypedPipeHashJoinWithForceToDiskMapJob(args: Args) extends Job(args) {
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
-  //trivial transform and forceToDisk followed by map on rhs
+  // trivial transform and forceToDisk followed by map on rhs
   val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
 
   x.hashJoin(yMap)
@@ -193,7 +193,7 @@ class TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob(args: Args) extends Jo
   val x = TypedPipe.from[(Int, Int)](List((1, 1)))
   val y = TypedPipe.from[(Int, String)](List((1, "first")))
 
-  //trivial transform and forceToDisk followed by map on rhs
+  // trivial transform and forceToDisk followed by map on rhs
   val yMap = y.map(p => (p._1, p._2.toUpperCase)).forceToDisk.map(p => (p._1, p._2.toLowerCase))
 
   x.hashJoin(yMap)
@@ -248,13 +248,12 @@ class TypedPipeHashJoinWithEveryJob(args: Args) extends Job(args) {
 }
 
 class TypedPipeForceToDiskWithDescriptionJob(args: Args) extends Job(args) {
-  val writeWords = {
+  val writeWords =
     TypedPipe
       .from[String](List("word1 word2", "word1", "word2"))
       .withDescription("write words to disk")
       .flatMap(_.split("\\s+"))
       .forceToDisk
-  }
   writeWords
     .groupBy(_.length)
     .withDescription("output frequency by length")
@@ -528,7 +527,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //also tests HashJoin behavior to verify that we don't introduce a forceToDisk as the RHS pipe is source Pipe
+  // also tests HashJoin behavior to verify that we don't introduce a forceToDisk as the RHS pipe is source Pipe
   "A TypedPipeJoinWithDescriptionPipe" should {
     "have a custom step name from withDescription and no extra forceToDisk steps on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeJoinWithDescriptionJob(_), cluster)
@@ -544,7 +543,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //expect two jobs - one for the map prior to the Checkpoint and one for the hashJoin
+  // expect two jobs - one for the map prior to the Checkpoint and one for the hashJoin
   "A TypedPipeHashJoinWithForceToDiskJob" should {
     "have a custom step name from withDescription and only one user provided forceToDisk on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskJob(_), cluster)
@@ -558,7 +557,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //expect 3 jobs - one extra compared to previous as there's a new forceToDisk added
+  // expect 3 jobs - one extra compared to previous as there's a new forceToDisk added
   "A TypedPipeHashJoinWithForceToDiskFilterJob" should {
     "have a custom step name from withDescription and an extra forceToDisk due to a filter operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskFilterJob(_), cluster)
@@ -572,7 +571,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //expect two jobs - one for the map prior to the Checkpoint and one for the rest
+  // expect two jobs - one for the map prior to the Checkpoint and one for the rest
   "A TypedPipeHashJoinWithForceToDiskWithComplete" should {
     "have a custom step name from withDescription and no extra forceToDisk due to with complete operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskWithComplete(_), cluster)
@@ -586,7 +585,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //expect two jobs - one for the map prior to the Checkpoint and one for the rest
+  // expect two jobs - one for the map prior to the Checkpoint and one for the rest
   "A TypedPipeHashJoinWithForceToDiskMapJob" should {
     "have a custom step name from withDescription and no extra forceToDisk due to map (autoForce = false) on forceToDisk operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskMapJob(_), cluster)
@@ -600,7 +599,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
     }
   }
 
-  //expect one extra job from the above - we end up performing a forceToDisk after the map
+  // expect one extra job from the above - we end up performing a forceToDisk after the map
   "A TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob" should {
     "have a custom step name from withDescription and an extra forceToDisk due to map (autoForce = true) on forceToDisk operation on hashJoin's rhs" in {
       HadoopPlatformJobTest(new TypedPipeHashJoinWithForceToDiskMapWithAutoForceJob(_), cluster)
@@ -681,7 +680,7 @@ class PlatformTest extends WordSpec with Matchers with HadoopSharedPlatformTest 
             assert(foundDescs.size == 1)
             assert(foundDescs(0).contains(d))
           }
-        //steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
+        // steps.map(_.getConfig.get(Config.StepDescriptions)).foreach(s => info(s))
         }
         .run()
     }

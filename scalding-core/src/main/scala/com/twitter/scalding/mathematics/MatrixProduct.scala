@@ -306,7 +306,7 @@ object MatrixProduct extends java.io.Serializable {
       }
     }
 
-  //TODO: remove in 0.9.0, only here just for compatibility.
+  // TODO: remove in 0.9.0, only here just for compatibility.
   def vectorInnerProduct[IdxT, ValT](implicit
       ring: Ring[ValT]
   ): MatrixProduct[RowVector[IdxT, ValT], ColVector[IdxT, ValT], Scalar[ValT]] =
@@ -387,8 +387,8 @@ object MatrixProduct extends java.io.Serializable {
               .groupBy(left.rowSym.append(getField(newRightFields, 1))) {
                 // We should use the size hints to set the number of reducers here
                 _.reduce(left.valSym)((x: Tuple1[ValT], y: Tuple1[ValT]) => Tuple1(ring.plus(x._1, y._1)))
-                // There is a low chance that many (row,col) keys are co-located, and the keyspace
-                // is likely huge, just push to reducers
+                  // There is a low chance that many (row,col) keys are co-located, and the keyspace
+                  // is likely huge, just push to reducers
                   .forceToReducers
                   .reducers(grpReds)
               }

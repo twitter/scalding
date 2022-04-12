@@ -234,9 +234,9 @@ class Matrix2Normalize(args: Args) extends Job(args) {
   val matL1Norm = mat1.rowL1Normalize
   matL1Norm.write(TypedText.tsv[(Int, Int, Double)]("normalized"))
 
-  //val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read // test Long type as value is OK
+  // val p2: Pipe = Tsv("mat2", ('x2, 'y2, 'v2)).read // test Long type as value is OK
   val tp2 = TypedPipe.from(TypedText.tsv[(Int, Int, Long)]("mat2"))
-  //val tp2 = p2.toTypedPipe[(Int, Int, Long)](('x2, 'y2, 'v2))
+  // val tp2 = p2.toTypedPipe[(Int, Int, Long)](('x2, 'y2, 'v2))
   val mat2 = MatrixLiteral(tp2, NoClue)
 
   val mat2L1Norm = mat2.rowL1Normalize
