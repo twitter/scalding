@@ -36,17 +36,20 @@ object SparkCounters {
   def addToCounter(counterGroup: String, counterName: String, diffVal: Long): Unit =
     getAccumulator.add(counterGroup, counterName, diffVal)
 
-  def exportExecutionCounters(): ExecutionCounters = {
-    val statKeyForm =
-      getAccumulator.value.foldLeft(Set[StatKey]())((ssk, kvPair) =>
-        ssk + StatKey(kvPair._1._1, kvPair._1._2)
-      )
+  /**
+   * we return an ExecutionCounters interface.
+   *
+   * Values returned from keys/get will not be stable until spark execution is complete
+   */
+  def lazyEvaluateAsExecutionCounters(): ExecutionCounters =
     new ExecutionCounters {
-      def keys = statKeyForm
+      def keys =
+        getAccumulator.value.foldLeft(Set[StatKey]())((ssk, kvPair) =>
+          ssk + StatKey(kvPair._1._1, kvPair._1._2)
+        )
       def get(key: StatKey) =
         getAccumulator.value.get((key.group, key.counter))
     }
-  }
 
   private def getAccumulator(): SparkCountersInternal = {
     if (accumulator == null) {

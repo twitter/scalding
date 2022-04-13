@@ -221,7 +221,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
     }
     // now we run the actions:
     CFuture.uncancellable(
-      Future.traverse(acts)(fn => fn()).map(_ => (id, SparkCounters.exportExecutionCounters()))
+      Future.traverse(acts)(fn => fn()).map(_ => (id, SparkCounters.lazyEvaluateAsExecutionCounters()))
     )
   }
 }

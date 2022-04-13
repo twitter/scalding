@@ -5,12 +5,12 @@ import org.apache.hadoop.io.IntWritable
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, TextLine, WritableSequenceFile}
+import com.twitter.scalding.{Config, Execution, StatKey, TextLine, WritableSequenceFile}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.memory_backend.MemoryMode
+
 import java.io.File
 import java.nio.file.Paths
-
 import SparkMode.SparkConfigMethods
 import com.twitter.scalding.spark_backend.SparkPlanner.ConfigPartitionComputer
 import org.scalatest.prop.PropertyChecks
@@ -70,7 +70,6 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
   def sparkRetrieveCounters[A: Ordering](t: TypedPipe[A], conf: Config = Config.empty) = {
     val smode = SparkMode.default(session)
     val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(conf, smode).get
-    ecounters
     ecounters
   }
 
@@ -152,12 +151,15 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("pure counters work") {
+  // note tallyAll takes (group, counter)
+  // while StatKey takes (counter, group) which may be confusing
+  test("pure counters simple case") {
     val cpipe = TypedPipe
       .from(0 until 100)
       .tallyAll("scalding", "test")
-    val cresult = sparkRetrieveCounters(cpipe).toMap
-    true
+    val cresult = sparkRetrieveCounters(cpipe)
+    assert(cresult.toMap.size == 1)
+    assert(cresult.get(StatKey("test", "scalding")).get == 100)
   }
 
   def tmpPath(suffix: String): String =
