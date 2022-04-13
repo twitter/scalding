@@ -68,9 +68,17 @@ object SparkPlanner {
 
       def toFunction[A] = {
         case (cp @ CounterPipe(_), rec) =>
-          // TODO: counters not yet supported
-          def go[A](p: CounterPipe[A]): Op[A] =
-            rec(p.pipe).map(_._1)
+          def go[A](p: CounterPipe[A]): Op[A] = {
+            val resolve = rec(p.pipe)
+            resolve.map { x =>
+              // increment counter for values in pipe
+              x._2.foreach(counterAction =>
+                SparkCounters.addToCounter(counterAction._1._1, counterAction._1._2, counterAction._2)
+              )
+              // pass through values in pipe
+              x._1
+            }
+          }
           go(cp)
         case (cp @ CrossPipe(_, _), rec) =>
           def go[A, B](cp: CrossPipe[A, B]): Op[(A, B)] =

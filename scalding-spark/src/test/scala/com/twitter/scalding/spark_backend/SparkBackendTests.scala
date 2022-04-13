@@ -67,6 +67,13 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
     )
 
+  def sparkRetrieveCounters[A: Ordering](t: TypedPipe[A], conf: Config = Config.empty) = {
+    val smode = SparkMode.default(session)
+    val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(conf, smode).get
+    ecounters
+    ecounters
+  }
+
   test("some basic map-only operations work") {
     sparkMatchesMemory(TypedPipe.from(0 to 100))
     sparkMatchesMemory(TypedPipe.from(0 to 100).map(_ * 2))
@@ -143,6 +150,14 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       val inputLeft = TypedPipe.from(0 to 100000 by 3)
       inputLeft.cross(ValuePipe("wee"))
     }
+  }
+
+  test("pure counters work") {
+    val cpipe = TypedPipe
+      .from(0 until 100)
+      .tallyAll("scalding", "test")
+    val cresult = sparkRetrieveCounters(cpipe).toMap
+    true
   }
 
   def tmpPath(suffix: String): String =

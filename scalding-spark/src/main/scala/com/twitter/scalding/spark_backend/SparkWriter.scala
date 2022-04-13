@@ -146,6 +146,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
   def execute(conf: Config, writes: List[ToWrite[_]])(implicit
       cec: ExecutionContext
   ): CFuture[(Long, ExecutionCounters)] = {
+    SparkCounters.register // initialize counter tracker for spark backend
 
     val planner = SparkPlanner.plan(conf, sparkMode.sources.orElse(state.get().sources))
 
@@ -219,6 +220,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
     // now we run the actions:
-    CFuture.uncancellable(Future.traverse(acts)(fn => fn()).map(_ => (id, ExecutionCounters.empty)))
+    CFuture.uncancellable(
+      Future.traverse(acts)(fn => fn()).map(_ => (id, SparkCounters.exportExecutionCounters()))
+    )
   }
 }
