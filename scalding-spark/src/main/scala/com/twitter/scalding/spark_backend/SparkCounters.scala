@@ -12,66 +12,57 @@ import scala.collection.mutable.{Map => MutableMap}
  * Inspiration has been taken from
  * https://stackoverflow.com/questions/66438570/create-accumulator-on-executor-dynamically
  */
-object SparkCounters {
+class SparkCounters(sparkSession: SparkSession, counterPrefix: String = java.util.UUID.randomUUID.toString) {
 
-  var accumulator: SparkCountersInternal = null
+  val accumulator: SparkCountersInternal = new SparkCountersInternal
 
   /**
-   * This should be called once prior to starting execution on the spark backend. The spark context must
-   * already be active in the JVM.
+   * register for spark to be aware of accumulator. Note that accumulators are now automatically garbage
+   * collected: https://github.com/apache/spark/pull/4021 so we don't need to explicitly release them
    */
-  def register(): Unit = {
-    val sparkContext = SparkSession.getActiveSession
-      .getOrElse(throw new IllegalStateException("SparkSession is not active!"))
-      .sparkContext
-    val accum = new SparkCountersInternal
-    sparkContext.register(accum, "[scalding/spark-backend] accumulator")
-    accumulator = accum
+  {
+    sparkSession.sparkContext.register(accumulator, counterPrefix)
   }
-
-  /**
-   * Adds a long value to a (counterGroup, counterName). Should be used inside of executors for side-effect
-   * free counter implementation
-   */
-  def addToCounter(counterGroup: String, counterName: String, diffVal: Long): Unit =
-    getAccumulator.add(counterGroup, counterName, diffVal)
 
   /**
    * we return an ExecutionCounters interface.
    *
    * Values returned from keys/get will not be stable until spark execution is complete
    */
-  def lazyEvaluateAsExecutionCounters(): ExecutionCounters =
+  def asExecutionCounters(): ExecutionCounters = {
+    val copyState = MutableMap[StatKey, Long]()
+    for (kvPair <- accumulator.value) {
+      val keyEntry = StatKey(kvPair._1._2, kvPair._1._1)
+      copyState.getOrElseUpdate(keyEntry, 0L)
+      copyState(keyEntry) += kvPair._2
+    }
     new ExecutionCounters {
-      def keys =
-        getAccumulator.value.foldLeft(Set[StatKey]())((ssk, kvPair) =>
-          ssk + StatKey(kvPair._1._1, kvPair._1._2)
-        )
-      def get(key: StatKey) =
-        getAccumulator.value.get((key.group, key.counter))
+      def keys = copyState.keys.toSeq.toSet
+      def get(key: StatKey) = copyState.get(key)
     }
-
-  private def getAccumulator(): SparkCountersInternal = {
-    if (accumulator == null) {
-      throw new IllegalStateException("SparkCounters.register has not been called!")
-    }
-    accumulator
   }
 
 }
 
 sealed class SparkCountersInternal(
-    val mapState: MutableMap[(String, String), Long] = MutableMap[(String, String), Long]()
-) extends AccumulatorV2[(String, String, Long), MutableMap[(String, String), Long]]
+    mapState: MutableMap[(String, String), Long] = MutableMap[(String, String), Long]()
+) extends AccumulatorV2[((String, String), Long), MutableMap[(String, String), Long]]
     with Serializable {
 
+  /**
+   * Should be used inside of spark executor actions for a side-effect free counter implementation.
+   */
+  def add(in: Iterator[((String, String), Long)]): Unit =
+    while (in.hasNext) {
+      val count = in.next
+      mapState.getOrElseUpdate(count._1, 0L)
+      mapState(count._1) += count._2
+    }
+
   // internal for spark do not call
-  override def add(in: (String, String, Long)): Unit = {
-    val counterGroup = in._1
-    val counterName = in._2
-    val counterDiff = in._3
-    mapState.getOrElseUpdate((counterGroup, counterName), 0)
-    mapState((counterGroup, counterName)) += counterDiff
+  override def add(in: ((String, String), Long)): Unit = {
+    mapState.getOrElseUpdate(in._1, 0L)
+    mapState(in._1) += in._2
   }
 
   // internal for spark do not call
@@ -79,19 +70,17 @@ sealed class SparkCountersInternal(
 
   // internal for spark do not call
   override def copy(): SparkCountersInternal = {
-    val copyState = mapState.foldLeft(MutableMap[(String, String), Long]()) {
-      (newMap: MutableMap[(String, String), Long], kvPair) =>
-        newMap.getOrElseUpdate(kvPair._1, 0)
-        newMap(kvPair._1) += kvPair._2
-        newMap
+    val copyState = MutableMap[(String, String), Long]()
+    for (kvPair <- mapState) {
+      copyState.getOrElseUpdate(kvPair._1, kvPair._2)
     }
     new SparkCountersInternal(copyState)
   }
 
   // internal for spark do not call
-  override def merge(other: AccumulatorV2[(String, String, Long), MutableMap[(String, String), Long]]) =
+  override def merge(other: AccumulatorV2[((String, String), Long), MutableMap[(String, String), Long]]) =
     for (kvPair <- other.value) {
-      mapState.getOrElseUpdate(kvPair._1, 0)
+      mapState.getOrElseUpdate(kvPair._1, 0L)
       mapState(kvPair._1) += kvPair._2
     }
 

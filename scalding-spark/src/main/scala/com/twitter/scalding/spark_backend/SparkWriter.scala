@@ -146,9 +146,13 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
   def execute(conf: Config, writes: List[ToWrite[_]])(implicit
       cec: ExecutionContext
   ): CFuture[(Long, ExecutionCounters)] = {
-    SparkCounters.register // initialize counter tracker for spark backend
 
-    val planner = SparkPlanner.plan(conf, sparkMode.sources.orElse(state.get().sources))
+    val planner =
+      SparkPlanner.plan(
+        conf,
+        sparkMode.sources.orElse(state.get().sources),
+        sparkMode.sparkCounters.accumulator
+      )
 
     import Execution.ToWrite._
 
@@ -170,9 +174,23 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         conf.getForceToDiskPersistMode.orElse(Some(StorageLevel.DISK_ONLY))
       )
       def action = () => {
-        // actually run
+
+        /**
+         * actually run
+         *
+         * count is a hack to force a synchronous evaluation of the RDD. There is currently only a synchronous
+         * API for un-persist but not for persist. This strategy have been used even inside spark sql itself:
+         * https://github.com/apache/spark/pull/30403/files#diff-aa467582590608ec702c1caf6208e79af5e6f3ee2cfd58a53bdf2601cd5015d6R65
+         * so it's not too crazy, but it does have a performance overhead that we will want to address in the
+         * future.
+         */
         val op = planner(opt)
-        val rddF = op.run(session)
+        val rddF = op
+          .run(session)
+          .map { rdd =>
+            rdd.count // run any cheap RDD action that will force DAG exeucation.
+            rdd
+          }
         promise.completeWith(rddF)
         rddF.map(_ => ())
       }
@@ -219,9 +237,11 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       }
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
+
     // now we run the actions:
-    CFuture.uncancellable(
-      Future.traverse(acts)(fn => fn()).map(_ => (id, SparkCounters.lazyEvaluateAsExecutionCounters()))
-    )
+    var results = Future.traverse(acts)(fn => fn())
+    var withCounters = results.map(res => (id, sparkMode.sparkCounters.asExecutionCounters))
+
+    CFuture.uncancellable(withCounters)
   }
 }

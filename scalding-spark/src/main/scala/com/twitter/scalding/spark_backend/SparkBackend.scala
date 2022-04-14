@@ -2,11 +2,13 @@ package com.twitter.scalding.spark_backend
 
 import com.twitter.scalding.dagon.{FunctionK, Memoize}
 import com.twitter.algebird.Semigroup
-import com.twitter.scalding.Config
+import com.twitter.scalding.{Config, StatKey}
 import com.twitter.scalding.typed._
 import com.twitter.scalding.typed.functions.{DebugFn, FilterKeysToFilter}
+
 import java.util.{LinkedHashMap => JLinkedHashMap, Map => JMap}
 import org.apache.spark.storage.StorageLevel
+
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 
 object SparkPlanner {
@@ -62,7 +64,11 @@ object SparkPlanner {
   /**
    * Convert a TypedPipe to an RDD
    */
-  def plan(config: Config, srcs: Resolver[Input, SparkSource]): FunctionK[TypedPipe, Op] =
+  def plan(
+      config: Config,
+      srcs: Resolver[Input, SparkSource],
+      counter: SparkCountersInternal
+  ): FunctionK[TypedPipe, Op] =
     Memoize.functionK(new Memoize.RecursiveK[TypedPipe, Op] {
       import TypedPipe._
 
@@ -72,9 +78,7 @@ object SparkPlanner {
             val resolve = rec(p.pipe)
             resolve.map { x =>
               // increment counter for values in pipe
-              x._2.foreach(counterAction =>
-                SparkCounters.addToCounter(counterAction._1._1, counterAction._1._2, counterAction._2)
-              )
+              counter.add(x._2.iterator)
               // pass through values in pipe
               x._1
             }

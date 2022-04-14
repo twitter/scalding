@@ -157,6 +157,8 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
     val cpipe = TypedPipe
       .from(0 until 100)
       .tallyAll("scalding", "test")
+      .forceToDisk
+      .map(x => x + x)
     val cresult = sparkRetrieveCounters(cpipe)
     assert(cresult.toMap.size == 1)
     assert(cresult.get(StatKey("test", "scalding")).get == 100)
