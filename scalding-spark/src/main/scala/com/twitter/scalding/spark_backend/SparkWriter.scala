@@ -18,6 +18,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private def session: SparkSession = sparkMode.session
 
+  private val sparkCounters = new SparkCounters(session)
+
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
   case class TempSource[A](id: Long) extends Input[A]
@@ -151,7 +153,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       SparkPlanner.plan(
         conf,
         sparkMode.sources.orElse(state.get().sources),
-        sparkMode.sparkCounters.accumulator
+        sparkCounters.accumulator
       )
 
     import Execution.ToWrite._
@@ -239,7 +241,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
     // now we run the actions
     CFuture.uncancellable(
-      Future.traverse(acts)(fn => fn()).map(_ => (id, sparkMode.sparkCounters.asExecutionCounters))
+      Future.traverse(acts)(fn => fn()).map(_ => (id, sparkCounters.asExecutionCounters))
     )
   }
 }

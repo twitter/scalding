@@ -16,8 +16,6 @@ case class SparkMode(
 ) extends Mode {
   def newWriter(): SparkWriter =
     new SparkWriter(this)
-
-  val sparkCounters = new SparkCounters(session)
 }
 
 object SparkMode {

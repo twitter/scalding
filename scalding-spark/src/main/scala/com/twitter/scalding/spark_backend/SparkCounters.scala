@@ -7,10 +7,7 @@ import org.apache.spark.util.AccumulatorV2
 import scala.collection.mutable.{Map => MutableMap}
 
 /**
- * Spark Counters is a singleton responsible for managing counters in the spark backend
- *
- * Inspiration has been taken from
- * https://stackoverflow.com/questions/66438570/create-accumulator-on-executor-dynamically
+ * We use a new SparkCounters instance for each SparkWriter to keep track of scalding counters
  */
 class SparkCounters(sparkSession: SparkSession, counterPrefix: String = java.util.UUID.randomUUID.toString) {
 
