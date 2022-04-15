@@ -46,7 +46,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         opt: TypedPipe[T],
         rdd: Future[RDD[_ <: T]],
         persist: Option[StorageLevel]
-    )(implicit ec: ExecutionContext): (State, Boolean) =
+    )(implicit ec: ExecutionContext): (State, Boolean, Future[RDD[_ <: T]]) =
       forcedPipes.get((c, opt)) match {
         case None =>
           // we have not previously forced this source
@@ -63,9 +63,9 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
           val newForced = forcedPipes + ((c, opt) -> workVal)
           val newInitToOpt = initToOpt + ((c, init) -> opt)
 
-          (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true)
+          (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true, forcedRdd)
         case Some(_) =>
-          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false)
+          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false, rdd)
       }
 
     private def get[T](c: Config, init: TypedPipe[T]): WorkVal[T] =
@@ -166,7 +166,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
     def force[T](opt: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()
-      val (newState, added) = oldState.addForce[T](
+      val (newState, added, forcedRDD) = oldState.addForce[T](
         conf,
         init = keyPipe,
         opt = opt,
@@ -187,12 +187,11 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         val op = planner(opt)
         val rddF = op
           .run(session)
-          .map { rdd =>
-            rdd.count // run any cheap RDD action that will force DAG exeucation.
-            rdd
-          }
         promise.completeWith(rddF)
-        rddF.map(_ => ())
+        forcedRDD.map { x =>
+          x.count // any cheap RDD action to force DAG execution works here
+          ()
+        }
       }
       (newState, if (added) action else emptyAction)
     }
@@ -203,7 +202,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         oldState: State
     ): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()
-      val (newState, added) = oldState.addForce[T](conf, init = keyPipe, opt = opt, promise.future, None)
+      val (newState, added, _) = oldState.addForce[T](conf, init = keyPipe, opt = opt, promise.future, None)
       val action = () => {
         val rddF =
           if (added) {
