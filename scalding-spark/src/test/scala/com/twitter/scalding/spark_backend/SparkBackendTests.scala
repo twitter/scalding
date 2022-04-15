@@ -153,15 +153,40 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
 
   // note tallyAll takes (group, counter)
   // while StatKey takes (counter, group) which may be confusing
-  test("pure counters simple case") {
-    val cpipe = TypedPipe
-      .from(0 until 100)
-      .tallyAll("scalding", "test")
-      .forceToDisk
-      .map(x => x + x)
-    val cresult = sparkRetrieveCounters(cpipe)
-    assert(cresult.toMap.size == 1)
-    assert(cresult.get(StatKey("test", "scalding")).get == 100)
+  test("pure counters work") {
+    // make sure we don't have any race condition flakes by running several times
+    for (t <- 1 to 20) {
+      // a basic case that is easy to debug
+      val cpipe1 = TypedPipe
+        .from(0 until 100)
+        .tallyAll("scalding", "test")
+      val cresult1 = sparkRetrieveCounters(cpipe1)
+      assert(cresult1.toMap.size == 1)
+      assert(cresult1.get(StatKey("test", "scalding")).get == 100)
+
+      // something more tricky with many transforms
+      val cpipe2 = TypedPipe
+        .from(0 until 100)
+        .filter(x => x % 4 == 0)
+        .tallyAll("something interesting", "divisible by 4")
+
+      val cpipe3 =
+        cpipe2
+          .cross(
+            TypedPipe
+              .from(0 to 10)
+              .tallyBy("inner")(x => (if (x % 3 == 0) "divisible by 3" else "not divisible by 3"))
+          )
+          .tallyBy("outer")(x => (if (x._2 % 3 == 0) "divisible by 3" else "not divisible by 3"))
+      val cresult2 = sparkRetrieveCounters(cpipe3)
+      assert(cresult2.toMap.size == 5)
+      assert(cresult2.get(StatKey("divisible by 4", "something interesting")).get == 25)
+      assert(cresult2.get(StatKey("divisible by 3", "inner")).get == 4)
+      assert(cresult2.get(StatKey("not divisible by 3", "inner")).get == 7)
+      assert(cresult2.get(StatKey("divisible by 3", "outer")).get == 25 * 4)
+      assert(cresult2.get(StatKey("not divisible by 3", "outer")).get == 25 * 7)
+
+    }
   }
 
   def tmpPath(suffix: String): String =
