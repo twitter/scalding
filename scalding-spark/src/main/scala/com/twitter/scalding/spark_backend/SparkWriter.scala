@@ -238,10 +238,9 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
 
-    // now we run the actions:
-    var results = Future.traverse(acts)(fn => fn())
-    var withCounters = results.map(res => (id, sparkMode.sparkCounters.asExecutionCounters))
-
-    CFuture.uncancellable(withCounters)
+    // now we run the actions
+    CFuture.uncancellable(
+      Future.traverse(acts)(fn => fn()).map(_ => (id, sparkMode.sparkCounters.asExecutionCounters))
+    )
   }
 }

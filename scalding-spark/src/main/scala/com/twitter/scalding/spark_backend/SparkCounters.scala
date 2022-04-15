@@ -17,17 +17,16 @@ class SparkCounters(sparkSession: SparkSession, counterPrefix: String = java.uti
   val accumulator: SparkCountersInternal = new SparkCountersInternal
 
   /**
-   * register for spark to be aware of accumulator. Note that accumulators are now automatically garbage
-   * collected: https://github.com/apache/spark/pull/4021 so we don't need to explicitly release them
+   * Register for spark to be aware of accumulator. Note that accumulators are now automatically garbage
+   * collected: https://github.com/apache/spark/pull/4021 so we don't need to explicitly release them.
    */
   {
     sparkSession.sparkContext.register(accumulator, counterPrefix)
   }
 
   /**
-   * we return an ExecutionCounters interface.
-   *
-   * Values returned from keys/get will not be stable until spark execution is complete
+   * We return an ExecutionCounters interface. The results will not be stable unless spark execution has
+   * finished.
    */
   def asExecutionCounters(): ExecutionCounters = {
     val copyState = MutableMap[StatKey, Long]()
