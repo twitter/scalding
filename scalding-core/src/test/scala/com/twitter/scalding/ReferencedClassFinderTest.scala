@@ -41,7 +41,7 @@ class ReferencedClassFinderTest extends WordSpec with Matchers {
         .arg("output", "outputFile")
         .sink[(C2, C3)](TypedTsv[(C2, C3)]("outputFile")) { _: Any => Unit }
         .initJob(false)
-      
+
       val config = Config.tryFrom(job.config).get
       val tokenizedClasses = config.getCascadingSerializationTokens.values.toSet
       val kryoRegisteredClasses = config.getKryoRegisteredClasses

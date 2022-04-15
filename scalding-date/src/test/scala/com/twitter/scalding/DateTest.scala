@@ -108,12 +108,12 @@ class DateTest extends WordSpec {
       // This kind of implicit is not safe (what does the long mean?)
       implicit def longToDate(l: Long): RichDate = RichDate(l)
 
-      //This is close to: Mon Oct 24 20:03:13 PDT 2011
+      // This is close to: Mon Oct 24 20:03:13 PDT 2011
       val long_val = 1319511818135L
       val rd1 = "2011-10-24T20:03:00"
       val rd2 = "2011-10-24T20:04:00"
       assert(DateRange(rd1, rd2).contains(RichDate(long_val)))
-      //Check edge cases:
+      // Check edge cases:
       assert(DateRange(rd1, long_val).contains(long_val))
       assert(DateRange(rd1, (long_val + 1)).contains(long_val))
       assert(DateRange(long_val, rd2).contains(long_val))
@@ -125,9 +125,9 @@ class DateTest extends WordSpec {
     }
     "roundtrip successfully" in {
       val start_str = "2011-10-24 20:03:00"
-      //string -> date -> string
+      // string -> date -> string
       assert(RichDate(start_str).toString(DateOps.DATETIME_HMS_WITH_DASH) === start_str)
-      //long -> date == date -> long -> date
+      // long -> date == date -> long -> date
       val long_val = 1319511818135L
       val date = RichDate(long_val)
       val long2 = date.value.getTime
@@ -136,12 +136,12 @@ class DateTest extends WordSpec {
       assert(long_val === long2)
     }
     "know the most recent time units" in {
-      //10-25 is a Tuesday, earliest in week is a monday
+      // 10-25 is a Tuesday, earliest in week is a monday
       assert(Weeks(1).floorOf("2011-10-25") === RichDate("2011-10-24"))
       assert(Weeks(1).floorOf("20111025") === RichDate("2011-10-24"))
       assert(Days(1).floorOf("2011-10-25 10:01") === RichDate("2011-10-25 00:00"))
       assert(Days(1).floorOf("201110251001") === RichDate("2011-10-25 00:00"))
-      //Leaving off the time should give the same result:
+      // Leaving off the time should give the same result:
       assert(Days(1).floorOf("201110251001") === RichDate("2011-10-25"))
       assert(Days(1).floorOf("2011-10-25 10:01") === RichDate("2011-10-25"))
       assert(Hours(1).floorOf("201110251001") === RichDate("2011-10-25 10:00"))
@@ -200,9 +200,9 @@ class DateTest extends WordSpec {
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(1))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Weeks(2))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Days(1))
-      //Prime non one:
+      // Prime non one:
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Days(5))
-      //Prime number of Minutes
+      // Prime number of Minutes
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Minutes(13))
       rangeContainTest(DateRange("2010-10-01", "2010-10-13"), Hours(13))
       assert(DateRange("2010-10-01", "2010-10-10").each(Days(1)).size === 10)
@@ -389,7 +389,7 @@ class DateTest extends WordSpec {
         val globed = t1.globify(dr)
 
         assert(eachElementDistinct(globed))
-        //See that each path is matched by exactly one glob:
+        // See that each path is matched by exactly one glob:
         assert(
           splits
             .map(path => globed.filter(globMatchesDate(_)(path)).size)

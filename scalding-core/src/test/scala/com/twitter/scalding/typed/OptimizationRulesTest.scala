@@ -39,7 +39,7 @@ object TypedPipeGen {
             x.cross(ValuePipe(2)).values
           }
         ),
-        //Gen.const({ t: TypedPipe[Int] => t.debug }), debug spews a lot to the terminal
+        // Gen.const({ t: TypedPipe[Int] => t.debug }), debug spews a lot to the terminal
         (
           commonFreq,
           Arbitrary.arbitrary[Int => Boolean].map { fn => t: TypedPipe[Int] =>
@@ -194,8 +194,8 @@ object TypedPipeGen {
     DeferMerge,
     FilterKeysEarly,
     FilterLocally,
-    //EmptyIsOftenNoOp, this causes confluence problems when combined with other rules randomly.
-    //Have to be careful about the order it is applied
+    // EmptyIsOftenNoOp, this causes confluence problems when combined with other rules randomly.
+    // Have to be careful about the order it is applied
     EmptyIterableIsEmpty,
     HashToShuffleCoGroup,
     ForceToDiskBeforeHashJoin,
@@ -344,7 +344,7 @@ class OptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("some past failures of the optimizationLaw") {
-    val arg01 = (TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar"))
+    val arg01 = TypedPipe.empty.withDescription("foo") ++ TypedPipe.empty.withDescription("bar")
     optimizationLaw[Int](arg01, Rule.empty)
   }
 

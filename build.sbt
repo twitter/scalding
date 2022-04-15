@@ -63,7 +63,7 @@ val sharedSettings = Seq(
   doc / javacOptions := Seq("-source", "1.8"),
   versionScheme := Some("early-semver"),
   Compile / compile / wartremoverErrors ++= Seq(
-    //Wart.OptionPartial, // this kills the ability to use serialization macros
+    // Wart.OptionPartial, // this kills the ability to use serialization macros
     Wart.ExplicitImplicitTypes,
     Wart.LeakingSealed,
     Wart.Return,
@@ -104,7 +104,7 @@ val sharedSettings = Seq(
     "-Ywarn-unused-import"
   ),
   Compile / doc / scalacOptions ++= Seq(scalaVersion.value).flatMap {
-    case v if v.startsWith("2.12") => Seq("-no-java-comments") //workaround for scala/scala-dev#249
+    case v if v.startsWith("2.12") => Seq("-no-java-comments") // workaround for scala/scala-dev#249
     case _                         => Seq()
   },
 
@@ -114,7 +114,8 @@ val sharedSettings = Seq(
     None,
     JacocoThresholds(),
     Seq(JacocoReportFormats.ScalaHTML, JacocoReportFormats.XML),
-    "utf-8"),
+    "utf-8"
+  ),
 
   // Enables full stack traces in scalatest
   Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oF"),
@@ -282,24 +283,25 @@ lazy val scaldingQuotation = module("quotation").settings(
 
 lazy val scaldingDagon = module("dagon").settings(
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full),
-  Compile / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
-  Test / unmanagedSourceDirectories ++= scaldingDagonSettings.scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+  Compile / unmanagedSourceDirectories ++= scaldingDagonSettings
+    .scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  Test / unmanagedSourceDirectories ++= scaldingDagonSettings
+    .scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value)
 )
 
 lazy val scaldingBase = module("base")
   .settings(
     libraryDependencies ++= Seq(
-    "com.twitter" %% "algebird-core" % algebirdVersion,
+      "com.twitter" %% "algebird-core" % algebirdVersion,
       "org.slf4j" % "slf4j-api" % slf4jVersion
     ),
     // buildInfo here refers to https://github.com/sbt/sbt-buildinfo
     // for logging purposes, src/main/scala/com/twitter/package.scala would like to know the scalding-version
     buildInfoKeys := Seq[BuildInfoKey](version),
-    buildInfoPackage := "com.twitter.scalding", // the codegen would be under com.twitter.scalding.BuildInfo
+    buildInfoPackage := "com.twitter.scalding" // the codegen would be under com.twitter.scalding.BuildInfo
   )
   .enablePlugins(BuildInfoPlugin)
   .dependsOn(scaldingArgs, scaldingDagon, scaldingSerialization)
-
 
 lazy val scaldingCore = module("core")
   .settings(
@@ -324,7 +326,15 @@ lazy val scaldingCore = module("core")
     ),
     addCompilerPlugin(("org.scalamacros" % "paradise" % paradiseVersion).cross(CrossVersion.full))
   )
-  .dependsOn(scaldingArgs, scaldingBase, scaldingDate, scaldingSerialization, maple, scaldingQuotation, scaldingDagon)
+  .dependsOn(
+    scaldingArgs,
+    scaldingBase,
+    scaldingDate,
+    scaldingSerialization,
+    maple,
+    scaldingQuotation,
+    scaldingDagon
+  )
 
 lazy val scaldingCats = module("cats")
   .settings(
@@ -342,14 +352,16 @@ lazy val scaldingSpark = module("spark")
   .settings(
     libraryDependencies ++= {
       CrossVersion.partialVersion(Keys.scalaVersion.value) match {
-        case Some((2, 11)) => Seq(
-          "org.apache.spark" %% "spark-core" % "2.4.8",
-          "org.apache.spark" %% "spark-sql" % "2.4.8"
-        )
-        case Some((2, 12)) => Seq(
-          "org.apache.spark" %% "spark-core" % "3.1.2",
-          "org.apache.spark" %% "spark-sql" % "3.1.2"
-        )
+        case Some((2, 11)) =>
+          Seq(
+            "org.apache.spark" %% "spark-core" % "2.4.8",
+            "org.apache.spark" %% "spark-sql" % "2.4.8"
+          )
+        case Some((2, 12)) =>
+          Seq(
+            "org.apache.spark" %% "spark-core" % "3.1.2",
+            "org.apache.spark" %% "spark-sql" % "3.1.2"
+          )
         case _ => ??? // not supported
       }
     }

@@ -104,14 +104,14 @@ object ReferencedClassFinder {
     typeSignature match {
       case TypeRef(_, _, args) =>
         args.flatMap { generic =>
-          //If the wrapped type is a Tuple, recurse into its types
+          // If the wrapped type is a Tuple, recurse into its types
           if (generic.typeSymbol.fullName.startsWith("scala.Tuple")) {
             getClassesForType(mirror, generic)
           } else {
             getClassOpt(mirror, generic.typeSymbol)
           }
         }
-      //.member returns the accessor method for the variable unless the field is private[this], so inspect the return type
+      // .member returns the accessor method for the variable unless the field is private[this], so inspect the return type
       case NullaryMethodType(resultType) => getClassesForType(mirror, resultType)
       case _                             => Nil
     }

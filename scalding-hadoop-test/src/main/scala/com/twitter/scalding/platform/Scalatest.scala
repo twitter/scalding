@@ -37,7 +37,7 @@ trait HadoopPlatformTest extends BeforeAndAfterEach { this: Suite =>
     super.beforeEach()
   }
 
-  //TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
+  // TODO is there a way to buffer such that we see test results AFTER afterEach? Otherwise the results
   // get lost in the logging
   override def afterEach(): Unit =
     try super.afterEach()

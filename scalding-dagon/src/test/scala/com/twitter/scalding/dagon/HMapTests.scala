@@ -22,9 +22,8 @@ import org.scalacheck.{Arbitrary, Cogen, Gen, Properties}
 import Arbitrary.arbitrary
 
 /**
- * This tests the HMap. We use the type system to
- * prove the types are correct and don't (yet?) engage
- * in the problem of higher kinded Arbitraries.
+ * This tests the HMap. We use the type system to prove the types are correct and don't (yet?) engage in the
+ * problem of higher kinded Arbitraries.
  */
 object HMapTests extends Properties("HMap") {
 
@@ -54,10 +53,14 @@ object HMapTests extends Properties("HMap") {
     kvs.foldLeft(HMap.empty[Key, Value])(_ + _)
 
   implicit val arbitraryHmap: Arbitrary[H] =
-    Arbitrary(Gen.listOf(for {
-      k <- arbitrary[K]
-      v <- arbitrary[V]
-    } yield (k, v)).map(fromPairs))
+    Arbitrary(
+      Gen
+        .listOf(for {
+          k <- arbitrary[K]
+          v <- arbitrary[V]
+        } yield (k, v))
+        .map(fromPairs)
+    )
 
   type FK = FunctionK[H#Pair, Lambda[x => Option[Value[x]]]]
   type FKValues = FunctionK[Value, Value]
@@ -139,7 +142,7 @@ object HMapTests extends Properties("HMap") {
   property("filterKeys works") = forAll { (h: H, p0: K => Boolean) =>
     val p = p0.asInstanceOf[Key[_] => Boolean]
     val a = h.filterKeys(p)
-    h.keySet.forall { k => p(k) == a.contains(k) }
+    h.keySet.forall(k => p(k) == a.contains(k))
   }
 
   property("forallKeys works") = forAll { (h: H, p0: K => Boolean) =>
@@ -151,19 +154,17 @@ object HMapTests extends Properties("HMap") {
     HMap.from[Key, Value](m.asInstanceOf[Map[Key[_], Value[_]]]) == fromPairs(m)
   }
 
-  property("heterogenous equality is false") =
-    forAll { (h: H) =>
-      h != null && h != 33
-    }
+  property("heterogenous equality is false") = forAll { (h: H) =>
+    h != null && h != 33
+  }
 
   property("++ works") = forAll { (m1: Map[K, V], m2: Map[K, V]) =>
     fromPairs(m1) ++ fromPairs(m2) == fromPairs(m1 ++ m2)
   }
 
-  property("mapValues works") =
-    forAll { (m: Map[K, V], fk: FKValues) =>
-      val h = fromPairs(m)
-      val got = fromPairs(m).mapValues(fk)
-      got.forallKeys({ k => got.get(k) == h.get(k).map(fk(_)) })
-    }
+  property("mapValues works") = forAll { (m: Map[K, V], fk: FKValues) =>
+    val h = fromPairs(m)
+    val got = fromPairs(m).mapValues(fk)
+    got.forallKeys(k => got.get(k) == h.get(k).map(fk(_)))
+  }
 }

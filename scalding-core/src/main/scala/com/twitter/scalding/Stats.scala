@@ -38,7 +38,6 @@ trait Stat extends java.io.Serializable {
   def key: StatKey
 }
 
-
 private[scalding] object CounterImpl {
   def apply(fp: FlowProcess[_], statKey: StatKey): CounterImpl =
     fp match {
@@ -119,9 +118,8 @@ object Stats {
 object RuntimeStats extends java.io.Serializable {
   @transient private lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] = {
+  private val flowMappingStore: mutable.Map[String, WeakReference[FlowProcess[_]]] =
     (new ConcurrentHashMap[String, WeakReference[FlowProcess[_]]]).asScala
-  }
 
   def getFlowProcessForUniqueId(uniqueId: UniqueID): FlowProcess[_] =
     (for {

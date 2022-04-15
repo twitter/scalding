@@ -1,7 +1,7 @@
 package com.twitter.scalding.spark_backend
 
 import com.twitter.scalding.{Config, Mode, TextLine, WritableSequenceFile}
-import com.twitter.scalding.typed.{Resolver, Input, Output}
+import com.twitter.scalding.typed.{Input, Output, Resolver}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.sql.SparkSession

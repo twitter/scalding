@@ -119,7 +119,7 @@ object Combinatorics {
    *
    * Parameters: The weights (a,b,c,...) must be non-negative doubles. Our search space is 0 to
    * result/min(weights) The returned pipe will contain integer tuples (x,y,z,...) that satisfy ax+by+cz +...
-   * = result
+   * \= result
    *
    * Note: This is NOT Simplex WE use a slughtly-improved brute-force algorithm that performs well on account
    * of parallelization. Algorithm: Create as many pipes as the number of weights Each pipe copntains integral

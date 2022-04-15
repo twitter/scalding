@@ -164,7 +164,11 @@ trait UntypedPipeExtensions1 {
  * write code that rather than returning values, it returns a (FlowDef, Mode) => T, these functions can be
  * combined Monadically using algebird.monad.Reader.
  */
-class Job(val args: Args) extends FieldConversions with CascadingExtensions with UntypedPipeExtensions0 with java.io.Serializable {
+class Job(val args: Args)
+    extends FieldConversions
+    with CascadingExtensions
+    with UntypedPipeExtensions0
+    with java.io.Serializable {
   Tracing.init()
 
   // Set specific Mode
@@ -184,7 +188,7 @@ class Job(val args: Args) extends FieldConversions with CascadingExtensions with
   // Override this if you want to change how the mapred.job.name is written in Hadoop
   def name: String = Config.defaultFrom(mode).toMap.getOrElse("mapred.job.name", getClass.getName)
 
-  //This is the FlowDef used by all Sources this job creates
+  // This is the FlowDef used by all Sources this job creates
   @transient
   implicit protected val flowDef: FlowDef = {
     val fd = new FlowDef
@@ -369,7 +373,7 @@ class Job(val args: Args) extends FieldConversions with CascadingExtensions with
   @transient
   private[scalding] var completedFlow: Option[Flow[_]] = None
 
-  //Override this if you need to do some extra processing other than complete the flow
+  // Override this if you need to do some extra processing other than complete the flow
   def run(): Boolean = {
     val flow = buildFlow
     flow.complete()
@@ -379,7 +383,7 @@ class Job(val args: Args) extends FieldConversions with CascadingExtensions with
     statsData.isSuccessful
   }
 
-  //override these to add any listeners you need
+  // override these to add any listeners you need
   def listeners: List[FlowListener] = Nil
   def stepListeners: List[FlowStepListener] = Nil
 
@@ -459,7 +463,7 @@ class NamedPoolThreadFactory(name: String, makeDaemons: Boolean) extends ThreadF
  * 2011-10-02 2011-10-04 --tz UTC If no timezone is given, Pacific is assumed.
  */
 trait DefaultDateRangeJob extends Job {
-  //Get date implicits and PACIFIC and UTC vals.
+  // Get date implicits and PACIFIC and UTC vals.
   import DateOps._
 
   // Optionally take --tz argument, or use Pacific time.  Derived classes may

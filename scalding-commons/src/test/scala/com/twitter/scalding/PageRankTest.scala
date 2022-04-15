@@ -24,11 +24,11 @@ class PageRankTest extends WordSpec with Matchers {
       .arg("output", "outputFile")
       .arg("errorOut", "error")
       .arg("temp", "tempBuffer")
-      //How many iterations to do each time:
+      // How many iterations to do each time:
       .arg("iterations", "6")
       .arg("convergence", "0.05")
       .source(Tsv("inputFile"), List((1L, "2", 1.0), (2L, "1,3", 1.0), (3L, "2", 1.0)))
-      //Don't check the tempBuffer:
+      // Don't check the tempBuffer:
       .sink[(Long, String, Double)](Tsv("tempBuffer"))(ob => ())
       .sink[Double](TypedTsv[Double]("error")) { ob =>
         "have low error" in {

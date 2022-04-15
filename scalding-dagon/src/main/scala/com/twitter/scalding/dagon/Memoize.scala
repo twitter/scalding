@@ -1,23 +1,17 @@
 package com.twitter.scalding.dagon
 
-import scala.util.control.TailCalls.{TailRec, done, tailcall}
+import scala.util.control.TailCalls.{done, tailcall, TailRec}
 
 object Memoize {
 
   /**
-   * Allow the user to create memoized recursive functions, by
-   * providing a function which can operate values as well as
-   * references to "itself".
+   * Allow the user to create memoized recursive functions, by providing a function which can operate values
+   * as well as references to "itself".
    *
-   * For example, we can translate the naive recursive Fibonnaci
-   * definition (which is exponential) into an opimized linear-time
-   * (and linear-space) form:
+   * For example, we can translate the naive recursive Fibonnaci definition (which is exponential) into an
+   * opimized linear-time (and linear-space) form:
    *
-   * Memoize.function[Int, Long] {
-   * case (0, _) => 1
-   * case (1, _) => 1
-   * case (i, f) => f(i - 1) + f(i - 2)
-   * }
+   * Memoize.function[Int, Long] { case (0, _) => 1 case (1, _) => 1 case (i, f) => f(i - 1) + f(i - 2) }
    */
   def function[A, B](f: (A, A => B) => B): A => B = {
     // It is tempting to use a mutable.Map here,
@@ -59,11 +53,11 @@ object Memoize {
   }
 
   type FunctionKRec[A[_], B[_]] = FunctionK[A, Lambda[x => TailRec[B[x]]]]
-  type RecursiveKTailRec[A[_], B[_]] = FunctionK[Lambda[x => (A[x], FunctionKRec[A, B])], Lambda[x => TailRec[B[x]]]]
+  type RecursiveKTailRec[A[_], B[_]] =
+    FunctionK[Lambda[x => (A[x], FunctionKRec[A, B])], Lambda[x => TailRec[B[x]]]]
 
   /**
-   * Memoize a FunctionK using an HCache, and tailCalls, which are slower but
-   * make things stack safe
+   * Memoize a FunctionK using an HCache, and tailCalls, which are slower but make things stack safe
    */
   def functionKTailRec[A[_], B[_]](f: RecursiveKTailRec[A, B]): FunctionKRec[A, B] = {
     type TailB[Z] = TailRec[B[Z]]

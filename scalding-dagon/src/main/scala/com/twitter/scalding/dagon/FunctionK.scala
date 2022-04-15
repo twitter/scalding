@@ -1,6 +1,7 @@
 package com.twitter.scalding.dagon
 
 import java.io.Serializable
+
 /**
  * This is a Natural transformation.
  *

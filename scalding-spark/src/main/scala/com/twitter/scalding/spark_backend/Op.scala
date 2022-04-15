@@ -147,8 +147,7 @@ object Op extends Serializable {
       Future(session.sparkContext.makeRDD(iterable.toSeq, 1))
   }
 
-  final case class Source[A](conf: Config, original: Input[A], input: Option[SparkSource[A]])
-      extends Op[A] {
+  final case class Source[A](conf: Config, original: Input[A], input: Option[SparkSource[A]]) extends Op[A] {
     def run(session: SparkSession)(implicit ec: ExecutionContext): Future[RDD[_ <: A]] =
       input match {
         case None =>
@@ -158,7 +157,7 @@ object Op extends Serializable {
   }
 
   private def widen[A](r: RDD[_ <: A]): RDD[A] =
-    //r.map { a => a }
+    // r.map { a => a }
     // or we could just cast
     r.asInstanceOf[RDD[A]]
 

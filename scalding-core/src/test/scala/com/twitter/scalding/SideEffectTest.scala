@@ -22,7 +22,7 @@ import org.scalatest.{Matchers, WordSpec}
  */
 class Zip(args: Args) extends Job(args) {
 
-  //import RichPipe._
+  // import RichPipe._
   def createState = new {
     var lastLine: String = null
     def release(): Unit = ()
@@ -66,7 +66,7 @@ class SideEffectTest extends WordSpec with Matchers with FieldConversions {
  */
 class ZipBuffer(args: Args) extends Job(args) {
 
-  //import RichPipe._
+  // import RichPipe._
   def createState = new {
     var lastLine: String = null
     def release(): Unit = ()

@@ -199,7 +199,7 @@ object TraversablesOrderedBuf {
               val $target = t
               $currentHash =
                 _root_.com.twitter.scalding.serialization.MurmurHashUtils.mixH1($currentHash, ${innerBuf
-              .hash(target)})
+                .hash(target)})
               // go ahead and compute the length so we don't traverse twice for lists
               $len += 1
             }
@@ -313,7 +313,8 @@ object TraversablesOrderedBuf {
             }
             """)
           // Something we can't workout the size of ahead of time
-          case _ => MaybeLengthCalculation(c)(q"""
+          case _ =>
+            MaybeLengthCalculation(c)(q"""
               if($element.isEmpty) {
                 val sizeOfZero = 1 // writing the constant 0, for length, takes 1 byte
                 _root_.com.twitter.scalding.serialization.macros.impl.ordered_serialization.runtime_helpers.DynamicLen(sizeOfZero)

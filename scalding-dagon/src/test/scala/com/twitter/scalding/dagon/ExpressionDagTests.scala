@@ -38,7 +38,7 @@ object DagTests extends Properties("Dag") {
 
     override def equals(that: Any) = that match {
       case thatF: Formula[_] => eqFn(RefPair(this, thatF))
-      case _ => false
+      case _                 => false
     }
   }
 
@@ -71,8 +71,8 @@ object DagTests extends Properties("Dag") {
 
   def eqFn: Function[RefPair[Formula[_], Formula[_]], Boolean] =
     Memoize.function[RefPair[Formula[_], Formula[_]], Boolean] {
-      case (pair, _) if pair.itemsEq => true
-      case (RefPair(Constant(a), Constant(b)), _) => a == b
+      case (pair, _) if pair.itemsEq                => true
+      case (RefPair(Constant(a), Constant(b)), _)   => a == b
       case (RefPair(Inc(ia, ca), Inc(ib, cb)), rec) => (ca == cb) && rec(RefPair(ia, ib))
       case (RefPair(Sum(lefta, leftb), Sum(righta, rightb)), rec) =>
         rec(RefPair(lefta, righta)) && rec(RefPair(leftb, rightb))
@@ -115,15 +115,14 @@ object DagTests extends Properties("Dag") {
    * Here we convert our dag nodes into Literal[Formula, T]
    */
   def toLiteral: FunctionK[Formula, Literal[Formula, *]] =
-    Memoize.functionK[Formula, Literal[Formula, *]](
-      new Memoize.RecursiveK[Formula, Literal[Formula, *]] {
-        def toFunction[T] = {
-          case (c @ Constant(_), _) => Literal.Const(c)
-          case (Inc(in, by), f) => Literal.Unary(f(in), Formula.inc(by))
-          case (Sum(lhs, rhs), f) => Literal.Binary(f(lhs), f(rhs), Formula.sum)
-          case (Product(lhs, rhs), f) => Literal.Binary(f(lhs), f(rhs), Formula.product)
-        }
-      })
+    Memoize.functionK[Formula, Literal[Formula, *]](new Memoize.RecursiveK[Formula, Literal[Formula, *]] {
+      def toFunction[T] = {
+        case (c @ Constant(_), _)   => Literal.Const(c)
+        case (Inc(in, by), f)       => Literal.Unary(f(in), Formula.inc(by))
+        case (Sum(lhs, rhs), f)     => Literal.Binary(f(lhs), f(rhs), Formula.sum)
+        case (Product(lhs, rhs), f) => Literal.Binary(f(lhs), f(rhs), Formula.product)
+      }
+    })
 
   /**
    * Inc(Inc(a, b), c) = Inc(a, b + c)
@@ -131,13 +130,13 @@ object DagTests extends Properties("Dag") {
   object CombineInc extends Rule[Formula] {
     def apply[T](on: Dag[Formula]) = {
       case Inc(i @ Inc(a, b), c) if on.fanOut(i) == 1 => Some(Inc(a, b + c))
-      case _ => None
+      case _                                          => None
     }
   }
 
   object RemoveInc extends PartialRule[Formula] {
-    def applyWhere[T](on: Dag[Formula]) = {
-      case Inc(f, by) => Sum(f, Constant(by))
+    def applyWhere[T](on: Dag[Formula]) = { case Inc(f, by) =>
+      Sum(f, Constant(by))
     }
   }
 
@@ -146,10 +145,10 @@ object DagTests extends Properties("Dag") {
    */
   object EvaluationRule extends Rule[Formula] {
     def apply[T](on: Dag[Formula]) = {
-      case Sum(Constant(a), Constant(b)) => Some(Constant(a + b))
+      case Sum(Constant(a), Constant(b))     => Some(Constant(a + b))
       case Product(Constant(a), Constant(b)) => Some(Constant(a * b))
-      case Inc(Constant(a), b) => Some(Constant(a + b))
-      case _ => None
+      case Inc(Constant(a), b)               => Some(Constant(a + b))
+      case _                                 => None
     }
   }
 
@@ -166,36 +165,36 @@ object DagTests extends Properties("Dag") {
     ((end - start).toDouble, res)
   }
 
-  //This is a bit noisey due to timing, but often passes
+  // This is a bit noisey due to timing, but often passes
   property("Evaluation is at most n^(3.0)") = {
-     def fibFormula(n: Int): Formula[Unit] = fib(Formula(1), Formula(1), n)(Sum(_, _))
+    def fibFormula(n: Int): Formula[Unit] = fib(Formula(1), Formula(1), n)(Sum(_, _))
 
     def runit(n: Int): (Double, Int) =
       timeit(Dag.applyRule(fibFormula(n), toLiteral, EvaluationRule)) match {
         case (t, Constant(res)) => (t, res)
-        case (_, other) => sys.error(s"unexpected result: $other")
+        case (_, other)         => sys.error(s"unexpected result: $other")
       }
 
-     def check = {
-       val (t10, res10) = runit(10)
-       val (t20, res20) = runit(20)
-       val (t40, res40) = runit(40)
-       val (t80, res80) = runit(80)
-       val (t160, res160) = runit(160)
-       // if this is polynomial = t(n) ~ Cn^k, so t(20)/t(10) == t(40)/t(20) == 2^k
-       val k = List(t160/t80, t80/t40, t40/t20, t20/t10).map(math.log(_)/math.log(2.0)).max
-       println(s"${t10}, ${t20}, ${t40}, ${t80}, ${t160}, $k")
-       (res10 == fib(1, 1, 10)(_ + _)) &&
-       (res20 == fib(1, 1, 20)(_ + _)) &&
-       (res40 == fib(1, 1, 40)(_ + _)) &&
-       (res80 == fib(1, 1, 80)(_ + _)) &&
-       (res160 == fib(1, 1, 160)(_ + _)) &&
-       (k < 3.0) // without properly memoized equality checks, this rule becomes exponential
-     }
-     check || check || check || check // try 4 times if needed to warm up the jit
-   }
+    def check = {
+      val (t10, res10) = runit(10)
+      val (t20, res20) = runit(20)
+      val (t40, res40) = runit(40)
+      val (t80, res80) = runit(80)
+      val (t160, res160) = runit(160)
+      // if this is polynomial = t(n) ~ Cn^k, so t(20)/t(10) == t(40)/t(20) == 2^k
+      val k = List(t160 / t80, t80 / t40, t40 / t20, t20 / t10).map(math.log(_) / math.log(2.0)).max
+      println(s"${t10}, ${t20}, ${t40}, ${t80}, ${t160}, $k")
+      (res10 == fib(1, 1, 10)(_ + _)) &&
+      (res20 == fib(1, 1, 20)(_ + _)) &&
+      (res40 == fib(1, 1, 40)(_ + _)) &&
+      (res80 == fib(1, 1, 80)(_ + _)) &&
+      (res160 == fib(1, 1, 160)(_ + _)) &&
+      (k < 3.0) // without properly memoized equality checks, this rule becomes exponential
+    }
+    check || check || check || check // try 4 times if needed to warm up the jit
+  }
 
-  //Check the Node[T] <=> Id[T] is an Injection for all nodes reachable from the root
+  // Check the Node[T] <=> Id[T] is an Injection for all nodes reachable from the root
 
   property("toLiteral/Literal.evaluate is a bijection") = forAll(genForm) { form =>
     toLiteral.apply(form).evaluate == form
@@ -214,9 +213,9 @@ object DagTests extends Properties("Dag") {
   property("RemoveInc removes all Inc") = forAll(genForm) { form =>
     val noIncForm = Dag.applyRule(form, toLiteral, RemoveInc)
     def noInc(f: Formula[Int]): Boolean = f match {
-      case Constant(_) => true
-      case Inc(_, _) => false
-      case Sum(l, r) => noInc(l) && noInc(r)
+      case Constant(_)   => true
+      case Inc(_, _)     => false
+      case Sum(l, r)     => noInc(l) && noInc(r)
       case Product(l, r) => noInc(l) && noInc(r)
     }
     noInc(noIncForm) && (noIncForm.evaluate == form.evaluate)
@@ -233,9 +232,9 @@ object DagTests extends Properties("Dag") {
 
   property("CombineInc compresses linear Inc chains") = forAll(genChain) { chain =>
     Dag.applyRule(chain, toLiteral, CombineInc) match {
-      case Constant(n) => true
+      case Constant(n)         => true
       case Inc(Constant(n), b) => true
-      case _ => false // All others should have been compressed
+      case _                   => false // All others should have been compressed
     }
   }
 
@@ -262,36 +261,34 @@ object DagTests extends Properties("Dag") {
     val tails = (n1 :: ns).zipWithIndex.map { case (i, idx) => Formula(i).inc(idx) }
 
     val (dag, roots) =
-      tails.foldLeft((Dag.empty[Formula](toLiteral), Set.empty[Id[_]])) {
-        case ((d, s), f) =>
-          val (dnext, id) = d.addRoot(f)
-          (dnext, s + id)
+      tails.foldLeft((Dag.empty[Formula](toLiteral), Set.empty[Id[_]])) { case ((d, s), f) =>
+        val (dnext, id) = d.addRoot(f)
+        (dnext, s + id)
       }
 
     roots.forall(dag.fanOut(_) == 1)
   }
 
-  property("depth is non-decreasing further down the graph") =
-    forAll(genForm) { form =>
-      val (dag, id) = Dag(form, toLiteral)
+  property("depth is non-decreasing further down the graph") = forAll(genForm) { form =>
+    val (dag, id) = Dag(form, toLiteral)
 
-      import dag.depthOf
+    import dag.depthOf
 
-      val di = dag.depthOfId(id)
-      val df = depthOf(form)
-      val prop1 = di.isDefined
-      val prop2 = di == df
+    val di = dag.depthOfId(id)
+    val df = depthOf(form)
+    val prop1 = di.isDefined
+    val prop2 = di == df
 
-      def prop3 = form match {
-        case Constant(_) => di == Some(0)
-        case Inc(a, _) =>
-          (di.get == (depthOf(a).get + 1))
-        case Sum(a, b) =>
-          (di.get == (depthOf(a).get + 1)) || (di.get == (depthOf(b).get + 1))
-        case Product(a, b) =>
-          (di.get == (depthOf(a).get + 1)) || (di.get == (depthOf(b).get + 1))
-      }
-
-      prop1 && prop2 && prop3
+    def prop3 = form match {
+      case Constant(_) => di == Some(0)
+      case Inc(a, _) =>
+        (di.get == (depthOf(a).get + 1))
+      case Sum(a, b) =>
+        (di.get == (depthOf(a).get + 1)) || (di.get == (depthOf(b).get + 1))
+      case Product(a, b) =>
+        (di.get == (depthOf(a).get + 1)) || (di.get == (depthOf(b).get + 1))
     }
+
+    prop1 && prop2 && prop3
+  }
 }

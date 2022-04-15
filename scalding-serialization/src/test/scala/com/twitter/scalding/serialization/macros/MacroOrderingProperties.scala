@@ -395,7 +395,7 @@ class MacroOrderingProperties extends FunSuite with PropertyChecks with BinaryOr
     val input = arbInput.sample.get
     val hashes = input.map(ord.hash(_))
 
-    assert(input.distinct.size - hashes.distinct.size <= 3) //generously allow up to 3 collision
+    assert(input.distinct.size - hashes.distinct.size <= 3) // generously allow up to 3 collision
   }
 
   def noOrderedSerialization[T](implicit ev: OrderedSerialization[T] = null) =

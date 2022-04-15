@@ -32,8 +32,8 @@ package object scalding {
   type Grouped[K, +V] = com.twitter.scalding.typed.Grouped[K, V]
 
   /**
-   * scaldingVersion is logged sometimes to inform a user of what scalding version they are using
-   * The value is obtained through code gen with https://github.com/sbt/sbt-buildinfo
+   * scaldingVersion is logged sometimes to inform a user of what scalding version they are using The value is
+   * obtained through code gen with https://github.com/sbt/sbt-buildinfo
    */
   val scaldingVersion: String = BuildInfo.version
 

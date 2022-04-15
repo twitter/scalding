@@ -87,7 +87,7 @@ class Matrix2OptimizationSpec extends WordSpec with Matchers {
   val simplePlan =
     product(literal(globM, FiniteHint(30, 35)), literal(globM, FiniteHint(35, 25))) // linter:ignore
 
-  val simplePlanCost = 750 //originally 26250
+  val simplePlanCost = 750 // originally 26250
 
   val combinedUnoptimizedPlan = sum(unoptimizedPlan, simplePlan) // linter:ignore
 

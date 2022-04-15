@@ -87,7 +87,7 @@ object MemoryEstimatorStepStrategy extends FlowStepStrategy[JobConf] {
 
   private[estimation] def setXmxMemory(xmxKey: String, xmxMemory: Long, conf: JobConf): Unit = {
     val xmxOpts = conf.get(xmxKey, "")
-    //remove existing xmx / xms
+    // remove existing xmx / xms
     val xmxOptsWithoutXm =
       xmxOpts.split(" ").filterNot(s => s.startsWith("-Xmx") || s.startsWith("-Xms")).mkString(" ")
 

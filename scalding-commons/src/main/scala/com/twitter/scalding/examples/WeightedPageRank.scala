@@ -154,7 +154,7 @@ class WeightedPageRank(args: Args) extends Job(args) {
               args._1.map { id: Int => (id, dist) }
             }
           } else {
-            //Here is a node that points to no other nodes (dangling)
+            // Here is a node that points to no other nodes (dangling)
             Nil
           }
       }

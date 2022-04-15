@@ -84,7 +84,7 @@ object DateParser {
  * //possibly with: //implicit val myParser = DateParser(Seq(DateParser.default, NattyParser))
  *
  * object NattyParser extends DateParser { def parse(s: String)(implicit tz: TimeZone) = Try { val timeParser
- * = new natty.Parser(tz) val dateGroups = timeParser.parse(s) if (dateGroups.size == 0) { throw new
+ * \= new natty.Parser(tz) val dateGroups = timeParser.parse(s) if (dateGroups.size == 0) { throw new
  * IllegalArgumentException("Could not convert string: '" + str + "' into a date.") } // a DateGroup can have
  * more than one Date (e.g. if you do "Sept. 11th or 12th"), // but we're just going to take the first val
  * dates = dateGroups.get(0).getDates() RichDate(dates.get(0)) } }

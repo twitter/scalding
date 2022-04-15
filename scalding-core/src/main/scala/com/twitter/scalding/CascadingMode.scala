@@ -200,7 +200,7 @@ case class HadoopTest(@transient conf: Configuration, @transient buffers: Source
   private def allocateNewPath(prefix: String, idx: Int): String = {
     val candidate = prefix + idx.toString
     if (allPaths(candidate)) {
-      //Already taken, try again:
+      // Already taken, try again:
       allocateNewPath(prefix, idx + 1)
     } else {
       // Update all paths:
@@ -236,7 +236,7 @@ case class HadoopTest(@transient conf: Configuration, @transient buffers: Source
       buf += new Tuple(it.next.getTuple)
     }
     it.close()
-    //Clean up this data off the disk
+    // Clean up this data off the disk
     new File(path).delete()
     writePaths -= src
   }

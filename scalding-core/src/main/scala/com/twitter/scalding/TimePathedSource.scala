@@ -130,7 +130,7 @@ abstract class TimeSeqPathedSource(val patterns: Seq[String], val dateRange: Dat
 abstract class TimePathedSource(val pattern: String, dateRange: DateRange, tz: TimeZone)
     extends TimeSeqPathedSource(Seq(pattern), dateRange, tz) {
 
-  //Write to the path defined by the end time:
+  // Write to the path defined by the end time:
   override def hdfsWritePath = TimePathedSource.writePathFor(pattern, dateRange, tz)
 
   override def localPaths = patterns

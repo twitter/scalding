@@ -69,7 +69,7 @@ object AvroSchemaType {
     val schema = Schema.createArray(sch.schema)
   }
 
-  //maps
+  // maps
   implicit def MapSchema[CC[String, x] <: Map[String, x], T](implicit
       sch: AvroSchemaType[T]
   ): AvroSchemaType[CC[String, T]] = new AvroSchemaType[CC[String, T]] {

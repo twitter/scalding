@@ -36,7 +36,7 @@ trait TupleArity {
    * considered a weak check.
    */
   def assertArityMatches(f: Fields): Unit =
-    //Fields.size == 0 for the indefinite Fields: ALL, GROUP, VALUES, UNKNOWN, etc..
+    // Fields.size == 0 for the indefinite Fields: ALL, GROUP, VALUES, UNKNOWN, etc..
     if (f.size > 0 && arity >= 0) {
       assert(
         arity == f.size,

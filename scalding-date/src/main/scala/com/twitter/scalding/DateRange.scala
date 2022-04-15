@@ -43,7 +43,7 @@ object DateRange extends java.io.Serializable {
 
     val start = RichDate(iso8601start)
     val end = RichDate.upperBound(iso8601inclusiveUpper)
-    //Make sure the end is not before the beginning:
+    // Make sure the end is not before the beginning:
     assert(start <= end, "end of date range must occur after the start")
     DateRange(start, end)
   }
@@ -110,22 +110,22 @@ case class DateRange(val start: RichDate, val end: RichDate) {
    * timezone, else break at start + k * span.
    */
   def each(span: Duration): Iterable[DateRange] = {
-    //tail recursive method which produces output (as a stack, so it is
-    //reversed). acc is the accumulated list so far:
+    // tail recursive method which produces output (as a stack, so it is
+    // reversed). acc is the accumulated list so far:
     @tailrec def eachRec(acc: List[DateRange], nextDr: DateRange): List[DateRange] = {
       val next_start = span.floorOf(nextDr.start) + span
-      //the smallest grain of time we count is 1 millisecond
+      // the smallest grain of time we count is 1 millisecond
       val this_end = next_start - Millisecs(1)
       if (nextDr.end <= this_end) {
-        //This is the last block, output and end:
+        // This is the last block, output and end:
         nextDr :: acc
       } else {
-        //Put today's portion, and then start on tomorrow:
+        // Put today's portion, and then start on tomorrow:
         val today = DateRange(nextDr.start, this_end)
         eachRec(today :: acc, DateRange(next_start, nextDr.end))
       }
     }
-    //have to reverse because eachDayRec produces backwards
+    // have to reverse because eachDayRec produces backwards
     eachRec(Nil, this).reverse
   }
 

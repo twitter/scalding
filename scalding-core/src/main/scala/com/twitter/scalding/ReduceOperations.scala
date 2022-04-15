@@ -106,7 +106,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
       f: (Fields, Fields),
       errPercent: Double = 1.0
   )(fn: HLL => U) = {
-    //bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
+    // bits = log(m) == 2 *log(104/errPercent) = 2log(104) - 2*log(errPercent)
     def log2(x: Double) = scala.math.log(x) / scala.math.log(2.0)
     val bits = 2 * scala.math.ceil(log2(104) - log2(errPercent)).toInt
     implicit val hmm: HyperLogLogMonoid = new HyperLogLogMonoid(bits)
@@ -182,14 +182,14 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
    * Return the first, useful probably only for sorted case.
    */
   def head(fd: (Fields, Fields)): Self =
-    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    // CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) }((oldVal, newVal) => oldVal) { result =>
       result._1
     }
   def head(f: Symbol*): Self = head(f -> f)
 
   def last(fd: (Fields, Fields)) =
-    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    // CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     mapReduceMap(fd) { ctuple: CTuple => Tuple1(ctuple) }((oldVal, newVal) => newVal) { result =>
       result._1
     }
@@ -208,9 +208,9 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     val midset = implicitly[TupleSetter[List[T]]]
     val midconv = implicitly[TupleConverter[List[T]]]
 
-    mapReduceMap[T, List[T], R](fieldDef) { //Map
+    mapReduceMap[T, List[T], R](fieldDef) { // Map
       x => List(x)
-    } { //Reduce, note the bigger list is likely on the left, so concat into it:
+    } { // Reduce, note the bigger list is likely on the left, so concat into it:
       (prev, current) => current ++ prev
     }(fn(_))(conv, midset, midconv, setter)
   }
@@ -230,7 +230,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
     )
 
   private def extremum(max: Boolean, fieldDef: (Fields, Fields)): Self = {
-    //CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
+    // CTuple's have unknown arity so we have to put them into a Tuple1 in the middle phase:
     val select = if (max) { (a: CTuple, b: CTuple) =>
       (a.compareTo(b) >= 0)
     } else { (a: CTuple, b: CTuple) =>
@@ -287,7 +287,7 @@ trait ReduceOperations[+Self <: ReduceOperations[Self]] extends java.io.Serializ
       fn: (T, T) => T
   )(implicit setter: TupleSetter[T], conv: TupleConverter[T]): Self =
     mapReduceMap[T, T, T](fieldDef)(t => t)(fn)(t => t)(conv, setter, conv, setter)
-  //Same as reduce(f->f)
+  // Same as reduce(f->f)
   def reduce[T](fieldDef: Symbol*)(
       fn: (T, T) => T
   )(implicit setter: TupleSetter[T], conv: TupleConverter[T]): Self =

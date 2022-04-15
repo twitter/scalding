@@ -60,7 +60,7 @@ trait SmoothedHistoryMemoryEstimator extends HistoryEstimator[MemoryEstimate] {
     val smoothEstimation = smoothedAverage(historyMemory, alpha)
     val scaledEstimation = smoothEstimation * scaleFactor
 
-    //TODO handle gc
+    // TODO handle gc
 
     LOG.info(
       s"Calculated xmx memory for: $historyMemory smoothAvg = $smoothEstimation, scaled: $scaledEstimation"

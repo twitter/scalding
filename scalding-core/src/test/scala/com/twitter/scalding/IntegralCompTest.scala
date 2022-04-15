@@ -26,11 +26,11 @@ class IntegralCompTest extends WordSpec with Matchers {
       intComp.isIntegral(box(1)) shouldBe true
       intComp.isIntegral(box(1L)) shouldBe true
       intComp.isIntegral(box(1: Short)) shouldBe true
-      //Boxed
+      // Boxed
       intComp.isIntegral(new java.lang.Long(2)) shouldBe true
       intComp.isIntegral(new java.lang.Integer(2)) shouldBe true
       intComp.isIntegral(new java.lang.Short(2: Short)) shouldBe true
-      //These are not integrals
+      // These are not integrals
       intComp.isIntegral(box(0.0)) shouldBe false
       intComp.isIntegral(box("hey")) shouldBe false
       intComp.isIntegral(box(Nil)) shouldBe false

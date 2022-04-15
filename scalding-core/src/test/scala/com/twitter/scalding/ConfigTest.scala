@@ -27,9 +27,7 @@ import org.scalacheck.Prop.forAll
 
 import scala.util.Success
 
-import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.{
-  ConfigCascadingExtensions
-}
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
 
 class ConfigTest extends WordSpec with Matchers {
 
@@ -133,7 +131,7 @@ class ConfigTest extends WordSpec with Matchers {
 
       Config.CascadingSpillablePropMapThreshold shouldBe
         cascading.tuple.collect.SpillableProps.MAP_THRESHOLD
-      
+
       Config.CascadingAggregateByThreshold shouldBe
         cascading.pipe.assembly.AggregateBy.AGGREGATE_BY_THRESHOLD
 

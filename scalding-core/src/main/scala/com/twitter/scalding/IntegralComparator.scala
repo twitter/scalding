@@ -39,7 +39,7 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
     val a1IsNull = if (a1 == null) 1 else 0
     val a2IsNull = if (a2 == null) 1 else 0
     if (a1IsNull + a2IsNull > 0) {
-      //if a2IsNull, but a1IsNot, a2 is less:
+      // if a2IsNull, but a1IsNot, a2 is less:
       a2IsNull - a1IsNull
     } else if (isIntegral(a1) && isIntegral(a2)) {
       val long1 = a1.asInstanceOf[Number].longValue
@@ -60,7 +60,7 @@ class IntegralComparator extends Comparator[AnyRef] with Hasher[AnyRef] with Ser
     } else if (isIntegral(obj)) {
       obj.asInstanceOf[Number].longValue.hashCode
     } else {
-      //Use the default:
+      // Use the default:
       obj.hashCode
     }
 }

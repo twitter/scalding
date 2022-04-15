@@ -66,7 +66,7 @@ class ArgsSerializer extends KSerializer[Args] {
 }
 
 class IntFieldSerializer extends KSerializer[IntField[_]] {
-  //immutable, no need to copy them
+  // immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, a: IntField[_]): Unit = {
     out.writeInt(a.id)
@@ -82,7 +82,7 @@ class IntFieldSerializer extends KSerializer[IntField[_]] {
 }
 
 class StringFieldSerializer extends KSerializer[StringField[_]] {
-  //immutable, no need to copy them
+  // immutable, no need to copy them
   setImmutable(true)
   def write(kser: Kryo, out: Output, a: StringField[_]): Unit = {
     out.writeString(a.id)

@@ -158,7 +158,7 @@ package com.twitter.scalding {
         flowProcess: FlowProcess[_],
         operationCall: OperationCall[MapsideCache[Tuple, V]]
     ): Unit = {
-      //Set up the context:
+      // Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = MapsideCache[Tuple, V](cacheSize, flowProcess)
       operationCall.setContext(cache)
@@ -235,7 +235,7 @@ package com.twitter.scalding {
         flowProcess: FlowProcess[_],
         operationCall: OperationCall[MapsideCache[K, V]]
     ): Unit = {
-      //Set up the context:
+      // Set up the context:
       implicit val sg: Semigroup[V] = boxedSemigroup.get
       val cache = MapsideCache[K, V](cacheSize, flowProcess)
       operationCall.setContext(cache)
@@ -601,13 +601,13 @@ package com.twitter.scalding {
         nextContext = Tuple.size(1)
         first(args)
       } else {
-        //We are updating
+        // We are updating
         val oldValue = context.getObject(0).asInstanceOf[X]
         nextContext = context
         subsequent(oldValue, args)
       }
       nextContext.set(0, newContextObj.asInstanceOf[AnyRef])
-      //Return context for reuse next time:
+      // Return context for reuse next time:
       nextContext
     }
 

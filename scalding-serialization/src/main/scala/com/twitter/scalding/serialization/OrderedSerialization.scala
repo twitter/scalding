@@ -94,11 +94,13 @@ object OrderedSerialization {
   /**
    * This is slow, but always an option. Avoid this if you can, especially for large items
    */
-  def readThenCompare[T: OrderedSerialization](as: InputStream, bs: InputStream): Result = try resultFrom {
-    val a = Serialization.read[T](as)
-    val b = Serialization.read[T](bs)
-    compare(a.get, b.get)
-  } catch {
+  def readThenCompare[T: OrderedSerialization](as: InputStream, bs: InputStream): Result = try
+    resultFrom {
+      val a = Serialization.read[T](as)
+      val b = Serialization.read[T](bs)
+      compare(a.get, b.get)
+    }
+  catch {
     case NonFatal(e) => CompareFailure(e)
   }
 
@@ -214,9 +216,11 @@ final case class DeserializingOrderedSerialization[T](serialization: Serializati
   final override def hash(t: T) = serialization.hash(t)
   final override def compare(a: T, b: T) = ordering.compare(a, b)
   final override def compareBinary(a: InputStream, b: InputStream) =
-    try OrderedSerialization.resultFrom {
-      compare(read(a).get, read(b).get)
-    } catch {
+    try
+      OrderedSerialization.resultFrom {
+        compare(read(a).get, read(b).get)
+      }
+    catch {
       case NonFatal(e) => OrderedSerialization.CompareFailure(e)
     }
   final override def staticSize = serialization.staticSize
