@@ -18,7 +18,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private def session: SparkSession = sparkMode.session
 
-  private val sparkCounters = new SparkCounters(session)
+  private val sparkCounters = SparkCounters.withRandomContextPrefix(session)
 
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
