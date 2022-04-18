@@ -67,7 +67,7 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
     )
 
-  def sparkRetrieveCounters[A: Ordering](t: TypedPipe[A], conf: Config = Config.empty) = {
+  def sparkRetrieveCounters[A](t: TypedPipe[A], conf: Config = Config.empty) = {
     val smode = SparkMode.default(session)
     val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(conf, smode).get
     ecounters
