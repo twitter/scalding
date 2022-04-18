@@ -5,6 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable.{Map => MutableMap}
+import scala.collection.immutable.{Map => ImmutableMap}
 
 object SparkCounters {
   def withRandomContextPrefix(sparkSession: SparkSession): SparkCounters =
@@ -16,7 +17,13 @@ object SparkCounters {
  */
 class SparkCounters(sparkSession: SparkSession, counterPrefix: String) {
 
-  val accumulator: SparkCountersInternal = new SparkCountersInternal
+  /**
+   * This counter is specific to the spark driver. Executors will serialize SparkCountersInternal but it will
+   * be a stateless instance obtained through the copyAndReset method. You can read the internal
+   * implementation here:
+   * https://github.com/apache/spark/blob/87c744b60507f82e1722f1488f1741cb2bb8e8e5/core/src/main/scala/org/apache/spark/util/AccumulatorV2.scala#L165
+   */
+  @transient val accumulator: SparkCountersInternal = new SparkCountersInternal
 
   /**
    * Register for spark to be aware of accumulator. Note that accumulators are now automatically garbage
@@ -43,15 +50,30 @@ class SparkCounters(sparkSession: SparkSession, counterPrefix: String) {
 
 }
 
+/**
+ * A note about synchronization of counter state: the counter API in spark was originally designed to not
+ * require thread safety by merging changes only linearly on the executor after each RDD action.
+ *
+ * However... it seems like there was an oversight in the design because there have been reported crashes
+ * where thread safety is required. Look at the following for reference:
+ * https://issues.apache.org/jira/browse/SPARK-17463, https://github.com/apache/spark/pull/15371, and
+ * https://github.com/apache/spark/pull/15063
+ *
+ * Out of abundance of caution until this patch is no longer required, we are following the example pattern
+ * for implementations such as CollectionAccumulator:
+ * https://github.com/apache/spark/blob/87c744b60507f82e1722f1488f1741cb2bb8e8e5/core/src/main/scala/org/apache/spark/util/AccumulatorV2.scala#L472
+ *
+ * In that example, all operations (add, value, copy, and merge) are synchronized across threads
+ */
 sealed class SparkCountersInternal(
     mapState: MutableMap[(String, String), Long] = MutableMap[(String, String), Long]()
-) extends AccumulatorV2[((String, String), Long), MutableMap[(String, String), Long]]
+) extends AccumulatorV2[((String, String), Long), ImmutableMap[(String, String), Long]]
     with Serializable {
 
   /**
    * Should be used inside of spark executor actions for a side-effect free counter implementation.
    */
-  def add(in: Iterator[((String, String), Long)]): Unit =
+  def add(in: Iterator[((String, String), Long)]): Unit = mapState.synchronized {
     while (in.hasNext) {
       val count = in.next()
       val prev = mapState.get(count._1) match {
@@ -60,9 +82,10 @@ sealed class SparkCountersInternal(
       }
       mapState(count._1) = prev + count._2
     }
+  }
 
   // internal for spark do not call
-  override def add(in: ((String, String), Long)): Unit = {
+  override def add(in: ((String, String), Long)): Unit = mapState.synchronized {
     val prev = mapState.get(in._1) match {
       case Some(v) => v
       case None    => 0L
@@ -71,29 +94,42 @@ sealed class SparkCountersInternal(
   }
 
   // internal for spark do not call
-  override def value() = mapState
-
-  // internal for spark do not call
-  override def copy(): SparkCountersInternal = {
-    val copyState = MutableMap[(String, String), Long]()
-    copyState ++= mapState
-    new SparkCountersInternal(copyState)
+  override def value() = mapState.synchronized {
+    mapState.toMap
   }
 
   // internal for spark do not call
-  override def merge(other: AccumulatorV2[((String, String), Long), MutableMap[(String, String), Long]]) =
-    for (kvPair <- other.value) {
-      val prev = mapState.get(kvPair._1) match {
-        case Some(v) => v
-        case None    => 0L
+  override def copy(): SparkCountersInternal = mapState.synchronized {
+    val copyState = MutableMap[(String, String), Long]()
+    mapState.synchronized(
+      copyState ++= mapState
+    )
+    new SparkCountersInternal(copyState)
+  }
+
+  // internal to spark do not call
+  override def copyAndReset(): SparkCountersInternal = new SparkCountersInternal
+
+  // internal for spark do not call
+  override def merge(other: AccumulatorV2[((String, String), Long), ImmutableMap[(String, String), Long]]) =
+    mapState.synchronized {
+      for (kvPair <- other.value) {
+        val prev = mapState.get(kvPair._1) match {
+          case Some(v) => v
+          case None    => 0L
+        }
+        mapState(kvPair._1) = prev + kvPair._2
       }
-      mapState(kvPair._1) = prev + kvPair._2
     }
 
   // internal for spark do not call
-  override def isZero(): Boolean = mapState.isEmpty
+  override def isZero(): Boolean = mapState.synchronized {
+    mapState.isEmpty
+  }
 
   // internal for spark do not call
-  override def reset(): Unit = mapState.clear()
+  override def reset(): Unit = mapState.synchronized {
+    mapState.clear()
+  }
 
 }
