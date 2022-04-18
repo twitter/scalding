@@ -67,9 +67,15 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
     )
 
-  def sparkRetrieveCounters[A](t: TypedPipe[A], conf: Config = Config.empty) = {
+  def sparkRetrieveCounters[A](t: TypedPipe[A]) = {
     val smode = SparkMode.default(session)
-    val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(conf, smode).get
+    val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(Config.empty, smode).get
+    ecounters
+  }
+
+  def sparkRetrieveCounters[A](t: Execution[Iterable[A]], conf: Config = Config.empty) = {
+    val smode = SparkMode.default(session)
+    val (eiter, ecounters) = t.getCounters.waitFor(conf, smode).get
     ecounters
   }
 
@@ -164,27 +170,41 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       assert(cresult1.toMap.size == 1)
       assert(cresult1.get(StatKey("test", "scalding")).get == 100)
 
-      // something more tricky with many transforms
+      // same thing but with writeExecution
+      val sinkPath = tmpPath("countersTest")
+      val sinkExample = TextLine(sinkPath)
       val cpipe2 = TypedPipe
+        .from(0 until 100)
+        .tallyAll("scalding", "test")
+        .map(_.toString)
+        .writeExecution(sinkExample)
+        .flatMap(_ => TypedPipe.from(sinkExample).toIterableExecution)
+      val cresult2 = sparkRetrieveCounters(cpipe2)
+      assert(cresult2.toMap.size == 1)
+      assert(cresult2.get(StatKey("test", "scalding")).get == 100)
+      removeDir(sinkPath)
+
+      // something more tricky with many transforms
+      val cpipe3 = TypedPipe
         .from(0 until 100)
         .filter(x => x % 4 == 0)
         .tallyAll("something interesting", "divisible by 4")
 
-      val cpipe3 =
-        cpipe2
+      val cpipe4 =
+        cpipe3
           .cross(
             TypedPipe
               .from(0 to 10)
               .tallyBy("inner")(x => (if (x % 3 == 0) "divisible by 3" else "not divisible by 3"))
           )
           .tallyBy("outer")(x => (if (x._2 % 3 == 0) "divisible by 3" else "not divisible by 3"))
-      val cresult2 = sparkRetrieveCounters(cpipe3)
-      assert(cresult2.toMap.size == 5)
-      assert(cresult2.get(StatKey("divisible by 4", "something interesting")).get == 25)
-      assert(cresult2.get(StatKey("divisible by 3", "inner")).get == 4)
-      assert(cresult2.get(StatKey("not divisible by 3", "inner")).get == 7)
-      assert(cresult2.get(StatKey("divisible by 3", "outer")).get == 25 * 4)
-      assert(cresult2.get(StatKey("not divisible by 3", "outer")).get == 25 * 7)
+      val cresult3 = sparkRetrieveCounters(cpipe4)
+      assert(cresult3.toMap.size == 5)
+      assert(cresult3.get(StatKey("divisible by 4", "something interesting")).get == 25)
+      assert(cresult3.get(StatKey("divisible by 3", "inner")).get == 4)
+      assert(cresult3.get(StatKey("not divisible by 3", "inner")).get == 7)
+      assert(cresult3.get(StatKey("divisible by 3", "outer")).get == 25 * 4)
+      assert(cresult3.get(StatKey("not divisible by 3", "outer")).get == 25 * 7)
 
     }
   }
