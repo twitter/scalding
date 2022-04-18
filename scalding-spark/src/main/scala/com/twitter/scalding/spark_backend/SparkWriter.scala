@@ -153,7 +153,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       SparkPlanner.plan(
         conf,
         sparkMode.sources.orElse(state.get().sources),
-        sparkCounters.accumulator
+        sparkCounters.getAccumulator
       )
 
     import Execution.ToWrite._

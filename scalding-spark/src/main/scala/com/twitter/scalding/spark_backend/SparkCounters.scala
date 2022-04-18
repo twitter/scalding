@@ -23,7 +23,12 @@ class SparkCounters(sparkSession: SparkSession, counterPrefix: String) {
    * implementation here:
    * https://github.com/apache/spark/blob/87c744b60507f82e1722f1488f1741cb2bb8e8e5/core/src/main/scala/org/apache/spark/util/AccumulatorV2.scala#L165
    */
-  @transient val accumulator: SparkCountersInternal = new SparkCountersInternal
+  @transient private val accumulator: SparkCountersInternal = new SparkCountersInternal
+
+  /**
+   * This should only be called inside of SparkWriter execution.
+   */
+  def getAccumulator: SparkCountersInternal = accumulator
 
   /**
    * Register for spark to be aware of accumulator. Note that accumulators are now automatically garbage
