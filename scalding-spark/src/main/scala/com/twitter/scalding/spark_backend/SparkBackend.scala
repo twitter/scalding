@@ -75,13 +75,18 @@ object SparkPlanner {
       def toFunction[A] = {
         case (cp @ CounterPipe(_), rec) =>
           def go[A](p: CounterPipe[A]): Op[A] = {
+            // spark only guarantees accurate accumulators inside of RDD actions
+            // so instead of a straight map, we double loop with forEach
             val resolve = rec(p.pipe)
-            resolve.map { x =>
-              // increment counter for values in pipe
-              counter.add(x._2.iterator)
-              // pass through values in pipe
-              x._1
-            }
+            resolve
+              .forEachIdentity { x =>
+                // increment counter for values in pipe
+                counter.add(x._2.iterator)
+              }
+              .map { x =>
+                // pass through values in pipe
+                x._1
+              }
           }
           go(cp)
         case (cp @ CrossPipe(_, _), rec) =>

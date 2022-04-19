@@ -1,83 +1,17 @@
 package com.twitter.scalding.spark_backend
 
-import org.scalatest.{BeforeAndAfter, FunSuite, PropSpec}
+import org.scalatest.PropSpec
 import org.apache.hadoop.io.IntWritable
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, StatKey, TextLine, WritableSequenceFile}
+import com.twitter.scalding.{Config, StatKey, TextLine, WritableSequenceFile}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.memory_backend.MemoryMode
 
-import java.io.File
 import java.nio.file.Paths
 import SparkMode.SparkConfigMethods
 import com.twitter.scalding.spark_backend.SparkPlanner.ConfigPartitionComputer
 import org.scalatest.prop.PropertyChecks
 
-class SparkBackendTests extends FunSuite with BeforeAndAfter {
-
-  private def removeDir(path: String): Unit = {
-    def deleteRecursively(file: File): Unit = {
-      if (file.isDirectory) file.listFiles.foreach(deleteRecursively)
-      if (file.exists && !file.delete)
-        sys.error(s"Unable to delete ${file.getAbsolutePath}")
-    }
-
-    deleteRecursively(new File(path))
-  }
-
-  private val master = "local[2]"
-  private val appName = "spark-backent-tests"
-
-  private var session: SparkSession = _
-
-  before {
-    val conf =
-      new SparkConf()
-        .setMaster(master)
-        .setAppName(appName)
-        .set(
-          "spark.driver.host",
-          "localhost"
-        ) // this is needed to work on OSX when disconnected from the network
-
-    session = SparkSession.builder.config(conf).getOrCreate()
-  }
-
-  after {
-    session.stop()
-    session = null
-  }
-
-  def sparkMatchesIterable[A: Ordering](
-      t: Execution[Iterable[A]],
-      iter: Iterable[A],
-      conf: Config = Config.empty
-  ) = {
-    val smode = SparkMode.default(session)
-    val semit = t.waitFor(conf, smode).get
-
-    assert(semit.toList.sorted == iter.toList.sorted)
-  }
-
-  def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) =
-    sparkMatchesIterable(
-      t.toIterableExecution,
-      t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
-    )
-
-  def sparkRetrieveCounters[A](t: TypedPipe[A]) = {
-    val smode = SparkMode.default(session)
-    val (eiter, ecounters) = t.toIterableExecution.getCounters.waitFor(Config.empty, smode).get
-    ecounters
-  }
-
-  def sparkRetrieveCounters[A](t: Execution[Iterable[A]], conf: Config = Config.empty) = {
-    val smode = SparkMode.default(session)
-    val (eiter, ecounters) = t.getCounters.waitFor(conf, smode).get
-    ecounters
-  }
+class SparkBackendTests extends SparkBaseTest {
 
   test("some basic map-only operations work") {
     sparkMatchesMemory(TypedPipe.from(0 to 100))
@@ -156,61 +90,6 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       inputLeft.cross(ValuePipe("wee"))
     }
   }
-
-  // note tallyAll takes (group, counter)
-  // while StatKey takes (counter, group) which may be confusing
-  test("pure counters work") {
-    // make sure we don't have any race condition flakes by running several times
-    for (t <- 1 to 20) {
-      // a basic case that is easy to debug
-      val cpipe1 = TypedPipe
-        .from(0 until 100)
-        .tallyAll("scalding", "test")
-      val cresult1 = sparkRetrieveCounters(cpipe1)
-      assert(cresult1.toMap.size == 1)
-      assert(cresult1.get(StatKey("test", "scalding")).get == 100)
-
-      // same thing but with writeExecution
-      val sinkPath = tmpPath("countersTest")
-      val sinkExample = TextLine(sinkPath)
-      val cpipe2 = TypedPipe
-        .from(0 until 100)
-        .tallyAll("scalding", "test")
-        .map(_.toString)
-        .writeExecution(sinkExample)
-        .flatMap(_ => TypedPipe.from(sinkExample).toIterableExecution)
-      val cresult2 = sparkRetrieveCounters(cpipe2)
-      assert(cresult2.toMap.size == 1)
-      assert(cresult2.get(StatKey("test", "scalding")).get == 100)
-      removeDir(sinkPath)
-
-      // something more tricky with many transforms
-      val cpipe3 = TypedPipe
-        .from(0 until 100)
-        .filter(x => x % 4 == 0)
-        .tallyAll("something interesting", "divisible by 4")
-
-      val cpipe4 =
-        cpipe3
-          .cross(
-            TypedPipe
-              .from(0 to 10)
-              .tallyBy("inner")(x => (if (x % 3 == 0) "divisible by 3" else "not divisible by 3"))
-          )
-          .tallyBy("outer")(x => (if (x._2 % 3 == 0) "divisible by 3" else "not divisible by 3"))
-      val cresult3 = sparkRetrieveCounters(cpipe4)
-      assert(cresult3.toMap.size == 5)
-      assert(cresult3.get(StatKey("divisible by 4", "something interesting")).get == 25)
-      assert(cresult3.get(StatKey("divisible by 3", "inner")).get == 4)
-      assert(cresult3.get(StatKey("not divisible by 3", "inner")).get == 7)
-      assert(cresult3.get(StatKey("divisible by 3", "outer")).get == 25 * 4)
-      assert(cresult3.get(StatKey("not divisible by 3", "outer")).get == 25 * 7)
-
-    }
-  }
-
-  def tmpPath(suffix: String): String =
-    Paths.get(System.getProperty("java.io.tmpdir"), "scalding", "spark_backend", suffix).toString
 
   test("writeExecution works with TextLine") {
     val path = tmpPath("textline")

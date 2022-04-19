@@ -37,14 +37,17 @@ class SparkCounters(sparkSession: SparkSession, counterPrefix: String) {
   sparkSession.sparkContext.register(accumulator, counterPrefix)
 
   /**
-   * We return an ExecutionCounters interface. The results will not be stable unless spark execution has
-   * finished.
+   * We return an ExecutionCounters interface and reset the counter state. This should only be called at
+   * SparkWriter once execution has completely finished.
    */
   def asExecutionCounters(): ExecutionCounters = {
     val copyState = MutableMap[StatKey, Long]()
-    for (kvPair <- accumulator.value) {
-      val keyEntry = StatKey(kvPair._1._2, kvPair._1._1)
-      copyState(keyEntry) = kvPair._2
+    accumulator.synchronized {
+      for (kvPair <- accumulator.value) {
+        val keyEntry = StatKey(kvPair._1._2, kvPair._1._1)
+        copyState(keyEntry) = kvPair._2
+      }
+      accumulator.reset()
     }
     val immutableCopyState = copyState.toMap
     new ExecutionCounters {
