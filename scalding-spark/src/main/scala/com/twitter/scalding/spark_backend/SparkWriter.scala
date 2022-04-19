@@ -66,8 +66,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
           val newInitToOpt = initToOpt + ((c, init) -> opt)
 
           (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true, forcedRdd)
-        case Some(_) =>
-          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false, rdd)
+        case Some(cacheHit) =>
+          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false, cacheHit._2)
       }
 
     private def get[T](c: Config, init: TypedPipe[T]): WorkVal[T] =
@@ -190,9 +190,13 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         val rddF = op
           .run(session)
         promise.completeWith(rddF)
-        forcedRDD.map { x =>
-          x.count // any cheap RDD action to force DAG execution works here
-          ()
+        forcedRDD.flatMap { x =>
+          Future {
+            scala.concurrent.blocking {
+              x.count() // any cheap RDD action to force DAG execution works here
+              ()
+            }
+          }
         }
       }
       (newState, if (added) action else emptyAction)

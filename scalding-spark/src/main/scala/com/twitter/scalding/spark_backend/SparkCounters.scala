@@ -119,9 +119,10 @@ sealed class SparkCountersInternal(
   override def copyAndReset(): SparkCountersInternal = new SparkCountersInternal
 
   // internal for spark do not call
-  override def merge(other: AccumulatorV2[((String, String), Long), ImmutableMap[(String, String), Long]]) =
+  override def merge(other: AccumulatorV2[((String, String), Long), ImmutableMap[(String, String), Long]]) = {
+    val otherMapState = other.value
     mapState.synchronized {
-      for (kvPair <- other.value) {
+      for (kvPair <- otherMapState) {
         val prev = mapState.get(kvPair._1) match {
           case Some(v) => v
           case None    => 0L
@@ -129,6 +130,7 @@ sealed class SparkCountersInternal(
         mapState(kvPair._1) = prev + kvPair._2
       }
     }
+  }
 
   // internal for spark do not call
   override def isZero(): Boolean = mapState.synchronized {

@@ -23,7 +23,7 @@ class SparkBaseTest extends FunSuite with BeforeAndAfter {
   }
 
   val master = "local[2]"
-  val appName = "spark-backent-tests"
+  val appName = "spark-backend-tests"
 
   var session: SparkSession = _
 
@@ -68,7 +68,7 @@ class SparkBaseTest extends FunSuite with BeforeAndAfter {
     ecounters
   }
 
-  def sparkRetrieveCounters[A](t: Execution[_], conf: Config = Config.empty) = {
+  def sparkRetrieveCounters(t: Execution[Any], conf: Config = Config.empty) = {
     val smode = SparkMode.default(session)
     val (eiter, ecounters) = t.getCounters.waitFor(conf, smode).get
     ecounters
