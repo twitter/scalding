@@ -50,7 +50,7 @@ UPLOAD_ATTEMPTS=10
 for i in `seq 1 $UPLOAD_ATTEMPTS`; do
   UPLOAD_COMMAND="./codecov -Z"
   let UPLOAD_TIMEOUT=2**$i
-  `$UPLOAD_COMMAND && break` || true
+  $UPLOAD_COMMAND && break || true
   if [[ $i == $UPLOAD_ATTEMPTS ]]; then
     echo "coverage upload failed, max retry"
     exit 1
