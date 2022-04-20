@@ -137,34 +137,3 @@ jobs:
         run: |
           mkdir -p /home/runner/.ivy2/cache/ # some scripts assume that this folder exists
           ${{ matrix.script }}
-
-      # this is a poor man's retry since apparently github actions does not support this in 2022
-      # https://github.community/t/how-to-retry-a-failed-step-in-github-actions-workflow/125880
-      # we give the codecov uploader 3 attempts before aborting since it's sometimes flaky
-      # https://github.com/codecov/codecov-action/issues/598 maybe this will be fixed in the action itself sometime
-      - uses: codecov/codecov-action@v2.1.0
-        if: ${{ matrix.TEST_TARGET != null && matrix.TEST_TARGET != '' }} # for some external tests like scald.rb repl we are not able to easily collect coverage info
-        continue-on-error: true
-        id: code-cov-attempt-1
-        with:
-          name: codecov
-          verbose: true
-          version: "v0.1.15"  # some people claim 0.1.15 is more stable (https://github.com/codecov/codecov-action/issues/598#issuecomment-1030074427)
-          fail_ci_if_error: true
-      - uses: codecov/codecov-action@v2.1.0
-        id: code-cov-attempt-2
-        continue-on-error: true
-        if: ${{ matrix.TEST_TARGET != null && matrix.TEST_TARGET != '' && steps.code-cov-attempt-1.outcome=='failure' }}
-        with:
-          name: codecov
-          verbose: true
-          version: "v0.1.15"
-          fail_ci_if_error: true
-      - uses: codecov/codecov-action@v2.1.0
-        id: code-cov-attempt-3
-        if: ${{ matrix.TEST_TARGET != null && matrix.TEST_TARGET != '' && steps.code-cov-attempt-2.outcome=='failure' }}
-        with:
-          name: codecov
-          verbose: true
-          version: "v0.1.15"
-          fail_ci_if_error: true
