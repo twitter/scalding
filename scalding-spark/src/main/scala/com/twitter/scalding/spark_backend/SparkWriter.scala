@@ -18,6 +18,8 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
   private def session: SparkSession = sparkMode.session
 
+  private val sparkCounters = SparkCounters.withRandomContextPrefix(session)
+
   private val sourceCounter: AtomicLong = new AtomicLong(0L)
 
   case class TempSource[A](id: Long) extends Input[A]
@@ -46,7 +48,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         opt: TypedPipe[T],
         rdd: Future[RDD[_ <: T]],
         persist: Option[StorageLevel]
-    )(implicit ec: ExecutionContext): (State, Boolean) =
+    )(implicit ec: ExecutionContext): (State, Boolean, Future[RDD[_ <: T]]) =
       forcedPipes.get((c, opt)) match {
         case None =>
           // we have not previously forced this source
@@ -63,9 +65,9 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
           val newForced = forcedPipes + ((c, opt) -> workVal)
           val newInitToOpt = initToOpt + ((c, init) -> opt)
 
-          (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true)
-        case Some(_) =>
-          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false)
+          (copy(sources = newSources, forcedPipes = newForced, initToOpt = newInitToOpt), true, forcedRdd)
+        case Some(cacheHit) =>
+          (copy(initToOpt = initToOpt + ((c, init) -> opt)), false, cacheHit._2)
       }
 
     private def get[T](c: Config, init: TypedPipe[T]): WorkVal[T] =
@@ -147,7 +149,12 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       cec: ExecutionContext
   ): CFuture[(Long, ExecutionCounters)] = {
 
-    val planner = SparkPlanner.plan(conf, sparkMode.sources.orElse(state.get().sources))
+    val planner =
+      SparkPlanner.plan(
+        conf,
+        sparkMode.sources.orElse(state.get().sources),
+        sparkCounters.getAccumulator
+      )
 
     import Execution.ToWrite._
 
@@ -161,7 +168,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
 
     def force[T](opt: TypedPipe[T], keyPipe: TypedPipe[T], oldState: State): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()
-      val (newState, added) = oldState.addForce[T](
+      val (newState, added, forcedRDD) = oldState.addForce[T](
         conf,
         init = keyPipe,
         opt = opt,
@@ -169,11 +176,28 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         conf.getForceToDiskPersistMode.orElse(Some(StorageLevel.DISK_ONLY))
       )
       def action = () => {
-        // actually run
+
+        /**
+         * actually run
+         *
+         * count is a hack to force a synchronous evaluation of the RDD. There is currently only a synchronous
+         * API for un-persist but not for persist. This strategy have been used even inside spark sql itself:
+         * https://github.com/apache/spark/pull/30403/files#diff-aa467582590608ec702c1caf6208e79af5e6f3ee2cfd58a53bdf2601cd5015d6R65
+         * so it's not too crazy, but it does have a performance overhead that we will want to address in the
+         * future.
+         */
         val op = planner(opt)
-        val rddF = op.run(session)
+        val rddF = op
+          .run(session)
         promise.completeWith(rddF)
-        rddF.map(_ => ())
+        forcedRDD.flatMap { x =>
+          Future {
+            scala.concurrent.blocking {
+              x.count() // any cheap RDD action to force DAG execution works here
+              ()
+            }
+          }
+        }
       }
       (newState, if (added) action else emptyAction)
     }
@@ -184,7 +208,7 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
         oldState: State
     ): (State, Action) = {
       val promise = Promise[RDD[_ <: T]]()
-      val (newState, added) = oldState.addForce[T](conf, init = keyPipe, opt = opt, promise.future, None)
+      val (newState, added, _) = oldState.addForce[T](conf, init = keyPipe, opt = opt, promise.future, None)
       val action = () => {
         val rddF =
           if (added) {
@@ -218,7 +242,10 @@ class SparkWriter(val sparkMode: SparkMode) extends Writer {
       }
       (nextState.copy(id = nextState.id + 1), (nextState.id, acts))
     }
-    // now we run the actions:
-    CFuture.uncancellable(Future.traverse(acts)(fn => fn()).map(_ => (id, ExecutionCounters.empty)))
+
+    // now we run the actions
+    CFuture.uncancellable(
+      Future.traverse(acts)(fn => fn()).map(_ => (id, sparkCounters.asExecutionCounters))
+    )
   }
 }

@@ -25,6 +25,13 @@ sealed abstract class Op[+A] {
     Transformed[A, A](this, _.persist(sl))
   def mapPartitions[B](fn: Iterator[A] => Iterator[B]): Op[B] =
     Transformed[A, B](this, _.mapPartitions(fn, preservesPartitioning = true))
+  def forEachIdentity(fn: A => Unit): Op[A] = Transformed[A, A](
+    this,
+    x => {
+      x.foreach(fn)
+      x
+    }
+  )
 }
 
 object Op extends Serializable {

@@ -1,71 +1,17 @@
 package com.twitter.scalding.spark_backend
 
-import org.scalatest.{BeforeAndAfter, FunSuite, PropSpec}
+import org.scalatest.PropSpec
 import org.apache.hadoop.io.IntWritable
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
 import com.twitter.algebird.Monoid
-import com.twitter.scalding.{Config, Execution, TextLine, WritableSequenceFile}
+import com.twitter.scalding.{Config, StatKey, TextLine, WritableSequenceFile}
 import com.twitter.scalding.typed._
-import com.twitter.scalding.typed.memory_backend.MemoryMode
-import java.io.File
-import java.nio.file.Paths
 
+import java.nio.file.Paths
 import SparkMode.SparkConfigMethods
 import com.twitter.scalding.spark_backend.SparkPlanner.ConfigPartitionComputer
 import org.scalatest.prop.PropertyChecks
 
-class SparkBackendTests extends FunSuite with BeforeAndAfter {
-
-  private def removeDir(path: String): Unit = {
-    def deleteRecursively(file: File): Unit = {
-      if (file.isDirectory) file.listFiles.foreach(deleteRecursively)
-      if (file.exists && !file.delete)
-        sys.error(s"Unable to delete ${file.getAbsolutePath}")
-    }
-
-    deleteRecursively(new File(path))
-  }
-
-  private val master = "local[2]"
-  private val appName = "spark-backent-tests"
-
-  private var session: SparkSession = _
-
-  before {
-    val conf =
-      new SparkConf()
-        .setMaster(master)
-        .setAppName(appName)
-        .set(
-          "spark.driver.host",
-          "localhost"
-        ) // this is needed to work on OSX when disconnected from the network
-
-    session = SparkSession.builder.config(conf).getOrCreate()
-  }
-
-  after {
-    session.stop()
-    session = null
-  }
-
-  def sparkMatchesIterable[A: Ordering](
-      t: Execution[Iterable[A]],
-      iter: Iterable[A],
-      conf: Config = Config.empty
-  ) = {
-    val smode = SparkMode.default(session)
-    val semit = t.waitFor(conf, smode).get
-
-    assert(semit.toList.sorted == iter.toList.sorted)
-  }
-
-  def sparkMatchesMemory[A: Ordering](t: TypedPipe[A]) =
-    sparkMatchesIterable(
-      t.toIterableExecution,
-      t.toIterableExecution.waitFor(Config.empty, MemoryMode.empty).get
-    )
+class SparkBackendTests extends SparkBaseTest {
 
   test("some basic map-only operations work") {
     sparkMatchesMemory(TypedPipe.from(0 to 100))
@@ -144,9 +90,6 @@ class SparkBackendTests extends FunSuite with BeforeAndAfter {
       inputLeft.cross(ValuePipe("wee"))
     }
   }
-
-  def tmpPath(suffix: String): String =
-    Paths.get(System.getProperty("java.io.tmpdir"), "scalding", "spark_backend", suffix).toString
 
   test("writeExecution works with TextLine") {
     val path = tmpPath("textline")
