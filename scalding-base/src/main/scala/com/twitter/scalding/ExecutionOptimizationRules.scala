@@ -67,8 +67,8 @@ object ExecutionOptimizationRules {
     )
 
   /**
-   * If `Execution` is `WriteExecution`, we are considering those executions as slow,
-   * since they will schedule some expensive work, like Hadoop or Spark Job.
+   * If `Execution` is `WriteExecution`, we are considering those executions as slow, since they will schedule
+   * some expensive work, like Hadoop or Spark Job.
    *
    * If `Execution` is `FlatMapped` or `UniqueIdExecution`, we are considering those executions as slow, since
    * we don't know which execution they can produce.

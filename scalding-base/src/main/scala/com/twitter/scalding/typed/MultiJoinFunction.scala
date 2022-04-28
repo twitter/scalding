@@ -136,20 +136,22 @@ object MultiJoinFunction extends Serializable {
   }
 
   abstract class Transformer extends Serializable {
-    def transformJoin[A, B, C, D](fn: (A, Iterator[B], Iterable[C]) => Iterator[D]): (A, Iterator[B], Iterable[C]) => Iterator[D]
+    def transformJoin[A, B, C, D](
+        fn: (A, Iterator[B], Iterable[C]) => Iterator[D]
+    ): (A, Iterator[B], Iterable[C]) => Iterator[D]
     def transformMap[A, B, C](fn: (A, Iterator[B]) => Iterator[C]): (A, Iterator[B]) => Iterator[C]
 
     def apply[A, B](mjf: MultiJoinFunction[A, B]): MultiJoinFunction[A, B] =
-        mjf match {
-          case c @ Casting() => c
-          case PairCachedRight(l, r, fn) =>
-            PairCachedRight(apply(l), apply(r), transformJoin(fn))
-          case Pair(l, r, fn) =>
-            Pair(apply(l), apply(r), transformJoin(fn))
-          case MapGroup(prev, fn) =>
-            MapGroup(apply(prev), transformMap(fn))
-          case mc: MapCast[A, x, B] =>
-            MapCast[A, x, B](transformMap(mc.mapGroupFn))
-        }
+      mjf match {
+        case c @ Casting() => c
+        case PairCachedRight(l, r, fn) =>
+          PairCachedRight(apply(l), apply(r), transformJoin(fn))
+        case Pair(l, r, fn) =>
+          Pair(apply(l), apply(r), transformJoin(fn))
+        case MapGroup(prev, fn) =>
+          MapGroup(apply(prev), transformMap(fn))
+        case mc: MapCast[A, x, B] =>
+          MapCast[A, x, B](transformMap(mc.mapGroupFn))
+      }
   }
 }

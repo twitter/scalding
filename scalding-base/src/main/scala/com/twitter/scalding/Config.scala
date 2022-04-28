@@ -15,11 +15,11 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.scalding.serialization.{Serialization, RequireOrderedSerializationMode}
+import com.twitter.scalding.serialization.{RequireOrderedSerializationMode, Serialization}
 import com.twitter.scalding.serialization.macros.impl.BinaryOrdering.{ordSer => serializer}
 import java.util.Base64
 import java.security.MessageDigest
-import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -296,27 +296,27 @@ abstract class Config extends Serializable {
     getBoolean(Config.ScaldingCheckHfsTaps, false)
 
   /*
-  * Used in joins to determine how much of the "right hand side" of
-  * the join to keep in memory
-  */
+   * Used in joins to determine how much of the "right hand side" of
+   * the join to keep in memory
+   */
   def setListSpillThreshold(count: Int): Config =
     this + (CascadingSpillablePropListThreshold -> count.toString)
 
   /*
-  * Used in hashJoin/joinWithTiny to determine how big the map
-  * can be before spilling to disk. Generally, as big as you can
-  * allow here without OOM will help performance.
-  */
+   * Used in hashJoin/joinWithTiny to determine how big the map
+   * can be before spilling to disk. Generally, as big as you can
+   * allow here without OOM will help performance.
+   */
   def setMapSpillThreshold(count: Int): Config =
     this + (CascadingSpillablePropMapThreshold -> count.toString)
 
   /*
-  * Used in map-side aggregation of associative operations (Semigroup/Monoid)
-  * This controls how many keys are in an in-memory cache. If a significant
-  * probability mass of the key-space is far bigger than this value, it
-  * does not help much (and may hurt, so experiment with disabling to get
-  * the best results
-  */
+   * Used in map-side aggregation of associative operations (Semigroup/Monoid)
+   * This controls how many keys are in an in-memory cache. If a significant
+   * probability mass of the key-space is far bigger than this value, it
+   * does not help much (and may hurt, so experiment with disabling to get
+   * the best results
+   */
   def setMapSideAggregationThreshold(count: Int): Config =
     this + (CascadingAggregateByThreshold -> count.toString)
 
@@ -414,9 +414,9 @@ object Config {
   val empty: Config = Config(Map.empty)
 
   /*
-  * Here is a config that will work, but perhaps is not optimally tuned for
-  * your cluster
-  */
+   * Here is a config that will work, but perhaps is not optimally tuned for
+   * your cluster
+   */
   val default: Config =
     Config.empty
       .setListSpillThreshold(100 * 1000)
@@ -425,13 +425,15 @@ object Config {
       .setScaldingVersion
 
   /*
-  * Extensions to the Default Config to tune it for unit tests
-  */
+   * Extensions to the Default Config to tune it for unit tests
+   */
   def unitTestDefault: Config =
     Config.default ++ Config.from(
       Map(
         ("cascading.update.skip" -> "true"),
-        (Config.RuntimeFrameworkKey -> Config.RuntimeFrameworkValueLocal)))
+        (Config.RuntimeFrameworkKey -> Config.RuntimeFrameworkValueLocal)
+      )
+    )
 
   def apply(m: Map[String, String]): Config = new Config { def toMap = m }
   /*
@@ -497,10 +499,10 @@ object Config {
   }
 
   /*
-  * Legacy code that uses Map[AnyRef, AnyRef] can call this
-  * function to get a Config.
-  * If there are unrecognized non-string values, this may fail.
-  */
+   * Legacy code that uses Map[AnyRef, AnyRef] can call this
+   * function to get a Config.
+   * If there are unrecognized non-string values, this may fail.
+   */
   def tryFrom(maybeConf: Map[AnyRef, AnyRef]): Try[Config] = {
     val (nonStrings, strings) = Config.stringsFrom(maybeConf)
     val initConf = Config.from(strings)
@@ -523,5 +525,6 @@ object Config {
       }
   }
 
-  private def argMapSerializer: Serialization[Map[String, List[String]]] = serializer[Map[String, List[String]]]
+  private def argMapSerializer: Serialization[Map[String, List[String]]] =
+    serializer[Map[String, List[String]]]
 }

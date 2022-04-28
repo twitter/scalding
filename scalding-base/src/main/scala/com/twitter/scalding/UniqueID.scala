@@ -21,13 +21,10 @@ object UniqueID {
   }
 
   /**
-   * This is only safe if you use something known to have
-   * a single instance in the relevant scope.
-   * 
+   * This is only safe if you use something known to have a single instance in the relevant scope.
+   *
    * In cascading, the FlowDef has been used here
    */
   def fromSystemHashCode(ar: AnyRef): UniqueID =
     UniqueID(System.identityHashCode(ar).toString)
 }
-
-

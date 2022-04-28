@@ -15,7 +15,7 @@ limitations under the License.
  */
 package com.twitter.scalding
 
-import com.twitter.scalding.typed.{TypedPipe, Output}
+import com.twitter.scalding.typed.{Output, TypedPipe}
 import com.twitter.scalding.dagon.{Dag, Id, Rule}
 import com.twitter.algebird.monad.Trampoline
 import com.twitter.algebird.{Monad, Monoid, Semigroup}
@@ -319,7 +319,6 @@ object Execution {
   def withConfig[T](ex: Execution[T])(c: Config => Config): Execution[T] =
     TransformedConfig(ex, c)
 
-
   /**
    * This function allows running the passed execution with its own cache. This will mean anything inside
    * won't benefit from Execution's global attempts to avoid repeated executions.
@@ -526,7 +525,7 @@ object Execution {
         cec: ConcurrentExecutionContext
     ) =
       Trampoline.call(prev.runStats(conf, mode, cache)).map { case CFuture(fut, cancelHandler) =>
-        lazy val uncachedFut = {
+        lazy val uncachedFut =
           fut
             .map(v => (v, CancellationHandler.empty)) // map this to the right shape
             .recoverWith {
@@ -542,7 +541,6 @@ object Execution {
                 f.map(v => (v, c))
               })
             }
-        }
 
         val recoveredFut = cache.getOrElseInsert(
           conf,
@@ -651,8 +649,8 @@ object Execution {
    * This allows you to run platform specific executions
    */
   private[scalding] final case class BackendExecution[A](
-    result: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)])
-    extends Execution[A] {
+      result: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)]
+  ) extends Execution[A] {
     protected def runStats(conf: Config, mode: Mode, cache: EvalCache)(implicit
         cec: ConcurrentExecutionContext
     ) =
@@ -660,7 +658,7 @@ object Execution {
         cache.getOrElseInsert(
           conf,
           this,
-          try result(conf, mode, cache.writer, cec).map { case (id, c, a) => (a, Map(id -> c))}
+          try result(conf, mode, cache.writer, cec).map { case (id, c, a) => (a, Map(id -> c)) }
           catch {
             case NonFatal(e) => CFuture.failed(e)
           }
@@ -931,18 +929,17 @@ object Execution {
   val unit: Execution[Unit] = from(())
 
   /**
-   * This should be avoided if at all possible. It is here to allow backend authors to implement
-   * custom executions which should very rarely be needed.
-   * 
+   * This should be avoided if at all possible. It is here to allow backend authors to implement custom
+   * executions which should very rarely be needed.
+   *
    * The CFuture returned should have three elements:
-   * 1. unique ID (Long) for the scope of the Writer
-   * 2. Counter values created by this Execution
-   * 3. the final result of the Execution (maybe Unit)
+   *   1. unique ID (Long) for the scope of the Writer 2. Counter values created by this Execution 3. the
+   *      final result of the Execution (maybe Unit)
    */
   def backendSpecific[A](
-    fn: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)]
+      fn: (Config, Mode, Writer, ConcurrentExecutionContext) => CFuture[(Long, ExecutionCounters, A)]
   ): Execution[A] =
-      BackendExecution(fn)
+    BackendExecution(fn)
 
   def forceToDisk[T](t: TypedPipe[T]): Execution[TypedPipe[T]] =
     WriteExecution(ToWrite.Force(t), Nil, { case (conf, _, w, cec) => w.getForced(conf, t)(cec) })
@@ -984,7 +981,7 @@ object Execution {
 
   /**
    * Use this to use counters/stats with Execution. You do this: Execution.withId { implicit uid => val myStat
-   * = Stat("myStat") // uid is implicitly pulled in pipe.map { t => if(someCase(t)) myStat.inc fn(t) }
+   * \= Stat("myStat") // uid is implicitly pulled in pipe.map { t => if(someCase(t)) myStat.inc fn(t) }
    * .writeExecution(mySink) }
    */
   def withId[T](fn: UniqueID => Execution[T]): Execution[T] = UniqueIdExecution(fn)

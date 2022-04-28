@@ -277,7 +277,7 @@ object WritePartitioner {
         case MergedTypedPipe(_, _)          => false
         case ReduceStepPipe(_)              => true
         case SumByLocalKeys(p, _)           => isLogicalReduce(p)
-        case TrappedPipe(p, _)           => isLogicalReduce(p)
+        case TrappedPipe(p, _)              => isLogicalReduce(p)
         case CoGroupedPipe(_)               => true
         case WithOnComplete(p, _)           => isLogicalReduce(p)
         case WithDescriptionTypedPipe(p, _) => isLogicalReduce(p)

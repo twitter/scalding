@@ -86,7 +86,7 @@ case class SketchJoined[K: Ordering, V, V2, R](
 
   def reducers = Some(numReducers)
 
-  //the most of any one reducer we want to try to take up with a single key
+  // the most of any one reducer we want to try to take up with a single key
   private val maxReducerFraction = 0.1
 
   private def flatMapWithReplicas[W](pipe: TypedPipe[(K, W)])(fn: Int => Iterable[Int]) = {
@@ -98,8 +98,8 @@ case class SketchJoined[K: Ordering, V, V2, R](
     pipe.cross(left.sketch).flatMap { case ((k, w), cms) =>
       val maxPerReducer = ((cms.totalCount * localMaxReducerFraction) / localNumReducers) + 1
       val maxReplicas = cms.frequency(Bytes(localSer(k))).estimate.toDouble / maxPerReducer
-      //if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
-      //if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it
+      // if the frequency is 0, maxReplicas.ceil will be 0 so we will filter out this key entirely
+      // if it's < maxPerReducer, the ceil will round maxReplicas up to 1 to ensure we still see it
       val replicas = fn(maxReplicas.ceil.toInt.min(localNumReducers))
       replicas.map(i => (i, k) -> w)
     }
