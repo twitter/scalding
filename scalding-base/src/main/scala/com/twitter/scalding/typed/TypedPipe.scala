@@ -1,4 +1,3 @@
-
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,18 +45,14 @@ import scala.util.Try
 import scala.util.hashing.MurmurHash3
 
 /**
- * This is an identifier which should
- * have a good equals and hashCode and
- * has a Type. Different backends
- * are responsible for reading/writing
+ * This is an identifier which should have a good equals and hashCode and has a Type. Different backends are
+ * responsible for reading/writing
  */
 trait Input[+A] extends Serializable
 
 /**
- * This is an identifier which should
- * have a good equals and hashCode and
- * has a Type. Different backends
- * are responsible for reading/writing
+ * This is an identifier which should have a good equals and hashCode and has a Type. Different backends are
+ * responsible for reading/writing
  */
 trait Output[-A] extends Serializable
 
@@ -220,6 +215,7 @@ object TypedPipe extends Serializable {
     )
     def distinct(implicit ord: Ordering[T]): TypedPipe[T] =
       pipe.asKeys.sum.keys
+
     /**
      * If any errors happen below this line, but before a groupBy, write to a TypedSink
      */
@@ -323,8 +319,8 @@ object TypedPipe extends Serializable {
      */
     def sketch(
         reducers: Int,
-        eps: Double = 1.0e-5, //272k width = 1MB per row
-        delta: Double = 0.01, //5 rows (= 5 hashes)
+        eps: Double = 1.0e-5, // 272k width = 1MB per row
+        delta: Double = 0.01, // 5 rows (= 5 hashes)
         seed: Int = 12345
     )(implicit serialization: K => Array[Byte], ordering: Ordering[K]): Sketched[K, V] =
       Sketched(kvpipe, reducers, delta, eps, seed)
@@ -827,7 +823,6 @@ sealed abstract class TypedPipe[+T] extends Serializable with Product {
    */
   def writeThrough[U >: T](dest: Output[T] with Input[U]): Execution[TypedPipe[U]] =
     Execution.write(this, dest, TypedPipe.from(dest))
-
 
   /**
    * ValuePipe may be empty, so, this attaches it as an Option cross is the same as leftCross(p).collect {

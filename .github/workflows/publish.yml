@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - "develop"
-    release:
-      types: [created]
+    tags:
+      - "v*"
 
 jobs:
   publish:
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: "adopt-openj9"
-          java-version: 8
+          java-version: '8.0.322+6' # non hadoop 3.3 versions build break https://issues.apache.org/jira/browse/HADOOP-16590
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

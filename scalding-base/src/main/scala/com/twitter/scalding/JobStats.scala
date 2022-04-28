@@ -19,6 +19,7 @@ import scala.util.{Failure, Try}
 
 object JobStats {
   def empty: JobStats = new JobStats(Map("counters" -> Map.empty))
+
   /**
    * Returns the counters with Group String -> Counter String -> Long
    */

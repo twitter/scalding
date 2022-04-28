@@ -191,6 +191,7 @@ lazy val scalding = Project(id = "scalding", base = file("."))
     scaldingQuotation,
     scaldingCats,
     scaldingDagon,
+    scaldingBase,
     scaldingCore,
     scaldingCommons,
     scaldingAvro,

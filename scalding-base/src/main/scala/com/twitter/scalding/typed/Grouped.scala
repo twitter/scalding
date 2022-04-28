@@ -624,7 +624,7 @@ final case class IdentityReduce[K, V1, V2](
     toUIR.mapValues(fn)
 
   // This is not correct in the type-system, but would be nice to encode
-  //override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
+  // override def mapValues[V3](fn: V1 => V3) = IdentityReduce(keyOrdering, mapped.mapValues(fn), reducers)
 
   override def sum[U >: V2](implicit sg: Semigroup[U]) = {
     // there is no sort, mapValueStream or force to reducers:

@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.scalding.serialization.OrderedSerialization2
-import com.twitter.scalding.typed.{ComputedValue, EmptyValue, LiteralValue, ValuePipe, TypedPipe, Input}
+import com.twitter.scalding.typed.{ComputedValue, EmptyValue, Input, LiteralValue, TypedPipe, ValuePipe}
 import com.twitter.algebird.{Field, Group, Monoid, Ring, Semigroup}
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
@@ -99,7 +99,7 @@ sealed trait Matrix2[R, C, V] extends Serializable {
       vec: Matrix2[C, C2, VecV]
   )(implicit ev: =:=[V, Boolean], mon: Monoid[VecV], mj: MatrixJoiner2): Matrix2[R, C2, VecV] = {
 
-    //This cast will always succeed:
+    // This cast will always succeed:
     lazy val joinedBool = mj.join(this.asInstanceOf[Matrix2[R, C, Boolean]], vec)
     implicit val ord2: Ordering[C2] = vec.colOrd
     lazy val resultPipe = joinedBool
@@ -335,7 +335,7 @@ final case class Product[R, C, C2, V](
   }
 
   // represents `\sum_{i j} M_{i j}` where `M_{i j}` is the Matrix with exactly one element at `row=i, col = j`.
-  lazy val toOuterSum: TypedPipe[(R, C2, V)] = {
+  lazy val toOuterSum: TypedPipe[(R, C2, V)] =
     if (optimal) {
       if (isSpecialCase) {
         specialCase
@@ -351,7 +351,6 @@ final case class Product[R, C, C2, V](
       // Maybe it is Product[R, _, C2, V]
       optimizedSelf.asInstanceOf[Product[R, _, C2, V]].toOuterSum
     }
-  }
 
   private def computePipe(joined: TypedPipe[(R, C2, V)] = toOuterSum): TypedPipe[(R, C2, V)] =
     if (isSpecialCase) {
@@ -366,7 +365,7 @@ final case class Product[R, C, C2, V](
         .map { case ((r, c), v) => (r, c, v) }
     }
 
-  override lazy val toTypedPipe: TypedPipe[(R, C2, V)] = {
+  override lazy val toTypedPipe: TypedPipe[(R, C2, V)] =
     expressions match {
       case Some(m) =>
         m.get(this).getOrElse {
@@ -376,7 +375,6 @@ final case class Product[R, C, C2, V](
         }
       case None => optimizedSelf.toTypedPipe
     }
-  }
 
   override val sizeHint = left.sizeHint * right.sizeHint
 
@@ -445,7 +443,7 @@ final case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], m
     }
   }
 
-  override lazy val toTypedPipe: TypedPipe[(R, C, V)] = {
+  override lazy val toTypedPipe: TypedPipe[(R, C, V)] =
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, mon.plus(v._3, v._3)))
     } else {
@@ -457,7 +455,6 @@ final case class Sum[R, C, V](left: Matrix2[R, C, V], right: Matrix2[R, C, V], m
         .filter(kv => mon.isNonZero(kv._2))
         .map { case ((r, c), v) => (r, c, v) }
     }
-  }
 
   override val sizeHint = left.sizeHint + right.sizeHint
 
@@ -489,7 +486,7 @@ final case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2
     extends Matrix2[R, C, V] {
 
   // TODO: optimize / combine with Sums: https://github.com/tomtau/scalding/issues/14#issuecomment-22971582
-  override lazy val toTypedPipe: TypedPipe[(R, C, V)] = {
+  override lazy val toTypedPipe: TypedPipe[(R, C, V)] =
     if (left.equals(right)) {
       left.optimizedSelf.toTypedPipe.map(v => (v._1, v._2, ring.times(v._3, v._3)))
     } else {
@@ -502,7 +499,6 @@ final case class HadamardProduct[R, C, V](left: Matrix2[R, C, V], right: Matrix2
         .filter(kv => kv._2._2 && ring.isNonZero(kv._2._1))
         .map { case ((r, c), v) => (r, c, v._1) }
     }
-  }
 
   override lazy val transpose: MatrixLiteral[C, R, V] =
     MatrixLiteral(toTypedPipe.map(x => (x._2, x._1, x._3)), sizeHint.transpose)(colOrd, rowOrd)
