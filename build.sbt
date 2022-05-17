@@ -160,10 +160,6 @@ val sharedSettings = Seq(
           <comments>A business-friendly OSS license</comments>
         </license>
       </licenses>
-      <scm>
-        <url>git@github.com:twitter/scalding.git</url>
-        <connection>scm:git:git@github.com:twitter/scalding.git</connection>
-      </scm>
       <developers>
         <developer>
           <id>posco</id>
