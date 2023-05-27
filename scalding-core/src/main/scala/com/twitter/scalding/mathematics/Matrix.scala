@@ -16,7 +16,7 @@ limitations under the License.
 package com.twitter.scalding.mathematics
 
 import com.twitter.algebird.{Field, Group, Monoid, Ring}
-import com.twitter.algebird.field._ // backwards compatiblity support
+import com.twitter.algebird.field._ // backwards compatibility support
 import com.twitter.scalding._
 
 import cascading.pipe.joiner._
