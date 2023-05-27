@@ -738,7 +738,7 @@ object Execution {
     /**
      * do a batch of writes, possibly optimizing, and return a new unique Long.
      *
-     * empty writes are legitmate and should still return a Long
+     * empty writes are legitimate and should still return a Long
      */
     def execute(conf: Config, writes: List[ToWrite[_]])(implicit
         cec: ConcurrentExecutionContext
