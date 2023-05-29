@@ -1,20 +1,20 @@
 package com.twitter.scalding.beam_backend
 
-import com.twitter.scalding.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.chill.KryoInstantiator
 import com.twitter.chill.config.ScalaMapConfig
 import com.twitter.scalding.Config
 import com.twitter.scalding.beam_backend.BeamOp.{CoGroupedOp, MergedBeamOp}
+import com.twitter.scalding.dagon.{FunctionK, Memoize, Rule}
 import com.twitter.scalding.serialization.KryoHadoop
+import com.twitter.scalding.typed.OptimizationRules._
 import com.twitter.scalding.typed._
+import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
 import com.twitter.scalding.typed.functions.{
   FilterKeysToFilter,
   FlatMapValuesToFlatMap,
   MapValuesToMap,
   ScaldingPriorityQueueMonoid
 }
-
-import com.twitter.scalding.typed.cascading_backend.CascadingExtensions.ConfigCascadingExtensions
 
 object BeamPlanner {
   def plan(
@@ -61,8 +61,15 @@ object BeamPlanner {
           BeamOp.Source(config, src, srcs(src))
         case (IterablePipe(iterable), _) =>
           BeamOp.FromIterable(iterable, kryoCoder)
-        case (wd: WithDescriptionTypedPipe[a], rec) =>
-          rec[a](wd.input)
+        case (wd: WithDescriptionTypedPipe[_], rec) => {
+          val op = rec(wd.input)
+          wd.descriptions match {
+            case head :: _ =>
+              op.withName(head._1)
+            case Nil =>
+              op
+          }
+        }
         case (SumByLocalKeys(pipe, sg), rec) =>
           val op = rec(pipe)
           config.getMapSideAggregationThreshold match {
@@ -97,7 +104,10 @@ object BeamPlanner {
             uir.evidence.subst[BeamOpT](sortedOp)
           }
           go(ivsr)
-        case (ReduceStepPipe(ValueSortedReduce(keyOrdering, pipe, valueSort, reduceFn, _, _)), rec) =>
+        case (
+              ReduceStepPipe(ValueSortedReduce(keyOrdering, pipe, valueSort, reduceFn, _, _)),
+              rec
+            ) =>
           val op = rec(pipe)
           op.sortedMapGroup(reduceFn)(keyOrdering, valueSort, kryoCoder)
         case (ReduceStepPipe(IteratorMappedReduce(keyOrdering, pipe, reduceFn, _, _)), rec) =>
@@ -116,7 +126,7 @@ object BeamPlanner {
             val ops: Seq[BeamOp[(K, Any)]] = cg.inputs.map(tp => rec(tp))
             CoGroupedOp(cg, ops)
           }
-          go(cg)
+          if (cg.descriptions.isEmpty) go(cg) else go(cg).withName(cg.descriptions.last)
         case (Fork(input), rec) =>
           rec(input)
         case (m @ MergedTypedPipe(_, _), rec) =>
@@ -137,7 +147,21 @@ object BeamPlanner {
 
   def defaultOptimizationRules(config: Config): Seq[Rule[TypedPipe]] = {
     def std(forceHash: Rule[TypedPipe]) =
-      OptimizationRules.standardMapReduceRules :::
+      List(
+        // phase 0, add explicit forks to not duplicate pipes on fanout below
+        AddExplicitForks,
+        RemoveUselessFork,
+        // phase 1, compose flatMap/map, move descriptions down, defer merge, filter pushup etc...
+        IgnoreNoOpGroup.orElse(composeSame).orElse(FilterKeysEarly).orElse(DeferMerge),
+        // phase 2, combine different kinds of mapping operations into flatMaps, including redundant merges
+        composeIntoFlatMap
+          .orElse(simplifyEmpty)
+          .orElse(DiamondToFlatMap)
+          .orElse(ComposeDescriptions)
+          .orElse(MapValuesInReducers),
+        // phase 3, remove duplicates forces/forks (e.g. .fork.fork or .forceToDisk.fork, ....)
+        RemoveDuplicateForceFork
+      ) :::
         List(
           OptimizationRules.FilterLocally, // after filtering, we may have filtered to nothing, lets see
           OptimizationRules.simplifyEmpty,
