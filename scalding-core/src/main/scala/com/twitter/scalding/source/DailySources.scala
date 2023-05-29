@@ -54,6 +54,15 @@ class DailySuffixTsv(prefix: String, fs: Fields = Fields.ALL)(override implicit 
   override val fields = fs
 }
 
+object DailyPrefixSuffixTsv {
+  def apply(prefix: String, suffix: String, fs: Fields = Fields.ALL)(implicit dateRange: DateRange) = new DailyPrefixSuffixTsv(prefix, suffix, fs)
+}
+
+class DailyPrefixSuffixTsv(prefix: String, suffix: String, fs: Fields = Fields.ALL)(override implicit val dateRange: DateRange)
+  extends DailyPrefixSuffixSource(prefix, suffix, dateRange) with DelimitedScheme {
+  override val fields = fs
+}
+
 object DailySuffixTypedTsv {
   def apply[T](
       prefix: String
