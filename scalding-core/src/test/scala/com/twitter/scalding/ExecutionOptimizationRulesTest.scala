@@ -8,6 +8,8 @@ import cascading.tuple.{Fields, Tuple}
 import com.twitter.scalding.dagon.{Dag, Rule}
 import com.twitter.maple.tap.MemorySourceTap
 import com.twitter.scalding.typed.TypedPipeGen
+import com.twitter.scalding.typed.gen
+import com.twitter.scalding.typed.gen.{ExecutionGen, TypeGen, TypeWith}
 import java.io.{InputStream, OutputStream}
 import java.util.UUID
 import org.scalacheck.{Arbitrary, Gen}
@@ -99,8 +101,18 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
   def write(pipe: Gen[TypedPipe[Int]]): Gen[Execution[TypedPipe[Int]]] =
     pipe.map(_.writeThrough(new MemorySource[Int]()))
 
+  def write(t: TypeWith[TypeGen])(pipe: Gen[TypedPipe[_]]): Gen[Execution[TypedPipe[_]]] = {
+    implicit val tc = t.evidence.tupleConverter
+    pipe.map(_.writeThrough(new MemorySource()))
+  }
+
   val mappedOrFlatMapped =
     Gen.oneOf(mapped(pipe), flatMapped(pipe))
+
+  val stdZippedWrites =
+    Gen.zip(gen.TypedPipeGen.pipeOf, gen.TypedPipeGen.pipeOf).flatMap { case ((l, tl), (r, tr)) =>
+      zipped(write(tl)(l), write(tr)(r))
+    }
 
   val zippedWrites =
     zipped(write(TypedPipeGen.genWithIterableSources), write(TypedPipeGen.genWithIterableSources))
@@ -181,7 +193,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("randomly generated executions trees are invertible") {
-    forAll(genExec) { exec =>
+    forAll(ExecutionGen.executionOf) { case (exec, _) =>
       invert(exec)
     }
   }
@@ -190,7 +202,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     implicit val generatorDrivenConfig: PropertyCheckConfiguration =
       PropertyCheckConfiguration(minSuccessful = 500)
 
-    forAll(genExec, genRule) { (exec, rule) =>
+    forAll(ExecutionGen.executionOf, genRule) { case ((exec, _), rule) =>
       val optimized = ExecutionOptimizationRules.apply(exec, rule)
       val optimized2 = ExecutionOptimizationRules.apply(exec, rule)
       assert(optimized == optimized2)
@@ -201,7 +213,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
     implicit val generatorDrivenConfig: PropertyCheckConfiguration =
       PropertyCheckConfiguration(minSuccessful = 500)
 
-    forAll(genExec) { exec =>
+    forAll(ExecutionGen.executionOf) { case (exec, _) =>
       val optimized = ExecutionOptimizationRules.stdOptimizations(exec)
       val optimized2 = ExecutionOptimizationRules.stdOptimizations(exec)
       assert(optimized == optimized2)
@@ -225,7 +237,7 @@ class ExecutionOptimizationRulesTest extends FunSuite with PropertyChecks {
   }
 
   test("zip of writes merged") {
-    forAll(zippedWrites) { e =>
+    forAll(stdZippedWrites) { e =>
       val opt = ExecutionOptimizationRules.apply(e, ZipWrite)
 
       assert(e.isInstanceOf[Execution.Zipped[_, _]])
